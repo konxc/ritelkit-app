@@ -1,0 +1,71 @@
+---
+import "../styles/global.css";
+
+interface Props {
+    title?: string;
+    description?: string;
+}
+
+const {
+    title = "Roti Sholawat - Bakery Terbaik di Bantul & Jogja",
+    description = "Menyediakan Roti Manis, Aneka Cake, dan Paket Roti 10 Rasa dengan kualitas premium. Kunjungi kami di Bantul, Yogyakarta.",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="generator" content={Astro.generator} />
+
+        <!-- SEO Meta Tags -->
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <meta name="author" content="Roti Sholawat" />
+        <meta
+            name="keywords"
+            content="Roti Sholawat, Bakery Bantul, Toko Roti Jogja, Roti Manis, Kue Mandarin"
+        />
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={Astro.url} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content="/images/bakery/sholawat.jpeg" />
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={Astro.url} />
+        <meta property="twitter:title" content={title} />
+        <meta property="twitter:description" content={description} />
+        <meta property="twitter:image" content="/images/bakery/sholawat.jpeg" />
+
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <slot />
+
+        <footer
+            class="section text-center"
+            style="background-color: var(--color-bg-alt);"
+        >
+            <div class="container">
+                <h3 class="footer-logo">Roti Sholawat</h3>
+                <div class="mt-m">
+                    <p>
+                        &copy; {new Date().getFullYear()} Roti Sholawat Indonesia.
+                        All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </footer>
+    </body>
+</html>

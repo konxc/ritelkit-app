@@ -9,6 +9,13 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^5.17.1"
+    "@astrojs/cloudflare": "^12.6.12",
+    "@astrojs/partytown": "^2.1.4",
+    "@astrojs/sitemap": "^3.7.0",
+    "@astrojs/svelte": "^7.2.5",
+    "astro": "^5.17.1",
+    "pdf-parse": "^2.4.5",
+    "svelte": "^5.53.2",
+    "typescript": "^5.9.3"
   }
 }
