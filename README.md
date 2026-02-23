@@ -1,43 +1,47 @@
-# Astro Starter Kit: Minimal
+# Roti Sholawat - Official Website
 
-```sh
-pnpm create astro@latest -- --template minimal
-```
+Modern, premium landing page for **Roti Sholawat**, a bakery located in Bantul, Yogyakarta. Built with Astro 5 and Svelte 5.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## 🚀 Project Overview
 
-## 🚀 Project Structure
+Roti Sholawat is a traditional bakery with premium quality, operating since 2016. This project aims to digitize their presence and provide a platform for order management and business growth.
 
-Inside of your Astro project, you'll see the following folders and files:
+## 📂 Project Structure
 
 ```text
 /
-├── public/
+├── docs/               # Business roadmap, sprint plans, and strategy documents
+├── public/             # Static assets (images, favicon, etc.)
 ├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+│   ├── layouts/        # Base HTML structures
+│   ├── pages/          # Astro routes
+│   └── styles/         # Global design tokens and CSS
+├── bahan/              # Raw data and research materials
+├── package.json
+└── astro.config.mjs
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## 📖 Documentation
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
-
-Any static assets, like images, can be placed in the `public/` directory.
+Detailed business and execution documents can be found in the `docs/` folder:
+- [Briefing Roadmap](./docs/Briefing%20Roadmap.md)
+- [Execution Sprint Plan](./docs/Breakdown%20Task%20Mingguan%20-%20Execution%20Sprint%20Plan.md)
+- [Strategic Business Brief](./docs/Strategic%20Business%20Brief:%20Penguatan%20Sistem%20&%20Model%20Bisnis%20Roti%20Sholawat.md)
 
 ## 🧞 Commands
 
-All commands are run from the root of the project, from a terminal:
+All commands are run from the root of the project:
 
 | Command                   | Action                                           |
 | :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
+| `bun install`             | Installs dependencies                            |
+| `bun run dev`             | Starts local dev server at `localhost:4321`      |
+| `bun run build`           | Build your production site to `./dist/`          |
+| `bun run preview`         | Preview your build locally                       |
 
-## 👀 Want to learn more?
+## 🛠 Tech Stack
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- **Framework**: [Astro 5](https://astro.build)
+- **UI Framework**: [Svelte 5](https://svelte.dev)
+- **Deployment**: [Cloudflare Pages](https://pages.cloudflare.com)
+- **Runtime**: [Bun](https://bun.sh)
