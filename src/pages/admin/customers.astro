@@ -1,5 +1,12 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import SectionHeader from "../../components/admin/SectionHeader.svelte";
+import PaginationNav from "../../components/admin/PaginationNav.svelte";
+import AdminDataTable from "../../components/admin/AdminDataTable.svelte";
+import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
+import RowActions from "../../components/admin/RowActions.svelte";
+import AdminFilterForm from "../../components/admin/AdminFilterForm.svelte";
+import CrudInlineForm from "../../components/admin/CrudInlineForm.svelte";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 import { parsePage } from "../../lib/admin";
@@ -31,11 +38,8 @@ const totalPages = Math.max(1, Math.ceil(total / limit));
 ---
 
 <AdminLayout title="Pelanggan">
-    <div class="section-header">
-        <h2>Tambah Pelanggan</h2>
-        <span class="badge">CRM</span>
-    </div>
-    <form class="form-row" id="customer-form">
+    <SectionHeader title="Tambah Pelanggan" badge="CRM" />
+    <CrudInlineForm id="customer-form">
         <div>
             <label>Nama</label>
             <input name="name" required />
@@ -53,110 +57,59 @@ const totalPages = Math.max(1, Math.ceil(total / limit));
             <textarea name="notes" rows="2"></textarea>
         </div>
         <button class="primary" type="submit">Simpan</button>
-    </form>
+    </CrudInlineForm>
 
-    <div class="toolbar">
-        <strong>Daftar Pelanggan</strong>
-        <form method="get">
+    <AdminToolbar title="Daftar Pelanggan">
+        <AdminFilterForm>
             <input name="q" placeholder="Cari nama / telepon / email" value={q} />
             <button class="btn-ghost" type="submit">Cari</button>
             <a class="btn-ghost" href="/api/admin/export?entity=customers">Export CSV</a>
-        </form>
-    </div>
+        </AdminFilterForm>
+    </AdminToolbar>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Nama</th>
-                <th>Telepon</th>
-                <th>Email</th>
-                <th>Catatan</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            {customersRes.rows.map((row: any) => (
-                <tr data-id={row.id}>
-                    <td contenteditable="true" data-field="name">{row.name}</td>
-                    <td contenteditable="true" data-field="phone">{row.phone}</td>
-                    <td contenteditable="true" data-field="email">{row.email || ""}</td>
-                    <td contenteditable="true" data-field="notes">{row.notes || ""}</td>
-                    <td>
-                        <div class="table-actions">
-                            <a class="btn-ghost" href={`/admin/customers/${row.id}`}>Detail</a>
-                            <button class="btn-ghost" data-action="save">Simpan</button>
-                            <button class="btn-ghost" data-action="delete">Hapus</button>
-                        </div>
-                    </td>
+    <AdminDataTable>
+            <thead>
+                <tr>
+                    <th>Nama</th>
+                    <th>Telepon</th>
+                    <th>Email</th>
+                    <th>Catatan</th>
+                    <th>Aksi</th>
                 </tr>
-            ))}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {customersRes.rows.map((row: any) => (
+                    <tr data-id={row.id}>
+                        <td contenteditable="true" data-field="name">{row.name}</td>
+                        <td contenteditable="true" data-field="phone">{row.phone}</td>
+                        <td contenteditable="true" data-field="email">{row.email || ""}</td>
+                        <td contenteditable="true" data-field="notes">{row.notes || ""}</td>
+                        <td>
+                            <RowActions detailHref={`/admin/customers/${row.id}`} />
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+    </AdminDataTable>
 
-    <div class="pagination">
-        {page > 1 && (
-            <a href={`?q=${encodeURIComponent(q)}&page=${page - 1}`}>Prev</a>
-        )}
-        <span class="muted">Hal {page} / {totalPages}</span>
-        {page < totalPages && (
-            <a href={`?q=${encodeURIComponent(q)}&page=${page + 1}`}>Next</a>
-        )}
-    </div>
+    <PaginationNav
+        page={page}
+        totalPages={totalPages}
+        prevHref={page > 1 ? `?q=${encodeURIComponent(q)}&page=${page - 1}` : undefined}
+        nextHref={page < totalPages ? `?q=${encodeURIComponent(q)}&page=${page + 1}` : undefined}
+    />
 
     <script>
-        const form = document.querySelector("#customer-form") as HTMLFormElement | null;
-        const csrf = document
-            .querySelector("meta[name='csrf-token']")
-            ?.getAttribute("content") || "";
+        import { bindCreateForm, bindCrudTable } from "../../lib/admin-client";
 
-        form?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            if (!form) return;
-            const data = new FormData(form);
-            const res = await fetch("/api/admin/customers", {
-                method: "POST",
-                headers: { "X-CSRF-Token": csrf },
-                body: data,
-            });
-            if (res.ok) location.reload();
-            else alert(await res.text());
+        bindCreateForm({
+            formSelector: "#customer-form",
+            endpoint: "/api/admin/customers",
         });
 
-        document.querySelectorAll("tr[data-id]").forEach((row) => {
-            row.addEventListener("click", async (e) => {
-                const target = e.target as HTMLElement;
-                const action = target.getAttribute("data-action");
-                if (!action) return;
-                const id = row.getAttribute("data-id");
-                if (!id) return;
-                if (action === "delete") {
-                    if (!confirm("Hapus pelanggan ini?")) return;
-                    const res = await fetch(`/api/admin/customers/${id}`, {
-                        method: "DELETE",
-                        headers: { "X-CSRF-Token": csrf },
-                    });
-                    if (res.ok) location.reload();
-                    else alert(await res.text());
-                    return;
-                }
-                if (action === "save") {
-                    const fields: Record<string, string> = {};
-                    row.querySelectorAll("[data-field]").forEach((cell) => {
-                        const field = cell.getAttribute("data-field");
-                        if (!field) return;
-                        fields[field] = String(cell.textContent?.trim() || "");
-                    });
-                    const res = await fetch(`/api/admin/customers/${id}`, {
-                        method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-Token": csrf,
-                        },
-                        body: JSON.stringify(fields),
-                    });
-                    if (!res.ok) alert(await res.text());
-                }
-            });
+        bindCrudTable({
+            basePath: "/api/admin/customers",
+            deleteConfirm: "Hapus pelanggan ini?",
         });
     </script>
 </AdminLayout>

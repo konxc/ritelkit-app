@@ -1,5 +1,11 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import SectionHeader from "../../components/admin/SectionHeader.svelte";
+import StatusBadge from "../../components/admin/StatusBadge.svelte";
+import PaginationNav from "../../components/admin/PaginationNav.svelte";
+import AdminDataTable from "../../components/admin/AdminDataTable.svelte";
+import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
+import AdminFilterForm from "../../components/admin/AdminFilterForm.svelte";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 import { parsePage } from "../../lib/admin";
@@ -52,13 +58,9 @@ const totalPages = Math.max(1, Math.ceil(total / limit));
 ---
 
 <AdminLayout title="Order">
-    <div class="section-header">
-        <h2>Daftar Order</h2>
-        <span class="badge">Monitoring</span>
-    </div>
-    <div class="toolbar">
-        <strong>Order Terbaru</strong>
-        <form method="get">
+    <SectionHeader title="Daftar Order" badge="Monitoring" />
+    <AdminToolbar title="Order Terbaru">
+        <AdminFilterForm>
             <input name="q" placeholder="Cari order / nama" value={q} />
             <select name="status">
                 <option value="">Semua status</option>
@@ -86,59 +88,64 @@ const totalPages = Math.max(1, Math.ceil(total / limit));
                 class="btn-ghost"
                 href={`/api/admin/export?entity=orders&q=${encodeURIComponent(q)}&status=${encodeURIComponent(status)}&payment_status=${encodeURIComponent(paymentStatus)}&date_from=${encodeURIComponent(dateFrom)}&date_to=${encodeURIComponent(dateTo)}`}
             >Export CSV</a>
-        </form>
-    </div>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Order</th>
-                <th>Pelanggan</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Pembayaran</th>
-                <th>Tanggal</th>
-            </tr>
-        </thead>
-        <tbody>
-            {
-                orders.rows.map((order: any) => (
-                    <tr>
-                        <td>
-                            <a href={`/admin/orders/${order.order_no}`}>
-                                {order.order_no}
-                            </a>
-                        </td>
-                        <td>{order.customer_name}</td>
-                        <td>
-                            Rp {Number(order.total).toLocaleString("id-ID")}
-                        </td>
-                        <td>
-                            <span
-                                class={`badge ${order.status === "processing" ? "success" : ""}`}
-                            >
-                                {order.status}
-                            </span>
-                        </td>
-                        <td>
-                            <span
-                                class={`badge ${order.payment_status === "paid" ? "success" : order.payment_status === "failed" ? "danger" : ""}`}
-                            >
-                                {order.payment_status}
-                            </span>
-                        </td>
-                        <td>{String(order.created_at).split("T")[0]}</td>
-                    </tr>
-                ))
-            }
-        </tbody>
-    </table>
-    <div class="pagination">
-        {page > 1 && (
-            <a href={`?q=${encodeURIComponent(q)}&status=${encodeURIComponent(status)}&payment_status=${encodeURIComponent(paymentStatus)}&date_from=${encodeURIComponent(dateFrom)}&date_to=${encodeURIComponent(dateTo)}&page=${page - 1}`}>Prev</a>
-        )}
-        <span class="muted">Hal {page} / {totalPages}</span>
-        {page < totalPages && (
-            <a href={`?q=${encodeURIComponent(q)}&status=${encodeURIComponent(status)}&payment_status=${encodeURIComponent(paymentStatus)}&date_from=${encodeURIComponent(dateFrom)}&date_to=${encodeURIComponent(dateTo)}&page=${page + 1}`}>Next</a>
-        )}
-    </div>
+        </AdminFilterForm>
+    </AdminToolbar>
+    <AdminDataTable>
+            <thead>
+                <tr>
+                    <th>Order</th>
+                    <th>Pelanggan</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Pembayaran</th>
+                    <th>Tanggal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {
+                    orders.rows.map((order: any) => (
+                        <tr>
+                            <td>
+                                <a href={`/admin/orders/${order.order_no}`}>
+                                    {order.order_no}
+                                </a>
+                            </td>
+                            <td>{order.customer_name}</td>
+                            <td>
+                                Rp {Number(order.total).toLocaleString("id-ID")}
+                            </td>
+                            <td>
+                                <StatusBadge
+                                    label={order.status}
+                                    tone={order.status === "processing"
+                                        ? "success"
+                                        : "default"}
+                                />
+                            </td>
+                            <td>
+                                <StatusBadge
+                                    label={order.payment_status}
+                                    tone={order.payment_status === "paid"
+                                        ? "success"
+                                        : order.payment_status === "failed"
+                                          ? "danger"
+                                          : "default"}
+                                />
+                            </td>
+                            <td>{String(order.created_at).split("T")[0]}</td>
+                        </tr>
+                    ))
+                }
+            </tbody>
+    </AdminDataTable>
+    <PaginationNav
+        page={page}
+        totalPages={totalPages}
+        prevHref={page > 1
+            ? `?q=${encodeURIComponent(q)}&status=${encodeURIComponent(status)}&payment_status=${encodeURIComponent(paymentStatus)}&date_from=${encodeURIComponent(dateFrom)}&date_to=${encodeURIComponent(dateTo)}&page=${page - 1}`
+            : undefined}
+        nextHref={page < totalPages
+            ? `?q=${encodeURIComponent(q)}&status=${encodeURIComponent(status)}&payment_status=${encodeURIComponent(paymentStatus)}&date_from=${encodeURIComponent(dateFrom)}&date_to=${encodeURIComponent(dateTo)}&page=${page + 1}`
+            : undefined}
+    />
 </AdminLayout>

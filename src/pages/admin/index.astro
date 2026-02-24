@@ -1,5 +1,6 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import StatCard from "../../components/admin/StatCard.svelte";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 
@@ -38,35 +39,29 @@ const pendingRefunds = await db.execute(
 
 <AdminLayout title="Overview">
     <div class="grid grid-2">
-        <div class="card">
-            <strong>Order Hari Ini</strong>
-            <p>{(ordersToday.rows[0] as any)?.count || 0}</p>
-        </div>
-        <div class="card">
-            <strong>Revenue Hari Ini</strong>
-            <p>
-                Rp {
-                    Number(
-                        (revenueToday.rows[0] as any)?.total || 0,
-                    ).toLocaleString("id-ID")
-                }
-            </p>
-        </div>
-        <div class="card">
-            <strong>Produk Aktif</strong>
-            <p>{(activeProducts.rows[0] as any)?.count || 0}</p>
-        </div>
-        <div class="card">
-            <strong>Pengiriman Aktif</strong>
-            <p>{(pendingShipments.rows[0] as any)?.count || 0}</p>
-        </div>
-        <div class="card">
-            <strong>Kupon Aktif</strong>
-            <p>{(activeCoupons.rows[0] as any)?.count || 0}</p>
-        </div>
-        <div class="card">
-            <strong>Refund Pending</strong>
-            <p>{(pendingRefunds.rows[0] as any)?.count || 0}</p>
-        </div>
+        <StatCard
+            label="Order Hari Ini"
+            value={(ordersToday.rows[0] as any)?.count || 0}
+        />
+        <StatCard
+            label="Revenue Hari Ini"
+            value={`Rp ${Number((revenueToday.rows[0] as any)?.total || 0).toLocaleString("id-ID")}`}
+        />
+        <StatCard
+            label="Produk Aktif"
+            value={(activeProducts.rows[0] as any)?.count || 0}
+        />
+        <StatCard
+            label="Pengiriman Aktif"
+            value={(pendingShipments.rows[0] as any)?.count || 0}
+        />
+        <StatCard
+            label="Kupon Aktif"
+            value={(activeCoupons.rows[0] as any)?.count || 0}
+        />
+        <StatCard
+            label="Refund Pending"
+            value={(pendingRefunds.rows[0] as any)?.count || 0}
+        />
     </div>
 </AdminLayout>

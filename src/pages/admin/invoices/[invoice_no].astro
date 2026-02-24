@@ -1,5 +1,11 @@
 ---
 import AdminLayout from "../../../layouts/AdminLayout.astro";
+import SectionHeader from "../../../components/admin/SectionHeader.svelte";
+import StatusBadge from "../../../components/admin/StatusBadge.svelte";
+import AdminDataTable from "../../../components/admin/AdminDataTable.svelte";
+import ActionGroup from "../../../components/admin/ActionGroup.svelte";
+import PanelCard from "../../../components/admin/PanelCard.svelte";
+import CrudInlineForm from "../../../components/admin/CrudInlineForm.svelte";
 import { requireAdmin } from "../../../lib/auth";
 import { initDb, getDb } from "../../../lib/db";
 
@@ -24,35 +30,39 @@ const address = JSON.parse(String(invoice.shipping_address_json || "{}"));
 
 <AdminLayout title={`Invoice ${invoice.invoice_no}`}>
     <div class="grid grid-2">
-        <div class="card">
+        <PanelCard>
             <strong>Order</strong>
             <p>{invoice.order_no}</p>
             <p class="muted">{invoice.customer_name}</p>
             <p class="muted">{invoice.customer_phone}</p>
-        </div>
-        <div class="card">
+        </PanelCard>
+        <PanelCard>
             <strong>Status</strong>
             <p>
-                <span
-                    class={`badge ${invoice.status === "paid" ? "success" : invoice.status === "overdue" ? "danger" : ""}`}
-                    >{invoice.status}</span
-                >
+                <StatusBadge
+                    label={invoice.status}
+                    tone={invoice.status === "paid"
+                        ? "success"
+                        : invoice.status === "overdue"
+                          ? "danger"
+                          : "default"}
+                />
             </p>
             <p class="muted">
                 Total: Rp {Number(invoice.total).toLocaleString("id-ID")}
             </p>
-        </div>
+        </PanelCard>
     </div>
 
-    <div class="card mt-4">
+    <PanelCard className="mt-4">
         <strong>Alamat</strong>
         <p>{address.province} - {address.city} - {address.district}</p>
         <p>{address.street || ""}</p>
-    </div>
+    </PanelCard>
 
-    <div class="card mt-4">
+    <PanelCard className="mt-4">
         <strong>Item</strong>
-        <table class="table">
+        <AdminDataTable>
             <thead>
                 <tr>
                     <th>Produk</th>
@@ -77,11 +87,13 @@ const address = JSON.parse(String(invoice.shipping_address_json || "{}"));
                     ))
                 }
             </tbody>
-        </table>
-    </div>
+        </AdminDataTable>
+    </PanelCard>
 
-    <div class="section-header mt-5">
-        <h2>Update Invoice</h2>
+    <div class="mt-5">
+        <SectionHeader title="Update Invoice" />
+    </div>
+    <ActionGroup className="mb-3">
         <a
             class="btn-ghost"
             href={`/api/invoices/${invoice.invoice_no}/pdf`}
@@ -94,8 +106,8 @@ const address = JSON.parse(String(invoice.shipping_address_json || "{}"));
             href={`/invoice/${invoice.invoice_no}`}
             target="_blank">Print</a
         >
-    </div>
-    <form class="form-row" id="invoice-form" data-invoice={invoice.invoice_no}>
+    </ActionGroup>
+    <CrudInlineForm id="invoice-form" data-invoice={invoice.invoice_no}>
         <div>
             <label>Status</label>
             <input name="status" value={invoice.status} />
@@ -105,32 +117,16 @@ const address = JSON.parse(String(invoice.shipping_address_json || "{}"));
             <input name="due_at" value={invoice.due_at ?? ""} />
         </div>
         <button class="primary" type="submit">Update</button>
-    </form>
+    </CrudInlineForm>
 
     <script>
-        const form = document.querySelector<HTMLFormElement>("#invoice-form");
-        const csrf = document
-            .querySelector("meta[name='csrf-token']")
-            ?.getAttribute("content") || "";
-        form?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            if (!form) return;
-            const data = new FormData(form);
-            const payload = Object.fromEntries(data.entries());
-            const invoiceNo = form.getAttribute("data-invoice");
-            const res = await fetch(
-                `/api/admin/invoices/${encodeURIComponent(invoiceNo || "")}`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-Token": csrf,
-                    },
-                    body: JSON.stringify(payload),
-                },
-            );
-            if (res.ok) location.reload();
-            else alert(await res.text());
+        import { bindJsonForm } from "../../../lib/admin-client";
+
+        bindJsonForm({
+            formSelector: "#invoice-form",
+            method: "PUT",
+            endpoint: (form) =>
+                `/api/admin/invoices/${encodeURIComponent(form.getAttribute("data-invoice") || "")}`,
         });
     </script>
 </AdminLayout>

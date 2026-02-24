@@ -1,5 +1,11 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import SectionHeader from "../../components/admin/SectionHeader.svelte";
+import PaginationNav from "../../components/admin/PaginationNav.svelte";
+import AdminDataTable from "../../components/admin/AdminDataTable.svelte";
+import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
+import AdminFilterForm from "../../components/admin/AdminFilterForm.svelte";
+import CrudInlineForm from "../../components/admin/CrudInlineForm.svelte";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 import { parsePage } from "../../lib/admin";
@@ -35,11 +41,8 @@ const movementsRes = await db.execute(
 ---
 
 <AdminLayout title="Inventory">
-    <div class="section-header">
-        <h2>Tambah Mutasi Stok</h2>
-        <span class="badge">Restock & Penyesuaian</span>
-    </div>
-    <form class="form-row" id="inventory-form">
+    <SectionHeader title="Tambah Mutasi Stok" badge="Restock & Penyesuaian" />
+    <CrudInlineForm id="inventory-form">
         <div>
             <label>Produk</label>
             <select name="product_id" required>
@@ -65,19 +68,18 @@ const movementsRes = await db.execute(
             <input name="notes" placeholder="Opsional" />
         </div>
         <button class="primary" type="submit">Simpan</button>
-    </form>
+    </CrudInlineForm>
 
-    <div class="toolbar">
-        <strong>Stok Produk</strong>
-        <form method="get">
+    <AdminToolbar title="Stok Produk">
+        <AdminFilterForm>
             <input name="q" placeholder="Cari nama / SKU" value={q} />
             <button class="btn-ghost" type="submit">Cari</button>
             <a class="btn-ghost" href="/api/admin/export?entity=products">Export Produk</a>
             <a class="btn-ghost" href="/api/admin/export?entity=inventory">Export Mutasi</a>
-        </form>
-    </div>
+        </AdminFilterForm>
+    </AdminToolbar>
 
-    <table class="table">
+    <AdminDataTable>
         <thead>
             <tr>
                 <th>Produk</th>
@@ -96,23 +98,19 @@ const movementsRes = await db.execute(
                 </tr>
             ))}
         </tbody>
-    </table>
+    </AdminDataTable>
 
-    <div class="pagination">
-        {page > 1 && (
-            <a href={`?q=${encodeURIComponent(q)}&page=${page - 1}`}>Prev</a>
-        )}
-        <span class="muted">Hal {page} / {totalPages}</span>
-        {page < totalPages && (
-            <a href={`?q=${encodeURIComponent(q)}&page=${page + 1}`}>Next</a>
-        )}
-    </div>
+    <PaginationNav
+        page={page}
+        totalPages={totalPages}
+        prevHref={page > 1 ? `?q=${encodeURIComponent(q)}&page=${page - 1}` : undefined}
+        nextHref={page < totalPages ? `?q=${encodeURIComponent(q)}&page=${page + 1}` : undefined}
+    />
 
-    <div class="section-header mt-6">
-        <h2>Mutasi Terakhir</h2>
-        <span class="muted">30 entri terakhir</span>
+    <div class="mt-6">
+        <SectionHeader title="Mutasi Terakhir" muted="30 entri terakhir" />
     </div>
-    <table class="table">
+    <AdminDataTable>
         <thead>
             <tr>
                 <th>Produk</th>
@@ -135,25 +133,14 @@ const movementsRes = await db.execute(
                 </tr>
             ))}
         </tbody>
-    </table>
+    </AdminDataTable>
 
     <script>
-        const form = document.querySelector("#inventory-form") as HTMLFormElement | null;
-        const csrf = document
-            .querySelector("meta[name='csrf-token']")
-            ?.getAttribute("content") || "";
+        import { bindCreateForm } from "../../lib/admin-client";
 
-        form?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            if (!form) return;
-            const data = new FormData(form);
-            const res = await fetch("/api/admin/inventory-movements", {
-                method: "POST",
-                headers: { "X-CSRF-Token": csrf },
-                body: data,
-            });
-            if (res.ok) location.reload();
-            else alert(await res.text());
+        bindCreateForm({
+            formSelector: "#inventory-form",
+            endpoint: "/api/admin/inventory-movements",
         });
     </script>
 </AdminLayout>

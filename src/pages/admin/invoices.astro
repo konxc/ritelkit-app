@@ -1,5 +1,9 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import SectionHeader from "../../components/admin/SectionHeader.svelte";
+import StatusBadge from "../../components/admin/StatusBadge.svelte";
+import AdminDataTable from "../../components/admin/AdminDataTable.svelte";
+import CrudInlineForm from "../../components/admin/CrudInlineForm.svelte";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 
@@ -17,76 +21,67 @@ const invoices = await db.execute(
 ---
 
 <AdminLayout title="Invoice">
-    <div class="section-header">
-        <h2>Buat Invoice</h2>
-        <span class="badge">Manual</span>
-    </div>
-    <form class="form-row" id="invoice-form">
+    <SectionHeader title="Buat Invoice" badge="Manual" />
+    <CrudInlineForm id="invoice-form">
         <div>
             <label>Order No</label>
             <input name="order_no" required />
         </div>
         <button class="primary" type="submit">Buat Invoice</button>
-    </form>
+    </CrudInlineForm>
 
-    <div class="section-header mt-6">
-        <h2>Daftar Invoice</h2>
-        <span class="muted">Auto update status di tahap berikutnya</span>
+    <div class="mt-6">
+        <SectionHeader
+            title="Daftar Invoice"
+            muted="Auto update status di tahap berikutnya"
+        />
     </div>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Invoice</th>
-                <th>Order</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Tanggal</th>
-            </tr>
-        </thead>
-        <tbody>
-            {
-                invoices.rows.map((inv: any) => (
-                    <tr>
-                        <td>
-                            <a href={`/admin/invoices/${inv.invoice_no}`}>
-                                {inv.invoice_no}
-                            </a>
-                        </td>
-                        <td>{inv.order_no}</td>
-                        <td>Rp {Number(inv.total).toLocaleString("id-ID")}</td>
-                        <td>
-                            <span
-                                class={`badge ${inv.status === "paid" ? "success" : inv.status === "void" ? "danger" : ""}`}
-                            >
-                                {inv.status}
-                            </span>
-                        </td>
-                        <td>{String(inv.issued_at).split("T")[0]}</td>
-                    </tr>
-                ))
-            }
-        </tbody>
-    </table>
+    <AdminDataTable>
+            <thead>
+                <tr>
+                    <th>Invoice</th>
+                    <th>Order</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Tanggal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {
+                    invoices.rows.map((inv: any) => (
+                        <tr>
+                            <td>
+                                <a href={`/admin/invoices/${inv.invoice_no}`}>
+                                    {inv.invoice_no}
+                                </a>
+                            </td>
+                            <td>{inv.order_no}</td>
+                            <td>
+                                Rp {Number(inv.total).toLocaleString("id-ID")}
+                            </td>
+                            <td>
+                                <StatusBadge
+                                    label={inv.status}
+                                    tone={inv.status === "paid"
+                                        ? "success"
+                                        : inv.status === "void"
+                                          ? "danger"
+                                          : "default"}
+                                />
+                            </td>
+                            <td>{String(inv.issued_at).split("T")[0]}</td>
+                        </tr>
+                    ))
+                }
+            </tbody>
+    </AdminDataTable>
 
     <script>
-        const form = document.querySelector<HTMLFormElement>("#invoice-form");
-        const csrf = document
-            .querySelector("meta[name='csrf-token']")
-            ?.getAttribute("content") || "";
-        form?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            if (!form) return;
-            const data = new FormData(form);
-            const response = await fetch("/api/admin/invoices", {
-                method: "POST",
-                headers: { "X-CSRF-Token": csrf },
-                body: data,
-            });
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert(await response.text());
-            }
+        import { bindCreateForm } from "../../lib/admin-client";
+
+        bindCreateForm({
+            formSelector: "#invoice-form",
+            endpoint: "/api/admin/invoices",
         });
     </script>
 </AdminLayout>

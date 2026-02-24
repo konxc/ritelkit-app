@@ -1,5 +1,13 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import SectionHeader from "../../components/admin/SectionHeader.svelte";
+import PaginationNav from "../../components/admin/PaginationNav.svelte";
+import StatusBadge from "../../components/admin/StatusBadge.svelte";
+import AdminDataTable from "../../components/admin/AdminDataTable.svelte";
+import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
+import RowActions from "../../components/admin/RowActions.svelte";
+import AdminFilterForm from "../../components/admin/AdminFilterForm.svelte";
+import CrudInlineForm from "../../components/admin/CrudInlineForm.svelte";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 import { parsePage } from "../../lib/admin";
@@ -31,11 +39,11 @@ const totalPages = Math.max(1, Math.ceil(total / limit));
 ---
 
 <AdminLayout title="Refund">
-    <div class="section-header">
-        <h2>Buat Refund</h2>
-        <span class="badge danger">Dana Keluar</span>
+    <SectionHeader title="Buat Refund" />
+    <div class="-mt-2 mb-4">
+        <StatusBadge label="Dana Keluar" tone="danger" />
     </div>
-    <form class="form-row" id="refund-form">
+    <CrudInlineForm id="refund-form">
         <div>
             <label>Order No</label>
             <input name="order_no" required />
@@ -57,18 +65,17 @@ const totalPages = Math.max(1, Math.ceil(total / limit));
             <input name="reason" />
         </div>
         <button class="primary" type="submit">Simpan</button>
-    </form>
+    </CrudInlineForm>
 
-    <div class="toolbar">
-        <strong>Daftar Refund</strong>
-        <form method="get">
+    <AdminToolbar title="Daftar Refund">
+        <AdminFilterForm>
             <input name="q" placeholder="Cari order" value={q} />
             <button class="btn-ghost" type="submit">Cari</button>
             <a class="btn-ghost" href="/api/admin/export?entity=refunds">Export CSV</a>
-        </form>
-    </div>
+        </AdminFilterForm>
+    </AdminToolbar>
 
-    <table class="table">
+    <AdminDataTable>
         <thead>
             <tr>
                 <th>Order</th>
@@ -88,80 +95,31 @@ const totalPages = Math.max(1, Math.ceil(total / limit));
                     <td>{r.provider_status || "-"}</td>
                     <td contenteditable="true" data-field="reason">{r.reason || ""}</td>
                     <td>
-                        <div class="table-actions">
-                            <button class="btn-ghost" data-action="save">Simpan</button>
-                            <button class="btn-ghost" data-action="delete">Hapus</button>
-                        </div>
+                        <RowActions />
                     </td>
                 </tr>
             ))}
         </tbody>
-    </table>
+    </AdminDataTable>
 
-    <div class="pagination">
-        {page > 1 && (
-            <a href={`?q=${encodeURIComponent(q)}&page=${page - 1}`}>Prev</a>
-        )}
-        <span class="muted">Hal {page} / {totalPages}</span>
-        {page < totalPages && (
-            <a href={`?q=${encodeURIComponent(q)}&page=${page + 1}`}>Next</a>
-        )}
-    </div>
+    <PaginationNav
+        page={page}
+        totalPages={totalPages}
+        prevHref={page > 1 ? `?q=${encodeURIComponent(q)}&page=${page - 1}` : undefined}
+        nextHref={page < totalPages ? `?q=${encodeURIComponent(q)}&page=${page + 1}` : undefined}
+    />
 
     <script>
-        const form = document.querySelector("#refund-form") as HTMLFormElement | null;
-        const csrf = document
-            .querySelector("meta[name='csrf-token']")
-            ?.getAttribute("content") || "";
+        import { bindCreateForm, bindCrudTable } from "../../lib/admin-client";
 
-        form?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            if (!form) return;
-            const data = new FormData(form);
-            const res = await fetch("/api/admin/refunds", {
-                method: "POST",
-                headers: { "X-CSRF-Token": csrf },
-                body: data,
-            });
-            if (res.ok) location.reload();
-            else alert(await res.text());
+        bindCreateForm({
+            formSelector: "#refund-form",
+            endpoint: "/api/admin/refunds",
         });
 
-        document.querySelectorAll("tr[data-id]").forEach((row) => {
-            row.addEventListener("click", async (e) => {
-                const target = e.target as HTMLElement;
-                const action = target.getAttribute("data-action");
-                if (!action) return;
-                const id = row.getAttribute("data-id");
-                if (!id) return;
-                if (action === "delete") {
-                    if (!confirm("Hapus refund ini?")) return;
-                    const res = await fetch(`/api/admin/refunds/${id}`, {
-                        method: "DELETE",
-                        headers: { "X-CSRF-Token": csrf },
-                    });
-                    if (res.ok) location.reload();
-                    else alert(await res.text());
-                    return;
-                }
-                if (action === "save") {
-                    const fields: Record<string, string> = {};
-                    row.querySelectorAll("[data-field]").forEach((cell) => {
-                        const field = cell.getAttribute("data-field");
-                        if (!field) return;
-                        fields[field] = String(cell.textContent?.trim() || "");
-                    });
-                    const res = await fetch(`/api/admin/refunds/${id}`, {
-                        method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-Token": csrf,
-                        },
-                        body: JSON.stringify(fields),
-                    });
-                    if (!res.ok) alert(await res.text());
-                }
-            });
+        bindCrudTable({
+            basePath: "/api/admin/refunds",
+            deleteConfirm: "Hapus refund ini?",
         });
     </script>
 </AdminLayout>

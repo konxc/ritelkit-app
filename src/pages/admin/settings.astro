@@ -1,5 +1,10 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import SectionHeader from "../../components/admin/SectionHeader.svelte";
+import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
+import ActionGroup from "../../components/admin/ActionGroup.svelte";
+import PanelCard from "../../components/admin/PanelCard.svelte";
+import CrudInlineForm from "../../components/admin/CrudInlineForm.svelte";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 
@@ -19,18 +24,14 @@ const deliverySettings = settings.delivery_settings || {};
 ---
 
 <AdminLayout title="Pengaturan">
-    <div class="section-header">
-        <h2>Pengaturan Operasional</h2>
-        <span class="badge">Dinamis</span>
-    </div>
-    <div class="toolbar">
-        <strong>Seed Data</strong>
-        <div class="table-actions">
+    <SectionHeader title="Pengaturan Operasional" badge="Dinamis" />
+    <AdminToolbar title="Seed Data">
+        <ActionGroup>
             <button class="btn-ghost" id="seed-btn" type="button">Generate Data Demo</button>
-        </div>
-    </div>
-    <form class="form-row" id="settings-form">
-        <div class="card">
+        </ActionGroup>
+    </AdminToolbar>
+    <CrudInlineForm id="settings-form">
+        <PanelCard>
             <h3>Model Order</h3>
             <label>Preorder Only</label>
             <select name="preorder_only">
@@ -75,9 +76,9 @@ const deliverySettings = settings.delivery_settings || {};
                 type="text"
                 value={(orderSettings.available_days || []).join(",")}
             />
-        </div>
+        </PanelCard>
 
-        <div class="card">
+        <PanelCard>
             <h3>Pengiriman</h3>
             <label>Provinsi</label>
             <input
@@ -91,55 +92,44 @@ const deliverySettings = settings.delivery_settings || {};
                 type="number"
                 value={deliverySettings.free_delivery_threshold ?? 0}
             />
-        </div>
+        </PanelCard>
 
         <button class="primary" type="submit">Simpan Pengaturan</button>
-    </form>
+    </CrudInlineForm>
 
     <script>
-        const form = document.querySelector<HTMLFormElement>("#settings-form");
-        const csrf = document
-            .querySelector("meta[name='csrf-token']")
-            ?.getAttribute("content") || "";
+        import { bindJsonForm, getCsrfToken } from "../../lib/admin-client";
+
+        const csrf = getCsrfToken();
         const seedBtn = document.querySelector("#seed-btn");
-        form?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            if (!form) return;
-            const data = new FormData(form);
-            const orderSettings = {
-                preorder_only: data.get("preorder_only") === "true",
-                minimum_lead_time_hours: Number(
-                    data.get("minimum_lead_time_hours") || 0,
-                ),
-                cutoff_time: data.get("cutoff_time") || "",
-                same_day_enabled: data.get("same_day_enabled") === "true",
-                available_days: String(data.get("available_days") || "")
-                    .split(",")
-                    .map((item) => item.trim())
-                    .filter(Boolean),
-            };
-            const deliverySettings = {
-                delivery_province: data.get("delivery_province") || "",
-                free_delivery_threshold: Number(
-                    data.get("free_delivery_threshold") || 0,
-                ),
-            };
-            const response = await fetch("/api/admin/settings", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-Token": csrf,
-                },
-                body: JSON.stringify({
+
+        bindJsonForm({
+            formSelector: "#settings-form",
+            endpoint: "/api/admin/settings",
+            mapPayload: (data) => {
+                const orderSettings = {
+                    preorder_only: data.get("preorder_only") === "true",
+                    minimum_lead_time_hours: Number(
+                        data.get("minimum_lead_time_hours") || 0,
+                    ),
+                    cutoff_time: data.get("cutoff_time") || "",
+                    same_day_enabled: data.get("same_day_enabled") === "true",
+                    available_days: String(data.get("available_days") || "")
+                        .split(",")
+                        .map((item) => item.trim())
+                        .filter(Boolean),
+                };
+                const deliverySettings = {
+                    delivery_province: data.get("delivery_province") || "",
+                    free_delivery_threshold: Number(
+                        data.get("free_delivery_threshold") || 0,
+                    ),
+                };
+                return {
                     order_settings: orderSettings,
                     delivery_settings: deliverySettings,
-                }),
-            });
-            if (response.ok) {
-                location.reload();
-            } else {
-                alert(await response.text());
-            }
+                };
+            },
         });
 
         seedBtn?.addEventListener("click", async () => {

@@ -1,5 +1,8 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import SectionHeader from "../../components/admin/SectionHeader.svelte";
+import StatCard from "../../components/admin/StatCard.svelte";
+import AdminDataTable from "../../components/admin/AdminDataTable.svelte";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 
@@ -110,94 +113,61 @@ const topProducts = Object.entries(productQty)
 ---
 
 <AdminLayout title="Laporan">
-    <div class="section-header">
-        <h2>Ringkasan 30 Hari</h2>
-        <span class="badge">Keuangan</span>
-    </div>
+    <SectionHeader title="Ringkasan 30 Hari" badge="Keuangan" />
     <div class="grid grid-2">
-        <div class="card">
-            <strong>Total Order</strong>
-            <p>{totalOrders}</p>
-        </div>
-        <div class="card">
-            <strong>Order Paid</strong>
-            <p>{paidOrders}</p>
-        </div>
-        <div class="card">
-            <strong>Revenue</strong>
-            <p>Rp {revenue.toLocaleString("id-ID")}</p>
-        </div>
-        <div class="card">
-            <strong>Diskon</strong>
-            <p>Rp {discountTotal.toLocaleString("id-ID")}</p>
-        </div>
-        <div class="card">
-            <strong>COGS (estimasi)</strong>
-            <p>Rp {cogs.toLocaleString("id-ID")}</p>
-        </div>
-        <div class="card">
-            <strong>Refund</strong>
-            <p>Rp {refundTotal.toLocaleString("id-ID")}</p>
-        </div>
-        <div class="card">
-            <strong>Gross Profit</strong>
-            <p>Rp {grossProfit.toLocaleString("id-ID")}</p>
-        </div>
+        <StatCard label="Total Order" value={totalOrders} />
+        <StatCard label="Order Paid" value={paidOrders} />
+        <StatCard label="Revenue" value={`Rp ${revenue.toLocaleString("id-ID")}`} />
+        <StatCard label="Diskon" value={`Rp ${discountTotal.toLocaleString("id-ID")}`} />
+        <StatCard label="COGS (estimasi)" value={`Rp ${cogs.toLocaleString("id-ID")}`} />
+        <StatCard label="Refund" value={`Rp ${refundTotal.toLocaleString("id-ID")}`} />
+        <StatCard label="Gross Profit" value={`Rp ${grossProfit.toLocaleString("id-ID")}`} />
     </div>
 
-    <div class="section-header mt-6">
-        <h2>Top Produk</h2>
-        <span class="muted">Berdasarkan qty terjual</span>
+    <div class="mt-6">
+        <SectionHeader title="Top Produk" muted="Berdasarkan qty terjual" />
     </div>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Produk</th>
-                <th>Qty</th>
-            </tr>
-        </thead>
-        <tbody>
-            {topProducts.map((item) => (
+    <AdminDataTable>
+            <thead>
                 <tr>
-                    <td>{item.name}</td>
-                    <td>{item.qty}</td>
+                    <th>Produk</th>
+                    <th>Qty</th>
                 </tr>
-            ))}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {topProducts.map((item) => (
+                    <tr>
+                        <td>{item.name}</td>
+                        <td>{item.qty}</td>
+                    </tr>
+                ))}
+            </tbody>
+    </AdminDataTable>
 
-    <div class="section-header mt-6">
-        <h2>Analitik Dasar</h2>
-        <span class="badge">LTV • Cohort • ROAS</span>
+    <div class="mt-6">
+        <SectionHeader title="Analitik Dasar" badge="LTV • Cohort • ROAS" />
     </div>
     <div class="grid grid-2">
-        <div class="card">
-            <strong>LTV (90 hari)</strong>
-            <p>Rp {ltv.toLocaleString("id-ID")}</p>
-        </div>
-        <div class="card">
-            <strong>ROAS (30 hari)</strong>
-            <p>{roas}</p>
-        </div>
+        <StatCard label="LTV (90 hari)" value={`Rp ${ltv.toLocaleString("id-ID")}`} />
+        <StatCard label="ROAS (30 hari)" value={roas} />
     </div>
-    <div class="section-header mt-4">
-        <h2>Cohort (customer baru/bulan)</h2>
-        <span class="muted">30 hari terakhir</span>
+    <div class="mt-4">
+        <SectionHeader title="Cohort (customer baru/bulan)" muted="30 hari terakhir" />
     </div>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Bulan</th>
-                <th>Customer Baru</th>
-            </tr>
-        </thead>
-        <tbody>
-            {cohorts.map((c) => (
+    <AdminDataTable>
+            <thead>
                 <tr>
-                    <td>{c.month}</td>
-                    <td>{c.count}</td>
+                    <th>Bulan</th>
+                    <th>Customer Baru</th>
                 </tr>
-            ))}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {cohorts.map((c) => (
+                    <tr>
+                        <td>{c.month}</td>
+                        <td>{c.count}</td>
+                    </tr>
+                ))}
+            </tbody>
+    </AdminDataTable>
 </AdminLayout>

@@ -1,5 +1,9 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import SectionHeader from "../../components/admin/SectionHeader.svelte";
+import AdminDataTable from "../../components/admin/AdminDataTable.svelte";
+import CrudInlineForm from "../../components/admin/CrudInlineForm.svelte";
+import RowActions from "../../components/admin/RowActions.svelte";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 
@@ -15,11 +19,8 @@ const usersRes = await db.execute(
 ---
 
 <AdminLayout title="Admin User">
-    <div class="section-header">
-        <h2>Tambah Admin</h2>
-        <span class="badge">Role</span>
-    </div>
-    <form class="form-row" id="user-form">
+    <SectionHeader title="Tambah Admin" badge="Role" />
+    <CrudInlineForm id="user-form">
         <div>
             <label>Email</label>
             <input name="email" type="email" required />
@@ -37,13 +38,12 @@ const usersRes = await db.execute(
             </select>
         </div>
         <button class="primary" type="submit">Tambah</button>
-    </form>
+    </CrudInlineForm>
 
-    <div class="section-header mt-6">
-        <h2>Daftar Admin</h2>
-        <span class="muted">Edit role / reset password</span>
+    <div class="mt-6">
+        <SectionHeader title="Daftar Admin" muted="Edit role / reset password" />
     </div>
-    <table class="table">
+    <AdminDataTable>
         <thead>
             <tr>
                 <th>Email</th>
@@ -61,67 +61,35 @@ const usersRes = await db.execute(
                         <input data-field="password" type="password" placeholder="Kosong = tidak diubah" />
                     </td>
                     <td>
-                        <div class="table-actions">
-                            <button class="btn-ghost" data-action="save">Simpan</button>
-                            <button class="btn-ghost" data-action="delete">Hapus</button>
-                        </div>
+                        <RowActions />
                     </td>
                 </tr>
             ))}
         </tbody>
-    </table>
+    </AdminDataTable>
 
     <script>
-        const form = document.querySelector("#user-form") as HTMLFormElement | null;
-        const csrf = document
-            .querySelector("meta[name='csrf-token']")
-            ?.getAttribute("content") || "";
+        import { bindCreateForm, bindCrudTable } from "../../lib/admin-client";
 
-        form?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            if (!form) return;
-            const data = new FormData(form);
-            const res = await fetch("/api/admin/users", {
-                method: "POST",
-                headers: { "X-CSRF-Token": csrf },
-                body: data,
-            });
-            if (res.ok) location.reload();
-            else alert(await res.text());
+        bindCreateForm({
+            formSelector: "#user-form",
+            endpoint: "/api/admin/users",
         });
 
-        document.querySelectorAll("tr[data-id]").forEach((row) => {
-            row.addEventListener("click", async (e) => {
-                const target = e.target as HTMLElement;
-                const action = target.getAttribute("data-action");
-                if (!action) return;
-                const id = row.getAttribute("data-id");
-                if (!id) return;
-                if (action === "delete") {
-                    if (!confirm("Hapus admin ini?")) return;
-                    const res = await fetch(`/api/admin/users/${id}`, {
-                        method: "DELETE",
-                        headers: { "X-CSRF-Token": csrf },
-                    });
-                    if (res.ok) location.reload();
-                    else alert(await res.text());
-                    return;
-                }
-                if (action === "save") {
-                    const role = row.querySelector("[data-field='role']")?.textContent || "";
-                    const password = (row.querySelector("[data-field='password']") as HTMLInputElement | null)?.value;
-                    const res = await fetch(`/api/admin/users/${id}`, {
-                        method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-Token": csrf,
-                        },
-                        body: JSON.stringify({ role, password }),
-                    });
-                    if (!res.ok) alert(await res.text());
-                    else location.reload();
-                }
-            });
+        bindCrudTable({
+            basePath: "/api/admin/users",
+            deleteConfirm: "Hapus admin ini?",
+            reloadOnSave: true,
+            mapFields: (_fields, row) => {
+                const role = String(
+                    row.querySelector("[data-field='role']")?.textContent?.trim() || "",
+                );
+                const password = String(
+                    (row.querySelector("[data-field='password']") as HTMLInputElement | null)
+                        ?.value || "",
+                );
+                return { role, password };
+            },
         });
     </script>
 </AdminLayout>

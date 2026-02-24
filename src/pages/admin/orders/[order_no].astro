@@ -1,5 +1,10 @@
 ---
 import AdminLayout from "../../../layouts/AdminLayout.astro";
+import SectionHeader from "../../../components/admin/SectionHeader.svelte";
+import StatusBadge from "../../../components/admin/StatusBadge.svelte";
+import AdminDataTable from "../../../components/admin/AdminDataTable.svelte";
+import PanelCard from "../../../components/admin/PanelCard.svelte";
+import CrudInlineForm from "../../../components/admin/CrudInlineForm.svelte";
 import { requireAdmin } from "../../../lib/auth";
 import { initDb, getDb } from "../../../lib/db";
 
@@ -34,31 +39,35 @@ const refund = refundRes.rows[0] as any;
 
 <AdminLayout title={`Order ${order.order_no}`}>
     <div class="grid grid-2">
-        <div class="card">
+        <PanelCard>
             <strong>Pelanggan</strong>
             <p>{order.customer_name}</p>
             <p class="muted">{order.customer_phone}</p>
             <p class="muted">{order.customer_email}</p>
-        </div>
-        <div class="card">
+        </PanelCard>
+        <PanelCard>
             <strong>Status</strong>
             <p>
-                <span
-                    class={`badge ${order.status === "processing" ? "success" : ""}`}
-                    >{order.status}</span
-                >
-                <span
-                    class={`badge ${order.payment_status === "paid" ? "success" : order.payment_status === "failed" ? "danger" : ""}`}
-                    >{order.payment_status}</span
-                >
+                <StatusBadge
+                    label={order.status}
+                    tone={order.status === "processing" ? "success" : "default"}
+                />
+                <StatusBadge
+                    label={order.payment_status}
+                    tone={order.payment_status === "paid"
+                        ? "success"
+                        : order.payment_status === "failed"
+                          ? "danger"
+                          : "default"}
+                />
             </p>
             <p class="muted">
                 Total: Rp {Number(order.total).toLocaleString("id-ID")}
             </p>
-        </div>
+        </PanelCard>
     </div>
 
-    <div class="card mt-4">
+    <PanelCard className="mt-4">
         <strong>Alamat</strong>
         <p>{address.province} - {address.city} - {address.district}</p>
         <p>{address.street || ""}</p>
@@ -67,11 +76,11 @@ const refund = refundRes.rows[0] as any;
                 address.delivery_time || "-"
             }
         </p>
-    </div>
+    </PanelCard>
 
-    <div class="card mt-4">
+    <PanelCard className="mt-4">
         <strong>Item</strong>
-        <table class="table">
+        <AdminDataTable>
             <thead>
                 <tr>
                     <th>Produk</th>
@@ -96,11 +105,11 @@ const refund = refundRes.rows[0] as any;
                     ))
                 }
             </tbody>
-        </table>
-    </div>
+        </AdminDataTable>
+    </PanelCard>
 
     <div class="grid grid-2 mt-4">
-        <div class="card">
+        <PanelCard>
             <strong>Pengiriman</strong>
             {shipment ? (
                 <>
@@ -113,8 +122,8 @@ const refund = refundRes.rows[0] as any;
                 <p class="muted">Belum ada data pengiriman.</p>
             )}
             <a class="btn-ghost" href="/admin/fulfillment">Kelola</a>
-        </div>
-        <div class="card">
+        </PanelCard>
+        <PanelCard>
             <strong>Refund</strong>
             {refund ? (
                 <>
@@ -126,14 +135,13 @@ const refund = refundRes.rows[0] as any;
                 <p class="muted">Tidak ada refund.</p>
             )}
             <a class="btn-ghost" href="/admin/refunds">Kelola</a>
-        </div>
+        </PanelCard>
     </div>
 
-    <div class="section-header mt-5">
-        <h2>Update Status</h2>
-        <span class="muted">Gunakan status konsisten</span>
+    <div class="mt-5">
+        <SectionHeader title="Update Status" muted="Gunakan status konsisten" />
     </div>
-    <form class="form-row" id="order-status-form">
+    <CrudInlineForm id="order-status-form">
         <input type="hidden" name="order_id" value={order.id} />
         <div>
             <label>Status</label>
@@ -148,30 +156,20 @@ const refund = refundRes.rows[0] as any;
             <input name="notes" />
         </div>
         <button class="primary" type="submit">Update Status</button>
-    </form>
+    </CrudInlineForm>
 
     <script>
-        const form = document.querySelector<HTMLFormElement>("#order-status-form");
-        const csrf = document
-            .querySelector("meta[name='csrf-token']")
-            ?.getAttribute("content") || "";
-        form?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            if (!form) return;
-            const data = new FormData(form);
-            const id = data.get("order_id");
-            const payload = Object.fromEntries(data.entries());
-            delete payload.order_id;
-            const res = await fetch(`/api/admin/orders/${id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-Token": csrf,
-                },
-                body: JSON.stringify(payload),
-            });
-            if (res.ok) location.reload();
-            else alert(await res.text());
+        import { bindJsonForm } from "../../../lib/admin-client";
+
+        bindJsonForm({
+            formSelector: "#order-status-form",
+            method: "PUT",
+            endpoint: (_form, data) => `/api/admin/orders/${data.get("order_id") || ""}`,
+            mapPayload: (data) => {
+                const payload = Object.fromEntries(data.entries());
+                delete payload.order_id;
+                return payload;
+            },
         });
     </script>
 </AdminLayout>
