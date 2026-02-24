@@ -4,21 +4,31 @@ import "../styles/global.css";
 interface Props {
     title?: string;
     description?: string;
+    hideFooter?: boolean;
 }
 
 const {
     title = "Roti Sholawat - Bakery Terbaik di Bantul & Jogja",
     description = "Menyediakan Roti Manis, Aneka Cake, dan Paket Roti 10 Rasa dengan kualitas premium. Kunjungi kami di Bantul, Yogyakarta.",
+    hideFooter = false,
 } = Astro.props;
+
+const waLink = "https://wa.me/6281314537475?text=Halo%20Roti%20Sholawat%2C%20saya%20mau%20konsultasi%20pemesanan.";
 ---
 
 <!doctype html>
 <html lang="id">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="icon" type="image/png" href="/favicon.png" />
         <meta name="generator" content={Astro.generator} />
+
+        <!-- CSP meta tag for Midtrans and Assets -->
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://app.sandbox.midtrans.com https://app.midtrans.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://app.sandbox.midtrans.com https://app.midtrans.com; frame-src 'self' https://app.sandbox.midtrans.com https://app.midtrans.com;"
+        />
 
         <!-- SEO Meta Tags -->
         <title>{title}</title>
@@ -46,26 +56,232 @@ const {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
             rel="stylesheet"
         />
     </head>
-    <body>
+    <body class="min-h-screen flex flex-col overflow-x-hidden pb-[70px] lg:pb-0 bg-[var(--color-bg)]">
+        <header
+            class="bg-[#f6fffd]/95 border-b border-primary/10 backdrop-blur-xl sticky top-0 z-50 py-2"
+        >
+            <div class="container flex items-center justify-between">
+                <a
+                    href="/"
+                    class="relative z-[60] transition-transform hover:scale-[1.02]"
+                    aria-label="Roti Sholawat"
+                >
+                    <img
+                        src="/images/brand/logo-teks-sholawat.png"
+                        alt="Roti Sholawat"
+                        class="h-11 sm:h-14 w-auto drop-shadow-sm"
+                    />
+                </a>
+
+                <!-- Desktop Nav -->
+                <nav
+                    class="hidden lg:flex items-center gap-1.5 bg-primary/5 p-1 rounded-full border border-primary/10"
+                >
+                    <a
+                        href="/"
+                        class="px-4 py-2 rounded-full text-sm font-semibold transition-all hover:bg-white hover:text-primary-dark"
+                        >Beranda</a
+                    >
+                    <a
+                        href="/about"
+                        class="px-4 py-2 rounded-full text-sm font-semibold transition-all hover:bg-white hover:text-primary-dark"
+                        >Tentang Kami</a
+                    >
+                    <a
+                        href="/products"
+                        class="px-4 py-2 rounded-full text-sm font-semibold transition-all hover:bg-white hover:text-primary-dark"
+                        >Produk</a
+                    >
+                    <a
+                        href="/premium"
+                        class="px-4 py-2 rounded-full text-sm font-semibold text-white bg-[linear-gradient(135deg,#9c6b43,#f2b24d)] shadow-sm hover:brightness-110"
+                        >Premium</a
+                    >
+                    <div class="w-px h-4 bg-primary/20 mx-1"></div>
+                    <a
+                        href="/order"
+                        class="px-6 py-2 rounded-full text-sm font-bold text-white bg-primary shadow-md hover:bg-primary-dark hover:shadow-lg transition-all"
+                        >Order Online</a
+                    >
+                </nav>
+
+                <div class="lg:hidden flex items-center gap-2">
+                    <a
+                        href="https://www.instagram.com/rotisholawat/"
+                        target="_blank"
+                        aria-label="Instagram"
+                        class="w-8.5 h-8.5 rounded-full border border-primary/20 bg-white/80 text-primary-dark hover:bg-primary/10 transition-colors flex items-center justify-center"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg>
+                    </a>
+                    <a
+                        href="https://www.tiktok.com/@rotisholawat"
+                        target="_blank"
+                        aria-label="TikTok"
+                        class="w-8.5 h-8.5 rounded-full border border-primary/20 bg-white/80 text-primary-dark hover:bg-primary/10 transition-colors flex items-center justify-center"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.74h-3.4v13.44a2.9 2.9 0 1 1-2.9-2.9c.2 0 .39.02.58.06V9.1c-.19-.03-.38-.05-.58-.05A6.3 6.3 0 1 0 15.82 15V8.26a8.2 8.2 0 0 0 4.78 1.54V6.69z"/></svg>
+                    </a>
+                    <a
+                        href={waLink}
+                        class="flex items-center justify-center gap-1.5 bg-[#25d366] text-white px-3.5 py-1.5 rounded-full font-bold text-[0.85rem] shadow-sm hover:scale-105 active:scale-95 transition-all"
+                        target="_blank"
+                        aria-label="Chat WhatsApp"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                        <span>Chat</span>
+                    </a>
+                </div>
+
+            </div>
+        </header>
+
+        <!-- Bottom Navigation Mobile -->
+        <nav class="fixed bottom-0 inset-x-0 bg-[#f6fffd]/95 backdrop-blur-xl border-t border-primary/10 z-[60] flex items-center justify-around h-[68px] lg:hidden pb-safe shadow-[0_-4px_24px_rgba(37,190,196,0.06)]">
+            <a href="/" class="flex flex-col items-center justify-center w-full h-full text-text-muted hover:text-primary transition-colors gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" class="shrink-0" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span class="text-[0.65rem] font-bold mt-0.5">Beranda</span>
+            </a>
+            <a href="/products" class="flex flex-col items-center justify-center w-full h-full text-text-muted hover:text-primary transition-colors gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+                <span class="text-[0.65rem] font-bold mt-0.5">Produk</span>
+            </a>
+            <a href="/about" class="flex flex-col items-center justify-center w-full h-full text-text-muted hover:text-primary transition-colors gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                <span class="text-[0.65rem] font-bold mt-0.5">Tentang</span>
+            </a>
+            <a href="/premium" class="flex flex-col items-center justify-center w-full h-full text-amber-700/80 hover:text-amber-800 transition-colors gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <span class="text-[0.65rem] font-bold mt-0.5">Premium</span>
+            </a>
+            <a href="/order" class="flex flex-col items-center justify-center w-full h-full text-text-muted hover:text-primary transition-colors gap-1 relative">
+                <div class="absolute -top-[16px] w-[52px] h-[52px] bg-primary text-white rounded-2xl flex items-center justify-center shadow-[0_8px_20px_rgba(37,190,196,0.25)] border-[5px] border-[#f6fffd] active:scale-95 transition-all outline outline-1 outline-primary/5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="-ml-0.5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                </div>
+            </a>
+        </nav>
+
         <slot />
 
-        <footer
-            class="section text-center"
-            style="background-color: var(--color-bg-alt);"
-        >
-            <div class="container">
-                <h3 class="footer-logo">Roti Sholawat</h3>
-                <div class="mt-m">
-                    <p>
-                        &copy; {new Date().getFullYear()} Roti Sholawat Indonesia.
-                        All rights reserved.
-                    </p>
-                </div>
-            </div>
-        </footer>
+        {
+            !hideFooter && (
+                <footer class="bg-primary-dark text-white/90 py-12 md:py-16 mt-auto">
+                    <div class="container grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-8 text-center md:text-left">
+                        <!-- Brand -->
+                        <div class="space-y-4">
+                            <h3 class="text-white text-2xl font-fraunces tracking-wide">
+                                Roti Sholawat
+                            </h3>
+                            <p class="text-white/70 text-[0.95rem] leading-relaxed max-w-xs mx-auto md:mx-0">
+                                Menyebarkan nilai budaya, kehangatan, dan keberkahan lewat roti sajian premium sejak 2016.
+                            </p>
+                        </div>
+
+                        <!-- Navigasi -->
+                        <div>
+                            <h4 class="text-secondary font-bold uppercase tracking-wider text-sm mb-5">
+                                Navigasi Pilihan
+                            </h4>
+                            <ul class="space-y-3 text-white/80 text-[0.95rem]">
+                                <li>
+                                    <a href="/" class="hover:text-white hover:underline decoration-primary underline-offset-4 transition-all inline-block">
+                                        Beranda
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/about" class="hover:text-white hover:underline decoration-primary underline-offset-4 transition-all inline-block">
+                                        Tentang Kami
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/products" class="hover:text-white hover:underline decoration-primary underline-offset-4 transition-all inline-block">
+                                        Katalog Produk
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="/order" class="hover:text-white hover:underline decoration-primary underline-offset-4 transition-all inline-block">
+                                        Konsultasi Pesanan
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Kontak -->
+                        <div>
+                            <h4 class="text-secondary font-bold uppercase tracking-wider text-sm mb-5">
+                                Pusat Bantuan
+                            </h4>
+                            <ul class="space-y-3 text-white/80 text-[0.95rem] flex flex-col items-center md:items-start">
+                                <li class="flex items-start gap-3 text-left">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mt-1 shrink-0 text-primary"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+                                    <span>Kabupaten Bantul,<br/>Yogyakarta, Indonesia</span>
+                                </li>
+                                <li class="w-full">
+                                    <a
+                                        href="https://wa.me/6281314537475"
+                                        target="_blank"
+                                        class="inline-flex items-center justify-center md:justify-start gap-2 bg-white/5 hover:bg-primary/20 hover:text-white px-4 py-2.5 rounded-xl transition-all duration-300 w-full md:w-auto mt-2 border border-white/5 hover:border-primary/30"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-secondary"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                        <span class="font-medium tracking-wide text-sm">+62 813-1453-7475</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Sosial Media -->
+                        <div>
+                            <h4 class="text-secondary font-bold uppercase tracking-wider text-sm mb-5">
+                                Terhubung Sosial
+                            </h4>
+                            <div class="flex items-center justify-center md:justify-start gap-3">
+                                <a href="https://instagram.com/rotishoprem" target="_blank" aria-label="Instagram" class="w-10 h-10 rounded-full bg-white/5 hover:bg-gradient-to-tr hover:from-amber-500 hover:via-red-500 hover:to-purple-600 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm border border-white/5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                                </a>
+                                <a href="https://facebook.com/b.shoprem" target="_blank" aria-label="Facebook" class="w-10 h-10 rounded-full bg-white/5 hover:bg-blue-600 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm border border-white/5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                                </a>
+                                <a href="https://linkedin.com/company/cv-satria-sejahtera" target="_blank" aria-label="LinkedIn" class="w-10 h-10 rounded-full bg-white/5 hover:bg-blue-700 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm border border-white/5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="container mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-white/50 text-sm">
+                        <p>
+                            &copy; {new Date().getFullYear()} CV Satria Sejahtera. All rights reserved.
+                        </p>
+                        <p class="flex items-center gap-1.5">
+                            Made with <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-secondary"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg> in Yogyakarta.
+                        </p>
+                    </div>
+                </footer>
+            )
+        }
+
+        <script>
+            // Intersection Observer for Reveal Animations
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add("is-visible");
+                        }
+                    });
+                },
+                { threshold: 0.12 },
+            );
+
+            document
+                .querySelectorAll(".reveal")
+                .forEach((el) => observer.observe(el));
+
+
+        </script>
     </body>
 </html>

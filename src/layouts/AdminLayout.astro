@@ -1,0 +1,55 @@
+---
+import "../styles/admin.css";
+import { ensureCsrfToken } from "../lib/auth";
+const { title = "Dashboard Admin" } = Astro.props;
+const currentPath = Astro.url.pathname;
+const csrfToken = ensureCsrfToken(Astro);
+---
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>{title}</title>
+        <meta name="csrf-token" content={csrfToken} />
+    </head>
+    <body>
+        <div class="admin-shell">
+            <aside class="admin-sidebar">
+                <div class="admin-brand">Roti Sholawat</div>
+                <nav class="admin-nav">
+                    <a href="/admin" class={currentPath === "/admin" ? "active" : ""}>Overview</a>
+                    <a href="/admin/reports" class={currentPath.startsWith("/admin/reports") ? "active" : ""}>Laporan</a>
+                    <a href="/admin/categories" class={currentPath.startsWith("/admin/categories") ? "active" : ""}>Kategori</a>
+                    <a href="/admin/products" class={currentPath.startsWith("/admin/products") ? "active" : ""}>Produk</a>
+                    <a href="/admin/inventory" class={currentPath.startsWith("/admin/inventory") ? "active" : ""}>Inventory</a>
+                    <a href="/admin/orders" class={currentPath.startsWith("/admin/orders") ? "active" : ""}>Order</a>
+                    <a href="/admin/fulfillment" class={currentPath.startsWith("/admin/fulfillment") ? "active" : ""}>Fulfillment</a>
+                    <a href="/admin/invoices" class={currentPath.startsWith("/admin/invoices") ? "active" : ""}>Invoice</a>
+                    <a href="/admin/refunds" class={currentPath.startsWith("/admin/refunds") ? "active" : ""}>Refund</a>
+                    <a href="/admin/customers" class={currentPath.startsWith("/admin/customers") ? "active" : ""}>Pelanggan</a>
+                    <a href="/admin/coupons" class={currentPath.startsWith("/admin/coupons") ? "active" : ""}>Kupon</a>
+                    <a href="/admin/shipping" class={currentPath.startsWith("/admin/shipping") ? "active" : ""}>Pengiriman</a>
+                    <a href="/admin/ads" class={currentPath.startsWith("/admin/ads") ? "active" : ""}>Iklan</a>
+                    <a href="/admin/cms" class={currentPath.startsWith("/admin/cms") ? "active" : ""}>Konten</a>
+                    <a href="/admin/notifications" class={currentPath.startsWith("/admin/notifications") ? "active" : ""}>Notifikasi</a>
+                    <a href="/admin/audit" class={currentPath.startsWith("/admin/audit") ? "active" : ""}>Audit</a>
+                    <a href="/admin/users" class={currentPath.startsWith("/admin/users") ? "active" : ""}>Admin</a>
+                    <a href="/admin/settings" class={currentPath.startsWith("/admin/settings") ? "active" : ""}>Pengaturan</a>
+                </nav>
+            </aside>
+            <main class="admin-main">
+                <header class="admin-topbar">
+                    <h1>{title}</h1>
+                    <form method="post" action="/api/admin/logout">
+                        <input type="hidden" name="csrf_token" value={csrfToken} />
+                        <button class="btn-ghost" type="submit">Logout</button>
+                    </form>
+                </header>
+                <section class="admin-content">
+                    <slot />
+                </section>
+            </main>
+        </div>
+    </body>
+</html>
