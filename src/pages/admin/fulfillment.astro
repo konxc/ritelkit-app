@@ -1,0 +1,171 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { requireAdmin } from "../../lib/auth";
+import { initDb, getDb } from "../../lib/db";
+import { parsePage } from "../../lib/admin";
+
+await initDb(Astro);
+const admin = await requireAdmin(Astro);
+if (!admin) {
+    return Astro.redirect("/admin/login");
+}
+const db = getDb(Astro);
+const { page, q, offset, limit } = parsePage(Astro.url, 20);
+const where = q ? "WHERE order_no LIKE ? OR tracking_no LIKE ?" : "";
+const args = q ? [`%${q}%`, `%${q}%`] : [];
+
+const shipmentsRes = await db.execute({
+    sql: `SELECT id, order_no, status, carrier, tracking_no, shipped_at, delivered_at, notes
+          FROM shipments
+          ${where}
+          ORDER BY created_at DESC
+          LIMIT ? OFFSET ?`,
+    args: [...args, limit, offset],
+});
+const countRes = await db.execute({
+    sql: `SELECT COUNT(*) as count FROM shipments ${where}`,
+    args,
+});
+const total = Number((countRes.rows[0] as any)?.count || 0);
+const totalPages = Math.max(1, Math.ceil(total / limit));
+---
+
+<AdminLayout title="Fulfillment">
+    <div class="section-header">
+        <h2>Buat Pengiriman</h2>
+        <span class="badge">Tracking</span>
+    </div>
+    <form class="form-row" id="shipment-form">
+        <div>
+            <label>Order No</label>
+            <input name="order_no" required />
+        </div>
+        <div>
+            <label>Kurir</label>
+            <input name="carrier" />
+        </div>
+        <div>
+            <label>Resi</label>
+            <input name="tracking_no" />
+        </div>
+        <div>
+            <label>Status</label>
+            <select name="status">
+                <option value="packing">Packing</option>
+                <option value="shipped">Dikirim</option>
+                <option value="delivered">Terkirim</option>
+                <option value="cancelled">Batal</option>
+            </select>
+        </div>
+        <div>
+            <label>Catatan</label>
+            <input name="notes" />
+        </div>
+        <button class="primary" type="submit">Simpan</button>
+    </form>
+
+    <div class="toolbar">
+        <strong>Daftar Pengiriman</strong>
+        <form method="get">
+            <input name="q" placeholder="Cari order/resi" value={q} />
+            <button class="btn-ghost" type="submit">Cari</button>
+        </form>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Order</th>
+                <th>Status</th>
+                <th>Kurir</th>
+                <th>Resi</th>
+                <th>Catatan</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {shipmentsRes.rows.map((s: any) => (
+                <tr data-id={s.id}>
+                    <td contenteditable="true" data-field="order_no">{s.order_no}</td>
+                    <td contenteditable="true" data-field="status">{s.status}</td>
+                    <td contenteditable="true" data-field="carrier">{s.carrier || ""}</td>
+                    <td contenteditable="true" data-field="tracking_no">{s.tracking_no || ""}</td>
+                    <td contenteditable="true" data-field="notes">{s.notes || ""}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn-ghost" data-action="save">Simpan</button>
+                            <button class="btn-ghost" data-action="delete">Hapus</button>
+                        </div>
+                    </td>
+                </tr>
+            ))}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        {page > 1 && (
+            <a href={`?q=${encodeURIComponent(q)}&page=${page - 1}`}>Prev</a>
+        )}
+        <span class="muted">Hal {page} / {totalPages}</span>
+        {page < totalPages && (
+            <a href={`?q=${encodeURIComponent(q)}&page=${page + 1}`}>Next</a>
+        )}
+    </div>
+
+    <script>
+        const form = document.querySelector("#shipment-form") as HTMLFormElement | null;
+        const csrf = document
+            .querySelector("meta[name='csrf-token']")
+            ?.getAttribute("content") || "";
+
+        form?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (!form) return;
+            const data = new FormData(form);
+            const res = await fetch("/api/admin/shipments", {
+                method: "POST",
+                headers: { "X-CSRF-Token": csrf },
+                body: data,
+            });
+            if (res.ok) location.reload();
+            else alert(await res.text());
+        });
+
+        document.querySelectorAll("tr[data-id]").forEach((row) => {
+            row.addEventListener("click", async (e) => {
+                const target = e.target as HTMLElement;
+                const action = target.getAttribute("data-action");
+                if (!action) return;
+                const id = row.getAttribute("data-id");
+                if (!id) return;
+                if (action === "delete") {
+                    if (!confirm("Hapus pengiriman ini?")) return;
+                    const res = await fetch(`/api/admin/shipments/${id}`, {
+                        method: "DELETE",
+                        headers: { "X-CSRF-Token": csrf },
+                    });
+                    if (res.ok) location.reload();
+                    else alert(await res.text());
+                    return;
+                }
+                if (action === "save") {
+                    const fields: Record<string, string> = {};
+                    row.querySelectorAll("[data-field]").forEach((cell) => {
+                        const field = cell.getAttribute("data-field");
+                        if (!field) return;
+                        fields[field] = String(cell.textContent?.trim() || "");
+                    });
+                    const res = await fetch(`/api/admin/shipments/${id}`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-Token": csrf,
+                        },
+                        body: JSON.stringify(fields),
+                    });
+                    if (!res.ok) alert(await res.text());
+                }
+            });
+        });
+    </script>
+</AdminLayout>

@@ -1,0 +1,159 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { requireAdmin } from "../../lib/auth";
+import { initDb, getDb } from "../../lib/db";
+
+await initDb(Astro);
+const admin = await requireAdmin(Astro);
+if (!admin) {
+    return Astro.redirect("/admin/login");
+}
+const db = getDb(Astro);
+const settingsRows = await db.execute("SELECT key, value_json FROM settings");
+const settings: Record<string, any> = {};
+for (const row of settingsRows.rows) {
+    settings[String(row.key)] = JSON.parse(String(row.value_json));
+}
+const orderSettings = settings.order_settings || {};
+const deliverySettings = settings.delivery_settings || {};
+---
+
+<AdminLayout title="Pengaturan">
+    <div class="section-header">
+        <h2>Pengaturan Operasional</h2>
+        <span class="badge">Dinamis</span>
+    </div>
+    <div class="toolbar">
+        <strong>Seed Data</strong>
+        <div class="table-actions">
+            <button class="btn-ghost" id="seed-btn" type="button">Generate Data Demo</button>
+        </div>
+    </div>
+    <form class="form-row" id="settings-form">
+        <div class="card">
+            <h3>Model Order</h3>
+            <label>Preorder Only</label>
+            <select name="preorder_only">
+                <option
+                    value="true"
+                    selected={orderSettings.preorder_only === true}>Ya</option
+                >
+                <option
+                    value="false"
+                    selected={orderSettings.preorder_only === false}
+                    >Tidak</option
+                >
+            </select>
+            <label>Minimum Lead Time (jam)</label>
+            <input
+                name="minimum_lead_time_hours"
+                type="number"
+                value={orderSettings.minimum_lead_time_hours ?? 0}
+            />
+            <label>Cutoff Time (HH:mm)</label>
+            <input
+                name="cutoff_time"
+                type="text"
+                value={orderSettings.cutoff_time ?? ""}
+            />
+            <label>Same Day Enabled</label>
+            <select name="same_day_enabled">
+                <option
+                    value="true"
+                    selected={orderSettings.same_day_enabled === true}
+                    >Ya</option
+                >
+                <option
+                    value="false"
+                    selected={orderSettings.same_day_enabled === false}
+                    >Tidak</option
+                >
+            </select>
+            <label>Available Days (comma)</label>
+            <input
+                name="available_days"
+                type="text"
+                value={(orderSettings.available_days || []).join(",")}
+            />
+        </div>
+
+        <div class="card">
+            <h3>Pengiriman</h3>
+            <label>Provinsi</label>
+            <input
+                name="delivery_province"
+                type="text"
+                value={deliverySettings.delivery_province ?? "DI Yogyakarta"}
+            />
+            <label>Free Delivery Threshold</label>
+            <input
+                name="free_delivery_threshold"
+                type="number"
+                value={deliverySettings.free_delivery_threshold ?? 0}
+            />
+        </div>
+
+        <button class="primary" type="submit">Simpan Pengaturan</button>
+    </form>
+
+    <script>
+        const form = document.querySelector<HTMLFormElement>("#settings-form");
+        const csrf = document
+            .querySelector("meta[name='csrf-token']")
+            ?.getAttribute("content") || "";
+        const seedBtn = document.querySelector("#seed-btn");
+        form?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (!form) return;
+            const data = new FormData(form);
+            const orderSettings = {
+                preorder_only: data.get("preorder_only") === "true",
+                minimum_lead_time_hours: Number(
+                    data.get("minimum_lead_time_hours") || 0,
+                ),
+                cutoff_time: data.get("cutoff_time") || "",
+                same_day_enabled: data.get("same_day_enabled") === "true",
+                available_days: String(data.get("available_days") || "")
+                    .split(",")
+                    .map((item) => item.trim())
+                    .filter(Boolean),
+            };
+            const deliverySettings = {
+                delivery_province: data.get("delivery_province") || "",
+                free_delivery_threshold: Number(
+                    data.get("free_delivery_threshold") || 0,
+                ),
+            };
+            const response = await fetch("/api/admin/settings", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": csrf,
+                },
+                body: JSON.stringify({
+                    order_settings: orderSettings,
+                    delivery_settings: deliverySettings,
+                }),
+            });
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert(await response.text());
+            }
+        });
+
+        seedBtn?.addEventListener("click", async () => {
+            if (!confirm("Generate data demo?")) return;
+            const res = await fetch("/api/admin/seed", {
+                method: "POST",
+                headers: { "X-CSRF-Token": csrf },
+            });
+            if (res.ok) {
+                alert("Seed data selesai");
+                location.reload();
+            } else {
+                alert(await res.text());
+            }
+        });
+    </script>
+</AdminLayout>

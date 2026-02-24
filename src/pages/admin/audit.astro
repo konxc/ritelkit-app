@@ -1,0 +1,72 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { requireAdmin } from "../../lib/auth";
+import { initDb, getDb } from "../../lib/db";
+import { parsePage } from "../../lib/admin";
+
+await initDb(Astro);
+const admin = await requireAdmin(Astro);
+if (!admin) {
+    return Astro.redirect("/admin/login");
+}
+const db = getDb(Astro);
+const { page, q, offset, limit } = parsePage(Astro.url, 30);
+const where = q ? "WHERE actor_email LIKE ? OR action LIKE ? OR entity_type LIKE ?" : "";
+const args = q ? [`%${q}%`, `%${q}%`, `%${q}%`] : [];
+
+const rows = await db.execute({
+    sql: `SELECT actor_email, action, entity_type, entity_id, created_at
+          FROM audit_logs
+          ${where}
+          ORDER BY created_at DESC
+          LIMIT ? OFFSET ?`,
+    args: [...args, limit, offset],
+});
+const countRes = await db.execute({
+    sql: `SELECT COUNT(*) as count FROM audit_logs ${where}`,
+    args,
+});
+const total = Number((countRes.rows[0] as any)?.count || 0);
+const totalPages = Math.max(1, Math.ceil(total / limit));
+---
+
+<AdminLayout title="Audit Log">
+    <div class="toolbar">
+        <strong>Riwayat Aktivitas</strong>
+        <form method="get">
+            <input name="q" placeholder="Cari actor/action/entity" value={q} />
+            <button class="btn-ghost" type="submit">Cari</button>
+        </form>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Aktor</th>
+                <th>Aksi</th>
+                <th>Entity</th>
+                <th>ID</th>
+                <th>Waktu</th>
+            </tr>
+        </thead>
+        <tbody>
+            {rows.rows.map((r: any) => (
+                <tr>
+                    <td>{r.actor_email || "-"}</td>
+                    <td>{r.action}</td>
+                    <td>{r.entity_type}</td>
+                    <td>{r.entity_id || "-"}</td>
+                    <td>{String(r.created_at).replace("T", " ").split(".")[0]}</td>
+                </tr>
+            ))}
+        </tbody>
+    </table>
+    <div class="pagination">
+        {page > 1 && (
+            <a href={`?q=${encodeURIComponent(q)}&page=${page - 1}`}>Prev</a>
+        )}
+        <span class="muted">Hal {page} / {totalPages}</span>
+        {page < totalPages && (
+            <a href={`?q=${encodeURIComponent(q)}&page=${page + 1}`}>Next</a>
+        )}
+    </div>
+</AdminLayout>

@@ -1,0 +1,65 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { requireAdmin } from "../../../lib/auth";
+import { initDb, getDb } from "../../../lib/db";
+
+await initDb(Astro);
+const admin = await requireAdmin(Astro);
+if (!admin) {
+    return Astro.redirect("/admin/login");
+}
+const db = getDb(Astro);
+const id = Astro.params.id || "";
+const customerRes = await db.execute({
+    sql: "SELECT id, name, email, phone, notes, created_at FROM customers WHERE id = ?",
+    args: [id],
+});
+const customer = customerRes.rows[0] as any;
+if (!customer) {
+    return Astro.redirect("/admin/customers");
+}
+const ordersRes = await db.execute({
+    sql: `SELECT order_no, total, status, payment_status, created_at
+          FROM orders
+          WHERE customer_phone = ? OR (customer_email IS NOT NULL AND customer_email = ?)
+          ORDER BY created_at DESC`,
+    args: [customer.phone, customer.email || ""],
+});
+---
+
+<AdminLayout title="Detail Pelanggan">
+    <div class="card">
+        <strong>{customer.name}</strong>
+        <p class="muted">{customer.phone} {customer.email ? `• ${customer.email}` : ""}</p>
+        <p>{customer.notes || "-"}</p>
+    </div>
+
+    <div class="section-header mt-6">
+        <h2>Riwayat Order</h2>
+        <span class="muted">Berdasarkan telepon/email</span>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Order</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Pembayaran</th>
+                <th>Tanggal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {ordersRes.rows.map((order: any) => (
+                <tr>
+                    <td>
+                        <a href={`/admin/orders/${order.order_no}`}>{order.order_no}</a>
+                    </td>
+                    <td>Rp {Number(order.total).toLocaleString("id-ID")}</td>
+                    <td>{order.status}</td>
+                    <td>{order.payment_status}</td>
+                    <td>{String(order.created_at).split("T")[0]}</td>
+                </tr>
+            ))}
+        </tbody>
+    </table>
+</AdminLayout>

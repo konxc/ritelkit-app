@@ -1,0 +1,177 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { requireAdmin } from "../../../lib/auth";
+import { initDb, getDb } from "../../../lib/db";
+
+await initDb(Astro);
+const admin = await requireAdmin(Astro);
+if (!admin) {
+    return Astro.redirect("/admin/login");
+}
+const orderNo = Astro.params.order_no;
+const db = getDb(Astro);
+const result = await db.execute({
+    sql: "SELECT * FROM orders WHERE order_no = ?",
+    args: [orderNo ?? ""],
+});
+const order = result.rows[0] as any;
+if (!order) {
+    return Astro.redirect("/admin/orders");
+}
+const items = JSON.parse(String(order.items_json || "[]"));
+const address = JSON.parse(String(order.shipping_address_json || "{}"));
+const shipmentRes = await db.execute({
+    sql: "SELECT id, status, carrier, tracking_no, shipped_at, delivered_at, notes FROM shipments WHERE order_no = ?",
+    args: [order.order_no],
+});
+const shipment = shipmentRes.rows[0] as any;
+const refundRes = await db.execute({
+    sql: "SELECT id, amount, status, reason FROM refunds WHERE order_no = ?",
+    args: [order.order_no],
+});
+const refund = refundRes.rows[0] as any;
+---
+
+<AdminLayout title={`Order ${order.order_no}`}>
+    <div class="grid grid-2">
+        <div class="card">
+            <strong>Pelanggan</strong>
+            <p>{order.customer_name}</p>
+            <p class="muted">{order.customer_phone}</p>
+            <p class="muted">{order.customer_email}</p>
+        </div>
+        <div class="card">
+            <strong>Status</strong>
+            <p>
+                <span
+                    class={`badge ${order.status === "processing" ? "success" : ""}`}
+                    >{order.status}</span
+                >
+                <span
+                    class={`badge ${order.payment_status === "paid" ? "success" : order.payment_status === "failed" ? "danger" : ""}`}
+                    >{order.payment_status}</span
+                >
+            </p>
+            <p class="muted">
+                Total: Rp {Number(order.total).toLocaleString("id-ID")}
+            </p>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <strong>Alamat</strong>
+        <p>{address.province} - {address.city} - {address.district}</p>
+        <p>{address.street || ""}</p>
+        <p class="muted">
+            Tanggal: {address.delivery_date || "-"} | Jam: {
+                address.delivery_time || "-"
+            }
+        </p>
+    </div>
+
+    <div class="card mt-4">
+        <strong>Item</strong>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Produk</th>
+                    <th>Qty</th>
+                    <th>Harga</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {
+                    items.map((item: any) => (
+                        <tr>
+                            <td>{item.name}</td>
+                            <td>{item.qty}</td>
+                            <td>
+                                Rp {Number(item.price).toLocaleString("id-ID")}
+                            </td>
+                            <td>
+                                Rp {Number(item.total).toLocaleString("id-ID")}
+                            </td>
+                        </tr>
+                    ))
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="grid grid-2 mt-4">
+        <div class="card">
+            <strong>Pengiriman</strong>
+            {shipment ? (
+                <>
+                    <p>Status: {shipment.status}</p>
+                    <p>Kurir: {shipment.carrier || "-"}</p>
+                    <p>Resi: {shipment.tracking_no || "-"}</p>
+                    <p class="muted">Catatan: {shipment.notes || "-"}</p>
+                </>
+            ) : (
+                <p class="muted">Belum ada data pengiriman.</p>
+            )}
+            <a class="btn-ghost" href="/admin/fulfillment">Kelola</a>
+        </div>
+        <div class="card">
+            <strong>Refund</strong>
+            {refund ? (
+                <>
+                    <p>Status: {refund.status}</p>
+                    <p>Jumlah: Rp {Number(refund.amount).toLocaleString("id-ID")}</p>
+                    <p class="muted">Alasan: {refund.reason || "-"}</p>
+                </>
+            ) : (
+                <p class="muted">Tidak ada refund.</p>
+            )}
+            <a class="btn-ghost" href="/admin/refunds">Kelola</a>
+        </div>
+    </div>
+
+    <div class="section-header mt-5">
+        <h2>Update Status</h2>
+        <span class="muted">Gunakan status konsisten</span>
+    </div>
+    <form class="form-row" id="order-status-form">
+        <input type="hidden" name="order_id" value={order.id} />
+        <div>
+            <label>Status</label>
+            <input name="status" value={order.status} />
+        </div>
+        <div>
+            <label>Payment Status</label>
+            <input name="payment_status" value={order.payment_status} />
+        </div>
+        <div>
+            <label>Catatan</label>
+            <input name="notes" />
+        </div>
+        <button class="primary" type="submit">Update Status</button>
+    </form>
+
+    <script>
+        const form = document.querySelector<HTMLFormElement>("#order-status-form");
+        const csrf = document
+            .querySelector("meta[name='csrf-token']")
+            ?.getAttribute("content") || "";
+        form?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (!form) return;
+            const data = new FormData(form);
+            const id = data.get("order_id");
+            const payload = Object.fromEntries(data.entries());
+            delete payload.order_id;
+            const res = await fetch(`/api/admin/orders/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": csrf,
+                },
+                body: JSON.stringify(payload),
+            });
+            if (res.ok) location.reload();
+            else alert(await res.text());
+        });
+    </script>
+</AdminLayout>

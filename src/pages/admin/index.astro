@@ -1,0 +1,72 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { requireAdmin } from "../../lib/auth";
+import { initDb, getDb } from "../../lib/db";
+
+await initDb(Astro);
+const admin = await requireAdmin(Astro);
+if (!admin) {
+    return Astro.redirect(
+        Number(
+            (await getDb(Astro).execute("SELECT COUNT(*) as count FROM admin_users"))
+                .rows[0]?.count || 0,
+        ) === 0
+            ? "/admin/setup"
+            : "/admin/login",
+    );
+}
+const db = getDb(Astro);
+const ordersToday = await db.execute(
+    "SELECT COUNT(*) as count FROM orders WHERE date(created_at) = date('now')",
+);
+const revenueToday = await db.execute(
+    "SELECT COALESCE(SUM(total),0) as total FROM orders WHERE date(created_at) = date('now')",
+);
+const activeCoupons = await db.execute(
+    "SELECT COUNT(*) as count FROM coupons WHERE is_active = 1",
+);
+const activeProducts = await db.execute(
+    "SELECT COUNT(*) as count FROM products WHERE is_active = 1",
+);
+const pendingShipments = await db.execute(
+    "SELECT COUNT(*) as count FROM shipments WHERE status IN ('packing','shipped')",
+);
+const pendingRefunds = await db.execute(
+    "SELECT COUNT(*) as count FROM refunds WHERE status = 'requested'",
+);
+---
+
+<AdminLayout title="Overview">
+    <div class="grid grid-2">
+        <div class="card">
+            <strong>Order Hari Ini</strong>
+            <p>{(ordersToday.rows[0] as any)?.count || 0}</p>
+        </div>
+        <div class="card">
+            <strong>Revenue Hari Ini</strong>
+            <p>
+                Rp {
+                    Number(
+                        (revenueToday.rows[0] as any)?.total || 0,
+                    ).toLocaleString("id-ID")
+                }
+            </p>
+        </div>
+        <div class="card">
+            <strong>Produk Aktif</strong>
+            <p>{(activeProducts.rows[0] as any)?.count || 0}</p>
+        </div>
+        <div class="card">
+            <strong>Pengiriman Aktif</strong>
+            <p>{(pendingShipments.rows[0] as any)?.count || 0}</p>
+        </div>
+        <div class="card">
+            <strong>Kupon Aktif</strong>
+            <p>{(activeCoupons.rows[0] as any)?.count || 0}</p>
+        </div>
+        <div class="card">
+            <strong>Refund Pending</strong>
+            <p>{(pendingRefunds.rows[0] as any)?.count || 0}</p>
+        </div>
+    </div>
+</AdminLayout>

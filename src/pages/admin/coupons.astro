@@ -1,0 +1,223 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { requireAdmin } from "../../lib/auth";
+import { initDb, getDb } from "../../lib/db";
+
+await initDb(Astro);
+const admin = await requireAdmin(Astro);
+if (!admin) {
+    return Astro.redirect("/admin/login");
+}
+const db = getDb(Astro);
+const coupons = await db.execute(
+    "SELECT id, code, type, value, min_order, max_discount, start_at, end_at, usage_limit, per_user_limit, is_active FROM coupons ORDER BY created_at DESC",
+);
+---
+
+<AdminLayout title="Kupon">
+    <div class="section-header">
+        <h2>Tambah Kupon</h2>
+        <span class="badge">Promo & diskon</span>
+    </div>
+    <form class="form-row" id="coupon-form">
+        <div>
+            <label>Kode</label>
+            <input name="code" required />
+        </div>
+        <div>
+            <label>Tipe</label>
+            <select name="type">
+                <option value="percent">Percent</option>
+                <option value="fixed">Fixed</option>
+                <option value="free_shipping">Free Shipping</option>
+            </select>
+        </div>
+        <div>
+            <label>Nilai</label>
+            <input name="value" type="number" required />
+        </div>
+        <div>
+            <label>Min Order</label>
+            <input name="min_order" type="number" />
+        </div>
+        <div>
+            <label>Max Diskon</label>
+            <input name="max_discount" type="number" />
+        </div>
+        <div>
+            <label>Mulai</label>
+            <input name="start_at" type="date" />
+        </div>
+        <div>
+            <label>Berakhir</label>
+            <input name="end_at" type="date" />
+        </div>
+        <div>
+            <label>Usage Limit</label>
+            <input name="usage_limit" type="number" />
+        </div>
+        <div>
+            <label>Limit per User</label>
+            <input name="per_user_limit" type="number" />
+        </div>
+        <div>
+            <label>Aktif</label>
+            <select name="is_active">
+                <option value="true">Ya</option>
+                <option value="false">Tidak</option>
+            </select>
+        </div>
+        <button class="primary" type="submit">Tambah Kupon</button>
+    </form>
+
+    <div class="section-header mt-6">
+        <h2>Daftar Kupon</h2>
+        <span class="muted">Klik sel untuk edit</span>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Kode</th>
+                <th>Tipe</th>
+                <th>Nilai</th>
+                <th>Min Order</th>
+                <th>Max Diskon</th>
+                <th>Mulai</th>
+                <th>Berakhir</th>
+                <th>Limit</th>
+                <th>Per User</th>
+                <th>Status</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {
+                coupons.rows.map((coupon: any) => (
+                    <tr data-id={coupon.id}>
+                        <td contenteditable="true" data-field="code">
+                            {coupon.code}
+                        </td>
+                        <td contenteditable="true" data-field="type">
+                            {coupon.type}
+                        </td>
+                        <td contenteditable="true" data-field="value">
+                            {coupon.value}
+                        </td>
+                        <td contenteditable="true" data-field="min_order">
+                            {coupon.min_order ?? ""}
+                        </td>
+                        <td contenteditable="true" data-field="max_discount">
+                            {coupon.max_discount ?? ""}
+                        </td>
+                        <td contenteditable="true" data-field="start_at">
+                            {coupon.start_at ?? ""}
+                        </td>
+                        <td contenteditable="true" data-field="end_at">
+                            {coupon.end_at ?? ""}
+                        </td>
+                        <td contenteditable="true" data-field="usage_limit">
+                            {coupon.usage_limit ?? ""}
+                        </td>
+                        <td contenteditable="true" data-field="per_user_limit">
+                            {coupon.per_user_limit ?? ""}
+                        </td>
+                        <td>
+                            <select data-field="is_active">
+                                <option
+                                    value="true"
+                                    selected={coupon.is_active}
+                                >
+                                    Aktif
+                                </option>
+                                <option
+                                    value="false"
+                                    selected={!coupon.is_active}
+                                >
+                                    Nonaktif
+                                </option>
+                            </select>
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn-ghost" data-action="save">
+                                    Simpan
+                                </button>
+                                <button class="btn-ghost" data-action="delete">
+                                    Hapus
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                ))
+            }
+        </tbody>
+    </table>
+
+    <script>
+        const form = document.querySelector<HTMLFormElement>("#coupon-form");
+        const csrf = document
+            .querySelector("meta[name='csrf-token']")
+            ?.getAttribute("content") || "";
+        form?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (!form) return;
+            const data = new FormData(form);
+            const response = await fetch("/api/admin/coupons", {
+                method: "POST",
+                headers: { "X-CSRF-Token": csrf },
+                body: data,
+            });
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert(await response.text());
+            }
+        });
+
+        document.querySelectorAll("tr[data-id]").forEach((row) => {
+            row.addEventListener("click", async (e) => {
+                const target = e.target;
+                if (!(target instanceof HTMLElement)) return;
+                const action = target.getAttribute("data-action");
+                if (!action) return;
+                const id = row.getAttribute("data-id");
+                if (!id) return;
+                if (action === "delete") {
+                    if (!confirm("Hapus kupon ini?")) return;
+                    const res = await fetch(`/api/admin/coupons/${id}`, {
+                        method: "DELETE",
+                        headers: { "X-CSRF-Token": csrf },
+                    });
+                    if (res.ok) location.reload();
+                    else alert(await res.text());
+                    return;
+                }
+                if (action === "save") {
+                    const fields: Record<string, string> = {};
+                    row.querySelectorAll("[data-field]").forEach((cell) => {
+                        const field = cell.getAttribute("data-field");
+                        if (!field) return;
+                        if (
+                            cell instanceof HTMLSelectElement ||
+                            cell instanceof HTMLInputElement
+                        ) {
+                            fields[field] = String(cell.value);
+                            return;
+                        }
+                        fields[field] = String(cell.textContent?.trim() || "");
+                    });
+                    const res = await fetch(`/api/admin/coupons/${id}`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-Token": csrf,
+                        },
+                        body: JSON.stringify(fields),
+                    });
+                    if (!res.ok) alert(await res.text());
+                    else location.reload();
+                }
+            });
+        });
+    </script>
+</AdminLayout>

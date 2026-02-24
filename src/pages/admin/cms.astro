@@ -1,0 +1,224 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { requireAdmin } from "../../lib/auth";
+import { initDb, getDb } from "../../lib/db";
+import { parsePage } from "../../lib/admin";
+
+await initDb(Astro);
+const admin = await requireAdmin(Astro);
+if (!admin) {
+    return Astro.redirect("/admin/login");
+}
+const db = getDb(Astro);
+const { page, q, offset, limit } = parsePage(Astro.url, 20);
+const where = q ? "WHERE title LIKE ? OR slug LIKE ?" : "";
+const args = q ? [`%${q}%`, `%${q}%`] : [];
+
+const pagesRes = await db.execute({
+    sql: `SELECT id, slug, title, is_active, updated_at
+          FROM cms_pages
+          ${where}
+          ORDER BY updated_at DESC
+          LIMIT ? OFFSET ?`,
+    args: [...args, limit, offset],
+});
+const countRes = await db.execute({
+    sql: `SELECT COUNT(*) as count FROM cms_pages ${where}`,
+    args,
+});
+const total = Number((countRes.rows[0] as any)?.count || 0);
+const totalPages = Math.max(1, Math.ceil(total / limit));
+---
+
+<AdminLayout title="Konten">
+    <div class="section-header">
+        <h2>Buat Halaman</h2>
+        <span class="badge">Brand Awareness</span>
+    </div>
+    <form class="form-row" id="cms-form">
+        <input type="hidden" name="page_id" />
+        <div>
+            <label>Judul</label>
+            <input name="title" required />
+        </div>
+        <div>
+            <label>Slug</label>
+            <input name="slug" placeholder="contoh: semesta-bersholawat" required />
+        </div>
+        <div>
+            <label>Konten (Markdown)</label>
+            <textarea name="content_md" rows="6" required></textarea>
+        </div>
+        <div>
+            <label>Status</label>
+            <select name="is_active">
+                <option value="true">Aktif</option>
+                <option value="false">Draft</option>
+            </select>
+        </div>
+        <div class="table-actions">
+            <button class="primary" type="submit">Simpan</button>
+            <button class="btn-ghost" type="button" id="cms-clear">Clear</button>
+        </div>
+    </form>
+
+    <div class="toolbar">
+        <strong>Daftar Halaman</strong>
+        <form method="get">
+            <input name="q" placeholder="Cari judul/slug" value={q} />
+            <button class="btn-ghost" type="submit">Cari</button>
+        </form>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Judul</th>
+                <th>Slug</th>
+                <th>Status</th>
+                <th>Update</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {pagesRes.rows.map((p: any) => (
+                <tr data-id={p.id}>
+                    <td contenteditable="true" data-field="title">{p.title}</td>
+                    <td contenteditable="true" data-field="slug">{p.slug}</td>
+                    <td contenteditable="true" data-field="is_active">{p.is_active ? "true" : "false"}</td>
+                    <td>{String(p.updated_at).split("T")[0]}</td>
+                    <td>
+                        <div class="table-actions">
+                            <a class="btn-ghost" href={`/content/${p.slug}`} target="_blank">Lihat</a>
+                            <button class="btn-ghost" data-action="edit">Edit</button>
+                            <button class="btn-ghost" data-action="save">Simpan</button>
+                            <button class="btn-ghost" data-action="delete">Hapus</button>
+                        </div>
+                    </td>
+                </tr>
+            ))}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        {page > 1 && (
+            <a href={`?q=${encodeURIComponent(q)}&page=${page - 1}`}>Prev</a>
+        )}
+        <span class="muted">Hal {page} / {totalPages}</span>
+        {page < totalPages && (
+            <a href={`?q=${encodeURIComponent(q)}&page=${page + 1}`}>Next</a>
+        )}
+    </div>
+
+    <script>
+        const form = document.querySelector("#cms-form") as HTMLFormElement | null;
+        const clearBtn = document.querySelector("#cms-clear");
+        const csrf = document
+            .querySelector("meta[name='csrf-token']")
+            ?.getAttribute("content") || "";
+
+        form?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (!form) return;
+            const data = new FormData(form);
+            const pageId = String(data.get("page_id") || "");
+            const payload = {
+                title: data.get("title"),
+                slug: data.get("slug"),
+                content_md: data.get("content_md"),
+                is_active: data.get("is_active"),
+            };
+            const res = await fetch(
+                pageId ? `/api/admin/cms-pages/${pageId}` : "/api/admin/cms-pages",
+                {
+                    method: pageId ? "PUT" : "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-Token": csrf,
+                    },
+                    body: JSON.stringify(payload),
+                },
+            );
+            if (res.ok) location.reload();
+            else alert(await res.text());
+        });
+
+        clearBtn?.addEventListener("click", () => {
+            if (!form) return;
+            (form.querySelector("input[name='page_id']") as HTMLInputElement).value = "";
+            (form.querySelector("input[name='title']") as HTMLInputElement).value = "";
+            (form.querySelector("input[name='slug']") as HTMLInputElement).value = "";
+            (form.querySelector("textarea[name='content_md']") as HTMLTextAreaElement).value = "";
+        });
+
+        document.querySelectorAll("tr[data-id]").forEach((row) => {
+            row.addEventListener("click", async (e) => {
+                const target = e.target as HTMLElement;
+                const action = target.getAttribute("data-action");
+                if (!action) return;
+                const id = row.getAttribute("data-id");
+                if (!id) return;
+                if (action === "delete") {
+                    if (!confirm("Hapus halaman ini?")) return;
+                    const res = await fetch(`/api/admin/cms-pages/${id}`, {
+                        method: "DELETE",
+                        headers: { "X-CSRF-Token": csrf },
+                    });
+                    if (res.ok) location.reload();
+                    else alert(await res.text());
+                    return;
+                }
+                if (action === "edit") {
+                    const contentRes = await fetch(`/api/admin/cms-pages/${id}`);
+                    if (!contentRes.ok) {
+                        alert(await contentRes.text());
+                        return;
+                    }
+                    const data = (await contentRes.json()) as { content_md?: string };
+                    const content = form?.querySelector(
+                        "textarea[name='content_md']",
+                    ) as HTMLTextAreaElement | null;
+                    const title = row.querySelector("[data-field='title']")?.textContent || "";
+                    const slug = row.querySelector("[data-field='slug']")?.textContent || "";
+                    const isActive = row.querySelector("[data-field='is_active']")?.textContent || "true";
+                    if (form) {
+                        (form.querySelector("input[name='page_id']") as HTMLInputElement).value = id;
+                        (form.querySelector("input[name='title']") as HTMLInputElement).value = title.trim();
+                        (form.querySelector("input[name='slug']") as HTMLInputElement).value = slug.trim();
+                        const selectEl = form.querySelector(
+                            "select[name='is_active']",
+                        ) as HTMLSelectElement | null;
+                        if (selectEl) {
+                            selectEl.value = isActive.trim() || "true";
+                        }
+                    }
+                    if (content) content.value = data.content_md || "";
+                    return;
+                }
+                if (action === "save") {
+                    const fields: Record<string, string> = {};
+                    row.querySelectorAll("[data-field]").forEach((cell) => {
+                        const field = cell.getAttribute("data-field");
+                        if (!field) return;
+                        fields[field] = String(cell.textContent?.trim() || "");
+                    });
+                    const content = form?.querySelector(
+                        "textarea[name='content_md']",
+                    ) as HTMLTextAreaElement | null;
+                    const res = await fetch(`/api/admin/cms-pages/${id}`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-Token": csrf,
+                        },
+                        body: JSON.stringify({
+                            ...fields,
+                            content_md: content?.value || "",
+                        }),
+                    });
+                    if (!res.ok) alert(await res.text());
+                }
+            });
+        });
+    </script>
+</AdminLayout>

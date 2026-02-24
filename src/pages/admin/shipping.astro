@@ -1,0 +1,362 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { requireAdmin } from "../../lib/auth";
+import { initDb, getDb } from "../../lib/db";
+
+await initDb(Astro);
+const admin = await requireAdmin(Astro);
+if (!admin) {
+    return Astro.redirect("/admin/login");
+}
+const db = getDb(Astro);
+const rules = await db.execute(
+    "SELECT id, name, type, priority, is_active, config_json FROM shipping_rules ORDER BY priority ASC",
+);
+---
+
+<AdminLayout title="Pengiriman">
+    <div class="section-header">
+        <h2>Tambah Rule</h2>
+        <span class="badge">Ongkir dinamis</span>
+    </div>
+    <form class="form-row" id="shipping-form">
+        <div>
+            <label>Nama Rule</label>
+            <input name="name" required />
+        </div>
+        <div>
+            <label>Tipe</label>
+            <select name="type">
+                <option value="flat">Flat</option>
+                <option value="free_threshold">Free Threshold</option>
+                <option value="zone">Zone</option>
+            </select>
+        </div>
+        <div>
+            <label>Prioritas</label>
+            <input name="priority" type="number" value="100" />
+        </div>
+        <div id="flat-config">
+            <label>Flat Fee (Rp)</label>
+            <input name="flat_fee" type="number" value="10000" />
+        </div>
+        <div id="threshold-config" class="hidden">
+            <label>Threshold (Rp)</label>
+            <input name="threshold_amount" type="number" value="150000" />
+            <label>Fee jika di bawah threshold (Rp)</label>
+            <input name="threshold_fee" type="number" value="10000" />
+        </div>
+        <div id="zone-config" class="hidden">
+            <label>Zone List</label>
+            <textarea
+                name="zone_list"
+                rows="5"
+                placeholder="DI Yogyakarta|Bantul|Sewon|8000
+DI Yogyakarta|Sleman||12000"
+            ></textarea>
+            <p class="muted">
+                Format: province|city|district|fee, satu baris per zona
+            </p>
+        </div>
+        <div>
+            <label>Config (preview)</label>
+            <textarea name="config_preview" rows="4" readonly></textarea>
+        </div>
+        <button class="primary" type="submit">Tambah Rule</button>
+    </form>
+
+    <div class="section-header mt-6">
+        <h2>Daftar Rule</h2>
+        <span class="muted">Klik sel untuk edit</span>
+    </div>
+    <div class="section-header mt-6">
+        <h2>Simulasi Ongkir</h2>
+        <span class="badge">Test Rule</span>
+    </div>
+    <form class="form-row" id="shipping-simulate">
+        <div>
+            <label>Subtotal (Rp)</label>
+            <input name="subtotal" type="number" value="150000" />
+        </div>
+        <div>
+            <label>Provinsi</label>
+            <input name="province" value="DI Yogyakarta" />
+        </div>
+        <div>
+            <label>Kota</label>
+            <input name="city" value="Bantul" />
+        </div>
+        <div>
+            <label>Kecamatan</label>
+            <input name="district" value="Sewon" />
+        </div>
+        <div>
+            <label>Free Shipping</label>
+            <select name="free_shipping">
+                <option value="false">Tidak</option>
+                <option value="true">Ya</option>
+            </select>
+        </div>
+        <button class="primary" type="submit">Hitung</button>
+        <div class="card hidden" id="simulate-result"></div>
+    </form>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nama</th>
+                <th>Tipe</th>
+                <th>Prioritas</th>
+                <th>Config</th>
+                <th>Status</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {
+                rules.rows.map((rule: any) => (
+                    <tr data-id={rule.id}>
+                        <td contenteditable="true" data-field="name">
+                            {rule.name}
+                        </td>
+                        <td contenteditable="true" data-field="type">
+                            {rule.type}
+                        </td>
+                        <td contenteditable="true" data-field="priority">
+                            {rule.priority}
+                        </td>
+                        <td>
+                            <textarea data-field="config" rows="3">
+                                {rule.config_json}
+                            </textarea>
+                        </td>
+                        <td>
+                            <select data-field="is_active">
+                                <option value="true" selected={rule.is_active}>
+                                    Aktif
+                                </option>
+                                <option
+                                    value="false"
+                                    selected={!rule.is_active}
+                                >
+                                    Nonaktif
+                                </option>
+                            </select>
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn-ghost" data-action="save">
+                                    Simpan
+                                </button>
+                                <button class="btn-ghost" data-action="delete">
+                                    Hapus
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                ))
+            }
+        </tbody>
+    </table>
+
+    <script>
+        const form = document.querySelector("#shipping-form") as HTMLFormElement | null;
+        const csrf = document
+            .querySelector("meta[name='csrf-token']")
+            ?.getAttribute("content") || "";
+        const typeSelect =
+            form?.querySelector("select[name='type']") as HTMLSelectElement | null;
+        const flatConfig = document.getElementById("flat-config");
+        const thresholdConfig = document.getElementById("threshold-config");
+        const zoneConfig = document.getElementById("zone-config");
+        const preview =
+            form?.querySelector("textarea[name='config_preview']") as HTMLTextAreaElement | null;
+
+        const buildConfig = () => {
+            const type = typeSelect?.value || "";
+            let config: Record<string, unknown> = {};
+            if (type === "flat") {
+                const feeInput =
+                    form?.querySelector<HTMLInputElement>("input[name='flat_fee']");
+                const fee = Number(feeInput?.value || 0);
+                config = { fee };
+            } else if (type === "free_threshold") {
+                const thresholdInput =
+                    form?.querySelector<HTMLInputElement>("input[name='threshold_amount']");
+                const feeInput =
+                    form?.querySelector<HTMLInputElement>("input[name='threshold_fee']");
+                const threshold = Number(thresholdInput?.value || 0);
+                const fee = Number(feeInput?.value || 0);
+                config = { threshold, fee };
+            } else if (type === "zone") {
+                const zoneInput =
+                    form?.querySelector<HTMLTextAreaElement>("textarea[name='zone_list']");
+                const text = zoneInput?.value || "";
+                const zones = text
+                    .split("\n")
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((line) => {
+                        const [province, city, district, fee] = line.split("|");
+                        return {
+                            province: (province || "").trim(),
+                            city: (city || "").trim(),
+                            district: (district || "").trim(),
+                            fee: Number(fee || 0),
+                        };
+                    });
+                config = { zones };
+            }
+            if (preview) preview.value = JSON.stringify(config);
+            return config;
+        };
+
+        typeSelect?.addEventListener("change", () => {
+            const type = typeSelect?.value || "";
+            if (flatConfig)
+                flatConfig.style.display = type === "flat" ? "block" : "none";
+            if (thresholdConfig)
+                thresholdConfig.style.display =
+                    type === "free_threshold" ? "block" : "none";
+            if (zoneConfig)
+                zoneConfig.style.display = type === "zone" ? "block" : "none";
+            buildConfig();
+        });
+
+        form?.addEventListener("input", (e) => {
+            if (
+                e.target instanceof HTMLInputElement ||
+                e.target instanceof HTMLTextAreaElement
+            ) {
+                buildConfig();
+            }
+        });
+
+        form?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (!form) return;
+            const formData = new FormData(form);
+            try {
+                const config = buildConfig();
+                const payload = Object.fromEntries(formData.entries()) as Record<
+                    string,
+                    string
+                >;
+                const body = { ...payload, config };
+                const response = await fetch("/api/admin/shipping-rules", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-Token": csrf,
+                    },
+                    body: JSON.stringify(body),
+                });
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert(await response.text());
+                }
+            } catch (err) {
+                alert("Config JSON tidak valid");
+            }
+        });
+
+        const simulateForm = document.querySelector(
+            "#shipping-simulate",
+        ) as HTMLFormElement | null;
+        const simulateResult = document.querySelector("#simulate-result") as HTMLElement | null;
+        simulateForm?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (!simulateForm) return;
+            const data = new FormData(simulateForm);
+            const payload = {
+                subtotal: Number(data.get("subtotal") || 0),
+                province: String(data.get("province") || ""),
+                city: String(data.get("city") || ""),
+                district: String(data.get("district") || ""),
+                free_shipping: String(data.get("free_shipping") || "false") === "true",
+            };
+            const res = await fetch("/api/admin/shipping-simulate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-Token": csrf,
+                },
+                body: JSON.stringify(payload),
+            });
+            if (!simulateResult) return;
+            if (!res.ok) {
+                simulateResult.style.display = "block";
+                simulateResult.textContent = await res.text();
+                return;
+            }
+            const result = (await res.json()) as { fee: number; rule: string };
+            simulateResult.style.display = "block";
+            simulateResult.textContent = `Rule: ${result.rule} | Ongkir: Rp ${Number(
+                result.fee,
+            ).toLocaleString("id-ID")}`;
+        });
+
+        document.querySelectorAll("tr[data-id]").forEach((row) => {
+            row.addEventListener("click", async (e) => {
+                const target = e.target;
+                if (!(target instanceof HTMLElement)) return;
+                const action = target.getAttribute("data-action");
+                if (!action) return;
+                const id = row.getAttribute("data-id");
+                if (!id) return;
+                if (action === "delete") {
+                    if (!confirm("Hapus rule ini?")) return;
+                    const res = await fetch(`/api/admin/shipping-rules/${id}`, {
+                        method: "DELETE",
+                        headers: { "X-CSRF-Token": csrf },
+                    });
+                    if (res.ok) location.reload();
+                    else alert(await res.text());
+                    return;
+                }
+                if (action === "save") {
+                    const fields: Record<string, string> = {};
+                    row.querySelectorAll("[data-field]").forEach((cell) => {
+                        const field = cell.getAttribute("data-field");
+                        if (!field) return;
+                        if (
+                            cell instanceof HTMLSelectElement ||
+                            cell instanceof HTMLInputElement ||
+                            cell instanceof HTMLTextAreaElement
+                        ) {
+                            fields[field] = String(cell.value);
+                            return;
+                        }
+                        fields[field] = String(cell.textContent?.trim() || "");
+                    });
+                    try {
+                        const payload = {
+                            name: fields.name || "",
+                            type: fields.type || "",
+                            priority: Number(fields.priority || 0),
+                            config: fields.config
+                                ? JSON.parse(fields.config)
+                                : {},
+                            is_active: fields.is_active,
+                        };
+                        const res = await fetch(
+                            `/api/admin/shipping-rules/${id}`,
+                            {
+                                method: "PUT",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRF-Token": csrf,
+                                },
+                                body: JSON.stringify(payload),
+                            },
+                        );
+                        if (!res.ok) alert(await res.text());
+                        else location.reload();
+                    } catch (err) {
+                        alert("Config JSON tidak valid");
+                    }
+                }
+            });
+        });
+    </script>
+</AdminLayout>

@@ -1,0 +1,136 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { requireAdmin } from "../../../lib/auth";
+import { initDb, getDb } from "../../../lib/db";
+
+await initDb(Astro);
+const admin = await requireAdmin(Astro);
+if (!admin) {
+    return Astro.redirect("/admin/login");
+}
+const invoiceNo = Astro.params.invoice_no;
+const db = getDb(Astro);
+const result = await db.execute({
+    sql: `SELECT i.*, o.order_no, o.customer_name, o.customer_phone, o.total, o.items_json, o.shipping_address_json
+          FROM invoices i JOIN orders o ON o.id = i.order_id
+          WHERE i.invoice_no = ?`,
+    args: [invoiceNo ?? ""],
+});
+const invoice = result.rows[0] as any;
+if (!invoice) return Astro.redirect("/admin/invoices");
+const items = JSON.parse(String(invoice.items_json || "[]"));
+const address = JSON.parse(String(invoice.shipping_address_json || "{}"));
+---
+
+<AdminLayout title={`Invoice ${invoice.invoice_no}`}>
+    <div class="grid grid-2">
+        <div class="card">
+            <strong>Order</strong>
+            <p>{invoice.order_no}</p>
+            <p class="muted">{invoice.customer_name}</p>
+            <p class="muted">{invoice.customer_phone}</p>
+        </div>
+        <div class="card">
+            <strong>Status</strong>
+            <p>
+                <span
+                    class={`badge ${invoice.status === "paid" ? "success" : invoice.status === "overdue" ? "danger" : ""}`}
+                    >{invoice.status}</span
+                >
+            </p>
+            <p class="muted">
+                Total: Rp {Number(invoice.total).toLocaleString("id-ID")}
+            </p>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <strong>Alamat</strong>
+        <p>{address.province} - {address.city} - {address.district}</p>
+        <p>{address.street || ""}</p>
+    </div>
+
+    <div class="card mt-4">
+        <strong>Item</strong>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Produk</th>
+                    <th>Qty</th>
+                    <th>Harga</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {
+                    items.map((item: any) => (
+                        <tr>
+                            <td>{item.name}</td>
+                            <td>{item.qty}</td>
+                            <td>
+                                Rp {Number(item.price).toLocaleString("id-ID")}
+                            </td>
+                            <td>
+                                Rp {Number(item.total).toLocaleString("id-ID")}
+                            </td>
+                        </tr>
+                    ))
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section-header mt-5">
+        <h2>Update Invoice</h2>
+        <a
+            class="btn-ghost"
+            href={`/api/invoices/${invoice.invoice_no}/pdf`}
+            target="_blank"
+        >
+            Download PDF
+        </a>
+        <a
+            class="btn-ghost"
+            href={`/invoice/${invoice.invoice_no}`}
+            target="_blank">Print</a
+        >
+    </div>
+    <form class="form-row" id="invoice-form" data-invoice={invoice.invoice_no}>
+        <div>
+            <label>Status</label>
+            <input name="status" value={invoice.status} />
+        </div>
+        <div>
+            <label>Due At (YYYY-MM-DD)</label>
+            <input name="due_at" value={invoice.due_at ?? ""} />
+        </div>
+        <button class="primary" type="submit">Update</button>
+    </form>
+
+    <script>
+        const form = document.querySelector<HTMLFormElement>("#invoice-form");
+        const csrf = document
+            .querySelector("meta[name='csrf-token']")
+            ?.getAttribute("content") || "";
+        form?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (!form) return;
+            const data = new FormData(form);
+            const payload = Object.fromEntries(data.entries());
+            const invoiceNo = form.getAttribute("data-invoice");
+            const res = await fetch(
+                `/api/admin/invoices/${encodeURIComponent(invoiceNo || "")}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-Token": csrf,
+                    },
+                    body: JSON.stringify(payload),
+                },
+            );
+            if (res.ok) location.reload();
+            else alert(await res.text());
+        });
+    </script>
+</AdminLayout>

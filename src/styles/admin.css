@@ -1,0 +1,243 @@
+@import url("https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --admin-bg: #f6f4ef;
+  --admin-surface: #ffffff;
+  --admin-text: #1f1b16;
+  --admin-muted: #6b625a;
+  --admin-accent: #c48a3a;
+  --admin-border: #e6dfd3;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    font-family: "Work Sans", system-ui, sans-serif;
+  }
+
+  body {
+    @apply m-0 bg-[var(--admin-bg)] text-[var(--admin-text)];
+  }
+
+  input,
+  select,
+  textarea {
+    @apply w-full rounded-[10px] border border-[var(--admin-border)] p-[10px];
+  }
+}
+
+@utility admin-shell {
+  @apply grid min-h-screen grid-cols-[240px_1fr];
+}
+
+@utility admin-sidebar {
+  @apply border-r border-[var(--admin-border)] bg-[var(--admin-surface)] p-6;
+}
+
+@utility admin-brand {
+  @apply mb-6 font-bold tracking-[0.5px];
+}
+
+@utility admin-nav {
+  @apply flex flex-col gap-2;
+}
+
+@utility admin-main {
+  @apply px-8 py-6;
+}
+
+@utility admin-topbar {
+  @apply mb-6 flex items-center justify-between;
+}
+
+@utility admin-content {
+  @apply rounded-[18px] border border-[var(--admin-border)] bg-[var(--admin-surface)] p-6;
+}
+
+@utility section-header {
+  @apply mb-4 flex items-center justify-between;
+
+  & h2 {
+    @apply m-0 text-[1.2rem];
+  }
+}
+
+@utility btn-ghost {
+  @apply cursor-pointer rounded-[10px] border border-[var(--admin-border)] bg-transparent px-[14px] py-2 transition-all duration-200;
+
+  &:hover {
+    @apply border-[var(--admin-accent)] text-[var(--admin-accent)];
+  }
+}
+
+@utility grid-2 {
+  @apply grid-cols-[repeat(auto-fit,minmax(220px,1fr))];
+}
+
+@utility card {
+  @apply rounded-[14px] border border-[var(--admin-border)] bg-[var(--admin-bg)] p-4;
+}
+
+@utility table {
+  @apply w-full border-collapse;
+
+  & th,
+  & td {
+    @apply border-b border-[var(--admin-border)] p-2.5 text-left text-[0.95rem];
+  }
+
+  & tbody tr:hover {
+    @apply bg-[rgba(196,138,58,0.06)];
+  }
+
+  & td[contenteditable="true"] {
+    @apply rounded-md bg-[#fff7eb];
+  }
+}
+
+@utility table-actions {
+  @apply flex gap-2;
+}
+
+@utility thumbs {
+  @apply mb-1.5 flex gap-1.5;
+
+  & img {
+    @apply h-9 w-9 rounded-md border border-[var(--admin-border)] object-cover;
+  }
+}
+
+@utility thumbs-grid {
+  @apply flex flex-wrap gap-2;
+}
+
+@utility dropzone {
+  @apply min-h-[54px] rounded-[10px] border border-dashed border-[var(--admin-border)] p-2.5 text-[0.85rem] text-[var(--admin-muted)];
+}
+
+@utility thumb-item {
+  @apply relative h-16 w-16 overflow-hidden rounded-lg border border-[var(--admin-border)];
+
+  & img {
+    @apply h-full w-full object-cover;
+  }
+}
+
+@utility thumb-actions {
+  @apply absolute inset-x-0 bottom-0 flex justify-between gap-1 bg-[rgba(0,0,0,0.45)] px-1 py-[2px];
+
+  & button {
+    @apply cursor-pointer border-none bg-transparent text-[0.7rem] text-white;
+  }
+}
+
+.thumbnail-gallery[data-has="false"] {
+  @apply hidden;
+}
+
+.thumb-actions {
+  @apply hidden;
+}
+
+.thumb-item:hover .thumb-actions {
+  @apply flex;
+}
+
+.thumb-actions button:hover {
+  @apply text-[var(--admin-accent)];
+}
+
+@utility mini-textarea {
+  @apply min-h-[42px] w-full resize-y;
+}
+
+@utility upload-zone {
+  @apply cursor-pointer rounded-[14px] border border-dashed border-[var(--admin-border)] bg-[#fffaf0] p-4;
+}
+
+@utility upload-placeholder {
+  @apply text-center;
+}
+
+@utility thumbnail-gallery {
+  @apply mt-2.5 flex flex-wrap gap-2;
+}
+
+@utility form-row {
+  @apply mb-3 grid gap-3;
+}
+
+@utility badge {
+  @apply inline-flex items-center rounded-full bg-[rgba(196,138,58,0.15)] px-2.5 py-1 text-[0.75rem] font-semibold text-[var(--admin-text)];
+}
+
+@utility muted {
+  @apply text-[0.9rem] text-[var(--admin-muted)];
+}
+
+@utility toolbar {
+  @apply mb-4 flex flex-wrap items-center justify-between gap-3;
+
+  & form {
+    @apply flex flex-wrap items-center gap-2;
+  }
+}
+
+@utility pagination {
+  @apply flex items-center gap-2;
+}
+
+@utility primary-button {
+  @apply cursor-pointer rounded-[10px] border-none bg-[var(--admin-accent)] px-4 py-2.5 text-white;
+}
+
+button.primary {
+  @apply primary-button;
+}
+
+.admin-nav a {
+  @apply rounded-[10px] px-3 py-2.5 no-underline text-[var(--admin-text)];
+}
+
+.admin-nav a:hover {
+  @apply bg-[rgba(196,138,58,0.12)];
+}
+
+.admin-nav a.active {
+  @apply bg-[rgba(196,138,58,0.18)] font-semibold;
+}
+
+.dropzone.drag {
+  @apply border-[var(--admin-accent)] bg-[rgba(196,138,58,0.08)] text-[var(--admin-text)];
+}
+
+.thumbs-grid.dropzone[data-has="true"] {
+  @apply p-2 text-transparent;
+}
+
+.upload-zone.dragging {
+  @apply border-[var(--admin-accent)] bg-[rgba(196,138,58,0.08)];
+}
+
+.badge.success {
+  @apply bg-[rgba(70,160,120,0.2)];
+}
+
+.badge.danger {
+  @apply bg-[rgba(200,70,70,0.18)];
+}
+
+@media (max-width: 1024px) {
+  .admin-shell {
+    @apply grid-cols-1;
+  }
+
+  .admin-sidebar {
+    @apply border-r-0 border-b;
+  }
+
+  .admin-main {
+    @apply p-4;
+  }
+}

@@ -1,0 +1,203 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { requireAdmin } from "../../lib/auth";
+import { initDb, getDb } from "../../lib/db";
+
+await initDb(Astro);
+const admin = await requireAdmin(Astro);
+if (!admin) {
+    return Astro.redirect("/admin/login");
+}
+const db = getDb(Astro);
+const ordersRes = await db.execute(
+    "SELECT order_no, total, discount_total, items_json, payment_status, customer_phone, created_at FROM orders WHERE date(created_at) >= date('now','-30 day')",
+);
+const orders90Res = await db.execute(
+    "SELECT customer_phone, total, payment_status, created_at FROM orders WHERE date(created_at) >= date('now','-90 day')",
+);
+const refundsRes = await db.execute(
+    "SELECT amount FROM refunds WHERE status = 'approved' AND date(created_at) >= date('now','-30 day')",
+);
+const productsRes = await db.execute(
+    "SELECT id, cost, name FROM products",
+);
+const productCost: Record<string, { cost: number; name: string }> = {};
+for (const row of productsRes.rows as any[]) {
+    productCost[String(row.id)] = {
+        cost: Number(row.cost || 0),
+        name: String(row.name || ""),
+    };
+}
+
+let totalOrders = 0;
+let paidOrders = 0;
+let revenue = 0;
+let discountTotal = 0;
+let cogs = 0;
+const productQty: Record<string, number> = {};
+
+for (const order of ordersRes.rows as any[]) {
+    totalOrders += 1;
+    revenue += Number(order.total || 0);
+    discountTotal += Number(order.discount_total || 0);
+    if (order.payment_status === "paid") paidOrders += 1;
+    try {
+        const items = JSON.parse(String(order.items_json || "[]"));
+        if (Array.isArray(items)) {
+            for (const item of items) {
+                const pid = String(item.product_id || "");
+                const qty = Number(item.qty || 0);
+                const cost = productCost[pid]?.cost || 0;
+                cogs += cost * qty;
+                productQty[pid] = (productQty[pid] || 0) + qty;
+            }
+        }
+    } catch {
+        // ignore parse errors
+    }
+}
+const refundTotal = refundsRes.rows.reduce(
+    (sum: number, row: any) => sum + Number(row.amount || 0),
+    0,
+);
+const grossProfit = revenue - cogs - refundTotal;
+
+// LTV sederhana: revenue paid / unique customers (90 hari)
+const paidOrders90 = orders90Res.rows.filter(
+    (row: any) => row.payment_status === "paid",
+);
+const uniqueCustomers = new Set(
+    paidOrders90.map((row: any) => String(row.customer_phone || "")),
+);
+const revenue90 = paidOrders90.reduce(
+    (sum: number, row: any) => sum + Number(row.total || 0),
+    0,
+);
+const ltv = uniqueCustomers.size
+    ? Math.round(revenue90 / uniqueCustomers.size)
+    : 0;
+
+// Cohort sederhana: jumlah customer baru per bulan (30 hari)
+const cohortMap: Record<string, Set<string>> = {};
+for (const row of ordersRes.rows as any[]) {
+    const phone = String(row.customer_phone || "");
+    const month = String(row.created_at).slice(0, 7);
+    if (!cohortMap[month]) cohortMap[month] = new Set();
+    cohortMap[month].add(phone);
+}
+const cohorts = Object.entries(cohortMap)
+    .map(([month, set]) => ({ month, count: set.size }))
+    .sort((a, b) => (a.month < b.month ? -1 : 1));
+
+// ROAS sederhana: revenue 30 hari / spend campaign aktif
+const adsRes = await db.execute(
+    "SELECT spend FROM ads_campaigns WHERE status IN ('active','completed')",
+);
+const totalSpend = adsRes.rows.reduce(
+    (sum: number, row: any) => sum + Number(row.spend || 0),
+    0,
+);
+const roas = totalSpend > 0 ? (revenue / totalSpend).toFixed(2) : "-";
+
+const topProducts = Object.entries(productQty)
+    .map(([id, qty]) => ({
+        id,
+        qty,
+        name: productCost[id]?.name || id,
+    }))
+    .sort((a, b) => b.qty - a.qty)
+    .slice(0, 5);
+---
+
+<AdminLayout title="Laporan">
+    <div class="section-header">
+        <h2>Ringkasan 30 Hari</h2>
+        <span class="badge">Keuangan</span>
+    </div>
+    <div class="grid grid-2">
+        <div class="card">
+            <strong>Total Order</strong>
+            <p>{totalOrders}</p>
+        </div>
+        <div class="card">
+            <strong>Order Paid</strong>
+            <p>{paidOrders}</p>
+        </div>
+        <div class="card">
+            <strong>Revenue</strong>
+            <p>Rp {revenue.toLocaleString("id-ID")}</p>
+        </div>
+        <div class="card">
+            <strong>Diskon</strong>
+            <p>Rp {discountTotal.toLocaleString("id-ID")}</p>
+        </div>
+        <div class="card">
+            <strong>COGS (estimasi)</strong>
+            <p>Rp {cogs.toLocaleString("id-ID")}</p>
+        </div>
+        <div class="card">
+            <strong>Refund</strong>
+            <p>Rp {refundTotal.toLocaleString("id-ID")}</p>
+        </div>
+        <div class="card">
+            <strong>Gross Profit</strong>
+            <p>Rp {grossProfit.toLocaleString("id-ID")}</p>
+        </div>
+    </div>
+
+    <div class="section-header mt-6">
+        <h2>Top Produk</h2>
+        <span class="muted">Berdasarkan qty terjual</span>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Produk</th>
+                <th>Qty</th>
+            </tr>
+        </thead>
+        <tbody>
+            {topProducts.map((item) => (
+                <tr>
+                    <td>{item.name}</td>
+                    <td>{item.qty}</td>
+                </tr>
+            ))}
+        </tbody>
+    </table>
+
+    <div class="section-header mt-6">
+        <h2>Analitik Dasar</h2>
+        <span class="badge">LTV • Cohort • ROAS</span>
+    </div>
+    <div class="grid grid-2">
+        <div class="card">
+            <strong>LTV (90 hari)</strong>
+            <p>Rp {ltv.toLocaleString("id-ID")}</p>
+        </div>
+        <div class="card">
+            <strong>ROAS (30 hari)</strong>
+            <p>{roas}</p>
+        </div>
+    </div>
+    <div class="section-header mt-4">
+        <h2>Cohort (customer baru/bulan)</h2>
+        <span class="muted">30 hari terakhir</span>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Bulan</th>
+                <th>Customer Baru</th>
+            </tr>
+        </thead>
+        <tbody>
+            {cohorts.map((c) => (
+                <tr>
+                    <td>{c.month}</td>
+                    <td>{c.count}</td>
+                </tr>
+            ))}
+        </tbody>
+    </table>
+</AdminLayout>

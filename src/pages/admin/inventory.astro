@@ -1,0 +1,159 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { requireAdmin } from "../../lib/auth";
+import { initDb, getDb } from "../../lib/db";
+import { parsePage } from "../../lib/admin";
+
+await initDb(Astro);
+const admin = await requireAdmin(Astro);
+if (!admin) {
+    return Astro.redirect("/admin/login");
+}
+const db = getDb(Astro);
+const { page, q, offset, limit } = parsePage(Astro.url, 20);
+
+const where = q ? "WHERE name LIKE ? OR sku LIKE ?" : "";
+const args = q ? [`%${q}%`, `%${q}%`] : [];
+const productsRes = await db.execute({
+    sql: `SELECT id, name, sku, stock, price FROM products ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+    args: [...args, limit, offset],
+});
+const countRes = await db.execute({
+    sql: `SELECT COUNT(*) as count FROM products ${where}`,
+    args,
+});
+const total = Number((countRes.rows[0] as any)?.count || 0);
+const totalPages = Math.max(1, Math.ceil(total / limit));
+
+const movementsRes = await db.execute(
+    `SELECT m.id, m.type, m.qty, m.notes, m.ref_order_no, m.created_at, p.name as product_name
+     FROM inventory_movements m
+     LEFT JOIN products p ON p.id = m.product_id
+     ORDER BY m.created_at DESC
+     LIMIT 30`,
+);
+---
+
+<AdminLayout title="Inventory">
+    <div class="section-header">
+        <h2>Tambah Mutasi Stok</h2>
+        <span class="badge">Restock & Penyesuaian</span>
+    </div>
+    <form class="form-row" id="inventory-form">
+        <div>
+            <label>Produk</label>
+            <select name="product_id" required>
+                {productsRes.rows.map((p: any) => (
+                    <option value={p.id}>{p.name}</option>
+                ))}
+            </select>
+        </div>
+        <div>
+            <label>Tipe</label>
+            <select name="type">
+                <option value="in">Stock In</option>
+                <option value="out">Stock Out</option>
+                <option value="adjustment">Adjustment</option>
+            </select>
+        </div>
+        <div>
+            <label>Qty</label>
+            <input name="qty" type="number" required />
+        </div>
+        <div>
+            <label>Catatan</label>
+            <input name="notes" placeholder="Opsional" />
+        </div>
+        <button class="primary" type="submit">Simpan</button>
+    </form>
+
+    <div class="toolbar">
+        <strong>Stok Produk</strong>
+        <form method="get">
+            <input name="q" placeholder="Cari nama / SKU" value={q} />
+            <button class="btn-ghost" type="submit">Cari</button>
+            <a class="btn-ghost" href="/api/admin/export?entity=products">Export Produk</a>
+            <a class="btn-ghost" href="/api/admin/export?entity=inventory">Export Mutasi</a>
+        </form>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Produk</th>
+                <th>SKU</th>
+                <th>Stok</th>
+                <th>Harga</th>
+            </tr>
+        </thead>
+        <tbody>
+            {productsRes.rows.map((p: any) => (
+                <tr>
+                    <td>{p.name}</td>
+                    <td>{p.sku || "-"}</td>
+                    <td>{p.stock ?? "-"}</td>
+                    <td>Rp {Number(p.price).toLocaleString("id-ID")}</td>
+                </tr>
+            ))}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        {page > 1 && (
+            <a href={`?q=${encodeURIComponent(q)}&page=${page - 1}`}>Prev</a>
+        )}
+        <span class="muted">Hal {page} / {totalPages}</span>
+        {page < totalPages && (
+            <a href={`?q=${encodeURIComponent(q)}&page=${page + 1}`}>Next</a>
+        )}
+    </div>
+
+    <div class="section-header mt-6">
+        <h2>Mutasi Terakhir</h2>
+        <span class="muted">30 entri terakhir</span>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Produk</th>
+                <th>Tipe</th>
+                <th>Qty</th>
+                <th>Order Ref</th>
+                <th>Catatan</th>
+                <th>Tanggal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {movementsRes.rows.map((m: any) => (
+                <tr>
+                    <td>{m.product_name || "-"}</td>
+                    <td>{m.type}</td>
+                    <td>{m.qty}</td>
+                    <td>{m.ref_order_no || "-"}</td>
+                    <td>{m.notes || "-"}</td>
+                    <td>{String(m.created_at).split("T")[0]}</td>
+                </tr>
+            ))}
+        </tbody>
+    </table>
+
+    <script>
+        const form = document.querySelector("#inventory-form") as HTMLFormElement | null;
+        const csrf = document
+            .querySelector("meta[name='csrf-token']")
+            ?.getAttribute("content") || "";
+
+        form?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            if (!form) return;
+            const data = new FormData(form);
+            const res = await fetch("/api/admin/inventory-movements", {
+                method: "POST",
+                headers: { "X-CSRF-Token": csrf },
+                body: data,
+            });
+            if (res.ok) location.reload();
+            else alert(await res.text());
+        });
+    </script>
+</AdminLayout>
