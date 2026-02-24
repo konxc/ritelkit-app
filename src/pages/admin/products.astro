@@ -1,5 +1,11 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
+import SectionHeader from "../../components/admin/SectionHeader.svelte";
+import AdminDataTable from "../../components/admin/AdminDataTable.svelte";
+import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
+import RowActions from "../../components/admin/RowActions.svelte";
+import ActionGroup from "../../components/admin/ActionGroup.svelte";
+import CrudInlineForm from "../../components/admin/CrudInlineForm.svelte";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 
@@ -21,11 +27,8 @@ const categoriesRes = await db.execute(
 ---
 
 <AdminLayout title="Produk">
-    <div class="section-header">
-        <h2>Tambah Produk</h2>
-        <span class="badge">E-commerce Ready</span>
-    </div>
-    <form class="form-row" id="product-form">
+    <SectionHeader title="Tambah Produk" badge="E-commerce Ready" />
+    <CrudInlineForm id="product-form">
         <div class="grid grid-2">
             <div>
                 <label>Nama Produk</label>
@@ -96,19 +99,17 @@ const categoriesRes = await db.execute(
         <button class="primary mt-5" type="submit" id="submit-btn"
             >Tambah Produk</button
         >
-    </form>
+    </CrudInlineForm>
 
-    <div class="section-header mt-10">
-        <h2>Daftar Produk</h2>
-        <span class="muted">Klik sel untuk edit</span>
+    <div class="mt-10">
+        <SectionHeader title="Daftar Produk" muted="Klik sel untuk edit" />
     </div>
-    <div class="toolbar">
-        <strong>Produk</strong>
-        <div class="table-actions">
+    <AdminToolbar title="Produk">
+        <ActionGroup>
             <a class="btn-ghost" href="/api/admin/export?entity=products">Export CSV</a>
-        </div>
-    </div>
-    <table class="table">
+        </ActionGroup>
+    </AdminToolbar>
+    <AdminDataTable>
         <thead>
             <tr>
                 <th>Foto</th>
@@ -179,29 +180,24 @@ const categoriesRes = await db.execute(
                                 </select>
                             </td>
                             <td>
-                                <div class="table-actions">
-                                    <button
-                                        class="btn-ghost"
-                                        data-action="save"
-                                    >
-                                        Simpan
-                                    </button>
-                                    <button
-                                        class="btn-ghost"
-                                        data-action="delete"
-                                    >
-                                        Hapus
-                                    </button>
-                                </div>
+                                <RowActions />
                             </td>
                         </tr>
                     );
                 })
             }
         </tbody>
-    </table>
+    </AdminDataTable>
 
     <script>
+        import { bindCrudTable, getCsrfToken } from "../../lib/admin-client";
+        import {
+            attachDrop,
+            parseUrls,
+            renderGallery,
+            uploadFiles,
+        } from "../../lib/admin-product-client";
+
         const form = document.querySelector("#product-form") as HTMLFormElement | null;
         const uploadZone = document.querySelector("#upload-zone") as HTMLElement | null;
         const fileInput = document.querySelector("#file-input") as HTMLInputElement | null;
@@ -210,145 +206,7 @@ const categoriesRes = await db.execute(
         const activeSelect = document.querySelector("#new-is-active") as HTMLSelectElement | null;
         const submitBtn = document.querySelector("#submit-btn") as HTMLButtonElement | null;
         const statusEl = document.querySelector("#upload-status") as HTMLElement | null;
-        const csrf = document
-            .querySelector("meta[name='csrf-token']")
-            ?.getAttribute("content") || "";
-
-        const parseUrls = (val = "") =>
-            val
-                .split(",")
-                .map((u) => u.trim())
-                .filter(Boolean);
-
-        const resizeImage = async (file: File): Promise<Blob> => {
-            const img = await createImageBitmap(file);
-            const maxSize = 1200;
-            const scale = Math.min(
-                1,
-                maxSize / Math.max(img.width, img.height),
-            );
-            const width = Math.round(img.width * scale);
-            const height = Math.round(img.height * scale);
-            const canvas = document.createElement("canvas");
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext("2d");
-            if (!ctx) return file;
-            ctx.drawImage(img, 0, 0, width, height);
-            return await new Promise((resolve) => {
-                canvas.toBlob(
-                    (blob) => resolve(blob || file),
-                    "image/webp",
-                    0.85,
-                );
-            });
-        };
-
-        const uploadFiles = async (
-            files: FileList | File[],
-            onProgress?: (curr: number, total: number) => void,
-        ): Promise<string[]> => {
-            const urls: string[] = [];
-            for (let i = 0; i < files.length; i += 1) {
-                onProgress?.(i, files.length);
-                const resized = await resizeImage(files[i]);
-                const formData = new FormData();
-                formData.append("file", resized, files[i].name);
-                const res = await fetch("/api/admin/upload-image", {
-                    method: "POST",
-                    headers: { "X-CSRF-Token": csrf },
-                    body: formData,
-                });
-                if (!res.ok) {
-                    throw new Error(await res.text());
-                }
-                const data = (await res.json()) as { url?: string };
-                if (!data.url) {
-                    throw new Error("Response upload tidak valid");
-                }
-                urls.push(data.url);
-            }
-            onProgress?.(files.length, files.length);
-            return urls;
-        };
-
-        const renderGallery = (
-            container: HTMLElement,
-            urls: string[],
-            onChange: (next: string[]) => void,
-        ) => {
-            container.innerHTML = "";
-            container.setAttribute("data-has", urls.length ? "true" : "false");
-            urls.forEach((url, index) => {
-                const item = document.createElement("div");
-                item.className = "thumb-item";
-                item.draggable = true;
-                item.dataset.index = String(index);
-
-                const img = document.createElement("img");
-                img.src = url;
-                img.alt = "preview";
-
-                const actions = document.createElement("div");
-                actions.className = "thumb-actions";
-
-                const leftBtn = document.createElement("button");
-                leftBtn.type = "button";
-                leftBtn.textContent = "◀";
-                leftBtn.onclick = () => {
-                    if (index === 0) return;
-                    const next = [...urls];
-                    [next[index - 1], next[index]] = [
-                        next[index],
-                        next[index - 1],
-                    ];
-                    onChange(next);
-                };
-
-                const rightBtn = document.createElement("button");
-                rightBtn.type = "button";
-                rightBtn.textContent = "▶";
-                rightBtn.onclick = () => {
-                    if (index === urls.length - 1) return;
-                    const next = [...urls];
-                    [next[index + 1], next[index]] = [
-                        next[index],
-                        next[index + 1],
-                    ];
-                    onChange(next);
-                };
-
-                const delBtn = document.createElement("button");
-                delBtn.type = "button";
-                delBtn.textContent = "✕";
-                delBtn.onclick = () => {
-                    const next = urls.filter((_, i) => i !== index);
-                    onChange(next);
-                };
-
-                actions.appendChild(leftBtn);
-                actions.appendChild(rightBtn);
-                actions.appendChild(delBtn);
-                item.appendChild(img);
-                item.appendChild(actions);
-                container.appendChild(item);
-
-                item.addEventListener("dragstart", (e) => {
-                    e.dataTransfer?.setData("text/plain", String(index));
-                });
-                item.addEventListener("dragover", (e) => e.preventDefault());
-                item.addEventListener("drop", (e) => {
-                    e.preventDefault();
-                    const from = Number(e.dataTransfer?.getData("text/plain"));
-                    const to = index;
-                    if (Number.isNaN(from) || from === to) return;
-                    const next = [...urls];
-                    const [moved] = next.splice(from, 1);
-                    next.splice(to, 0, moved);
-                    onChange(next);
-                });
-            });
-        };
+        const csrf = getCsrfToken();
 
         const validateProductForm = () => {
             if (!submitBtn || !activeSelect || !urlInput) return;
@@ -373,31 +231,10 @@ const categoriesRes = await db.execute(
             validateProductForm();
         };
 
-        const attachDrop = (
-            el: HTMLElement | null,
-            onFiles: (files: FileList) => Promise<void>,
-        ) => {
-            if (!el) return;
-            el.addEventListener("dragover", (e) => {
-                e.preventDefault();
-                el.classList.add("dragging");
-            });
-            el.addEventListener("dragleave", () =>
-                el.classList.remove("dragging"),
-            );
-            el.addEventListener("drop", async (e) => {
-                e.preventDefault();
-                el.classList.remove("dragging");
-                const files = e.dataTransfer?.files;
-                if (!files || !files.length) return;
-                await onFiles(files);
-            });
-        };
-
         uploadZone?.addEventListener("click", () => fileInput?.click());
         attachDrop(uploadZone, async (files) => {
             if (statusEl) statusEl.textContent = "Uploading... (0%)";
-            const urls = await uploadFiles(files, (done: number, total: number) => {
+            const urls = await uploadFiles(files, csrf, (done: number, total: number) => {
                 if (statusEl)
                     statusEl.textContent = `Uploading... (${Math.round((done / total) * 100)}%)`;
             });
@@ -412,7 +249,7 @@ const categoriesRes = await db.execute(
         fileInput?.addEventListener("change", async () => {
             if (!fileInput?.files?.length) return;
             if (statusEl) statusEl.textContent = "Uploading... (0%)";
-            const urls = await uploadFiles(fileInput.files, (done: number, total: number) => {
+            const urls = await uploadFiles(fileInput.files, csrf, (done: number, total: number) => {
                 if (statusEl)
                     statusEl.textContent = `Uploading... (${Math.round((done / total) * 100)}%)`;
             });
@@ -454,7 +291,7 @@ const categoriesRes = await db.execute(
             renderGallery(container, initial, update);
             attachDrop(container, async (files) => {
                 if (statusEl) statusEl.textContent = "Uploading... (0%)";
-                const urls = await uploadFiles(files, (done: number, total: number) => {
+                const urls = await uploadFiles(files, csrf, (done: number, total: number) => {
                     if (statusEl)
                         statusEl.textContent = `Uploading... (${Math.round((done / total) * 100)}%)`;
                 });
@@ -467,59 +304,22 @@ const categoriesRes = await db.execute(
             });
         });
 
-        document.querySelectorAll("tr[data-id]").forEach((row) => {
-            row.addEventListener("click", async (e) => {
-                const target = e.target;
-                if (!(target instanceof HTMLElement)) return;
-                const action = target.getAttribute("data-action");
-                if (!action) return;
-                const id = row.getAttribute("data-id");
-                if (!id) return;
-
-                if (action === "delete") {
-                    if (!confirm("Hapus produk ini?")) return;
-                    const res = await fetch(`/api/admin/products/${id}`, {
-                        method: "DELETE",
-                        headers: { "X-CSRF-Token": csrf },
-                    });
-                    if (res.ok) location.reload();
-                    else alert(await res.text());
-                    return;
-                }
-
-                if (action === "save") {
-                    const fields: Record<string, unknown> = {};
-                    row.querySelectorAll("[data-field]").forEach((cell) => {
-                        const field = cell.getAttribute("data-field");
-                        if (!field) return;
-                        if (
-                            cell instanceof HTMLSelectElement ||
-                            cell instanceof HTMLInputElement
-                        ) {
-                            fields[field] = cell.value;
-                            return;
-                        }
-                        if (field === "images_json") {
-                            fields[field] = JSON.parse(
-                                cell.getAttribute("data-value") || "[]",
-                            );
-                            return;
-                        }
-                        fields[field] = cell.textContent?.trim() || "";
-                    });
-
-                    const res = await fetch(`/api/admin/products/${id}`, {
-                        method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-Token": csrf,
-                        },
-                        body: JSON.stringify(fields),
-                    });
-                    if (!res.ok) alert(await res.text());
-                    else location.reload();
-                }
-            });
+        bindCrudTable({
+            basePath: "/api/admin/products",
+            deleteConfirm: "Hapus produk ini?",
+            reloadOnSave: true,
+            mapFields: (fields, row) => {
+                const payload: Record<string, unknown> = {};
+                Object.entries(fields).forEach(([key, value]) => {
+                    if (key === "images_json") return;
+                    payload[key] = value;
+                });
+                const imageField = row.querySelector("[data-field='images_json']");
+                payload.images_json = JSON.parse(
+                    imageField?.getAttribute("data-value") || "[]",
+                );
+                return payload;
+            },
         });
 
         validateProductForm();
