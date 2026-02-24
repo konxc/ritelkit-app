@@ -110,86 +110,8 @@ const totalPages = Math.max(1, Math.ceil(total / limit));
     />
 
     <script>
-        import { bindCrudTable, getCsrfToken } from "../../lib/admin-client";
+        import { initCmsPageAdmin } from "../../lib/admin-cms-client";
 
-        const form = document.querySelector("#cms-form") as HTMLFormElement | null;
-        const clearBtn = document.querySelector("#cms-clear");
-        const csrf = getCsrfToken();
-
-        form?.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            if (!form) return;
-            const data = new FormData(form);
-            const pageId = String(data.get("page_id") || "");
-            const payload = {
-                title: data.get("title"),
-                slug: data.get("slug"),
-                content_md: data.get("content_md"),
-                is_active: data.get("is_active"),
-            };
-            const res = await fetch(
-                pageId ? `/api/admin/cms-pages/${pageId}` : "/api/admin/cms-pages",
-                {
-                    method: pageId ? "PUT" : "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-Token": csrf,
-                    },
-                    body: JSON.stringify(payload),
-                },
-            );
-            if (res.ok) location.reload();
-            else alert(await res.text());
-        });
-
-        clearBtn?.addEventListener("click", () => {
-            if (!form) return;
-            (form.querySelector("input[name='page_id']") as HTMLInputElement).value = "";
-            (form.querySelector("input[name='title']") as HTMLInputElement).value = "";
-            (form.querySelector("input[name='slug']") as HTMLInputElement).value = "";
-            (form.querySelector("textarea[name='content_md']") as HTMLTextAreaElement).value = "";
-        });
-
-        bindCrudTable({
-            basePath: "/api/admin/cms-pages",
-            deleteConfirm: "Hapus halaman ini?",
-            extraActions: {
-                edit: async ({ id, row }) => {
-                    const contentRes = await fetch(`/api/admin/cms-pages/${id}`);
-                    if (!contentRes.ok) {
-                        alert(await contentRes.text());
-                        return;
-                    }
-                    const data = (await contentRes.json()) as { content_md?: string };
-                    const content = form?.querySelector(
-                        "textarea[name='content_md']",
-                    ) as HTMLTextAreaElement | null;
-                    const title = row.querySelector("[data-field='title']")?.textContent || "";
-                    const slug = row.querySelector("[data-field='slug']")?.textContent || "";
-                    const isActive = row.querySelector("[data-field='is_active']")?.textContent || "true";
-                    if (form) {
-                        (form.querySelector("input[name='page_id']") as HTMLInputElement).value = id;
-                        (form.querySelector("input[name='title']") as HTMLInputElement).value = title.trim();
-                        (form.querySelector("input[name='slug']") as HTMLInputElement).value = slug.trim();
-                        const selectEl = form.querySelector(
-                            "select[name='is_active']",
-                        ) as HTMLSelectElement | null;
-                        if (selectEl) {
-                            selectEl.value = isActive.trim() || "true";
-                        }
-                    }
-                    if (content) content.value = data.content_md || "";
-                },
-            },
-            mapFields: (fields) => {
-                const content = form?.querySelector(
-                    "textarea[name='content_md']",
-                ) as HTMLTextAreaElement | null;
-                return {
-                    ...fields,
-                    content_md: content?.value || "",
-                };
-            },
-        });
+        initCmsPageAdmin();
     </script>
 </AdminLayout>
