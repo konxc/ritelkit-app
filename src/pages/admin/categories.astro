@@ -1,9 +1,6 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import SectionHeader from "../../components/admin/SectionHeader.svelte";
-import AdminDataTable from "../../components/admin/AdminDataTable.svelte";
-import CrudInlineForm from "../../components/admin/CrudInlineForm.svelte";
-import RowActions from "../../components/admin/RowActions.svelte";
+import CategoriesManager from "../../components/admin/pages/CategoriesManager.svelte";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 
@@ -19,87 +16,5 @@ const categories = await db.execute(
 ---
 
 <AdminLayout title="Kategori">
-    <SectionHeader title="Tambah Kategori" badge="Kelola menu" />
-    <CrudInlineForm id="category-form">
-        <div>
-            <label>Nama Kategori</label>
-            <input name="name" required />
-        </div>
-        <div>
-            <label>Slug</label>
-            <input name="slug" placeholder="opsional" />
-        </div>
-        <div>
-            <label>Urutan</label>
-            <input name="sort_order" type="number" value="0" />
-        </div>
-        <div>
-            <label>Aktif</label>
-            <select name="is_active">
-                <option value="true">Ya</option>
-                <option value="false">Tidak</option>
-            </select>
-        </div>
-        <button class="primary" type="submit">Tambah Kategori</button>
-    </CrudInlineForm>
-
-    <div class="mt-6">
-        <SectionHeader title="Daftar Kategori" muted="Klik sel untuk edit" />
-    </div>
-    <AdminDataTable>
-        <thead>
-            <tr>
-                <th>Nama</th>
-                <th>Slug</th>
-                <th>Urutan</th>
-                <th>Status</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            {
-                categories.rows.map((cat: any) => (
-                    <tr data-id={cat.id}>
-                        <td contenteditable="true" data-field="name">
-                            {cat.name}
-                        </td>
-                        <td contenteditable="true" data-field="slug">
-                            {cat.slug}
-                        </td>
-                        <td contenteditable="true" data-field="sort_order">
-                            {cat.sort_order}
-                        </td>
-                        <td>
-                            <select data-field="is_active">
-                                <option value="true" selected={cat.is_active}>
-                                    Aktif
-                                </option>
-                                <option value="false" selected={!cat.is_active}>
-                                    Nonaktif
-                                </option>
-                            </select>
-                        </td>
-                        <td>
-                            <RowActions />
-                        </td>
-                    </tr>
-                ))
-            }
-        </tbody>
-    </AdminDataTable>
-
-    <script>
-        import { bindCreateForm, bindCrudTable } from "../../lib/admin-client";
-
-        bindCreateForm({
-            formSelector: "#category-form",
-            endpoint: "/api/admin/categories",
-        });
-
-        bindCrudTable({
-            basePath: "/api/admin/categories",
-            deleteConfirm: "Hapus kategori ini?",
-            reloadOnSave: true,
-        });
-    </script>
+    <CategoriesManager rows={categories.rows as any[]} client:load />
 </AdminLayout>
