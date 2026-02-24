@@ -1,7 +1,9 @@
 <script lang="ts">
-  let { className = "" }: { className?: string } = $props();
+  import type { Snippet } from 'svelte';
+
+  let { className = "", children }: { className?: string, children?: Snippet } = $props();
 </script>
 
 <div class={`table-actions ${className}`.trim()}>
-  <slot />
+  {@render children?.()}
 </div>

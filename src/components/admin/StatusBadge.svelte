@@ -7,8 +7,9 @@
     tone?: "default" | "success" | "danger";
   } = $props();
 
-  const toneClass =
-    tone === "success" ? "success" : tone === "danger" ? "danger" : "";
+  let toneClass = $derived(
+    tone === "success" ? "success" : tone === "danger" ? "danger" : "",
+  );
 </script>
 
 <span class={`badge ${toneClass}`.trim()}>{label}</span>
