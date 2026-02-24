@@ -1,12 +1,9 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import SectionHeader from "../../components/admin/SectionHeader.svelte";
 import PaginationNav from "../../components/admin/PaginationNav.svelte";
-import AdminDataTable from "../../components/admin/AdminDataTable.svelte";
 import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
-import RowActions from "../../components/admin/RowActions.svelte";
 import AdminFilterForm from "../../components/admin/AdminFilterForm.svelte";
-import CrudInlineForm from "../../components/admin/CrudInlineForm.svelte";
+import AdsManager from "../../components/admin/pages/AdsManager.svelte";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 import { parsePage } from "../../lib/admin";
@@ -14,7 +11,7 @@ import { parsePage } from "../../lib/admin";
 await initDb(Astro);
 const admin = await requireAdmin(Astro);
 if (!admin) {
-    return Astro.redirect("/admin/login");
+  return Astro.redirect("/admin/login");
 }
 const db = getDb(Astro);
 const { page, q, offset, limit } = parsePage(Astro.url, 20);
@@ -22,112 +19,35 @@ const where = q ? "WHERE name LIKE ? OR channel LIKE ?" : "";
 const args = q ? [`%${q}%`, `%${q}%`] : [];
 
 const campaignsRes = await db.execute({
-    sql: `SELECT id, name, channel, budget, spend, status, start_at, end_at
-          FROM ads_campaigns
-          ${where}
-          ORDER BY created_at DESC
-          LIMIT ? OFFSET ?`,
-    args: [...args, limit, offset],
+  sql: `SELECT id, name, channel, budget, spend, status, start_at, end_at
+        FROM ads_campaigns
+        ${where}
+        ORDER BY created_at DESC
+        LIMIT ? OFFSET ?`,
+  args: [...args, limit, offset],
 });
 const countRes = await db.execute({
-    sql: `SELECT COUNT(*) as count FROM ads_campaigns ${where}`,
-    args,
+  sql: `SELECT COUNT(*) as count FROM ads_campaigns ${where}`,
+  args,
 });
 const total = Number((countRes.rows[0] as any)?.count || 0);
 const totalPages = Math.max(1, Math.ceil(total / limit));
 ---
 
 <AdminLayout title="Iklan">
-    <SectionHeader title="Buat Campaign" badge="Ads" />
-    <CrudInlineForm id="ads-form">
-        <div>
-            <label>Nama Campaign</label>
-            <input name="name" required />
-        </div>
-        <div>
-            <label>Channel</label>
-            <input name="channel" placeholder="IG / FB / WA / Google" required />
-        </div>
-        <div>
-            <label>Budget (Rp)</label>
-            <input name="budget" type="number" required />
-        </div>
-        <div>
-            <label>Status</label>
-            <select name="status">
-                <option value="draft">Draft</option>
-                <option value="active">Active</option>
-                <option value="paused">Paused</option>
-                <option value="completed">Completed</option>
-            </select>
-        </div>
-        <div>
-            <label>Tanggal Mulai</label>
-            <input name="start_at" type="date" />
-        </div>
-        <div>
-            <label>Tanggal Selesai</label>
-            <input name="end_at" type="date" />
-        </div>
-        <div>
-            <label>Catatan</label>
-            <input name="notes" />
-        </div>
-        <button class="primary" type="submit">Simpan</button>
-    </CrudInlineForm>
+  <AdsManager rows={campaignsRes.rows as any[]} client:load />
 
-    <AdminToolbar title="Daftar Campaign">
-        <AdminFilterForm>
-            <input name="q" placeholder="Cari campaign" value={q} />
-            <button class="btn-ghost" type="submit">Cari</button>
-        </AdminFilterForm>
-    </AdminToolbar>
+  <AdminToolbar title="Daftar Campaign">
+    <AdminFilterForm>
+      <input name="q" placeholder="Cari campaign" value={q} />
+      <button class="btn-ghost" type="submit">Cari</button>
+    </AdminFilterForm>
+  </AdminToolbar>
 
-    <AdminDataTable>
-        <thead>
-            <tr>
-                <th>Nama</th>
-                <th>Channel</th>
-                <th>Budget</th>
-                <th>Spend</th>
-                <th>Status</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            {campaignsRes.rows.map((c: any) => (
-                <tr data-id={c.id}>
-                    <td contenteditable="true" data-field="name">{c.name}</td>
-                    <td contenteditable="true" data-field="channel">{c.channel}</td>
-                    <td contenteditable="true" data-field="budget">{c.budget}</td>
-                    <td contenteditable="true" data-field="spend">{c.spend}</td>
-                    <td contenteditable="true" data-field="status">{c.status}</td>
-                    <td>
-                        <RowActions />
-                    </td>
-                </tr>
-            ))}
-        </tbody>
-    </AdminDataTable>
-
-    <PaginationNav
-        page={page}
-        totalPages={totalPages}
-        prevHref={page > 1 ? `?q=${encodeURIComponent(q)}&page=${page - 1}` : undefined}
-        nextHref={page < totalPages ? `?q=${encodeURIComponent(q)}&page=${page + 1}` : undefined}
-    />
-
-    <script>
-        import { bindCreateForm, bindCrudTable } from "../../lib/admin-client";
-
-        bindCreateForm({
-            formSelector: "#ads-form",
-            endpoint: "/api/admin/ads",
-        });
-
-        bindCrudTable({
-            basePath: "/api/admin/ads",
-            deleteConfirm: "Hapus campaign ini?",
-        });
-    </script>
+  <PaginationNav
+    page={page}
+    totalPages={totalPages}
+    prevHref={page > 1 ? `?q=${encodeURIComponent(q)}&page=${page - 1}` : undefined}
+    nextHref={page < totalPages ? `?q=${encodeURIComponent(q)}&page=${page + 1}` : undefined}
+  />
 </AdminLayout>
