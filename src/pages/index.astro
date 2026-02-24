@@ -2,479 +2,1192 @@
 import Layout from "../layouts/Layout.astro";
 
 const galleryImages = [
-	"sholawat bakery (1).jpeg",
-	"sholawat bakery (2).jpeg",
-	"sholawat bakery (3).jpeg",
-	"sholawat bakery (4).jpeg",
-	"sholawat bakery (5).jpeg",
-	"sholawat bakery (6).jpeg",
-	"sholawat bakery (7).jpeg",
-	"sholawat bakery (9).jpeg",
-	"sholawat bakery (10).jpeg",
-	"bakery bantul.jpeg",
-	"bakery jogja.jpeg",
-	"bakery pasar bantul.jpeg",
+    "sholawat bakery (1).jpeg",
+    "sholawat bakery (2).jpeg",
+    "sholawat bakery (3).jpeg",
+    "sholawat bakery (4).jpeg",
+    "sholawat bakery (5).jpeg",
+    "sholawat bakery (6).jpeg",
+    "sholawat bakery (7).jpeg",
+    "sholawat bakery (9).jpeg",
+    "sholawat bakery (10).jpeg",
+    "bakery bantul.jpeg",
+    "bakery jogja.jpeg",
+    "bakery pasar bantul.jpeg",
 ];
+const galleryRatioClasses = [
+    "aspect-[4/5]",
+    "aspect-[3/4]",
+    "aspect-square",
+    "aspect-[5/4]",
+    "aspect-[4/3]",
+    "aspect-[3/5]",
+];
+
+const waLink =
+    "https://wa.me/6281314537475?text=Halo%20Roti%20Sholawat%2C%20saya%20mau%20konsultasi%20paket%20snack%20box%20untuk%20acara.";
 ---
 
-<Layout>
-	<main>
-		<!-- Hero Section -->
-		<section class="hero text-center">
-			<div class="hero-overlay"></div>
-			<div class="container hero-content">
-				<h1 class="hero-title">Roti Sholawat</h1>
-				<p class="hero-subtitle">
-					Kelezatan yang Memberkahi setiap Gigitan
-				</p>
-				<div class="hero-actions mt-l">
-					<a
-						href="https://wa.me/6287825228548"
-						target="_blank"
-						class="btn btn-primary">Pesan via WhatsApp</a
-					>
-					<a href="#produk" class="btn btn-outline">Lihat Menu</a>
-				</div>
-			</div>
-		</section>
+<Layout
+    title="Roti Sholawat — Semesta Bersholawat"
+    description="Roti dan snack box komunitas di Yogyakarta untuk pengajian, hajatan, sekolah, and acara keluarga. Order online atau gabung kemitraan."
+    hideFooter={true}
+>
+    <main class="home-page">
+        <!-- Hero -->
+        <section class="relative overflow-hidden pt-20 pb-40 lg:pb-32">
+            <!-- Dot grid background -->
+            <div
+                class="absolute inset-0 z-0 bg-[radial-gradient(rgba(37,190,196,0.1)_1px,transparent_1px)] bg-[size:22px_22px] opacity-35 pointer-events-none"
+            >
+            </div>
 
-		<!-- About Section -->
-		<section class="section" data-reveal>
-			<div class="container">
-				<div class="grid-2">
-					<div class="fade-in">
-						<h2 class="section-title">
-							Cita Rasa Silaturahmi: Bakery Tradisional dengan
-							Kualitas Premium
-						</h2>
-						<p class="mt-m">
-							Beroperasi sejak tahun 2016 di bawah naungan CV
-							Satria Sejahtera, <strong>Roti Sholawat</strong> hadir
-							melampaui fungsi primernya sebagai penyedia nutrisi, menjadi
-							representasi identitas sosial dan budaya di Kabupaten
-							Bantul.
-						</p>
-						<p class="mt-s">
-							Nama <strong>"Sholawat"</strong> bukan sekadar merek,
-							melainkan doa dan penghormatan kepada Nabi Muhammad SAW
-							yang diwujudkan dalam nilai-nilai <em
-								>halalan thayyiban</em
-							> (halal dan baik). Kami dipercaya dengan "kontrak psikologis"
-							oleh konsumen karena dedikasi tinggi pada keberkahan proses
-							produksi.
-						</p>
-						<p class="mt-s">
-							Kini, kami telah berkembang dengan memiliki <strong
-								>lebih dari 30 outlet</strong
-							> yang tersebar di DIY dan Jawa Tengah. Dengan standar
-							keamanan pangan yang ketat (<strong
-								>DINKES P-IRT No. 2063402011625-20</strong
-							>) dan komitmen higienitas, setiap gigitan produk
-							kami adalah jaminan kualitas untuk menemani momen
-							silaturahmi Anda.
-						</p>
-					</div>
-					<div class="image-showcase">
-						<img
-							src="/images/bakery/sholawat bakery jogja.jpeg"
-							alt="Toko Roti Sholawat Cabang Jogja"
-							class="rounded shadow"
-						/>
-					</div>
-				</div>
-			</div>
-		</section>
+            <!-- Animated Blobs & Gradient -->
+            <div class="absolute inset-0 z-0">
+                <img
+                    src="/images/bakery/sholawat bakery (5).jpeg"
+                    alt=""
+                    class="absolute inset-0 w-full h-full object-cover opacity-50 pointer-events-none z-0"
+                    loading="lazy"
+                />
+                <div
+                    class="absolute inset-0 bg-[#f6fffd]/72 pointer-events-none z-0"
+                >
+                </div>
+                <span
+                    class="absolute rounded-full opacity-60 animate-blob-float w-[420px] h-[420px] bg-[radial-gradient(circle,var(--color-secondary-light),var(--color-secondary))] -top-[120px] -left-[80px] duration-[20s]"
+                ></span>
+                <span
+                    class="absolute rounded-full opacity-60 animate-blob-float w-[300px] h-[300px] bg-[radial-gradient(circle,var(--color-primary-light),var(--color-primary))] -bottom-[120px] -right-[60px] duration-[16s]"
+                ></span>
+                <span
+                    class="absolute rounded-full opacity-60 animate-blob-float w-[180px] h-[180px] bg-[radial-gradient(circle,rgba(37,190,196,0.35),rgba(37,190,196,0))] top-[30%] right-[20%] duration-[22s]"
+                ></span>
+                <div
+                    class="absolute inset-[auto_0_0_0] h-[120px] bg-[linear-gradient(180deg,rgba(246,255,253,0)_0%,rgba(238,250,247,0.95)_100%)] pointer-events-none z-0"
+                >
+                </div>
+            </div>
+            <div
+                class="container relative z-[1] flex flex-col lg:grid lg:grid-cols-2 gap-y-16 lg:gap-y-0 lg:gap-x-12 items-center"
+            >
+                <div
+                    class="hero-copy order-1 lg:col-start-1 lg:row-start-1 lg:self-end lg:pb-6"
+                >
+                    <div
+                        class="inline-flex bg-primary/18 text-primary-dark px-[14px] py-[6px] rounded-full font-semibold tracking-[0.4px] mb-4 shadow-[0_8px_18px_rgba(37,190,196,0.15)]"
+                    >
+                        Semesta Bersholawat
+                    </div>
+                    <h1
+                        class="grid gap-1.5 mb-3 text-[clamp(2.6rem,5vw,4.2rem)] font-fraunces text-primary-dark leading-[1.2]"
+                    >
+                        <span
+                            class="block text-[clamp(2.1rem,4.2vw,3.3rem)] tracking-[0.2px]"
+                        >
+                            Roti untuk setiap
+                        </span>
+                        <span
+                            class="inline-flex items-baseline gap-2.5 flex-nowrap max-[520px]:flex-wrap text-[clamp(1.9rem,3.8vw,3rem)] text-text"
+                        >
+                            <span
+                                class="font-fraunces italic text-primary-dark relative inline-block px-1.5 text-[clamp(2.8rem,6.2vw,4.6rem)] leading-[1.05] after:content-[''] after:absolute after:left-0 after:right-0 after:bottom-1.5 after:h-2.5 after:bg-[#fdef5a]/55 after:-z-1 after:rounded-full after:-rotate-2 after:animate-underline-pulse"
+                            >
+                                momen
+                            </span>
+                            <span class="text-[clamp(1.8rem,3.4vw,2.8rem)]"
+                                >kebersamaan.</span
+                            >
+                        </span>
+                    </h1>
+                    <p class="text-[1.05rem] text-text-muted mb-5.5">
+                        Snack box & roti event untuk pengajian, hajatan,
+                        sekolah, kampus, dan komunitas di Yogyakarta. Rasa
+                        konsisten, paket rapi, dan penuh keberkahan.
+                    </p>
+                    <div class="flex flex-wrap gap-3 mt-6 mb-4">
+                        <a class="btn btn-primary" href="/order">Order Online</a
+                        >
+                        <a class="btn btn-secondary" href="#mitra">Jadi Mitra</a
+                        >
+                        <a class="btn btn-ghost" href={waLink} target="_blank"
+                            >Konsultasi Paket</a
+                        >
+                    </div>
+                </div>
 
-		<!-- Products Section -->
-		<section
-			id="produk"
-			class="section"
-			style="background-color: var(--color-bg-alt);"
-			data-reveal
-		>
-			<div class="container">
-				<h2 class="text-center section-title">Menu Favorit</h2>
-				<div class="menu-grid mt-l">
-					<div class="menu-category">
-						<div class="category-header">
-							<h3>Roti Manis</h3>
-							<p>Varian roti lembut dengan beragam isian</p>
-						</div>
-						<ul class="product-list mt-m">
-							<li>
-								<div class="item-info">
-									<strong>Roti Mesis</strong><small
-										>Coklat butir melimpah</small
-									>
-								</div>
-								<span class="price">Rp 4.000</span>
-							</li>
-							<li>
-								<div class="item-info">
-									<strong>Roti Mocca</strong><small
-										>Aroma kopi yang khas</small
-									>
-								</div>
-								<span class="price">Rp 4.500</span>
-							</li>
-							<li>
-								<div class="item-info">
-									<strong>Roti Blueberry</strong><small
-										>Selai buah segar</small
-									>
-								</div>
-								<span class="price">Rp 4.500</span>
-							</li>
-							<li>
-								<div class="item-info">
-									<strong>Roti Coklat Keju</strong><small
-										>Perpaduan manis gurih</small
-									>
-								</div>
-								<span class="price">Rp 5.000</span>
-							</li>
-							<li>
-								<div class="item-info">
-									<strong>Paket 10 Rasa</strong><small
-										>Cocok untuk oleh-oleh</small
-									>
-								</div>
-								<span class="price">Rp 34.000</span>
-							</li>
-						</ul>
-					</div>
-					<div class="menu-category">
-						<div class="category-header">
-							<h3>Aneka Cake</h3>
-							<p>Kue premium untuk kebersamaan</p>
-						</div>
-						<ul class="product-list mt-m">
-							<li>
-								<div class="item-info">
-									<strong>Mandarin Isi</strong><small
-										>Lapis lembut istimewa</small
-									>
-								</div>
-								<span class="price">Rp 38.000</span>
-							</li>
-							<li>
-								<div class="item-info">
-									<strong>Mandarin Keju</strong><small
-										>Full topping keju</small
-									>
-								</div>
-								<span class="price">Rp 35.000</span>
-							</li>
-							<li>
-								<div class="item-info">
-									<strong>Roll Cake</strong><small
-										>Gulungan rasa klasik</small
-									>
-								</div>
-								<span class="price">Rp 30.000</span>
-							</li>
-							<li>
-								<div class="item-info">
-									<strong>Mandarin Mesis</strong><small
-										>Klasik favorit anak-anak</small
-									>
-								</div>
-								<span class="price">Rp 32.000</span>
-							</li>
-						</ul>
-					</div>
-				</div>
-			</div>
-		</section>
+                <div
+                    class="order-3 lg:col-start-1 lg:row-start-2 max-w-[620px] w-full self-start lg:pt-2"
+                >
+                    <div
+                        class="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2.5 mb-4"
+                    >
+                        {
+                            [
+                                {
+                                    title: "Fokus Yogyakarta",
+                                    desc: "Komunitas & event",
+                                },
+                                {
+                                    title: "Respons Cepat",
+                                    desc: "Koordinasi ringan",
+                                },
+                                {
+                                    title: "Paket Rapi",
+                                    desc: "Siap untuk acara",
+                                },
+                            ].map((feature) => (
+                                <div class="bg-white/70 border border-primary/18 rounded-[14px] p-2 flex flex-col gap-0.5">
+                                    <strong class="text-primary-dark text-[0.95rem]">
+                                        {feature.title}
+                                    </strong>
+                                    <span class="text-text-muted text-[0.82rem]">
+                                        {feature.desc}
+                                    </span>
+                                </div>
+                            ))
+                        }
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        {
+                            [
+                                "Pengajian",
+                                "Hajatan",
+                                "Sekolah",
+                                "Komunitas",
+                                "DIY",
+                            ].map((tag) => (
+                                <span class="bg-surface border border-primary/18 px-3 py-1.5 rounded-full text-[0.85rem] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm">
+                                    {tag}
+                                </span>
+                            ))
+                        }
+                    </div>
+                </div>
+                <div
+                    class="relative flex flex-col items-center justify-center order-2 lg:flex-row lg:col-start-2 lg:row-start-1 lg:row-span-2 self-center"
+                >
+                    <div
+                        class="bg-surface rounded-3xl overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.12)] -rotate-2 max-w-[340px] animate-card-float transition-all duration-300 hover:-translate-y-1.5 hover:-rotate-1 hover:shadow-[0_36px_70px_rgba(0,0,0,0.18)]"
+                    >
+                        <img
+                            src="/images/bakery/sholawat bakery (9).jpeg"
+                            alt="Paket snack box Roti Sholawat"
+                            class="w-full h-[260px] object-cover"
+                        />
+                        <div class="p-4">
+                            <strong class="block text-primary-dark"
+                                >Paket Snack Box Komunitas</strong
+                            >
+                            <p class="text-text-muted text-sm mt-1">
+                                Rapi, terjangkau, siap untuk acara.
+                            </p>
+                        </div>
+                    </div>
+                    <div
+                        class="mt-4 self-end mr-2 bg-secondary text-primary-dark px-4 py-2.5 rounded-[18px] rotate-6 font-semibold shadow-[0_12px_24px_rgba(0,0,0,0.12)] animate-sticker-wiggle lg:absolute lg:right-0 lg:-bottom-5 lg:mt-0 lg:mr-0"
+                    >
+                        Rasa • Rapi • Berkah
+                    </div>
+                </div>
+            </div>
+        </section>
 
-		<!-- Gallery Section -->
-		<section class="section" data-reveal>
-			<div class="container">
-				<h2 class="text-center section-title">Galeri Produk & Toko</h2>
-				<div class="gallery-grid mt-l">
-					{
-						galleryImages.map((img) => (
-							<div class="gallery-wrapper">
-								<img
-									src={`/images/bakery/${img}`}
-									alt="Produk Roti Sholawat"
-									class="gallery-item"
-									loading="lazy"
-								/>
-							</div>
-						))
-					}
-				</div>
-			</div>
-		</section>
+        <section
+            class="section relative overflow-hidden bg-white/50 backdrop-blur-sm -mt-20 pt-32 pb-24"
+        >
+            <div
+                class="container flex flex-col md:grid md:grid-cols-2 gap-12 md:gap-16 items-center"
+            >
+                <div class="reveal order-2 md:order-1 mt-4 md:mt-0">
+                    <span class="sub-title">Keunggulan Kami</span>
+                    <h2 class="mb-6">
+                        Rasa yang <span class="italic text-primary"
+                            >Konsisten</span
+                        >, Berkah yang <span class="italic text-primary"
+                            >Nyata</span
+                        >.
+                    </h2>
+                    <div class="grid gap-6">
+                        <div class="flex gap-4">
+                            <div
+                                class="w-12 h-12 flex-none bg-primary/10 rounded-2xl flex items-center justify-center text-primary text-xl"
+                            >
+                                ✨
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-bold mb-1">
+                                    Kualitas Premium
+                                </h4>
+                                <p class="text-text-muted">
+                                    Bahan pilihan dengan standar kebersihan
+                                    tinggi untuk rasa yang memanjakan lidah.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div
+                                class="w-12 h-12 flex-none bg-primary/10 rounded-2xl flex items-center justify-center text-primary text-xl"
+                            >
+                                📦
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-bold mb-1">
+                                    Packaging Rapi
+                                </h4>
+                                <p class="text-text-muted">
+                                    Siap dibagikan langsung di acara Anda tanpa
+                                    perlu repot menata ulang.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div
+                                class="w-12 h-12 flex-none bg-primary/10 rounded-2xl flex items-center justify-center text-primary text-xl"
+                            >
+                                🙏
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-bold mb-1">
+                                    Penuh Keberkahan
+                                </h4>
+                                <p class="text-text-muted">
+                                    Dibuat dengan semangat berbagi dan doa untuk
+                                    setiap momen kebersamaan Anda.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative reveal delay-200 order-1 md:order-2">
+                    <div
+                        class="aspect-square bg-gradient-to-tr from-primary/20 to-secondary/20 rounded-full animate-blob-float absolute inset-0 blur-3xl opacity-30"
+                    >
+                    </div>
+                    <img
+                        src="/images/bakery/sholawat bakery (1).jpeg"
+                        alt="Roti Sholawat Fresh"
+                        class="rounded-3xl shadow-2xl relative z-10 rotate-3 hover:rotate-0 transition-transform duration-500"
+                    />
+                </div>
+            </div>
+        </section>
 
-		<!-- Location Section -->
-		<section
-			class="section"
-			style="background-color: var(--color-primary-dark); color: white;"
-			data-reveal
-		>
-			<div class="container text-center">
-				<h2 style="color: white;" class="section-title">
-					Kunjungi Kami
-				</h2>
-				<div class="mt-l">
-					<p style="font-size: 1.2rem;">
-						<strong>Alamat:</strong> Jl. Supratman, Kurahan, Bantul, Kec.
-						Bantul, Kabupaten Bantul
-					</p>
-					<p style="font-size: 1.1rem;" class="mt-s">
-						<strong>Jam Operasional:</strong> Senin - Sabtu (08:00 - 16:00)
-					</p>
-					<div class="mt-l">
-						<a
-							href="https://maps.app.goo.gl/search/Roti+Sholawat+Bantul"
-							target="_blank"
-							class="btn btn-secondary">Buka Google Maps</a
-						>
-					</div>
-				</div>
-			</div>
-		</section>
+        <!-- Community -->
+        <section id="komunitas" class="section reveal">
+            <div
+                class="container community-grid flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12 items-center"
+            >
+                <div class="order-1 md:order-none">
+                    <h2>Dipercaya untuk Pendukung Berbagai Acara</h2>
+                    <p class="lead">
+                        Pengajian, kampus, sekolah, UMKM, hingga event
+                        organizer. Roti Sholawat hadir sebagai penguat momen
+                        kebersamaan.
+                    </p>
+                    <div class="community-tags flex flex-wrap gap-2 my-4">
+                        <span
+                            class="bg-primary/12 px-3 py-1.5 rounded-full text-[0.85rem]"
+                            >Pengajian & Majelis</span
+                        >
+                        <span
+                            class="bg-primary/12 px-3 py-1.5 rounded-full text-[0.85rem]"
+                            >Kampus & Sekolah</span
+                        >
+                        <span
+                            class="bg-primary/12 px-3 py-1.5 rounded-full text-[0.85rem]"
+                            >UMKM Lokal</span
+                        >
+                        <span
+                            class="bg-primary/12 px-3 py-1.5 rounded-full text-[0.85rem]"
+                            >Event Organizer</span
+                        >
+                    </div>
+                    <a
+                        class="btn btn-secondary hidden md:inline-flex"
+                        href={waLink}
+                        target="_blank">Konsultasi Paket Komunitas</a
+                    >
+                </div>
+                <div
+                    class="community-media grid grid-cols-2 gap-3.5 order-2 md:order-none"
+                >
+                    <img
+                        src="/images/bakery/bakery bantul.jpeg"
+                        alt="Aktivasi komunitas"
+                        class="rounded-[18px] h-[220px] object-cover shadow-[0_16px_36px_rgba(0,0,0,0.12)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_42px_rgba(0,0,0,0.16)]"
+                    />
+                    <img
+                        src="/images/bakery/sholawat bakery (3).jpeg"
+                        alt="Proses produksi"
+                        class="rounded-[18px] h-[220px] object-cover shadow-[0_16px_36px_rgba(0,0,0,0.12)] transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_20px_42px_rgba(0,0,0,0.16)] text-primary-dark"
+                    />
+                </div>
+                <div class="order-3 md:hidden w-full flex justify-center mt-2">
+                    <a
+                        class="btn btn-secondary w-full justify-center py-3.5 text-base"
+                        href={waLink}
+                        target="_blank">Konsultasi Paket Komunitas</a
+                    >
+                </div>
+            </div>
+        </section>
 
-		<!-- Floating WhatsApp Button -->
-		<a
-			href="https://wa.me/6287825228548"
-			target="_blank"
-			class="float-wa"
-			aria-label="Chat via WhatsApp"
-		>
-			<svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
-				<path
-					d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.72.937 3.659 1.432 5.617 1.433h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"
-				></path>
-			</svg>
-		</a>
-	</main>
+        <!-- Products -->
+        <section id="paket" class="section section-alt reveal">
+            <div class="container">
+                <div class="section-head">
+                    <h2>Paket & Produk Unggulan</h2>
+                    <p>
+                        Portofolio 3 tier untuk kebutuhan harian, event, hingga
+                        paket premium.
+                    </p>
+                </div>
+                <div
+                    class="tier-grid grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-[18px] carousel-mobile pb-6"
+                >
+                    <div class="tier-card group">
+                        <span class="tier-badge">Core</span>
+                        <h3>Roti Harian</h3>
+                        <p>Roti manis & roti tawar untuk kebutuhan harian.</p>
+                    </div>
+                    <div class="tier-card highlight">
+                        <span class="tier-badge">Value</span>
+                        <h3>Snack Box Komunitas</h3>
+                        <p>
+                            Paket paling banyak dipilih untuk pengajian,
+                            sekolah, dan hajatan.
+                        </p>
+                    </div>
+                    <div class="tier-card">
+                        <span class="tier-badge">Signature</span>
+                        <h3>Paket Premium</h3>
+                        <p>
+                            Produk hero dengan rasa unik, packaging eksklusif,
+                            dan storytelling kuat.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap justify-center gap-4 mt-10">
+                    <a class="btn btn-primary" href="/order">Lihat Paket</a>
+                    <a class="btn btn-ghost" href={waLink} target="_blank"
+                        >Diskusi Kebutuhan Acara</a
+                    >
+                </div>
+            </div>
+        </section>
+
+        <!-- Partnership -->
+        <section id="mitra" class="section section-alt reveal">
+            <div class="container">
+                <div class="section-head">
+                    <h2>Tumbuh Bersama Roti Sholawat</h2>
+                    <p>
+                        Program kemitraan untuk reseller, agen komunitas, dan
+                        kolaborasi UMKM.
+                    </p>
+                </div>
+                <div
+                    class="partner-layout grid grid-cols-[1.2fr_0.8fr] gap-8 items-start max-[900px]:grid-cols-1"
+                >
+                    <div
+                        class="flex flex-col gap-6"
+                        id="partner-tabs-container"
+                    >
+                        <div
+                            class="flex gap-2.5 md:hidden -mb-2 pb-1 overflow-x-auto no-scrollbar border-b border-primary/10"
+                        >
+                            <button
+                                id="tab-benefit"
+                                class="tab-btn px-4 py-2 font-bold text-sm bg-primary text-white rounded-full whitespace-nowrap shadow-sm border border-transparent transition-all"
+                                >Benefit Kemitraan</button
+                            >
+                            <button
+                                id="tab-cara"
+                                class="tab-btn px-4 py-2 font-bold text-sm bg-white/60 text-text-muted hover:bg-white rounded-full whitespace-nowrap border border-primary/10 transition-all"
+                                >Cara Gabung?</button
+                            >
+                        </div>
+                        <div
+                            class="partner-card benefit-card max-md:block max-md:[&_ul]:pl-0 transition-all"
+                            id="content-benefit"
+                        >
+                            <div
+                                class="flex items-center justify-between mb-4 border-b border-primary/10 pb-4 max-[500px]:flex-col max-[500px]:items-start max-[500px]:gap-3"
+                            >
+                                <h3>Benefit Kemitraan</h3>
+                                <div class="flex gap-2">
+                                    <span
+                                        class="bg-primary/10 text-primary-dark text-xs font-bold px-3 py-1 rounded-full"
+                                        >Reseller</span
+                                    >
+                                    <span
+                                        class="bg-primary/10 text-primary-dark text-xs font-bold px-3 py-1 rounded-full"
+                                        >Komunitas</span
+                                    >
+                                </div>
+                            </div>
+                            <ul
+                                class="space-y-4 text-text-muted mt-0 p-0 list-none"
+                            >
+                                <li class="flex items-start gap-4">
+                                    <span
+                                        class="w-10 h-10 flex items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-lg flex-none"
+                                        >%</span
+                                    >
+                                    <div>
+                                        <strong
+                                            class="block mb-1 text-primary-dark"
+                                            >Skema Margin Jelas</strong
+                                        >
+                                        <p>
+                                            Margin menguntungkan dengan sistem
+                                            yang transparan dan mudah dipantau.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-4">
+                                    <span
+                                        class="w-10 h-10 flex items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-lg flex-none"
+                                        >★</span
+                                    >
+                                    <div>
+                                        <strong
+                                            class="block mb-1 text-primary-dark"
+                                            >Full Branding Support</strong
+                                        >
+                                        <p>
+                                            Akses ke materi promosi, konten
+                                            media sosial, dan bimbingan
+                                            marketing.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-4">
+                                    <span
+                                        class="w-10 h-10 flex items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-lg flex-none"
+                                        >✓</span
+                                    >
+                                    <div>
+                                        <strong
+                                            class="block mb-1 text-primary-dark"
+                                            >Kualitas Produk Stabil</strong
+                                        >
+                                        <p>
+                                            Standar kualitas premium dengan
+                                            rantai pasok yang aman dan
+                                            terjadwal.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-4">
+                                    <span
+                                        class="w-10 h-10 flex items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-lg flex-none"
+                                        >🎁</span
+                                    >
+                                    <div>
+                                        <strong
+                                            class="block mb-1 text-primary-dark"
+                                            >Akses Promo & Seasonal</strong
+                                        >
+                                        <p>
+                                            Prioritas untuk paket musiman dan
+                                            program loyalti khusus mitra.
+                                        </p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div
+                            class="partner-card steps-card partnership-steps max-md:hidden max-md:[&_ul]:pl-0 transition-all"
+                            id="content-cara"
+                        >
+                            <div
+                                class="flex items-center justify-between mb-5 border-b border-primary/10 pb-4"
+                            >
+                                <h3>Cara Bergabung?</h3>
+                                <span
+                                    class="bg-secondary/20 text-primary-dark text-xs font-bold px-3 py-1 rounded-full border border-secondary/50"
+                                    >Cepat & Mudah</span
+                                >
+                            </div>
+                            <ul
+                                class="space-y-6 text-text-muted mt-0 p-0 list-none"
+                            >
+                                <li class="relative flex items-start gap-5">
+                                    <div
+                                        class="absolute left-5 top-10 -bottom-6 w-px bg-primary/20"
+                                    >
+                                    </div>
+                                    <span
+                                        class="w-10 h-10 rounded-full bg-white border-2 border-primary text-primary font-bold flex items-center justify-center flex-none relative z-10 shadow-sm"
+                                        >01</span
+                                    >
+                                    <div>
+                                        <strong
+                                            class="block mb-1 text-primary-dark"
+                                            >Konsultasi WA</strong
+                                        >
+                                        <p class="text-sm">
+                                            Tentukan area dan target layanan
+                                            Anda.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="relative flex items-start gap-5">
+                                    <div
+                                        class="absolute left-5 top-10 -bottom-6 w-px bg-primary/20"
+                                    >
+                                    </div>
+                                    <span
+                                        class="w-10 h-10 rounded-full bg-white border-2 border-primary text-primary font-bold flex items-center justify-center flex-none relative z-10 shadow-sm"
+                                        >02</span
+                                    >
+                                    <div>
+                                        <strong
+                                            class="block mb-1 text-primary-dark"
+                                            >Pilih Paket</strong
+                                        >
+                                        <p class="text-sm">
+                                            Pilih stok awal sesuai modal &
+                                            kapasitas.
+                                        </p>
+                                    </div>
+                                </li>
+                                <li class="relative flex items-start gap-5">
+                                    <span
+                                        class="w-10 h-10 rounded-full bg-white border-2 border-primary text-primary font-bold flex items-center justify-center flex-none relative z-10 shadow-sm"
+                                        >03</span
+                                    >
+                                    <div>
+                                        <strong
+                                            class="block mb-1 text-primary-dark"
+                                            >Mulai Jualan</strong
+                                        >
+                                        <p class="text-sm">
+                                            Dapatkan materi promo & aktivasi
+                                            mitra.
+                                        </p>
+                                    </div>
+                                </li>
+                            </ul>
+                            <div
+                                class="mt-8 pt-6 border-t border-primary/10 flex justify-center"
+                            >
+                                <a
+                                    class="btn btn-primary btn-shine w-full justify-center"
+                                    href={waLink}
+                                    target="_blank"
+                                >
+                                    Gabung Mitra Sekarang
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="18"
+                                        height="18"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        ><path d="M5 12h14"></path><path
+                                            d="m12 5 7 7-7 7"></path></svg
+                                    >
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="pt-0 lg:-mt-64 relative z-20 max-lg:mt-0 max-lg:z-10 flex flex-col gap-6"
+                    >
+                        <a
+                            class="partner-feature flex flex-col items-center justify-center text-center bg-primary"
+                            href="https://fb.com/b.shoprem/posts/752539010437233"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            <img
+                                src="/images/sosmed/grand-opening.jpg"
+                                alt="Grand Opening Roti Sholawat"
+                                loading="lazy"
+                            />
+                            <div class="feature-overlay">
+                                <span class="overlay-tag">Grand Opening</span>
+                                <div class="overlay-content">
+                                    <span>Cabang Imogiri</span>
+                                    <strong
+                                        >Keluarga Roti Sholawat Terus Tumbuh</strong
+                                    >
+                                </div>
+                            </div>
+                        </a>
+
+                        <div
+                            class="bg-white/85 backdrop-blur-xl rounded-[20px] p-6 border border-white/60 shadow-[0_10px_30px_rgba(0,0,0,0.04)] transition-all duration-400 group hover:translate-y-[-8px] hover:shadow-[0_20px_48px_rgba(0,0,0,0.08)] hover:bg-white flex flex-col gap-4"
+                        >
+                            <div
+                                class="flex items-start justify-between mb-3 gap-3"
+                            >
+                                <div>
+                                    <h3
+                                        class="text-xl font-fraunces text-primary-dark leading-tight"
+                                    >
+                                        Cerita Mereka
+                                    </h3>
+                                    <p
+                                        class="text-text-muted text-[0.85rem] leading-relaxed"
+                                    >
+                                        Penggalan kisah para mitra & pelanggan.
+                                    </p>
+                                </div>
+                                <div
+                                    class="flex gap-1.5 mt-3 justify-center items-center testimonial-dots"
+                                >
+                                    <div class="flex gap-1.5">
+                                        <span
+                                            class="w-2 h-2 rounded-full bg-primary transform scale-125 opacity-100 transition-all duration-200"
+                                        ></span>
+                                        <span
+                                            class="w-2 h-2 rounded-full bg-primary/40 transition-all duration-200"
+                                        ></span>
+                                        <span
+                                            class="w-2 h-2 rounded-full bg-primary/40 transition-all duration-200"
+                                        ></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div
+                                class="flex overflow-hidden snap-x snap-mandatory rounded-2xl bg-white/60 border border-white/50 w-full"
+                                id="testimonial-track"
+                            >
+                                <article
+                                    class="w-full flex-none snap-start p-4 text-text leading-relaxed relative italic"
+                                >
+                                    <div
+                                        class="absolute -top-2.5 -left-1 text-[3rem] text-primary opacity-15 font-fraunces leading-none pointer-events-none"
+                                    >
+                                        “
+                                    </div>
+                                    <p
+                                        class="relative z-1 break-words whitespace-normal"
+                                    >
+                                        Paketnya rapi dan rasanya konsisten.
+                                        Acara komunitas jadi lebih hangat dengan
+                                        Roti Sholawat.
+                                    </p>
+                                    <div
+                                        class="flex items-center gap-2.5 mt-3 text-text"
+                                    >
+                                        <div
+                                            class="w-9.5 h-9.5 flex-none items-center justify-center font-extrabold text-[0.9rem] bg-primary text-white shadow-[0_6px_15px_rgba(37,190,196,0.2)] rounded-xl flex"
+                                        >
+                                            S
+                                        </div>
+                                        <div>
+                                            <strong class="block text-sm"
+                                                >Bu Siti</strong
+                                            >
+                                            <span
+                                                class="text-[0.85rem] text-text-muted"
+                                                >Pengajian Kampung</span
+                                            >
+                                        </div>
+                                    </div>
+                                </article>
+                                <article
+                                    class="w-full flex-none snap-start p-4 text-text leading-relaxed relative italic"
+                                >
+                                    <div
+                                        class="absolute -top-2.5 -left-1 text-[3rem] text-primary opacity-15 font-fraunces leading-none pointer-events-none"
+                                    >
+                                        “
+                                    </div>
+                                    <p
+                                        class="relative z-1 break-words whitespace-normal"
+                                    >
+                                        Snack box premium yang sangat fleksibel
+                                        untuk event kampus. Respon adminnya luar
+                                        biasa cepat.
+                                    </p>
+                                    <div
+                                        class="flex items-center gap-2.5 mt-3 text-text"
+                                    >
+                                        <div
+                                            class="w-9.5 h-9.5 flex-none items-center justify-center font-extrabold text-[0.9rem] bg-primary text-white shadow-[0_6px_15px_rgba(37,190,196,0.2)] rounded-xl flex"
+                                        >
+                                            R
+                                        </div>
+                                        <div>
+                                            <strong class="block text-sm"
+                                                >Rama</strong
+                                            >
+                                            <span
+                                                class="text-[0.85rem] text-text-muted"
+                                                >Panitia Event</span
+                                            >
+                                        </div>
+                                    </div>
+                                </article>
+                                <article
+                                    class="w-full flex-none snap-start p-4 text-text leading-relaxed relative italic"
+                                >
+                                    <div
+                                        class="absolute -top-2.5 -left-1 text-[3rem] text-primary opacity-15 font-fraunces leading-none pointer-events-none"
+                                    >
+                                        “
+                                    </div>
+                                    <p
+                                        class="relative z-1 break-words whitespace-normal"
+                                    >
+                                        Sangat membantu pendapatan tambahan
+                                        keluarga. Stok aman dan pelanggan selalu
+                                        mau repeat order.
+                                    </p>
+                                    <div
+                                        class="flex items-center gap-2.5 mt-3 text-text"
+                                    >
+                                        <div
+                                            class="w-9.5 h-9.5 flex-none items-center justify-center font-extrabold text-[0.9rem] bg-primary text-white shadow-[0_6px_15px_rgba(37,190,196,0.2)] rounded-xl flex"
+                                        >
+                                            F
+                                        </div>
+                                        <div>
+                                            <strong class="block text-sm"
+                                                >Fitri</strong
+                                            >
+                                            <span
+                                                class="text-[0.85rem] text-text-muted"
+                                                >Reseller Area Yogyakarta</span
+                                            >
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                        </div>
+
+                        <div
+                            class="flex overflow-x-auto snap-x snap-mandatory pb-5 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 gap-3 no-scrollbar mt-3 max-[400px]:-mx-6 max-[400px]:px-6"
+                        >
+                            <div
+                                class="stat-item snap-center shrink-0 w-[70vw] sm:w-auto"
+                            >
+                                <strong>50+</strong>
+                                <span>Mitra Aktif</span>
+                            </div>
+                            <div
+                                class="stat-item snap-center shrink-0 w-[70vw] sm:w-auto"
+                            >
+                                <strong>15+</strong>
+                                <span>Area Yogyakarta</span>
+                            </div>
+                            <div
+                                class="stat-item snap-center shrink-0 w-[70vw] sm:w-auto"
+                            >
+                                <strong>Rutin</strong>
+                                <span>Order Event</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section reveal relative overflow-hidden">
+            <div class="gallery-bg" aria-hidden="true">
+                <img
+                    src="/images/bakery/sholawat bakery (2).jpeg"
+                    alt=""
+                    loading="lazy"
+                />
+            </div>
+            <div class="container">
+                <div
+                    class="gallery-header flex flex-col items-center text-center gap-6 mb-12 max-[720px]:items-start max-[720px]:text-left max-[720px]:mb-5"
+                >
+                    <div
+                        class="section-head mb-0 max-w-[800px] flex flex-col items-center after:mx-auto"
+                    >
+                        <h2>Galeri Produk & Toko</h2>
+                        <p>
+                            Dokumentasi produk, toko, dan momen kebersamaan
+                            pelanggan.
+                        </p>
+                    </div>
+                    <div
+                        class="gallery-controls flex flex-wrap gap-2 items-center justify-center"
+                    >
+                        <span
+                            class="px-4 py-2 bg-white/70 backdrop-blur border border-primary/15 text-primary-dark rounded-full text-sm font-semibold cursor-pointer hover:bg-primary hover:text-white transition-colors shadow-sm"
+                            >Fresh Bakery</span
+                        >
+                        <span
+                            class="px-4 py-2 bg-white/70 backdrop-blur border border-primary/15 text-primary-dark rounded-full text-sm font-semibold cursor-pointer hover:bg-primary hover:text-white transition-colors shadow-sm"
+                            >Komunitas</span
+                        >
+                        <span
+                            class="px-4 py-2 bg-white/70 backdrop-blur border border-primary/15 text-primary-dark rounded-full text-sm font-semibold cursor-pointer hover:bg-primary hover:text-white transition-colors shadow-sm"
+                            >Event</span
+                        >
+                        <a class="btn btn-ghost" href="/products"
+                            >Lihat Produk</a
+                        >
+                    </div>
+                </div>
+
+                <div class="columns-2 md:columns-3 lg:columns-4 gap-4 pb-4">
+                    {
+                        galleryImages.map((img, index) => (
+                            <div
+                                class={`gallery-item break-inside-avoid mb-4 ${galleryRatioClasses[index % galleryRatioClasses.length]} ${index % 3 === 0 ? "lift" : ""}`}
+                            >
+                                <img
+                                    src={`/images/bakery/${img}`}
+                                    alt="Roti Sholawat"
+                                    loading="lazy"
+                                    class="w-full h-full object-cover"
+                                />
+                            </div>
+                        ))
+                    }
+                </div>
+            </div>
+        </section>
+
+        <!-- Loyalty & Promo -->
+        <section id="promo" class="section section-alt reveal">
+            <div class="container">
+                <div
+                    class="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center"
+                >
+                    <div class="flex flex-col">
+                        <div class="section-head mb-0">
+                            <h2>Promo & Loyalti</h2>
+                            <p>
+                                Program <strong>“Sahabat Sholawat”</strong> dirancang
+                                untuk memberikan apresiasi lebih bagi Anda yang rutin
+                                mempercayakan kebutuhan konsumsi kepada kami.
+                            </p>
+                        </div>
+
+                        <div class="space-y-6 mt-6">
+                            <p
+                                class="text-[1.05rem] text-text-muted leading-relaxed"
+                            >
+                                Nikmati berbagai keuntungan eksklusif mulai dari
+                                akumulasi poin hingga prioritas layanan
+                                komunitas.
+                            </p>
+
+                            <div class="flex flex-wrap gap-2">
+                                <span
+                                    class="bg-secondary/20 text-primary-dark px-3 py-1.5 rounded-full text-[0.85rem] font-bold border border-secondary/50 shadow-sm"
+                                    >Poin Member</span
+                                >
+                                <span
+                                    class="bg-secondary/20 text-primary-dark px-3 py-1.5 rounded-full text-[0.85rem] font-bold border border-secondary/50 shadow-sm"
+                                    >Kupon Aktif</span
+                                >
+                                <span
+                                    class="bg-secondary/20 text-primary-dark px-3 py-1.5 rounded-full text-[0.85rem] font-bold border border-secondary/50 shadow-sm"
+                                    >Gratis Ongkir Yogyakarta</span
+                                >
+                            </div>
+
+                            <ul
+                                class="space-y-4 p-0 list-none mt-4 text-default"
+                            >
+                                <li
+                                    class="flex items-center gap-3 text-text-muted"
+                                >
+                                    <span
+                                        class="w-2 h-2 rounded-full bg-primary flex-none"
+                                    ></span>
+                                    <span
+                                        >Kupon otomatis saat event besar & hari
+                                        raya</span
+                                    >
+                                </li>
+                                <li
+                                    class="flex items-center gap-3 text-text-muted"
+                                >
+                                    <span
+                                        class="w-2 h-2 rounded-full bg-primary flex-none"
+                                    ></span>
+                                    <span
+                                        >Gratis ongkir tanpa minimal area DIY</span
+                                    >
+                                </li>
+                                <li
+                                    class="flex items-center gap-3 text-text-muted"
+                                >
+                                    <span
+                                        class="w-2 h-2 rounded-full bg-primary flex-none"
+                                    ></span>
+                                    <span
+                                        >Prioritas pesanan untuk pelanggan
+                                        komunitas</span
+                                    >
+                                </li>
+                            </ul>
+
+                            <div class="mt-8">
+                                <a
+                                    class="btn btn-secondary btn-shine"
+                                    href="/order"
+                                >
+                                    Cek Promo Aktif
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="18"
+                                        height="18"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        ><path d="M5 12h14"></path><path
+                                            d="m12 5 7 7-7 7"></path></svg
+                                    >
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <div class="partner-card">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-xl">Database & Retention</h3>
+                                <span
+                                    class="bg-[rgba(253,239,90,0.4)] text-primary-dark text-xs font-bold px-2.5 py-1 rounded border border-secondary/50"
+                                    >Loyalty Program</span
+                                >
+                            </div>
+                            <p
+                                class="text-text-muted my-4 text-sm leading-relaxed border-b border-primary/10 pb-5"
+                            >
+                                Kami menjaga relasi jangka panjang lewat
+                                broadcast WhatsApp personal, promo musiman, dan
+                                peluncuran produk khusus member Sahabat
+                                Sholawat.
+                            </p>
+                            <div
+                                class="flex overflow-x-auto snap-x snap-mandatory pb-5 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 gap-3 border-b border-primary/10 mb-5 no-scrollbar max-[400px]:-mx-6 max-[400px]:px-6 mt-1"
+                            >
+                                <div
+                                    class="stat-item snap-center shrink-0 w-[70vw] sm:w-auto"
+                                >
+                                    <strong>+3 Kanal</strong>
+                                    <span>Omni-channel Support</span>
+                                </div>
+                                <div
+                                    class="stat-item snap-center shrink-0 w-[70vw] sm:w-auto"
+                                >
+                                    <strong>Rutin</strong>
+                                    <span>Update Promo Bulanan</span>
+                                </div>
+                                <div
+                                    class="stat-item snap-center shrink-0 w-[70vw] sm:w-auto"
+                                >
+                                    <strong>Segment</strong>
+                                    <span>Data-driven Offers</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2 pt-1 text-xs">
+                                <span
+                                    class="bg-primary/5 text-primary-dark px-3 py-1.5 rounded-full font-medium border border-primary/10"
+                                    >Segmentasi Pelanggan</span
+                                >
+                                <span
+                                    class="bg-primary/5 text-primary-dark px-3 py-1.5 rounded-full font-medium border border-primary/10"
+                                    >Reminder Acara Otomatis</span
+                                >
+                                <span
+                                    class="bg-primary/5 text-primary-dark px-3 py-1.5 rounded-full font-medium border border-primary/10"
+                                    >Personalized Rewards</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ -->
+
+        <!-- Closing CTA -->
+        <section class="section reveal pt-0">
+            <div
+                class="container max-w-5xl mx-auto closing-card flex flex-col items-center justify-center"
+            >
+                <div
+                    class="bg-[rgba(253,239,90,0.95)] text-primary-dark text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-3 inline-block shadow-sm relative z-10"
+                >
+                    Semesta Bersholawat
+                </div>
+                <h2
+                    class="text-white relative z-10 max-w-2xl leading-[1.15] mb-2"
+                >
+                    Siap melayani acara Anda, dari rumah hingga komunitas.
+                </h2>
+                <p class="text-white/80 relative z-10 text-lg max-w-xl mx-auto">
+                    Roti Sholawat hadir untuk menguatkan silaturahmi,
+                    kebersamaan, dan keberkahan di setiap momen.
+                </p>
+                <div
+                    class="flex flex-wrap justify-center gap-4 mt-8 relative z-10"
+                >
+                    <a
+                        class="btn bg-white text-primary-dark hover:-translate-y-1 hover:shadow-lg transition-all"
+                        href="/order">Order Online</a
+                    >
+                    <a
+                        class="btn btn-secondary hover:-translate-y-1 transition-all"
+                        href={waLink}
+                        target="_blank">Jadi Mitra</a
+                    >
+                    <a
+                        class="btn bg-white/15 text-white border border-white/30 hover:bg-white hover:text-primary-dark hover:-translate-y-1 transition-all"
+                        href="#paket">Lihat Paket</a
+                    >
+                </div>
+            </div>
+        </section>
+
+        <a
+            class="hidden lg:flex fixed bottom-5.5 right-5.5 bg-[#25d366] text-white px-5 py-3 rounded-full font-bold shadow-[0_12px_24px_rgba(0,0,0,0.2)] z-50 animate-[floatPulse_4s_ease-in-out_infinite] items-center gap-2.5 hover:scale-105 transition-all"
+            href={waLink}
+            target="_blank"
+            aria-label="Chat via WhatsApp"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                ><path
+                    d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"
+                ></path></svg
+            >
+            <span>Chat WhatsApp</span>
+        </a>
+    </main>
 </Layout>
 
 <script>
-	const observerOptions = {
-		threshold: 0.1,
-	};
+    // @ts-nocheck
+    const initTestimonials = () => {
+        const track = document.getElementById("testimonial-track");
+        if (!track) return;
+        let index = 0;
+        const items = track.children.length;
+        const dots = document.querySelectorAll(".testimonial-dots span");
+        const setActiveDot = (activeIndex) => {
+            dots.forEach((dot, dotIndex) => {
+                dot.classList.toggle("is-active", dotIndex === activeIndex);
+            });
+        };
+        const advance = () => {
+            index = (index + 1) % items;
+            track.scrollTo({
+                left: track.clientWidth * index,
+                behavior: "smooth",
+            });
+            setActiveDot(index);
+        };
+        setActiveDot(0);
+        const interval = setInterval(advance, 4500);
+        track.addEventListener("scroll", () => {
+            const nextIndex = Math.round(track.scrollLeft / track.clientWidth);
+            if (nextIndex !== index) {
+                index = nextIndex;
+                setActiveDot(index);
+            }
+        });
+        window.addEventListener("resize", () => {
+            track.scrollTo({ left: track.clientWidth * index });
+        });
+        track.addEventListener("mouseenter", () => clearInterval(interval));
+    };
 
-	const observer = new IntersectionObserver((entries) => {
-		entries.forEach((entry) => {
-			if (entry.isIntersecting) {
-				entry.target.classList.add("revealed");
-			}
-		});
-	}, observerOptions);
+    if (document.readyState === "complete") {
+        initTestimonials();
+    } else {
+        window.addEventListener("load", initTestimonials);
+    }
 
-	document.querySelectorAll("[data-reveal]").forEach((el) => {
-		observer.observe(el);
-	});
+    // Partner Tabs (Mobile)
+    const tabBenefit = document.getElementById("tab-benefit");
+    const tabCara = document.getElementById("tab-cara");
+    const contentBenefit = document.getElementById("content-benefit");
+    const contentCara = document.getElementById("content-cara");
+
+    const setActiveTab = (showBenefit) => {
+        if (!tabBenefit || !tabCara || !contentBenefit || !contentCara) return;
+        if (window.innerWidth >= 768) return; // Ignore on md and higher
+
+        if (showBenefit) {
+            tabBenefit.classList.add(
+                "bg-primary",
+                "text-white",
+                "border-transparent",
+            );
+            tabBenefit.classList.remove(
+                "bg-white/60",
+                "text-text-muted",
+                "border-primary/10",
+            );
+
+            tabCara.classList.add(
+                "bg-white/60",
+                "text-text-muted",
+                "border-primary/10",
+            );
+            tabCara.classList.remove(
+                "bg-primary",
+                "text-white",
+                "border-transparent",
+            );
+
+            contentBenefit.classList.remove("max-md:hidden");
+            contentBenefit.classList.add("max-md:block");
+            contentCara.classList.add("max-md:hidden");
+            contentCara.classList.remove("max-md:block");
+        } else {
+            tabCara.classList.add(
+                "bg-primary",
+                "text-white",
+                "border-transparent",
+            );
+            tabCara.classList.remove(
+                "bg-white/60",
+                "text-text-muted",
+                "border-primary/10",
+            );
+
+            tabBenefit.classList.add(
+                "bg-white/60",
+                "text-text-muted",
+                "border-primary/10",
+            );
+            tabBenefit.classList.remove(
+                "bg-primary",
+                "text-white",
+                "border-transparent",
+            );
+
+            contentCara.classList.remove("max-md:hidden");
+            contentCara.classList.add("max-md:block");
+            contentBenefit.classList.add("max-md:hidden");
+            contentBenefit.classList.remove("max-md:block");
+        }
+    };
+
+    if (tabBenefit && tabCara) {
+        tabBenefit.addEventListener("click", () => setActiveTab(true));
+        tabCara.addEventListener("click", () => setActiveTab(false));
+    }
 </script>
-
-<style>
-	.hero {
-		position: relative;
-		height: 90vh;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background-image: url("/images/bakery/hero-premium.png");
-		background-size: cover;
-		background-position: center;
-		color: white;
-	}
-
-	.hero-overlay {
-		position: absolute;
-		inset: 0;
-		background: linear-gradient(
-			to bottom,
-			rgba(0, 0, 0, 0.3),
-			rgba(0, 0, 0, 0.6)
-		);
-	}
-
-	.hero-content {
-		position: relative;
-		z-index: 1;
-	}
-
-	.hero-title {
-		font-size: clamp(3.5rem, 12vw, 6rem);
-		color: white;
-		margin-bottom: 0.5rem;
-		text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-	}
-
-	.hero-subtitle {
-		font-size: 1.8rem;
-		font-weight: 300;
-		letter-spacing: 2px;
-	}
-
-	.section-title {
-		font-size: 2.5rem;
-		margin-bottom: var(--space-m);
-		position: relative;
-		display: inline-block;
-	}
-
-	.btn {
-		display: inline-block;
-		padding: 1.2rem 2.5rem;
-		border-radius: 50px;
-		font-weight: 600;
-		margin: 0.5rem;
-		cursor: pointer;
-		transition: all 0.3s ease;
-		text-transform: uppercase;
-		letter-spacing: 1px;
-	}
-
-	.btn-primary {
-		background-color: var(--color-secondary);
-		color: var(--color-text);
-		border: none;
-	}
-
-	.btn-primary:hover {
-		background-color: var(--color-secondary-dark);
-		transform: translateY(-3px);
-		box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-	}
-
-	.btn-secondary {
-		background-color: white;
-		color: var(--color-primary-dark);
-		border: none;
-	}
-
-	.btn-outline {
-		border: 2px solid white;
-		color: white;
-	}
-
-	.btn-outline:hover {
-		background: white;
-		color: var(--color-primary-dark);
-	}
-
-	.grid-2 {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-		gap: var(--space-xl);
-		align-items: center;
-	}
-
-	.rounded {
-		border-radius: 24px;
-	}
-	.shadow {
-		box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
-	}
-
-	.menu-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-		gap: var(--space-l);
-	}
-
-	.menu-category {
-		background: white;
-		padding: var(--space-l);
-		border-radius: 20px;
-		box-shadow: 0 15px 40px rgba(0, 0, 0, 0.04);
-		transition: transform 0.3s ease;
-	}
-
-	.menu-category:hover {
-		transform: translateY(-10px);
-	}
-
-	.category-header h3 {
-		font-size: 1.8rem;
-		color: var(--color-primary);
-	}
-
-	.product-list {
-		list-style: none;
-	}
-
-	.product-list li {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 1.2rem 0;
-		border-bottom: 1px solid var(--color-bg-alt);
-	}
-
-	.item-info strong {
-		display: block;
-		font-size: 1.1rem;
-	}
-
-	.item-info small {
-		color: var(--color-text-muted);
-	}
-
-	.price {
-		font-weight: 700;
-		color: var(--color-secondary-dark);
-	}
-
-	.gallery-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-		gap: 1.5rem;
-	}
-
-	.gallery-wrapper {
-		overflow: hidden;
-		border-radius: 16px;
-		aspect-ratio: 1;
-	}
-
-	.gallery-item {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-	}
-
-	.gallery-wrapper:hover .gallery-item {
-		transform: scale(1.1);
-	}
-
-	@media (max-width: 768px) {
-		.hero {
-			height: 70vh;
-		}
-		.section-title {
-			font-size: 2rem;
-		}
-	}
-
-	.float-wa {
-		position: fixed;
-		bottom: 30px;
-		right: 30px;
-		background-color: #25d366;
-		color: white;
-		width: 60px;
-		height: 60px;
-		border-radius: 50%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-		z-index: 1000;
-		transition:
-			transform 0.3s ease,
-			background-color 0.3s ease;
-	}
-
-	.float-wa:hover {
-		transform: scale(1.1);
-		background-color: #128c7e;
-	}
-</style>

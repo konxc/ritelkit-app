@@ -1,0 +1,14 @@
+---
+import Layout from "../../layouts/Layout.astro";
+const orderNo = Astro.url.searchParams.get("order") || "";
+---
+<Layout title="Pembayaran Berhasil">
+    <main class="section">
+        <div class="container text-center">
+            <h1>Pembayaran Berhasil</h1>
+            <p>Terima kasih. Pesanan kamu sedang diproses.</p>
+            {orderNo && <p>Order: <strong>{orderNo}</strong></p>}
+            <a class="btn btn-primary" href="/order">Kembali ke Order</a>
+        </div>
+    </main>
+</Layout>

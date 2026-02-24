@@ -1,0 +1,516 @@
+---
+
+import AppLayout from "../layouts/AppLayout.astro";
+import { initDb, getDb } from "../lib/db";
+import { getEnv } from "../lib/env";
+
+await initDb(Astro);
+const db = getDb(Astro);
+const productsRes = await db.execute(
+    "SELECT id, name, price, images_json, description, stock FROM products WHERE is_active = 1 ORDER BY created_at DESC",
+);
+const products = productsRes.rows.map((row: any) => {
+    let image = "";
+    try {
+        const urls = JSON.parse(String(row.images_json || "[]"));
+        image = Array.isArray(urls) ? urls[0] : "";
+    } catch {
+        image = "";
+    }
+    return {
+        id: row.id,
+        name: row.name,
+        price: row.price,
+        description: row.description,
+        image,
+        stock: row.stock,
+    };
+});
+const env = getEnv(Astro);
+---
+
+<AppLayout title="Order Roti Sholawat" description="Pesan online Roti Sholawat cepat dan mudah">
+    <!-- App Wrapper (No Scroll on body) -->
+    <main class="fixed inset-0 flex flex-col bg-surface overflow-hidden" id="app-container">
+        <!-- Main Top App Bar -->
+        <header class="bg-white/95 backdrop-blur-md border-b border-border/80 shrink-0 z-20">
+            <div class="h-14 md:h-16 flex items-center justify-between px-4 lg:px-8 w-full max-w-6xl mx-auto">
+                <a href="/" class="p-2 -ml-2 text-text-muted hover:text-primary transition-colors hover:bg-primary/5 rounded-full flex items-center gap-1 min-w-[32px]">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" class="shrink-0" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                    <span class="text-sm font-semibold hidden sm:block">Kembali</span>
+                </a>
+                <div class="flex flex-col items-center">
+                    <h1 class="font-bold text-lg md:text-xl text-primary-dark font-fraunces">Pesan Roti</h1>
+                </div>
+                <!-- Cart Icon toggle for mobile -->
+                <button id="mobile-cart-btn" class="p-2 -mr-2 text-text-muted hover:text-primary transition-colors relative lg:hidden min-w-[32px]">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+                    <span id="mobile-cart-badge" class="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-secondary text-primary-dark text-[10px] font-bold flex items-center justify-center opacity-0 scale-50 transition-all border border-white">0</span>
+                </button>
+                <div class="hidden lg:block w-16"></div>
+            </div>
+        </header>
+
+        <!-- Workspace: Products (Left/Full) + Cart (Right/Bottom) -->
+        <div class="flex-1 overflow-hidden flex flex-col lg:flex-row w-full max-w-6xl mx-auto relative">
+            
+            <!-- Product List Area -->
+            <div class="flex-1 overflow-y-auto no-scrollbar relative z-0 pb-[100px] lg:pb-0" id="product-list-area">
+                <div class="p-4 lg:p-6 space-y-5">
+                    
+                    <!-- Search Bar sticky -->
+                    <div class="bg-white/90 backdrop-blur-sm rounded-2xl p-1.5 flex items-center shadow-sm border border-border/80 sticky top-0 z-10 transition-all focus-within:ring-2 focus-within:ring-primary/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-text-muted/40 ml-3"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        <input type="text" id="search-input" placeholder="Cari Varian Roti..." class="w-full bg-transparent border-none outline-none text-[0.95rem] p-2 placeholder:text-text-muted/40 font-medium text-primary-dark" autocomplete="off" />
+                        <button id="clear-search-btn" class="p-2 text-text-muted/50 hover:text-red-400 hidden mr-1"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+                    </div>
+
+                    <div id="no-results" class="hidden flex-col items-center justify-center py-16 text-center text-text-muted opacity-60">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-4 text-primary/30"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                         <p class="font-medium text-lg">Menu tidak ditemukan</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-5 pb-8" id="products-grid">
+                        {products.map((product) => (
+                            <div class="group bg-white rounded-[20px] p-3 shadow-sm border border-border/60 hover:border-primary/30 transition-all flex md:flex-col gap-4 product-card" data-name={product.name.toLowerCase()} data-desc={product.description.toLowerCase()}>
+                                <div class="relative w-[110px] h-[110px] md:w-full md:h-auto md:aspect-[4/3] shrink-0 rounded-2xl overflow-hidden bg-surface flex justify-center items-center">
+                                    {product.image ? (
+                                        <img src={product.image} alt={product.name} class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+                                    ) : (
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" class="text-primary/20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                    )}
+                                </div>
+                                <div class="flex-1 flex flex-col justify-between py-1 md:py-0 w-full min-w-0">
+                                    <div>
+                                        <h3 class="text-[1rem] md:text-[1.1rem] font-bold text-primary-dark leading-snug line-clamp-2 md:mb-1">{product.name}</h3>
+                                        <p class="text-[0.8rem] text-text-muted line-clamp-2 leading-relaxed hidden md:-webkit-box mt-0.5">{product.description}</p>
+                                    </div>
+                                    <div class="flex justify-between items-center mt-3 gap-2">
+                                        <span class="font-bold text-primary text-[0.95rem] md:text-[1.05rem]">
+                                            Rp {Number(product.price).toLocaleString("id-ID")}
+                                        </span>
+                                        <button class="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all active:scale-95" data-add={product.id} aria-label="Tambah item">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cart Drawer (BottomSheet on Mobile, Sidebar on Desktop) -->
+            <aside id="cart-panel" class="fixed inset-x-0 bottom-0 bg-white rounded-t-[32px] shadow-[0_-15px_40px_rgba(0,0,0,0.06)] transform translate-y-[calc(100%-76px)] transition-transform duration-500 z-30 lg:relative lg:translate-y-0 lg:rounded-none lg:border-l lg:border-border/60 lg:shadow-none lg:w-[400px] lg:flex-shrink-0 flex flex-col lg:h-full will-change-transform">
+                
+                <!-- Drawer Puller Handle (Mobile only) -->
+                <div id="cart-puller" class="h-6 w-full flex items-center justify-center lg:hidden cursor-grab active:cursor-grabbing absolute top-0 inset-x-0 bg-transparent z-40 touch-none">
+                     <div class="w-12 h-1.5 bg-border rounded-full pointer-events-none"></div>
+                </div>
+
+                <!-- Floating Summary Banner (Mobile Only, Visible when collapsed) -->
+                <div id="floating-cart-summary" class="h-[76px] px-6 flex items-center justify-between lg:hidden pt-2 shrink-0 cursor-pointer" onclick="document.getElementById('cart-panel').classList.toggle('bg-opened')">
+                     <div class="flex items-center gap-4">
+                          <div class="relative w-12 h-12 bg-primary/10 rounded-[14px] flex items-center justify-center text-primary">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                             <span id="floating-badge" class="absolute -top-1.5 -right-1.5 w-[22px] h-[22px] bg-secondary text-primary-dark text-[11px] font-bold rounded-full flex items-center justify-center border-2 border-white opacity-0 scale-50 transition-all">0</span>
+                          </div>
+                          <div>
+                               <p class="text-[0.7rem] text-text-muted font-bold uppercase tracking-wider mb-0.5">Total Belanja</p>
+                               <strong id="floating-total" class="text-primary-dark text-lg">-</strong>
+                          </div>
+                     </div>
+                     <span class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-md">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                     </span>
+                </div>
+
+                <!-- Expanded Content Area -->
+                <div class="flex-1 flex flex-col overflow-hidden h-[85dvh] lg:h-full opacity-0 lg:opacity-100 transition-opacity" id="cart-expanded-content">
+                    
+                    <div class="px-6 py-4 lg:py-5 border-b border-border/60 shrink-0 hidden lg:flex justify-between items-center bg-surface/30">
+                        <h2 class="font-bold text-lg text-primary-dark">Keranjang & Checkout</h2>
+                        <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold" id="desktop-badge">0 item</span>
+                    </div>
+
+                    <!-- Scrollable Form/Cart Section -->
+                    <div class="flex-1 overflow-y-auto no-scrollbar px-6 pt-4 pb-12" id="cart-scroll-area">
+                        <!-- Items -->
+                        <div id="cart-items" class="space-y-3 mb-6">
+                            <!-- Empty slot loaded dynamically -->
+                        </div>
+
+                        <!-- Form Checkout -->
+                        <div id="checkout-section" class="hidden transition-all duration-300">
+                             <!-- Desktop Only Title -->
+                             <div class="h-px w-full bg-border/40 my-6"></div>
+                             
+                             <div class="space-y-4">
+                                 <h3 class="font-bold text-[0.85rem] text-primary-dark uppercase tracking-wider mb-3">Informasi Pengiriman</h3>
+                                 <form id="checkout-form" class="space-y-4">
+                                     <div class="space-y-3">
+                                         <input name="customer_name" placeholder="Nama Penerima" required class="w-full px-4 py-3 rounded-[14px] bg-surface/50 border border-border/80 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 outline-none transition-all placeholder:text-text-muted/60 text-[0.95rem]" />
+                                         <input name="customer_phone" type="tel" placeholder="No. WhatsApp (Aktif)" required class="w-full px-4 py-3 rounded-[14px] bg-surface/50 border border-border/80 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 outline-none transition-all placeholder:text-text-muted/60 text-[0.95rem]" />
+                                     </div>
+                                     <div class="grid grid-cols-2 gap-3">
+                                         <input name="city" placeholder="Kota/Kabupaten" required class="w-full px-4 py-3 rounded-[14px] bg-surface/50 border border-border/80 focus:border-primary focus:bg-white outline-none text-[0.95rem] placeholder:text-text-muted/60" />
+                                         <input name="district" placeholder="Kecamatan" required class="w-full px-4 py-3 rounded-[14px] bg-surface/50 border border-border/80 focus:border-primary focus:bg-white outline-none text-[0.95rem] placeholder:text-text-muted/60" />
+                                     </div>
+                                     <textarea name="street" placeholder="Alamat Detail (No Rumah, Jalan, Patokan)" required class="w-full px-4 py-3 rounded-[14px] bg-surface/50 border border-border/80 focus:border-primary focus:bg-white outline-none min-h-[90px] resize-none text-[0.95rem] placeholder:text-text-muted/60"></textarea>
+                                     <div class="grid grid-cols-2 gap-3 pb-2">
+                                         <div>
+                                             <label class="block text-[11px] font-bold text-text-muted uppercase mb-1.5 px-1">🗓 Tanggal <span class="text-red-400">*</span></label>
+                                             <input name="delivery_date" type="date" required class="w-full px-4 py-3 rounded-[14px] bg-surface/50 border border-border/80 focus:border-primary focus:bg-white outline-none text-[0.95rem]" />
+                                         </div>
+                                         <div>
+                                             <label class="block text-[11px] font-bold text-text-muted uppercase mb-1.5 px-1">⏱ Waktu <span class="text-red-400">*</span></label>
+                                             <input name="delivery_time" type="time" required class="w-full px-4 py-3 rounded-[14px] bg-surface/50 border border-border/80 focus:border-primary focus:bg-white outline-none text-[0.95rem]" />
+                                         </div>
+                                     </div>
+                                     <div id="checkout-status" class="text-center text-sm text-red-500 font-medium empty:hidden hidden px-3 py-3 bg-red-50 rounded-xl leading-snug"></div>
+                                 </form>
+                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Action Bar (Fixed at bottom of drawer) -->
+                    <div class="bg-white/95 backdrop-blur-xl px-6 py-4 lg:py-5 border-t border-border/60 shrink-0 mt-auto">
+                         <div class="flex justify-between items-center mb-3 text-[0.95rem]">
+                             <span class="text-text-muted font-medium">Total Pembayaran</span>
+                             <strong id="cart-total" class="font-bold text-primary-dark text-xl">Rp 0</strong>
+                         </div>
+                         <button id="main-checkout-btn" disabled class="w-full h-14 rounded-2xl bg-primary text-white font-bold text-[1.05rem] shadow-[0_8px_20px_rgba(37,190,196,0.3)] hover:bg-primary-dark active:scale-[0.98] transition-all disabled:opacity-50 disabled:active:scale-100 disabled:shadow-none disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                             Bayar Sekarang
+                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                         </button>
+                    </div>
+
+                </div>
+            </aside>
+        </div>
+    </main>
+</AppLayout>
+
+<style>
+    /* App-like interactivity */
+    #cart-panel.bg-opened {
+        transform: translateY(0);
+    }
+    #cart-panel.bg-opened #cart-expanded-content {
+        opacity: 1;
+    }
+    #cart-panel.bg-opened #floating-cart-summary {
+         opacity: 0;
+         pointer-events: none;
+    }
+    #search-input::-webkit-search-cancel-button {
+       display: none;
+    }
+</style>
+
+<script type="application/json" id="product-data" is:inline>
+    {JSON.stringify(products)}
+</script>
+
+<script
+    is:inline
+    src={env.MIDTRANS_IS_PRODUCTION === "true"
+        ? "https://app.midtrans.com/snap/snap.js"
+        : "https://app.sandbox.midtrans.com/snap/snap.js"}
+    data-client-key={env.PUBLIC_MIDTRANS_CLIENT_KEY}></script>
+
+<script>
+    declare global {
+        interface Window {
+            snap: any;
+        }
+    }
+
+    const products = JSON.parse(
+        document.getElementById("product-data")?.textContent || "[]",
+    ) as any[];
+    
+    // UI Elements
+    const cartPanel = document.getElementById("cart-panel");
+    const cartItemsEl = document.getElementById("cart-items");
+    const cartTotalEl = document.getElementById("cart-total");
+    const floatingTotalEl = document.getElementById("floating-total");
+    const checkoutSection = document.getElementById("checkout-section");
+    const mainCheckoutBtn = document.getElementById("main-checkout-btn") as HTMLButtonElement;
+    const checkoutForm = document.getElementById("checkout-form") as HTMLFormElement;
+    const checkoutStatus = document.getElementById("checkout-status");
+    const badges = [
+        document.getElementById("floating-badge"),
+        document.getElementById("mobile-cart-badge")
+    ];
+    const desktopBadge = document.getElementById("desktop-badge");
+
+    // State
+    const cart = new Map<string, any>();
+    const format = (value: number) => `Rp ${value.toLocaleString("id-ID")}`;
+
+    // -----------------------------------------------------
+    // Logic: Cart Management
+    // -----------------------------------------------------
+    const updateBadges = (totalQty: number) => {
+        badges.forEach(b => {
+             if (!b) return;
+             if (totalQty > 0) {
+                 b.textContent = totalQty.toString();
+                 b.classList.remove("opacity-0", "scale-50");
+                 b.classList.add("opacity-100", "scale-100");
+             } else {
+                 b.classList.remove("opacity-100", "scale-100");
+                 b.classList.add("opacity-0", "scale-50");
+             }
+        });
+        if(desktopBadge) desktopBadge.textContent = `${totalQty} item`;
+    };
+
+    const emptyCartHtml = `<div class="text-center py-12 flex flex-col items-center justify-center h-full">
+         <div class="w-20 h-20 bg-primary/5 rounded-full flex items-center justify-center mb-4 mx-auto">
+             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary/30"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+         </div>
+         <p class="text-[0.95rem] font-bold text-primary-dark">Keranjang Kosong</p>
+         <p class="text-sm text-text-muted mt-1">Silakan pilih roti kesukaanmu.</p>
+    </div>`;
+
+    const renderCart = () => {
+        if (!cartItemsEl || !cartTotalEl) return;
+        
+        cartItemsEl.innerHTML = "";
+        let total = 0;
+        let qty = 0;
+        
+        if (cart.size === 0) {
+            cartItemsEl.innerHTML = emptyCartHtml;
+            cartTotalEl.textContent = "Rp 0";
+            if(floatingTotalEl) floatingTotalEl.textContent = "-";
+            updateBadges(0);
+            if(checkoutSection) checkoutSection.classList.add("hidden");
+            if(mainCheckoutBtn) mainCheckoutBtn.disabled = true;
+            return;
+        }
+
+        if(checkoutSection) checkoutSection.classList.remove("hidden");
+        if(mainCheckoutBtn) mainCheckoutBtn.disabled = false;
+
+        for (const item of cart.values()) {
+            const line = item.price * item.qty;
+            total += line;
+            qty += item.qty;
+            
+            const row = document.createElement("div");
+            row.className = "flex justify-between items-center py-3.5 border-b border-border/40 last:border-0";
+            row.innerHTML = `
+                <div class="flex-1 pr-3">
+                    <strong class="text-[0.95rem] block text-primary-dark leading-snug">${item.name}</strong>
+                    <div class="text-[0.85rem] text-primary font-bold mt-1">Rp ${item.price.toLocaleString("id-ID")}</div>
+                </div>
+                <div class="flex items-center gap-2 bg-surface border border-border/60 rounded-[12px] p-0.5 shadow-sm shrink-0">
+                    <button type="button" data-dec="${item.id}" class="w-8 h-8 flex items-center justify-center rounded-[10px] bg-transparent text-text-muted hover:bg-black/5 hover:text-red-500 transition-colors cursor-pointer active:scale-95">
+                        ${item.qty === 1 
+                          ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>'
+                          : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>'}
+                    </button>
+                    <span class="text-[0.9rem] font-bold w-5 text-center text-primary-dark">${item.qty}</span>
+                    <button type="button" data-inc="${item.id}" class="w-8 h-8 flex items-center justify-center rounded-[10px] bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                    </button>
+                </div>
+            `;
+            cartItemsEl.appendChild(row);
+        }
+        cartTotalEl.textContent = format(total);
+        if(floatingTotalEl) floatingTotalEl.textContent = format(total);
+        updateBadges(qty);
+    };
+
+    renderCart();
+
+    // Add to cart globally
+    document.querySelectorAll("[data-add]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const id = btn.getAttribute("data-add")!;
+            const product = products.find((p) => p.id === id);
+            if (!product) return;
+            
+            if (cart.has(id)) {
+                cart.get(id).qty += 1;
+            } else {
+                cart.set(id, { ...product, qty: 1 });
+            }
+            renderCart();
+            
+            // Haptic/visual feedback
+            const origHTML = btn.innerHTML;
+            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+            btn.classList.add("bg-[#28c985]", "text-white");
+            btn.classList.remove("text-primary", "bg-primary/10");
+            setTimeout(() => {
+                 btn.innerHTML = origHTML;
+                 btn.classList.remove("bg-[#28c985]", "text-white");
+                 btn.classList.add("text-primary", "bg-primary/10");
+            }, 600);
+        });
+    });
+
+    // Cart actions globally
+    cartItemsEl?.addEventListener("click", (e) => {
+        const target = e.target;
+        if (!(target instanceof HTMLElement)) return;
+        
+        const btn = target.closest("button");
+        if (!btn) return;
+
+        const inc = btn.getAttribute("data-inc");
+        const dec = btn.getAttribute("data-dec");
+        const id = inc || dec;
+        if (!id || !cart.has(id)) return;
+        
+        if (inc) cart.get(id)!.qty += 1;
+        if (dec) {
+            cart.get(id)!.qty -= 1;
+            if(cart.get(id)!.qty <= 0) cart.delete(id);
+        }
+        renderCart();
+    });
+
+    // -----------------------------------------------------
+    // Logic: Form & URL State & Search
+    // -----------------------------------------------------
+    const updateURLParam = (key: string, value: string) => {
+         const url = new URL(window.location.href);
+         if(value) url.searchParams.set(key, value);
+         else url.searchParams.delete(key);
+         window.history.replaceState({}, '', url);
+    };
+
+    const searchInput = document.getElementById("search-input") as HTMLInputElement;
+    const clearBtn = document.getElementById("clear-search-btn");
+    const noResults = document.getElementById("no-results");
+    
+    const filterProducts = (query: string) => {
+         const q = query.toLowerCase().trim();
+         let visible = 0;
+         document.querySelectorAll(".product-card").forEach((card: any) => {
+             const name = card.dataset.name || "";
+             const desc = card.dataset.desc || "";
+             if (name.includes(q) || desc.includes(q)) {
+                 card.style.display = "";
+                 visible++;
+             } else {
+                 card.style.display = "none";
+             }
+         });
+         
+         if(noResults) {
+             if (visible === 0 && q) noResults.classList.remove("hidden");
+             else noResults.classList.add("hidden");
+             noResults.style.display = visible === 0 && q ? "flex" : "none";
+         }
+         
+         if (q) clearBtn?.classList.remove("hidden");
+         else clearBtn?.classList.add("hidden");
+         
+         updateURLParam("q", q);
+    };
+
+    const initParams = new URLSearchParams(window.location.search);
+    if(initParams.has("q") && searchInput) {
+        searchInput.value = initParams.get("q")!;
+        filterProducts(searchInput.value);
+    }
+    
+    searchInput?.addEventListener("input", (e: any) => filterProducts(e.target.value));
+    clearBtn?.addEventListener("click", () => {
+         if(searchInput) searchInput.value = "";
+         filterProducts("");
+         searchInput?.focus();
+    });
+
+    document.getElementById("cart-puller")?.addEventListener("click", () => {
+         if(cartPanel) cartPanel.classList.remove("bg-opened");
+    });
+    
+    // Checkout Submission
+    mainCheckoutBtn?.addEventListener("click", () => {
+         if(checkoutForm && checkoutForm.reportValidity()) {
+              checkoutForm.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
+         }
+    });
+
+    checkoutForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (cart.size === 0) return;
+        
+        mainCheckoutBtn.disabled = true;
+        const oHtml = mainCheckoutBtn.innerHTML;
+        mainCheckoutBtn.innerHTML = '<span class="animate-pulse">Memproses...</span>';
+
+        const form = new FormData(checkoutForm);
+        const items = Array.from(cart.values()).map((item) => ({
+            product_id: item.id,
+            qty: item.qty,
+        }));
+        
+        const payload = {
+            customer_name: form.get("customer_name"),
+            customer_phone: form.get("customer_phone"),
+            customer_email: "",
+            shipping_address: {
+                province: "DI Yogyakarta", // Hardcode default territory
+                city: form.get("city"),
+                district: form.get("district"),
+                street: form.get("street"),
+            },
+            delivery_date: form.get("delivery_date"),
+            delivery_time: form.get("delivery_time"),
+            coupon_code: "",
+            items,
+        };
+        
+        if (checkoutStatus) { checkoutStatus.textContent = ""; checkoutStatus.classList.add("hidden"); }
+
+        try {
+            const res = await fetch("/api/checkout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            
+            if (!res.ok) {
+                const err = await res.text();
+                throw new Error(err);
+            }
+            
+            const data = (await res.json()) as any;
+            mainCheckoutBtn.innerHTML = "Menunggu Pembayaran...";
+            
+            window.snap.pay(data.snap_token, {
+                onSuccess: () => {
+                    cart.clear();
+                    renderCart();
+                    window.location.href = `/order/success?order=${data.order_no}`;
+                },
+                onPending: () => {
+                    window.location.href = `/order/pending?order=${data.order_no}`;
+                },
+                onError: () => {
+                    throw new Error("Pembayaran dibatalkan/gagal.");
+                },
+                onClose: () => {
+                    mainCheckoutBtn.disabled = false;
+                    mainCheckoutBtn.innerHTML = oHtml;
+                }
+            });
+        } catch(err: any) {
+             if (checkoutStatus) { 
+                 checkoutStatus.textContent = err.message || "Terjadi kesalahan sistem."; 
+                 checkoutStatus.classList.remove("hidden");
+             }
+             mainCheckoutBtn.disabled = false;
+             mainCheckoutBtn.innerHTML = oHtml;
+        }
+    });
+</script>
