@@ -6,11 +6,15 @@
     "dev": "XDG_CONFIG_HOME=/tmp/wrangler wrangler types && astro dev",
     "start": "XDG_CONFIG_HOME=/tmp/wrangler wrangler types && astro dev",
     "build": "XDG_CONFIG_HOME=/tmp/wrangler wrangler types && astro check && astro build",
-    "build:cloudflare": "ASTRO_ADAPTER=cloudflare XDG_CONFIG_HOME=/tmp/wrangler wrangler types && astro check && astro build",
+    "build:cf": "ASTRO_ADAPTER=cloudflare XDG_CONFIG_HOME=/tmp/wrangler wrangler types && astro check && astro build",
     "build:node": "ASTRO_ADAPTER=node NODE_RUNTIME=1 sh -c 'astro check && astro build'",
     "preview": "XDG_CONFIG_HOME=/tmp/wrangler wrangler types && astro preview",
     "generate-types": "XDG_CONFIG_HOME=/tmp/wrangler wrangler types",
-    "type-check": "npm run generate-types && tsc",
+    "validate": "pnpm run validate:all",
+    "validate:all": "pnpm run validate:astro && pnpm run validate:cf && pnpm run validate:svelte",
+    "validate:cf": "pnpm run generate-types && tsc",
+    "validate:astro": "pnpm run astro check",
+    "validate:svelte": "svelte-check",
     "smoke:api": "bash scripts/smoke-api.sh",
     "astro": "astro"
   },
@@ -30,12 +34,13 @@
     "date-fns": "^4.1.0",
     "pdfkit": "^0.17.2",
     "sharp": "^0.34.4",
-    "svelte": "^5.53.2",
     "tailwindcss": "^4.2.1",
     "typescript": "^5.9.3"
   },
   "devDependencies": {
     "@types/pdfkit": "^0.17.5",
+    "svelte-check": "^4.4.3",
+    "svelte-check-rs": "^0.9.5",
     "wrangler": "^4.67.0"
   }
 }
