@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "types": [
+      "astro/client",
       "./worker-configuration.d.ts",
       "node"
     ]

@@ -1,0 +1,22 @@
+services:
+  roti-sholawat:
+    build: .
+    ports:
+      - "4321:4321"
+    env_file:
+      - .env.docker
+    environment:
+      ASTRO_ADAPTER: "node"
+      NODE_RUNTIME: "1"
+  roti-sholawat-turso:
+    image: roti-sholawat
+    build: .
+    ports:
+      - "4322:4321"
+    env_file:
+      - .env.production
+    environment:
+      ASTRO_ADAPTER: "node"
+      NODE_RUNTIME: "1"
+    volumes:
+      - ./data:/app/data

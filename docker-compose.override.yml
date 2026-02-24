@@ -1,0 +1,8 @@
+services:
+  roti-sholawat:
+    command: ["pnpm", "run", "dev", "--host", "0.0.0.0"]
+    ports:
+      - "4321:4321"
+    volumes:
+      - .:/app
+      - /app/node_modules

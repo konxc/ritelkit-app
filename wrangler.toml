@@ -2,7 +2,16 @@
 name = "roti-sholawat"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-02-23"
+compatibility_flags = [ "nodejs_compat", "global_fetch_strictly_public" ]
+
+kv_namespaces = [
+  { binding = "SESSION", id = "SESSION" }
+]
 
 [env.production]
 compatibility_date = "2026-02-22"
 compatibility_flags = [ "nodejs_compat", "global_fetch_strictly_public" ]
+
+env.production.kv_namespaces = [
+  { binding = "SESSION", id = "SESSION" }
+]

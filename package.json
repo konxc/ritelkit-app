@@ -3,25 +3,39 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "wrangler types && astro dev",
-    "start": "wrangler types && astro dev",
-    "build": "wrangler types && astro check && astro build",
-    "preview": "wrangler types && astro preview",
-    "generate-types": "wrangler types",
+    "dev": "XDG_CONFIG_HOME=/tmp/wrangler wrangler types && astro dev",
+    "start": "XDG_CONFIG_HOME=/tmp/wrangler wrangler types && astro dev",
+    "build": "XDG_CONFIG_HOME=/tmp/wrangler wrangler types && astro check && astro build",
+    "build:cloudflare": "ASTRO_ADAPTER=cloudflare XDG_CONFIG_HOME=/tmp/wrangler wrangler types && astro check && astro build",
+    "build:node": "ASTRO_ADAPTER=node NODE_RUNTIME=1 sh -c 'astro check && astro build'",
+    "preview": "XDG_CONFIG_HOME=/tmp/wrangler wrangler types && astro preview",
+    "generate-types": "XDG_CONFIG_HOME=/tmp/wrangler wrangler types",
     "type-check": "npm run generate-types && tsc",
+    "smoke:api": "bash scripts/smoke-api.sh",
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/check": "^0.9.6",
     "@astrojs/cloudflare": "^12.6.12",
+    "@astrojs/node": "^9.0.0",
     "@astrojs/partytown": "^2.1.4",
     "@astrojs/sitemap": "^3.7.0",
     "@astrojs/svelte": "^7.2.5",
+    "@aws-sdk/client-s3": "^3.888.0",
+    "@libsql/client": "^0.15.7",
+    "@tailwindcss/typography": "^0.5.19",
+    "@tailwindcss/vite": "^4.2.1",
     "@types/node": "^25.3.0",
     "astro": "^5.17.1",
+    "date-fns": "^4.1.0",
+    "pdfkit": "^0.17.2",
+    "sharp": "^0.34.4",
     "svelte": "^5.53.2",
+    "tailwindcss": "^4.2.1",
     "typescript": "^5.9.3"
   },
   "devDependencies": {
+    "@types/pdfkit": "^0.17.5",
     "wrangler": "^4.67.0"
   }
 }

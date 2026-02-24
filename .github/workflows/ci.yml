@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [ cloudflare, node ]
+    env:
+      PUBLIC_SITE_URL: "https://example.invalid"
+      PUBLIC_WHATSAPP_NUMBER: "6280000000000"
+      PUBLIC_MIDTRANS_CLIENT_KEY: "dummy"
+      MIDTRANS_SERVER_KEY: "dummy"
+      MIDTRANS_IS_PRODUCTION: "false"
+      DATABASE_URL: "file:./ci.db"
+      ADMIN_SESSION_SECRET: "ci-secret"
+      SETUP_TOKEN: "ci-token"
+      UPLOAD_DRIVER: "local"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - name: Install
+        run: pnpm install
+      - name: Type Check
+        run: pnpm run type-check
+      - name: Build (Cloudflare)
+        if: matrix.target == 'cloudflare'
+        run: pnpm run build:cloudflare
+      - name: Build (Node)
+        if: matrix.target == 'node'
+        env:
+          ASTRO_ADAPTER: node
+          NODE_RUNTIME: "1"
+        run: pnpm run build:node
+      - name: Smoke API (Node runtime)
+        if: matrix.target == 'node'
+        env:
+          HOST: 127.0.0.1
+          PORT: 4321
+        run: |
+          node dist/server/entry.mjs &
+          SERVER_PID=$!
+          trap "kill $SERVER_PID" EXIT
+          sleep 2
+          pnpm run smoke:api
+      - name: Docker build
+        if: matrix.target == 'node'
+        run: docker build -t roti-sholawat:ci .
