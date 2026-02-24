@@ -96,6 +96,14 @@
   }
 }
 
+@utility table-wrap {
+  @apply w-full overflow-x-auto rounded-[14px] border border-[var(--admin-border)] bg-white;
+
+  & .table {
+    @apply min-w-[760px] border-0;
+  }
+}
+
 @utility table-actions {
   @apply flex gap-2;
 }
@@ -239,5 +247,9 @@ button.primary {
 
   .admin-main {
     @apply p-4;
+  }
+
+  .table-wrap .table {
+    @apply min-w-[680px];
   }
 }
