@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import RevealObserver from "../components/RevealObserver.svelte";
 
 interface Props {
     title?: string;
@@ -62,7 +63,7 @@ const waLink = "https://wa.me/6281314537475?text=Halo%20Roti%20Sholawat%2C%20say
     </head>
     <body class="min-h-screen flex flex-col overflow-x-hidden pb-[70px] lg:pb-0 bg-[var(--color-bg)]">
         <header
-            class="bg-[#f6fffd]/95 border-b border-primary/10 backdrop-blur-xl sticky top-0 z-50 py-2"
+            class="bg-[#f6fffd]/95 border-b border-primary/10 backdrop-blur-xl sticky top-0 z-50 py-1.5"
         >
             <div class="container flex items-center justify-between">
                 <a
@@ -73,7 +74,7 @@ const waLink = "https://wa.me/6281314537475?text=Halo%20Roti%20Sholawat%2C%20say
                     <img
                         src="/images/brand/logo-teks-sholawat.png"
                         alt="Roti Sholawat"
-                        class="h-11 sm:h-14 w-auto drop-shadow-sm"
+                        class="h-12 sm:h-16 w-auto drop-shadow-sm"
                     />
                 </a>
 
@@ -264,24 +265,6 @@ const waLink = "https://wa.me/6281314537475?text=Halo%20Roti%20Sholawat%2C%20say
             )
         }
 
-        <script>
-            // Intersection Observer for Reveal Animations
-            const observer = new IntersectionObserver(
-                (entries) => {
-                    entries.forEach((entry) => {
-                        if (entry.isIntersecting) {
-                            entry.target.classList.add("is-visible");
-                        }
-                    });
-                },
-                { threshold: 0.12 },
-            );
-
-            document
-                .querySelectorAll(".reveal")
-                .forEach((el) => observer.observe(el));
-
-
-        </script>
+        <RevealObserver />
     </body>
 </html>
