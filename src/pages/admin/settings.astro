@@ -1,10 +1,6 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import SectionHeader from "../../components/admin/SectionHeader.svelte";
-import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
-import ActionGroup from "../../components/admin/ActionGroup.svelte";
-import PanelCard from "../../components/admin/PanelCard.svelte";
-import CrudInlineForm from "../../components/admin/CrudInlineForm.svelte";
+import SettingsManager from "../../components/admin/pages/SettingsManager.svelte";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 
@@ -24,82 +20,9 @@ const deliverySettings = settings.delivery_settings || {};
 ---
 
 <AdminLayout title="Pengaturan">
-    <SectionHeader title="Pengaturan Operasional" badge="Dinamis" />
-    <AdminToolbar title="Seed Data">
-        <ActionGroup>
-            <button class="btn-ghost" id="seed-btn" type="button">Generate Data Demo</button>
-        </ActionGroup>
-    </AdminToolbar>
-    <CrudInlineForm id="settings-form">
-        <PanelCard>
-            <h3>Model Order</h3>
-            <label>Preorder Only</label>
-            <select name="preorder_only">
-                <option
-                    value="true"
-                    selected={orderSettings.preorder_only === true}>Ya</option
-                >
-                <option
-                    value="false"
-                    selected={orderSettings.preorder_only === false}
-                    >Tidak</option
-                >
-            </select>
-            <label>Minimum Lead Time (jam)</label>
-            <input
-                name="minimum_lead_time_hours"
-                type="number"
-                value={orderSettings.minimum_lead_time_hours ?? 0}
-            />
-            <label>Cutoff Time (HH:mm)</label>
-            <input
-                name="cutoff_time"
-                type="text"
-                value={orderSettings.cutoff_time ?? ""}
-            />
-            <label>Same Day Enabled</label>
-            <select name="same_day_enabled">
-                <option
-                    value="true"
-                    selected={orderSettings.same_day_enabled === true}
-                    >Ya</option
-                >
-                <option
-                    value="false"
-                    selected={orderSettings.same_day_enabled === false}
-                    >Tidak</option
-                >
-            </select>
-            <label>Available Days (comma)</label>
-            <input
-                name="available_days"
-                type="text"
-                value={(orderSettings.available_days || []).join(",")}
-            />
-        </PanelCard>
-
-        <PanelCard>
-            <h3>Pengiriman</h3>
-            <label>Provinsi</label>
-            <input
-                name="delivery_province"
-                type="text"
-                value={deliverySettings.delivery_province ?? "DI Yogyakarta"}
-            />
-            <label>Free Delivery Threshold</label>
-            <input
-                name="free_delivery_threshold"
-                type="number"
-                value={deliverySettings.free_delivery_threshold ?? 0}
-            />
-        </PanelCard>
-
-        <button class="primary" type="submit">Simpan Pengaturan</button>
-    </CrudInlineForm>
-
-    <script>
-        import { initAdminSettingsPage } from "../../lib/admin-settings-client";
-
-        initAdminSettingsPage();
-    </script>
+    <SettingsManager
+        orderSettings={orderSettings}
+        deliverySettings={deliverySettings}
+        client:load
+    />
 </AdminLayout>

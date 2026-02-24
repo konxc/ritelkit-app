@@ -1,13 +1,9 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import SectionHeader from "../../components/admin/SectionHeader.svelte";
 import PaginationNav from "../../components/admin/PaginationNav.svelte";
-import AdminDataTable from "../../components/admin/AdminDataTable.svelte";
 import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
-import RowActions from "../../components/admin/RowActions.svelte";
 import AdminFilterForm from "../../components/admin/AdminFilterForm.svelte";
-import ActionGroup from "../../components/admin/ActionGroup.svelte";
-import CrudInlineForm from "../../components/admin/CrudInlineForm.svelte";
+import CmsManager from "../../components/admin/pages/CmsManager.svelte";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 import { parsePage } from "../../lib/admin";
@@ -39,33 +35,7 @@ const totalPages = Math.max(1, Math.ceil(total / limit));
 ---
 
 <AdminLayout title="Konten">
-    <SectionHeader title="Buat Halaman" badge="Brand Awareness" />
-    <CrudInlineForm id="cms-form">
-        <input type="hidden" name="page_id" />
-        <div>
-            <label>Judul</label>
-            <input name="title" required />
-        </div>
-        <div>
-            <label>Slug</label>
-            <input name="slug" placeholder="contoh: semesta-bersholawat" required />
-        </div>
-        <div>
-            <label>Konten (Markdown)</label>
-            <textarea name="content_md" rows="6" required></textarea>
-        </div>
-        <div>
-            <label>Status</label>
-            <select name="is_active">
-                <option value="true">Aktif</option>
-                <option value="false">Draft</option>
-            </select>
-        </div>
-        <ActionGroup>
-            <button class="primary" type="submit">Simpan</button>
-            <button class="btn-ghost" type="button" id="cms-clear">Clear</button>
-        </ActionGroup>
-    </CrudInlineForm>
+    <CmsManager rows={pagesRes.rows as any[]} client:load />
 
     <AdminToolbar title="Daftar Halaman">
         <AdminFilterForm>
@@ -74,44 +44,10 @@ const totalPages = Math.max(1, Math.ceil(total / limit));
         </AdminFilterForm>
     </AdminToolbar>
 
-    <AdminDataTable>
-        <thead>
-            <tr>
-                <th>Judul</th>
-                <th>Slug</th>
-                <th>Status</th>
-                <th>Update</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            {pagesRes.rows.map((p: any) => (
-                <tr data-id={p.id}>
-                    <td contenteditable="true" data-field="title">{p.title}</td>
-                    <td contenteditable="true" data-field="slug">{p.slug}</td>
-                    <td contenteditable="true" data-field="is_active">{p.is_active ? "true" : "false"}</td>
-                    <td>{String(p.updated_at).split("T")[0]}</td>
-                    <td>
-                        <RowActions
-                            viewHref={`/content/${p.slug}`}
-                            showEdit={true}
-                        />
-                    </td>
-                </tr>
-            ))}
-        </tbody>
-    </AdminDataTable>
-
     <PaginationNav
         page={page}
         totalPages={totalPages}
         prevHref={page > 1 ? `?q=${encodeURIComponent(q)}&page=${page - 1}` : undefined}
         nextHref={page < totalPages ? `?q=${encodeURIComponent(q)}&page=${page + 1}` : undefined}
     />
-
-    <script>
-        import { initCmsPageAdmin } from "../../lib/admin-cms-client";
-
-        initCmsPageAdmin();
-    </script>
 </AdminLayout>

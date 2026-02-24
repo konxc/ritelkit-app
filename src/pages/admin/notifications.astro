@@ -1,12 +1,9 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import SectionHeader from "../../components/admin/SectionHeader.svelte";
 import PaginationNav from "../../components/admin/PaginationNav.svelte";
-import AdminDataTable from "../../components/admin/AdminDataTable.svelte";
 import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
-import RowActions from "../../components/admin/RowActions.svelte";
 import AdminFilterForm from "../../components/admin/AdminFilterForm.svelte";
-import CrudInlineForm from "../../components/admin/CrudInlineForm.svelte";
+import NotificationsManager from "../../components/admin/pages/NotificationsManager.svelte";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 import { parsePage } from "../../lib/admin";
@@ -14,7 +11,7 @@ import { parsePage } from "../../lib/admin";
 await initDb(Astro);
 const admin = await requireAdmin(Astro);
 if (!admin) {
-    return Astro.redirect("/admin/login");
+  return Astro.redirect("/admin/login");
 }
 const db = getDb(Astro);
 const { page, q, offset, limit } = parsePage(Astro.url, 20);
@@ -22,115 +19,35 @@ const where = q ? "WHERE recipient LIKE ? OR channel LIKE ?" : "";
 const args = q ? [`%${q}%`, `%${q}%`] : [];
 
 const rows = await db.execute({
-    sql: `SELECT id, channel, recipient, template, status, created_at, sent_at
-          FROM notifications
-          ${where}
-          ORDER BY created_at DESC
-          LIMIT ? OFFSET ?`,
-    args: [...args, limit, offset],
+  sql: `SELECT id, channel, recipient, template, status, created_at, sent_at
+        FROM notifications
+        ${where}
+        ORDER BY created_at DESC
+        LIMIT ? OFFSET ?`,
+  args: [...args, limit, offset],
 });
 const countRes = await db.execute({
-    sql: `SELECT COUNT(*) as count FROM notifications ${where}`,
-    args,
+  sql: `SELECT COUNT(*) as count FROM notifications ${where}`,
+  args,
 });
 const total = Number((countRes.rows[0] as any)?.count || 0);
 const totalPages = Math.max(1, Math.ceil(total / limit));
 ---
 
 <AdminLayout title="Notifikasi">
-    <SectionHeader title="Buat Notifikasi" badge="Manual Send" />
-    <CrudInlineForm id="notif-form">
-        <div>
-            <label>Channel</label>
-            <select name="channel">
-                <option value="whatsapp">WhatsApp</option>
-                <option value="email">Email</option>
-            </select>
-        </div>
-        <div>
-            <label>Penerima</label>
-            <input name="recipient" required />
-        </div>
-        <div>
-            <label>Template</label>
-            <input name="template" placeholder="opsional" />
-        </div>
-        <div>
-            <label>Payload (JSON)</label>
-            <textarea name="payload_json" rows="3" placeholder='{"message":"..."}'></textarea>
-        </div>
-        <button class="primary" type="submit">Simpan</button>
-    </CrudInlineForm>
+  <NotificationsManager rows={rows.rows as any[]} client:load />
 
-    <AdminToolbar title="Log Notifikasi">
-        <AdminFilterForm>
-            <input name="q" placeholder="Cari channel/penerima" value={q} />
-            <button class="btn-ghost" type="submit">Cari</button>
-        </AdminFilterForm>
-    </AdminToolbar>
+  <AdminToolbar title="Log Notifikasi">
+    <AdminFilterForm>
+      <input name="q" placeholder="Cari channel/penerima" value={q} />
+      <button class="btn-ghost" type="submit">Cari</button>
+    </AdminFilterForm>
+  </AdminToolbar>
 
-    <AdminDataTable>
-        <thead>
-            <tr>
-                <th>Channel</th>
-                <th>Penerima</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th>Sent</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            {rows.rows.map((n: any) => (
-                <tr data-id={n.id}>
-                    <td contenteditable="true" data-field="channel">{n.channel}</td>
-                    <td contenteditable="true" data-field="recipient">{n.recipient}</td>
-                    <td contenteditable="true" data-field="status">{n.status}</td>
-                    <td>{String(n.created_at).split("T")[0]}</td>
-                    <td>{n.sent_at ? String(n.sent_at).split("T")[0] : "-"}</td>
-                    <td>
-                        <RowActions showSend={true} />
-                    </td>
-                </tr>
-            ))}
-        </tbody>
-    </AdminDataTable>
-
-    <PaginationNav
-        page={page}
-        totalPages={totalPages}
-        prevHref={page > 1 ? `?q=${encodeURIComponent(q)}&page=${page - 1}` : undefined}
-        nextHref={page < totalPages ? `?q=${encodeURIComponent(q)}&page=${page + 1}` : undefined}
-    />
-
-    <script>
-        import { bindCreateForm, bindCrudTable } from "../../lib/admin-client";
-
-        bindCreateForm({
-            formSelector: "#notif-form",
-            endpoint: "/api/admin/notifications",
-        });
-
-        bindCrudTable({
-            basePath: "/api/admin/notifications",
-            deleteConfirm: "Hapus notifikasi ini?",
-            extraActions: {
-                send: async ({ id, csrfToken }) => {
-                    const response = await fetch(`/api/admin/notifications/send`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-Token": csrfToken,
-                        },
-                        body: JSON.stringify({ id }),
-                    });
-                    if (!response.ok) {
-                        alert(await response.text());
-                        return;
-                    }
-                    location.reload();
-                },
-            },
-        });
-    </script>
+  <PaginationNav
+    page={page}
+    totalPages={totalPages}
+    prevHref={page > 1 ? `?q=${encodeURIComponent(q)}&page=${page - 1}` : undefined}
+    nextHref={page < totalPages ? `?q=${encodeURIComponent(q)}&page=${page + 1}` : undefined}
+  />
 </AdminLayout>

@@ -220,11 +220,6 @@ const env = getEnv(Astro);
     data-client-key={env.PUBLIC_MIDTRANS_CLIENT_KEY}></script>
 
 <script>
-    declare global {
-        interface Window {
-            snap: any;
-        }
-    }
 
     const products = JSON.parse(
         document.getElementById("product-data")?.textContent || "[]",
@@ -371,7 +366,7 @@ const env = getEnv(Astro);
         if (inc) cart.get(id)!.qty += 1;
         if (dec) {
             cart.get(id)!.qty -= 1;
-            if(cart.get(id)!.qty <= 0) cart.delete(id);
+            if(cart.get(id)!.qty === 0) cart.delete(id);
         }
         renderCart();
     });
@@ -487,7 +482,7 @@ const env = getEnv(Astro);
             const data = (await res.json()) as any;
             mainCheckoutBtn.innerHTML = "Menunggu Pembayaran...";
             
-            window.snap.pay(data.snap_token, {
+            window.snap?.pay(data.snap_token, {
                 onSuccess: () => {
                     cart.clear();
                     renderCart();

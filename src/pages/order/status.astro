@@ -1,54 +1,13 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import OrderStatusForm from "../../components/order/OrderStatusForm.svelte";
 ---
 
 <Layout title="Cek Status Order">
     <main class="section">
         <div class="container text-center">
             <h1>Cek Status Order</h1>
-            <form
-                id="status-form"
-                class="mx-auto grid max-w-[420px] gap-2.5"
-            >
-                <input
-                    class="rounded-[10px] border border-[#e6dfd3] p-2.5"
-                    name="order_no"
-                    placeholder="Masukkan Order No"
-                    required
-                />
-                <input
-                    class="rounded-[10px] border border-[#e6dfd3] p-2.5"
-                    name="phone"
-                    placeholder="Masukkan No. HP saat checkout"
-                    required
-                />
-                <button class="btn btn-primary" type="submit">Cek Status</button
-                >
-                <div id="status-result" class="muted"></div>
-            </form>
+            <OrderStatusForm />
         </div>
     </main>
 </Layout>
-
-<script>
-    const form = document.getElementById(
-        "status-form",
-    ) as HTMLFormElement | null;
-    const result = document.getElementById("status-result");
-    form?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        if (!form || !result) return;
-        const data = new FormData(form);
-        const orderNo = data.get("order_no") as string | null;
-        const phone = data.get("phone") as string | null;
-        const res = await fetch(
-            `/api/order-status?order_no=${encodeURIComponent(orderNo || "")}&phone=${encodeURIComponent(phone || "")}`,
-        );
-        if (!res.ok) {
-            result.textContent = await res.text();
-            return;
-        }
-        const payload = (await res.json()) as any;
-        result.textContent = `Status: ${payload.status} | Pembayaran: ${payload.payment_status}`;
-    });
-</script>

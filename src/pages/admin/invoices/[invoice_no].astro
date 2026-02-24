@@ -1,11 +1,6 @@
 ---
 import AdminLayout from "../../../layouts/AdminLayout.astro";
-import SectionHeader from "../../../components/admin/SectionHeader.svelte";
-import StatusBadge from "../../../components/admin/StatusBadge.svelte";
-import AdminDataTable from "../../../components/admin/AdminDataTable.svelte";
-import ActionGroup from "../../../components/admin/ActionGroup.svelte";
-import PanelCard from "../../../components/admin/PanelCard.svelte";
-import CrudInlineForm from "../../../components/admin/CrudInlineForm.svelte";
+import InvoiceDetailManager from "../../../components/admin/pages/InvoiceDetailManager.svelte";
 import { requireAdmin } from "../../../lib/auth";
 import { initDb, getDb } from "../../../lib/db";
 
@@ -17,116 +12,21 @@ if (!admin) {
 const invoiceNo = Astro.params.invoice_no;
 const db = getDb(Astro);
 const result = await db.execute({
-    sql: `SELECT i.*, o.order_no, o.customer_name, o.customer_phone, o.total, o.items_json, o.shipping_address_json
+    sql: `SELECT i.*, o.Order_no, o.customer_name, o.customer_phone, o.items_json, o.shipping_address_json
           FROM invoices i JOIN orders o ON o.id = i.order_id
           WHERE i.invoice_no = ?`,
     args: [invoiceNo ?? ""],
 });
 const invoice = result.rows[0] as any;
-if (!invoice) return Astro.redirect("/admin/invoices");
+if (!invoice) {
+    return Astro.redirect("/admin/invoices");
+}
 const items = JSON.parse(String(invoice.items_json || "[]"));
 const address = JSON.parse(String(invoice.shipping_address_json || "{}"));
+invoice.parsedItems = items;
+invoice.shipping_address_json = address;
 ---
 
 <AdminLayout title={`Invoice ${invoice.invoice_no}`}>
-    <div class="grid grid-2">
-        <PanelCard>
-            <strong>Order</strong>
-            <p>{invoice.order_no}</p>
-            <p class="muted">{invoice.customer_name}</p>
-            <p class="muted">{invoice.customer_phone}</p>
-        </PanelCard>
-        <PanelCard>
-            <strong>Status</strong>
-            <p>
-                <StatusBadge
-                    label={invoice.status}
-                    tone={invoice.status === "paid"
-                        ? "success"
-                        : invoice.status === "overdue"
-                          ? "danger"
-                          : "default"}
-                />
-            </p>
-            <p class="muted">
-                Total: Rp {Number(invoice.total).toLocaleString("id-ID")}
-            </p>
-        </PanelCard>
-    </div>
-
-    <PanelCard className="mt-4">
-        <strong>Alamat</strong>
-        <p>{address.province} - {address.city} - {address.district}</p>
-        <p>{address.street || ""}</p>
-    </PanelCard>
-
-    <PanelCard className="mt-4">
-        <strong>Item</strong>
-        <AdminDataTable>
-            <thead>
-                <tr>
-                    <th>Produk</th>
-                    <th>Qty</th>
-                    <th>Harga</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                {
-                    items.map((item: any) => (
-                        <tr>
-                            <td>{item.name}</td>
-                            <td>{item.qty}</td>
-                            <td>
-                                Rp {Number(item.price).toLocaleString("id-ID")}
-                            </td>
-                            <td>
-                                Rp {Number(item.total).toLocaleString("id-ID")}
-                            </td>
-                        </tr>
-                    ))
-                }
-            </tbody>
-        </AdminDataTable>
-    </PanelCard>
-
-    <div class="mt-5">
-        <SectionHeader title="Update Invoice" />
-    </div>
-    <ActionGroup className="mb-3">
-        <a
-            class="btn-ghost"
-            href={`/api/invoices/${invoice.invoice_no}/pdf`}
-            target="_blank"
-        >
-            Download PDF
-        </a>
-        <a
-            class="btn-ghost"
-            href={`/invoice/${invoice.invoice_no}`}
-            target="_blank">Print</a
-        >
-    </ActionGroup>
-    <CrudInlineForm id="invoice-form" data-invoice={invoice.invoice_no}>
-        <div>
-            <label>Status</label>
-            <input name="status" value={invoice.status} />
-        </div>
-        <div>
-            <label>Due At (YYYY-MM-DD)</label>
-            <input name="due_at" value={invoice.due_at ?? ""} />
-        </div>
-        <button class="primary" type="submit">Update</button>
-    </CrudInlineForm>
-
-    <script>
-        import { bindJsonForm } from "../../../lib/admin-client";
-
-        bindJsonForm({
-            formSelector: "#invoice-form",
-            method: "PUT",
-            endpoint: (form) =>
-                `/api/admin/invoices/${encodeURIComponent(form.getAttribute("data-invoice") || "")}`,
-        });
-    </script>
+    <InvoiceDetailManager invoice={invoice} client:load />
 </AdminLayout>

@@ -1,11 +1,9 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import SectionHeader from "../../components/admin/SectionHeader.svelte";
 import PaginationNav from "../../components/admin/PaginationNav.svelte";
-import AdminDataTable from "../../components/admin/AdminDataTable.svelte";
 import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
 import AdminFilterForm from "../../components/admin/AdminFilterForm.svelte";
-import CrudInlineForm from "../../components/admin/CrudInlineForm.svelte";
+import InventoryManager from "../../components/admin/pages/InventoryManager.svelte";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 import { parsePage } from "../../lib/admin";
@@ -41,34 +39,11 @@ const movementsRes = await db.execute(
 ---
 
 <AdminLayout title="Inventory">
-    <SectionHeader title="Tambah Mutasi Stok" badge="Restock & Penyesuaian" />
-    <CrudInlineForm id="inventory-form">
-        <div>
-            <label>Produk</label>
-            <select name="product_id" required>
-                {productsRes.rows.map((p: any) => (
-                    <option value={p.id}>{p.name}</option>
-                ))}
-            </select>
-        </div>
-        <div>
-            <label>Tipe</label>
-            <select name="type">
-                <option value="in">Stock In</option>
-                <option value="out">Stock Out</option>
-                <option value="adjustment">Adjustment</option>
-            </select>
-        </div>
-        <div>
-            <label>Qty</label>
-            <input name="qty" type="number" required />
-        </div>
-        <div>
-            <label>Catatan</label>
-            <input name="notes" placeholder="Opsional" />
-        </div>
-        <button class="primary" type="submit">Simpan</button>
-    </CrudInlineForm>
+    <InventoryManager
+        products={productsRes.rows as any[]}
+        movements={movementsRes.rows as any[]}
+        client:load
+    />
 
     <AdminToolbar title="Stok Produk">
         <AdminFilterForm>
@@ -79,68 +54,10 @@ const movementsRes = await db.execute(
         </AdminFilterForm>
     </AdminToolbar>
 
-    <AdminDataTable>
-        <thead>
-            <tr>
-                <th>Produk</th>
-                <th>SKU</th>
-                <th>Stok</th>
-                <th>Harga</th>
-            </tr>
-        </thead>
-        <tbody>
-            {productsRes.rows.map((p: any) => (
-                <tr>
-                    <td>{p.name}</td>
-                    <td>{p.sku || "-"}</td>
-                    <td>{p.stock ?? "-"}</td>
-                    <td>Rp {Number(p.price).toLocaleString("id-ID")}</td>
-                </tr>
-            ))}
-        </tbody>
-    </AdminDataTable>
-
     <PaginationNav
         page={page}
         totalPages={totalPages}
         prevHref={page > 1 ? `?q=${encodeURIComponent(q)}&page=${page - 1}` : undefined}
         nextHref={page < totalPages ? `?q=${encodeURIComponent(q)}&page=${page + 1}` : undefined}
     />
-
-    <div class="mt-6">
-        <SectionHeader title="Mutasi Terakhir" muted="30 entri terakhir" />
-    </div>
-    <AdminDataTable>
-        <thead>
-            <tr>
-                <th>Produk</th>
-                <th>Tipe</th>
-                <th>Qty</th>
-                <th>Order Ref</th>
-                <th>Catatan</th>
-                <th>Tanggal</th>
-            </tr>
-        </thead>
-        <tbody>
-            {movementsRes.rows.map((m: any) => (
-                <tr>
-                    <td>{m.product_name || "-"}</td>
-                    <td>{m.type}</td>
-                    <td>{m.qty}</td>
-                    <td>{m.ref_order_no || "-"}</td>
-                    <td>{m.notes || "-"}</td>
-                    <td>{String(m.created_at).split("T")[0]}</td>
-                </tr>
-            ))}
-        </tbody>
-    </AdminDataTable>
-
-    <script>
-        import { bindCreateForm } from "../../lib/admin-client";
-
-        bindCreateForm({
-            formSelector: "#inventory-form",
-            endpoint: "/api/admin/inventory-movements",
-        });
-    </script>
 </AdminLayout>

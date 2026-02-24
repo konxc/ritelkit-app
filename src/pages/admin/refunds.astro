@@ -1,13 +1,10 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import SectionHeader from "../../components/admin/SectionHeader.svelte";
 import PaginationNav from "../../components/admin/PaginationNav.svelte";
 import StatusBadge from "../../components/admin/StatusBadge.svelte";
-import AdminDataTable from "../../components/admin/AdminDataTable.svelte";
 import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
-import RowActions from "../../components/admin/RowActions.svelte";
 import AdminFilterForm from "../../components/admin/AdminFilterForm.svelte";
-import CrudInlineForm from "../../components/admin/CrudInlineForm.svelte";
+import RefundsManager from "../../components/admin/pages/RefundsManager.svelte";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 import { parsePage } from "../../lib/admin";
@@ -23,7 +20,7 @@ const where = q ? "WHERE order_no LIKE ?" : "";
 const args = q ? [`%${q}%`] : [];
 
 const refundsRes = await db.execute({
-    sql: `SELECT id, order_no, amount, reason, status, created_at
+    sql: `SELECT id, order_no, amount, reason, status, provider_status
           FROM refunds
           ${where}
           ORDER BY created_at DESC
@@ -39,33 +36,10 @@ const totalPages = Math.max(1, Math.ceil(total / limit));
 ---
 
 <AdminLayout title="Refund">
-    <SectionHeader title="Buat Refund" />
+    <RefundsManager rows={refundsRes.rows as any[]} client:load />
     <div class="-mt-2 mb-4">
         <StatusBadge label="Dana Keluar" tone="danger" />
     </div>
-    <CrudInlineForm id="refund-form">
-        <div>
-            <label>Order No</label>
-            <input name="order_no" required />
-        </div>
-        <div>
-            <label>Jumlah (Rp)</label>
-            <input name="amount" type="number" required />
-        </div>
-        <div>
-            <label>Status</label>
-            <select name="status">
-                <option value="requested">Requested</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-            </select>
-        </div>
-        <div>
-            <label>Alasan</label>
-            <input name="reason" />
-        </div>
-        <button class="primary" type="submit">Simpan</button>
-    </CrudInlineForm>
 
     <AdminToolbar title="Daftar Refund">
         <AdminFilterForm>
@@ -75,51 +49,10 @@ const totalPages = Math.max(1, Math.ceil(total / limit));
         </AdminFilterForm>
     </AdminToolbar>
 
-    <AdminDataTable>
-        <thead>
-            <tr>
-                <th>Order</th>
-                <th>Jumlah</th>
-                <th>Status</th>
-                <th>Gateway</th>
-                <th>Alasan</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            {refundsRes.rows.map((r: any) => (
-                <tr data-id={r.id}>
-                    <td contenteditable="true" data-field="order_no">{r.order_no}</td>
-                    <td contenteditable="true" data-field="amount">{r.amount}</td>
-                    <td contenteditable="true" data-field="status">{r.status}</td>
-                    <td>{r.provider_status || "-"}</td>
-                    <td contenteditable="true" data-field="reason">{r.reason || ""}</td>
-                    <td>
-                        <RowActions />
-                    </td>
-                </tr>
-            ))}
-        </tbody>
-    </AdminDataTable>
-
     <PaginationNav
         page={page}
         totalPages={totalPages}
         prevHref={page > 1 ? `?q=${encodeURIComponent(q)}&page=${page - 1}` : undefined}
         nextHref={page < totalPages ? `?q=${encodeURIComponent(q)}&page=${page + 1}` : undefined}
     />
-
-    <script>
-        import { bindCreateForm, bindCrudTable } from "../../lib/admin-client";
-
-        bindCreateForm({
-            formSelector: "#refund-form",
-            endpoint: "/api/admin/refunds",
-        });
-
-        bindCrudTable({
-            basePath: "/api/admin/refunds",
-            deleteConfirm: "Hapus refund ini?",
-        });
-    </script>
 </AdminLayout>

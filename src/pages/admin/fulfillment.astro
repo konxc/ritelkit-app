@@ -1,12 +1,9 @@
 ---
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import SectionHeader from "../../components/admin/SectionHeader.svelte";
 import PaginationNav from "../../components/admin/PaginationNav.svelte";
-import AdminDataTable from "../../components/admin/AdminDataTable.svelte";
 import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
-import RowActions from "../../components/admin/RowActions.svelte";
 import AdminFilterForm from "../../components/admin/AdminFilterForm.svelte";
-import CrudInlineForm from "../../components/admin/CrudInlineForm.svelte";
+import FulfillmentManager from "../../components/admin/pages/FulfillmentManager.svelte";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 import { parsePage } from "../../lib/admin";
@@ -38,35 +35,7 @@ const totalPages = Math.max(1, Math.ceil(total / limit));
 ---
 
 <AdminLayout title="Fulfillment">
-    <SectionHeader title="Buat Pengiriman" badge="Tracking" />
-    <CrudInlineForm id="shipment-form">
-        <div>
-            <label>Order No</label>
-            <input name="order_no" required />
-        </div>
-        <div>
-            <label>Kurir</label>
-            <input name="carrier" />
-        </div>
-        <div>
-            <label>Resi</label>
-            <input name="tracking_no" />
-        </div>
-        <div>
-            <label>Status</label>
-            <select name="status">
-                <option value="packing">Packing</option>
-                <option value="shipped">Dikirim</option>
-                <option value="delivered">Terkirim</option>
-                <option value="cancelled">Batal</option>
-            </select>
-        </div>
-        <div>
-            <label>Catatan</label>
-            <input name="notes" />
-        </div>
-        <button class="primary" type="submit">Simpan</button>
-    </CrudInlineForm>
+    <FulfillmentManager rows={shipmentsRes.rows as any[]} client:load />
 
     <AdminToolbar title="Daftar Pengiriman">
         <AdminFilterForm>
@@ -75,51 +44,10 @@ const totalPages = Math.max(1, Math.ceil(total / limit));
         </AdminFilterForm>
     </AdminToolbar>
 
-    <AdminDataTable>
-        <thead>
-            <tr>
-                <th>Order</th>
-                <th>Status</th>
-                <th>Kurir</th>
-                <th>Resi</th>
-                <th>Catatan</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            {shipmentsRes.rows.map((s: any) => (
-                <tr data-id={s.id}>
-                    <td contenteditable="true" data-field="order_no">{s.order_no}</td>
-                    <td contenteditable="true" data-field="status">{s.status}</td>
-                    <td contenteditable="true" data-field="carrier">{s.carrier || ""}</td>
-                    <td contenteditable="true" data-field="tracking_no">{s.tracking_no || ""}</td>
-                    <td contenteditable="true" data-field="notes">{s.notes || ""}</td>
-                    <td>
-                        <RowActions />
-                    </td>
-                </tr>
-            ))}
-        </tbody>
-    </AdminDataTable>
-
     <PaginationNav
         page={page}
         totalPages={totalPages}
         prevHref={page > 1 ? `?q=${encodeURIComponent(q)}&page=${page - 1}` : undefined}
         nextHref={page < totalPages ? `?q=${encodeURIComponent(q)}&page=${page + 1}` : undefined}
     />
-
-    <script>
-        import { bindCreateForm, bindCrudTable } from "../../lib/admin-client";
-
-        bindCreateForm({
-            formSelector: "#shipment-form",
-            endpoint: "/api/admin/shipments",
-        });
-
-        bindCrudTable({
-            basePath: "/api/admin/shipments",
-            deleteConfirm: "Hapus pengiriman ini?",
-        });
-    </script>
 </AdminLayout>
