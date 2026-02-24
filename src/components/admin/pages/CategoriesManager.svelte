@@ -78,22 +78,22 @@
 </script>
 
 <SectionHeader title="Tambah Kategori" badge="Kelola menu" />
-<CrudInlineForm id="category-form" onsubmit={handleCreate}>
+<CrudInlineForm id="category-form" on:submit={handleCreate}>
   <div>
-    <label>Nama Kategori</label>
-    <input name="name" required />
+    <label for="name">Nama Kategori</label>
+    <input id="name" name="name" required />
   </div>
   <div>
-    <label>Slug</label>
-    <input name="slug" placeholder="opsional" />
+    <label for="slug">Slug</label>
+    <input id="slug" name="slug" placeholder="opsional" />
   </div>
   <div>
-    <label>Urutan</label>
-    <input name="sort_order" type="number" value="0" />
+    <label for="sort_order">Urutan</label>
+    <input id="sort_order" name="sort_order" type="number" value="0" />
   </div>
   <div>
-    <label>Aktif</label>
-    <select name="is_active">
+    <label for="is_active">Aktif</label>
+    <select id="is_active" name="is_active">
       <option value="true">Ya</option>
       <option value="false">Tidak</option>
     </select>
@@ -104,7 +104,7 @@
 <div class="mt-6">
   <SectionHeader title="Daftar Kategori" muted="Klik sel untuk edit" />
 </div>
-<div onclick={handleTableClick}>
+<div role="button" tabindex="0" onclick={handleTableClick} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
   <AdminDataTable>
     <thead>
       <tr>

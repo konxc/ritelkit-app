@@ -1,20 +1,21 @@
+<script lang="ts" context="module">
+  export type CustomerRow = {
+    id: string | number;
+    name: string;
+    phone: string;
+    email?: string | null;
+    notes?: string | null;
+  };
+</script>
+
 <script lang="ts">
   import AdminDataTable from "../AdminDataTable.svelte";
   import CrudInlineForm from "../CrudInlineForm.svelte";
-  import RowActions from "../RowActions.svelte";
   import SectionHeader from "../SectionHeader.svelte";
+  import RowActions from "../RowActions.svelte";
   import { getCsrfToken } from "../../../lib/admin-client";
 
-  type AdRow = {
-    id: string | number;
-    name: string;
-    channel: string;
-    budget: number;
-    spend: number;
-    status: string;
-  };
-
-  let { rows }: { rows: AdRow[] } = $props();
+  export let rows: CustomerRow[] = [];
   const csrfToken = getCsrfToken();
 
   const handleCreate = async (event: SubmitEvent) => {
@@ -22,7 +23,7 @@
     const form = event.currentTarget as HTMLFormElement | null;
     if (!form) return;
     const data = new FormData(form);
-    const response = await fetch("/api/admin/ads", {
+    const response = await fetch("/api/admin/customers", {
       method: "POST",
       headers: { "X-CSRF-Token": csrfToken },
       body: data,
@@ -34,19 +35,19 @@
     location.reload();
   };
 
-  const handleRowClick = async (event: MouseEvent) => {
+  const handleRowAction = async (event: MouseEvent) => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) return;
     const action = target.getAttribute("data-action");
     if (!action) return;
     const row = target.closest("tr[data-id]");
     if (!row) return;
-    const id = row.getAttribute("data-id");
+    const id = row.getAttribute("data:id") || row.getAttribute("data-id");
     if (!id) return;
 
     if (action === "delete") {
-      if (!confirm("Hapus campaign ini?")) return;
-      const response = await fetch(`/api/admin/ads/${id}`, {
+      if (!confirm("Hapus pelanggan ini?")) return;
+      const response = await fetch(`/api/admin/customers/${id}`, {
         method: "DELETE",
         headers: { "X-CSRF-Token": csrfToken },
       });
@@ -65,7 +66,7 @@
         if (!field) return;
         fields[field] = String(cell.textContent?.trim() || "");
       });
-      const response = await fetch(`/api/admin/ads/${id}`, {
+      const response = await fetch(`/api/admin/customers/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -82,56 +83,38 @@
   };
 </script>
 
-<SectionHeader title="Buat Campaign" badge="Ads" />
-<CrudInlineForm id="ads-form" on:submit={handleCreate}>
+<SectionHeader title="Tambah Pelanggan" badge="CRM" />
+<CrudInlineForm id="customer-form" on:submit={handleCreate}>
   <div>
-    <label for="name">Nama Campaign</label>
+    <label for="name">Nama</label>
     <input id="name" name="name" required />
   </div>
   <div>
-    <label for="channel">Channel</label>
-    <input id="channel" name="channel" placeholder="IG / FB / WA / Google" required />
+    <label for="phone">Telepon</label>
+    <input id="phone" name="phone" required />
   </div>
   <div>
-    <label for="budget">Budget (Rp)</label>
-    <input id="budget" name="budget" type="number" required />
-  </div>
-  <div>
-    <label for="status">Status</label>
-    <select id="status" name="status">
-      <option value="draft">Draft</option>
-      <option value="active">Active</option>
-      <option value="paused">Paused</option>
-      <option value="completed">Completed</option>
-    </select>
-  </div>
-  <div>
-    <label for="start_at">Tanggal Mulai</label>
-    <input id="start_at" name="start_at" type="date" />
-  </div>
-  <div>
-    <label for="end_at">Tanggal Selesai</label>
-    <input id="end_at" name="end_at" type="date" />
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" />
   </div>
   <div>
     <label for="notes">Catatan</label>
-    <input id="notes" name="notes" />
+    <textarea id="notes" name="notes" rows="2"></textarea>
   </div>
   <button class="primary" type="submit">Simpan</button>
 </CrudInlineForm>
 
 <div class="mt-6">
-  <SectionHeader title="Daftar Campaign" />
+  <SectionHeader title="Daftar Pelanggan" muted="Cari detail lalu klik"/>
 </div>
-<div role="button" tabindex="0" onclick={handleRowClick} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
+<div role="button" tabindex="0" onclick={handleRowAction} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
   <AdminDataTable>
     <thead>
       <tr>
         <th>Nama</th>
-        <th>Channel</th>
-        <th>Budget</th>
-        <th>Spend</th>
-        <th>Status</th>
+        <th>Telepon</th>
+        <th>Email</th>
+        <th>Catatan</th>
         <th>Aksi</th>
       </tr>
     </thead>
@@ -139,12 +122,11 @@
       {#each rows as row (row.id)}
         <tr data-id={row.id}>
           <td contenteditable="true" data-field="name">{row.name}</td>
-          <td contenteditable="true" data-field="channel">{row.channel}</td>
-          <td contenteditable="true" data-field="budget">{row.budget}</td>
-          <td contenteditable="true" data-field="spend">{row.spend}</td>
-          <td contenteditable="true" data-field="status">{row.status}</td>
+          <td contenteditable="true" data-field="phone">{row.phone}</td>
+          <td contenteditable="true" data-field="email">{row.email || ""}</td>
+          <td contenteditable="true" data-field="notes">{row.notes || ""}</td>
           <td>
-            <RowActions />
+            <RowActions detailHref={`/admin/customers/${row.id}`} />
           </td>
         </tr>
       {/each}

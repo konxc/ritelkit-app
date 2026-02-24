@@ -82,18 +82,18 @@
 </script>
 
 <SectionHeader title="Tambah Admin" badge="Role" />
-<CrudInlineForm id="user-form" onsubmit={handleCreate}>
+<CrudInlineForm id="user-form" on:submit={handleCreate}>
   <div>
-    <label>Email</label>
-    <input name="email" type="email" required />
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" required />
   </div>
   <div>
-    <label>Password</label>
-    <input name="password" type="password" required minlength="8" />
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" required minlength="8" />
   </div>
   <div>
-    <label>Role</label>
-    <select name="role">
+    <label for="role">Role</label>
+    <select id="role" name="role">
       <option value="owner">Owner</option>
       <option value="admin">Admin</option>
       <option value="staff">Staff</option>
@@ -105,7 +105,7 @@
 <div class="mt-6">
   <SectionHeader title="Daftar Admin" muted="Edit role / reset password" />
 </div>
-<div onclick={handleTableClick}>
+<div role="button" tabindex="0" onclick={handleTableClick} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
   <AdminDataTable>
     <thead>
       <tr>

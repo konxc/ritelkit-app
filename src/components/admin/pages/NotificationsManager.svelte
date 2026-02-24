@@ -5,16 +5,16 @@
   import SectionHeader from "../SectionHeader.svelte";
   import { getCsrfToken } from "../../../lib/admin-client";
 
-  type AdRow = {
+  type NotificationRow = {
     id: string | number;
-    name: string;
     channel: string;
-    budget: number;
-    spend: number;
+    recipient: string;
     status: string;
+    created_at: string;
+    sent_at?: string | null;
   };
 
-  let { rows }: { rows: AdRow[] } = $props();
+  export let rows: NotificationRow[] = [];
   const csrfToken = getCsrfToken();
 
   const handleCreate = async (event: SubmitEvent) => {
@@ -22,7 +22,7 @@
     const form = event.currentTarget as HTMLFormElement | null;
     if (!form) return;
     const data = new FormData(form);
-    const response = await fetch("/api/admin/ads", {
+    const response = await fetch("/api/admin/notifications", {
       method: "POST",
       headers: { "X-CSRF-Token": csrfToken },
       body: data,
@@ -34,7 +34,7 @@
     location.reload();
   };
 
-  const handleRowClick = async (event: MouseEvent) => {
+  const handleRowAction = async (event: MouseEvent) => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) return;
     const action = target.getAttribute("data-action");
@@ -45,10 +45,27 @@
     if (!id) return;
 
     if (action === "delete") {
-      if (!confirm("Hapus campaign ini?")) return;
-      const response = await fetch(`/api/admin/ads/${id}`, {
+      if (!confirm("Hapus notifikasi ini?")) return;
+      const response = await fetch(`/api/admin/notifications/${id}`, {
         method: "DELETE",
         headers: { "X-CSRF-Token": csrfToken },
+      });
+      if (!response.ok) {
+        alert(await response.text());
+        return;
+      }
+      location.reload();
+      return;
+    }
+
+    if (action === "send") {
+      const response = await fetch(`/api/admin/notifications/send`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken,
+        },
+        body: JSON.stringify({ id }),
       });
       if (!response.ok) {
         alert(await response.text());
@@ -65,7 +82,7 @@
         if (!field) return;
         fields[field] = String(cell.textContent?.trim() || "");
       });
-      const response = await fetch(`/api/admin/ads/${id}`, {
+      const response = await fetch(`/api/admin/notifications/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -82,69 +99,59 @@
   };
 </script>
 
-<SectionHeader title="Buat Campaign" badge="Ads" />
-<CrudInlineForm id="ads-form" on:submit={handleCreate}>
-  <div>
-    <label for="name">Nama Campaign</label>
-    <input id="name" name="name" required />
-  </div>
+<SectionHeader title="Buat Notifikasi" badge="Manual Send" />
+<CrudInlineForm id="notif-form" on:submit={handleCreate}>
   <div>
     <label for="channel">Channel</label>
-    <input id="channel" name="channel" placeholder="IG / FB / WA / Google" required />
-  </div>
-  <div>
-    <label for="budget">Budget (Rp)</label>
-    <input id="budget" name="budget" type="number" required />
-  </div>
-  <div>
-    <label for="status">Status</label>
-    <select id="status" name="status">
-      <option value="draft">Draft</option>
-      <option value="active">Active</option>
-      <option value="paused">Paused</option>
-      <option value="completed">Completed</option>
+    <select id="channel" name="channel">
+      <option value="whatsapp">WhatsApp</option>
+      <option value="email">Email</option>
     </select>
   </div>
   <div>
-    <label for="start_at">Tanggal Mulai</label>
-    <input id="start_at" name="start_at" type="date" />
+    <label for="recipient">Penerima</label>
+    <input id="recipient" name="recipient" required />
   </div>
   <div>
-    <label for="end_at">Tanggal Selesai</label>
-    <input id="end_at" name="end_at" type="date" />
+    <label for="template">Template</label>
+    <input id="template" name="template" placeholder="opsional" />
   </div>
   <div>
-    <label for="notes">Catatan</label>
-    <input id="notes" name="notes" />
+    <label for="payload_json">Payload (JSON)</label>
+    <textarea id="payload_json"
+      name="payload_json"
+      rows="3"
+      placeholder={'{"message":"..."}'}
+    ></textarea>
   </div>
   <button class="primary" type="submit">Simpan</button>
 </CrudInlineForm>
 
 <div class="mt-6">
-  <SectionHeader title="Daftar Campaign" />
+  <SectionHeader title="Log Notifikasi" />
 </div>
-<div role="button" tabindex="0" onclick={handleRowClick} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
+<div role="button" tabindex="0" onclick={handleRowAction} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
   <AdminDataTable>
     <thead>
       <tr>
-        <th>Nama</th>
         <th>Channel</th>
-        <th>Budget</th>
-        <th>Spend</th>
+        <th>Penerima</th>
         <th>Status</th>
+        <th>Created</th>
+        <th>Sent</th>
         <th>Aksi</th>
       </tr>
     </thead>
     <tbody>
       {#each rows as row (row.id)}
         <tr data-id={row.id}>
-          <td contenteditable="true" data-field="name">{row.name}</td>
           <td contenteditable="true" data-field="channel">{row.channel}</td>
-          <td contenteditable="true" data-field="budget">{row.budget}</td>
-          <td contenteditable="true" data-field="spend">{row.spend}</td>
+          <td contenteditable="true" data-field="recipient">{row.recipient}</td>
           <td contenteditable="true" data-field="status">{row.status}</td>
+          <td>{String(row.created_at).split("T")[0]}</td>
+          <td>{row.sent_at ? String(row.sent_at).split("T")[0] : "-"}</td>
           <td>
-            <RowActions />
+            <RowActions showSend={true} />
           </td>
         </tr>
       {/each}

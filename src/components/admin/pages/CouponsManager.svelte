@@ -98,50 +98,50 @@
 </script>
 
 <SectionHeader title="Tambah Kupon" muted="Promo & diskon" />
-<CrudInlineForm id="coupon-form" onsubmit={handleCreate}>
+<CrudInlineForm id="coupon-form" on:submit={handleCreate}>
   <div>
-    <label>Kode</label>
-    <input name="code" required />
+    <label for="code">Kode</label>
+    <input id="code" name="code" required />
   </div>
   <div>
-    <label>Tipe</label>
-    <select name="type">
+    <label for="type">Tipe</label>
+    <select id="type" name="type">
       <option value="percent">Percent</option>
       <option value="fixed">Fixed</option>
       <option value="free_shipping">Free Shipping</option>
     </select>
   </div>
   <div>
-    <label>Nilai</label>
-    <input name="value" type="number" required />
+    <label for="value">Nilai</label>
+    <input id="value" name="value" type="number" required />
   </div>
   <div>
-    <label>Min Order</label>
-    <input name="min_order" type="number" />
+    <label for="min_order">Min Order</label>
+    <input id="min_order" name="min_order" type="number" />
   </div>
   <div>
-    <label>Max Diskon</label>
-    <input name="max_discount" type="number" />
+    <label for="max_discount">Max Diskon</label>
+    <input id="max_discount" name="max_discount" type="number" />
   </div>
   <div>
-    <label>Mulai</label>
-    <input name="start_at" type="date" />
+    <label for="start_at">Mulai</label>
+    <input id="start_at" name="start_at" type="date" />
   </div>
   <div>
-    <label>Berakhir</label>
-    <input name="end_at" type="date" />
+    <label for="end_at">Berakhir</label>
+    <input id="end_at" name="end_at" type="date" />
   </div>
   <div>
-    <label>Usage Limit</label>
-    <input name="usage_limit" type="number" />
+    <label for="usage_limit">Usage Limit</label>
+    <input id="usage_limit" name="usage_limit" type="number" />
   </div>
   <div>
-    <label>Limit per User</label>
-    <input name="per_user_limit" type="number" />
+    <label for="per_user_limit">Limit per User</label>
+    <input id="per_user_limit" name="per_user_limit" type="number" />
   </div>
   <div>
-    <label>Aktif</label>
-    <select name="is_active">
+    <label for="is_active">Aktif</label>
+    <select id="is_active" name="is_active">
       <option value="true">Ya</option>
       <option value="false">Tidak</option>
     </select>
@@ -152,7 +152,7 @@
 <div class="mt-6">
   <SectionHeader title="Daftar Kupon" muted="Klik sel untuk edit" />
 </div>
-<div onclick={handleRowAction}>
+<div role="button" tabindex="0" onclick={handleRowAction} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
   <AdminDataTable>
     <thead>
       <tr>

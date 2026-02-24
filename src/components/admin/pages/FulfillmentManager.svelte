@@ -5,16 +5,16 @@
   import SectionHeader from "../SectionHeader.svelte";
   import { getCsrfToken } from "../../../lib/admin-client";
 
-  type AdRow = {
+  type ShipmentRow = {
     id: string | number;
-    name: string;
-    channel: string;
-    budget: number;
-    spend: number;
+    order_no: string;
     status: string;
+    carrier?: string | null;
+    tracking_no?: string | null;
+    notes?: string | null;
   };
 
-  let { rows }: { rows: AdRow[] } = $props();
+  export let rows: ShipmentRow[] = [];
   const csrfToken = getCsrfToken();
 
   const handleCreate = async (event: SubmitEvent) => {
@@ -22,7 +22,7 @@
     const form = event.currentTarget as HTMLFormElement | null;
     if (!form) return;
     const data = new FormData(form);
-    const response = await fetch("/api/admin/ads", {
+    const response = await fetch("/api/admin/shipments", {
       method: "POST",
       headers: { "X-CSRF-Token": csrfToken },
       body: data,
@@ -34,7 +34,7 @@
     location.reload();
   };
 
-  const handleRowClick = async (event: MouseEvent) => {
+  const handleTableClick = async (event: MouseEvent) => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) return;
     const action = target.getAttribute("data-action");
@@ -45,8 +45,8 @@
     if (!id) return;
 
     if (action === "delete") {
-      if (!confirm("Hapus campaign ini?")) return;
-      const response = await fetch(`/api/admin/ads/${id}`, {
+      if (!confirm("Hapus pengiriman ini?")) return;
+      const response = await fetch(`/api/admin/shipments/${id}`, {
         method: "DELETE",
         headers: { "X-CSRF-Token": csrfToken },
       });
@@ -63,9 +63,16 @@
       row.querySelectorAll("[data-field]").forEach((cell) => {
         const field = cell.getAttribute("data-field");
         if (!field) return;
+        if (
+          cell instanceof HTMLSelectElement ||
+          cell instanceof HTMLInputElement
+        ) {
+          fields[field] = String(cell.value);
+          return;
+        }
         fields[field] = String(cell.textContent?.trim() || "");
       });
-      const response = await fetch(`/api/admin/ads/${id}`, {
+      const response = await fetch(`/api/admin/shipments/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -82,36 +89,28 @@
   };
 </script>
 
-<SectionHeader title="Buat Campaign" badge="Ads" />
-<CrudInlineForm id="ads-form" on:submit={handleCreate}>
+<SectionHeader title="Buat Pengiriman" badge="Tracking" />
+<CrudInlineForm id="shipment-form" on:submit={handleCreate}>
   <div>
-    <label for="name">Nama Campaign</label>
-    <input id="name" name="name" required />
+    <label for="order_no">Order No</label>
+    <input id="order_no" name="order_no" required />
   </div>
   <div>
-    <label for="channel">Channel</label>
-    <input id="channel" name="channel" placeholder="IG / FB / WA / Google" required />
+    <label for="carrier">Kurir</label>
+    <input id="carrier" name="carrier" />
   </div>
   <div>
-    <label for="budget">Budget (Rp)</label>
-    <input id="budget" name="budget" type="number" required />
+    <label for="tracking_no">Resi</label>
+    <input id="tracking_no" name="tracking_no" />
   </div>
   <div>
     <label for="status">Status</label>
     <select id="status" name="status">
-      <option value="draft">Draft</option>
-      <option value="active">Active</option>
-      <option value="paused">Paused</option>
-      <option value="completed">Completed</option>
+      <option value="packing">Packing</option>
+      <option value="shipped">Dikirim</option>
+      <option value="delivered">Terkirim</option>
+      <option value="cancelled">Batal</option>
     </select>
-  </div>
-  <div>
-    <label for="start_at">Tanggal Mulai</label>
-    <input id="start_at" name="start_at" type="date" />
-  </div>
-  <div>
-    <label for="end_at">Tanggal Selesai</label>
-    <input id="end_at" name="end_at" type="date" />
   </div>
   <div>
     <label for="notes">Catatan</label>
@@ -121,28 +120,28 @@
 </CrudInlineForm>
 
 <div class="mt-6">
-  <SectionHeader title="Daftar Campaign" />
+  <SectionHeader title="Daftar Pengiriman" />
 </div>
-<div role="button" tabindex="0" onclick={handleRowClick} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
+<div role="button" tabindex="0" onclick={handleTableClick} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
   <AdminDataTable>
     <thead>
       <tr>
-        <th>Nama</th>
-        <th>Channel</th>
-        <th>Budget</th>
-        <th>Spend</th>
+        <th>Order</th>
         <th>Status</th>
+        <th>Kurir</th>
+        <th>Resi</th>
+        <th>Catatan</th>
         <th>Aksi</th>
       </tr>
     </thead>
     <tbody>
       {#each rows as row (row.id)}
         <tr data-id={row.id}>
-          <td contenteditable="true" data-field="name">{row.name}</td>
-          <td contenteditable="true" data-field="channel">{row.channel}</td>
-          <td contenteditable="true" data-field="budget">{row.budget}</td>
-          <td contenteditable="true" data-field="spend">{row.spend}</td>
+          <td contenteditable="true" data-field="order_no">{row.order_no}</td>
           <td contenteditable="true" data-field="status">{row.status}</td>
+          <td contenteditable="true" data-field="carrier">{row.carrier || ""}</td>
+          <td contenteditable="true" data-field="tracking_no">{row.tracking_no || ""}</td>
+          <td contenteditable="true" data-field="notes">{row.notes || ""}</td>
           <td>
             <RowActions />
           </td>
