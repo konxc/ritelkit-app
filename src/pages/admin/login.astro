@@ -12,7 +12,7 @@ if (adminCount === 0) {
 }
 const session = await getAdminSession(Astro);
 if (session) {
-    return Astro.redirect("/admin/overview");
+    return Astro.redirect("/admin");
 }
 const env = getEnv(Astro);
 const csrfToken = ensureCsrfToken(Astro);

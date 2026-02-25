@@ -105,7 +105,7 @@ export async function POST(ctx: APIContext) {
     return new Response(null, {
         status: 303,
         headers: {
-            Location: "/admin/overview",
+            Location: "/admin",
             "Set-Cookie": cookie,
         },
     });
