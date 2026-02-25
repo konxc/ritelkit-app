@@ -12,7 +12,7 @@ if (adminCount === 0) {
 }
 const session = await getAdminSession(Astro);
 if (session) {
-    return Astro.redirect("/admin");
+    return Astro.redirect("/admin/overview");
 }
 const env = getEnv(Astro);
 const csrfToken = ensureCsrfToken(Astro);
@@ -20,6 +20,7 @@ const info = Astro.url.searchParams.get("info");
 const error = Astro.url.searchParams.get("error");
 const success = Astro.url.searchParams.get("success");
 ---
+
 <!doctype html>
 <html lang="id">
     <head>
@@ -28,33 +29,45 @@ const success = Astro.url.searchParams.get("success");
         <title>Login Admin</title>
     </head>
     <body class="m-0 bg-[#f6f4ef] font-['Outfit',sans-serif]">
-        <div class="mx-auto mt-[8vh] max-w-[420px] rounded-2xl bg-white p-8 shadow-[0_20px_40px_rgba(0,0,0,0.08)]">
+        <div
+            class="mx-auto mt-[8vh] max-w-[420px] rounded-2xl bg-white p-8 shadow-[0_20px_40px_rgba(0,0,0,0.08)]"
+        >
             <h1>Login Admin</h1>
-            {success === "1" && (
-                <p class="mt-4 text-[0.9rem] text-[#6b625a]">
-                    Admin berhasil dibuat. Silakan login.
-                </p>
-            )}
-            {info === "exists" && (
-                <p class="mt-4 text-[0.9rem] text-[#6b625a]">
-                    Admin sudah tersedia. Silakan login.
-                </p>
-            )}
-            {error === "invalid" && (
-                <p class="mt-4 text-[0.9rem] text-[#6b625a]">
-                    Email atau password salah.
-                </p>
-            )}
-            {error === "rate" && (
-                <p class="mt-4 text-[0.9rem] text-[#6b625a]">
-                    Terlalu banyak percobaan, coba lagi nanti.
-                </p>
-            )}
-            {error === "csrf" && (
-                <p class="mt-4 text-[0.9rem] text-[#6b625a]">
-                    Sesi form kadaluarsa, refresh halaman.
-                </p>
-            )}
+            {
+                success === "1" && (
+                    <p class="mt-4 text-[0.9rem] text-[#6b625a]">
+                        Admin berhasil dibuat. Silakan login.
+                    </p>
+                )
+            }
+            {
+                info === "exists" && (
+                    <p class="mt-4 text-[0.9rem] text-[#6b625a]">
+                        Admin sudah tersedia. Silakan login.
+                    </p>
+                )
+            }
+            {
+                error === "invalid" && (
+                    <p class="mt-4 text-[0.9rem] text-[#6b625a]">
+                        Email atau password salah.
+                    </p>
+                )
+            }
+            {
+                error === "rate" && (
+                    <p class="mt-4 text-[0.9rem] text-[#6b625a]">
+                        Terlalu banyak percobaan, coba lagi nanti.
+                    </p>
+                )
+            }
+            {
+                error === "csrf" && (
+                    <p class="mt-4 text-[0.9rem] text-[#6b625a]">
+                        Sesi form kadaluarsa, refresh halaman.
+                    </p>
+                )
+            }
             <form method="post" action="/api/admin/login">
                 <input type="hidden" name="csrf_token" value={csrfToken} />
                 <label>Email</label>

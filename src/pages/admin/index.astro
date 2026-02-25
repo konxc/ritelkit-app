@@ -1,67 +1,81 @@
 ---
-import AdminLayout from "../../layouts/AdminLayout.astro";
-import StatCard from "../../components/admin/StatCard.svelte";
+import "../../styles/global.css";
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 
 await initDb(Astro);
 const admin = await requireAdmin(Astro);
 if (!admin) {
-    return Astro.redirect(
-        Number(
-            (await getDb(Astro).execute("SELECT COUNT(*) as count FROM admin_users"))
-                .rows[0]?.count || 0,
-        ) === 0
-            ? "/admin/setup"
-            : "/admin/login",
+    const db = getDb(Astro);
+    const result = await db.execute(
+        "SELECT COUNT(*) as count FROM admin_users",
     );
+    const adminCount = Number(result.rows[0]?.count || 0);
+    return Astro.redirect(adminCount === 0 ? "/admin/setup" : "/admin/login");
 }
-const db = getDb(Astro);
-const ordersToday = await db.execute(
-    "SELECT COUNT(*) as count FROM orders WHERE date(created_at) = date('now')",
-);
-const revenueToday = await db.execute(
-    "SELECT COALESCE(SUM(total),0) as total FROM orders WHERE date(created_at) = date('now')",
-);
-const activeCoupons = await db.execute(
-    "SELECT COUNT(*) as count FROM coupons WHERE is_active = 1",
-);
-const activeProducts = await db.execute(
-    "SELECT COUNT(*) as count FROM products WHERE is_active = 1",
-);
-const pendingShipments = await db.execute(
-    "SELECT COUNT(*) as count FROM shipments WHERE status IN ('packing','shipped')",
-);
-const pendingRefunds = await db.execute(
-    "SELECT COUNT(*) as count FROM refunds WHERE status = 'requested'",
-);
 ---
 
-<AdminLayout title="Overview">
-    <div class="grid grid-2">
-        <StatCard
-            label="Order Hari Ini"
-            value={(ordersToday.rows[0] as any)?.count || 0}
-        />
-        <StatCard
-            label="Revenue Hari Ini"
-            value={`Rp ${Number((revenueToday.rows[0] as any)?.total || 0).toLocaleString("id-ID")}`}
-        />
-        <StatCard
-            label="Produk Aktif"
-            value={(activeProducts.rows[0] as any)?.count || 0}
-        />
-        <StatCard
-            label="Pengiriman Aktif"
-            value={(pendingShipments.rows[0] as any)?.count || 0}
-        />
-        <StatCard
-            label="Kupon Aktif"
-            value={(activeCoupons.rows[0] as any)?.count || 0}
-        />
-        <StatCard
-            label="Refund Pending"
-            value={(pendingRefunds.rows[0] as any)?.count || 0}
-        />
-    </div>
-</AdminLayout>
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>Loading Roti Sholawat OS...</title>
+        <meta http-equiv="refresh" content="1.5;url=/admin/overview" />
+        <style>
+            @keyframes pulse-ring {
+                0% {
+                    transform: scale(0.8);
+                    box-shadow: 0 0 0 0 rgba(196, 138, 58, 0.7);
+                }
+                70% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 20px rgba(196, 138, 58, 0);
+                }
+                100% {
+                    transform: scale(0.8);
+                    box-shadow: 0 0 0 0 rgba(196, 138, 58, 0);
+                }
+            }
+        </style>
+    </head>
+    <body
+        class="m-0 bg-[#f6f4ef] font-['Outfit',sans-serif] h-screen w-screen flex flex-col items-center justify-center overflow-hidden"
+    >
+        <div
+            class="relative flex items-center justify-center w-24 h-24 mb-6 rounded-full bg-white shadow-xl"
+            style="animation: pulse-ring 2s infinite;"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="36"
+                height="36"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#c48a3a"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                ><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"
+                ></path><path d="M3 6h18"></path><path d="M16 10a4 4 0 0 1-8 0"
+                ></path></svg
+            >
+        </div>
+        <h1
+            class="text-2xl font-bold text-[#4a443e] tracking-tight text-center"
+        >
+            Roti Sholawat OS
+        </h1>
+        <p
+            class="text-[#8c8277] text-sm mt-2 font-medium uppercase tracking-widest animate-pulse"
+        >
+            Memuat Workspace...
+        </p>
+
+        <script>
+            setTimeout(() => {
+                window.location.href = "/admin/overview";
+            }, 1500);
+        </script>
+    </body>
+</html>
