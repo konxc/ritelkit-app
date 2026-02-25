@@ -7,11 +7,14 @@ await initDb(Astro);
 const admin = await requireAdmin(Astro);
 if (!admin) {
     const db = getDb(Astro);
-    const result = await db.execute(
-        "SELECT COUNT(*) as count FROM admin_users",
+    return Astro.redirect(
+        Number(
+            (await db.execute("SELECT COUNT(*) as count FROM admin_users"))
+                .rows[0]?.count || 0,
+        ) === 0
+            ? "/admin/setup"
+            : "/admin/login",
     );
-    const adminCount = Number(result.rows[0]?.count || 0);
-    return Astro.redirect(adminCount === 0 ? "/admin/setup" : "/admin/login");
 }
 ---
 
@@ -20,7 +23,7 @@ if (!admin) {
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width" />
-        <title>Loading Roti Sholawat OS...</title>
+        <title>Loading Sholawat Enterprise...</title>
         <meta http-equiv="refresh" content="1.5;url=/admin/overview" />
         <style>
             @keyframes pulse-ring {
@@ -64,8 +67,13 @@ if (!admin) {
         <h1
             class="text-2xl font-bold text-[#4a443e] tracking-tight text-center"
         >
-            Roti Sholawat OS
+            Sholawat Enterprise
         </h1>
+        <p
+            class="text-[#c48a3a]/60 text-[10px] font-bold mt-1 uppercase tracking-[0.2em]"
+        >
+            Powered by Satria Bakery
+        </p>
         <p
             class="text-[#8c8277] text-sm mt-2 font-medium uppercase tracking-widest animate-pulse"
         >
