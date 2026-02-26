@@ -1,8 +1,7 @@
 import { z } from "zod";
 import { router, adminProcedure } from "../trpc";
 import { inventoryMovements, products } from "../../db/schema";
-import { InventoryMovementSchema } from "../../lib/types";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 export const inventoryRouter = router({
     listMovements: adminProcedure.query(async ({ ctx }) => {

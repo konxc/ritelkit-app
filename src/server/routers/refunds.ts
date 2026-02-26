@@ -1,6 +1,6 @@
 import { adminProcedure, router } from "../trpc";
 import { refunds } from "../../db/schema";
-import { eq, desc } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { z } from "zod";
 
 export const refundRouter = router({

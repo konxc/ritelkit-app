@@ -85,7 +85,7 @@ export type Coupon = z.infer<typeof CouponSchema>;
 // Customer
 export const CustomerSchema = BaseEntitySchema.extend({
     name: z.string().min(1, "Nama wajib diisi"),
-    email: z.string().email().optional().nullable(),
+    email: z.string().email().nullish(),
     phone: z.string().min(1, "No. telepon wajib diisi"),
     notes: z.string().optional().nullable(),
 });
