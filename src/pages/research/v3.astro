@@ -1,0 +1,131 @@
+---
+import "../../styles/research-v3.css";
+import VersionNav from "../../components/research/VersionNav.astro";
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Research V3</title>
+  </head>
+  <body>
+    <div class="v3-shell">
+      <header class="v3-header">
+        <div class="v3-header-card">
+          <div>
+            <div class="v3-chip">Native PWA</div>
+            <div class="v3-brand">Roti Sholawat Admin</div>
+          </div>
+          <button class="v3-ghost" type="button">Sync</button>
+        </div>
+      </header>
+
+      <section class="v3-grid" style="margin-top: 18px;">
+        <div class="v3-card">
+          <span class="v3-chip">V3 Native Feel</span>
+          <h1 class="v3-title">Operational Pulse</h1>
+          <p class="v3-subtitle">
+            Tampilan seperti app native: responsif, halus, dan fokus pada action.
+          </p>
+          <VersionNav active="v3" />
+        </div>
+
+        <div class="v3-grid-2">
+          <div class="v3-card">
+            <p class="v3-chip">Quick Focus</p>
+            <h2 style="margin: 12px 0 6px;">Early-bird Batch</h2>
+            <p class="v3-subtitle">
+              Tingkatkan batch roti premium jam 06.00 untuk mengejar demand.
+            </p>
+            <div class="v3-actions">
+              <button class="v3-cta" type="button">Mulai Sprint</button>
+              <button class="v3-ghost" type="button">Review KPI</button>
+            </div>
+            <div class="v3-tags">
+              <span class="v3-tag">Production</span>
+              <span class="v3-tag">Premium</span>
+              <span class="v3-tag">06:00</span>
+            </div>
+          </div>
+          <div class="v3-card">
+            <p class="v3-chip">Status</p>
+            <div class="v3-grid">
+              <div class="v3-stat">
+                <strong>156</strong>
+                <span class="v3-subtitle">Active Orders</span>
+              </div>
+              <div class="v3-stat">
+                <strong>2.1 jam</strong>
+                <span class="v3-subtitle">Avg Fulfillment</span>
+              </div>
+              <div class="v3-stat">
+                <strong>64%</strong>
+                <span class="v3-subtitle">Repeat Buyers</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="v3-card">
+          <p class="v3-chip">Action Lane</p>
+          <div class="v3-grid-2">
+            <div>
+              <h3 style="margin: 0 0 8px;">Next Moves</h3>
+              <p class="v3-subtitle">Fokus 3 pekerjaan yang perlu keputusan cepat.</p>
+            </div>
+            <ul style="margin: 0; padding-left: 18px; color: var(--v3-muted);">
+              <li>Aktifkan promo repeat buyer area Bantul.</li>
+              <li>Prioritaskan produksi roti premium sebelum 08.00.</li>
+              <li>Audit stok bahan kunci untuk weekend.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="v3-card">
+          <div class="v3-grid-2">
+            <div>
+              <p class="v3-chip">Timeline</p>
+              <h3 style="margin: 8px 0 6px;">Momentum Hari Ini</h3>
+              <p class="v3-subtitle">Rangkaian event cepat yang perlu direspon.</p>
+            </div>
+            <span class="v3-badge">Live</span>
+          </div>
+          <ul class="v3-list" style="margin-top: 12px;">
+            <li>
+              <span class="v3-dot"></span>
+              <div>
+                <strong>06:30 Batch 1</strong>
+                <p class="v3-mini">Capai 90% stok premium sebelum jam 07:00.</p>
+              </div>
+            </li>
+            <li>
+              <span class="v3-dot" style="background: var(--v3-accent-2); box-shadow: 0 0 0 6px rgba(43, 185, 174, 0.18);"></span>
+              <div>
+                <strong>07:15 Peak Orders</strong>
+                <p class="v3-mini">Tim checkout siap antisipasi lonjakan 15%.</p>
+              </div>
+            </li>
+            <li>
+              <span class="v3-dot" style="background: #e26c5a; box-shadow: 0 0 0 6px rgba(226, 108, 90, 0.18);"></span>
+              <div>
+                <strong>09:00 Review Fulfillment</strong>
+                <p class="v3-mini">Validasi lead time & update dashboard produksi.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </section>
+    </div>
+
+    <div class="v3-bottom">
+      <nav class="v3-nav">
+        <a href="/research/v3" class="active">Home</a>
+        <a href="/research/v1">Insights</a>
+        <a href="/research/v2">Lab</a>
+        <a href="/research/v0">Notes</a>
+      </nav>
+    </div>
+  </body>
+</html>

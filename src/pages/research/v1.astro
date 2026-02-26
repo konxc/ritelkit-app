@@ -1,0 +1,100 @@
+---
+import AdminPwaLayout from "../../layouts/AdminPwaLayout.astro";
+import VersionNav from "../../components/research/VersionNav.astro";
+
+const highlights = [
+  { title: "Order Pulse", value: "142", note: "+9% dari kemarin" },
+  { title: "Repeat Buyers", value: "62%", note: "+3% minggu ini" },
+  { title: "Avg Prep", value: "2.3 jam", note: "-0.2 jam" },
+  { title: "Promo Uptake", value: "18%", note: "Perlu follow-up" },
+];
+
+const lanes = [
+  {
+    title: "Menu Pagi",
+    body: "Optimalkan batch roti manis favorit untuk jam 06.00-08.00.",
+  },
+  {
+    title: "Pelanggan Loyal",
+    body: "Bangun flow order cepat untuk repeat buyer dengan voucher personal.",
+  },
+  {
+    title: "Delivery Radius",
+    body: "Fokuskan promosi pada area dengan fulfillment tercepat.",
+  },
+];
+---
+
+<AdminPwaLayout
+  title="Research V1"
+  description="Premium warm PWA dashboard"
+  activeNav="research"
+>
+  <VersionNav active="v1" />
+
+  <section class="pwa-section pwa-hero">
+    <div class="pwa-grid">
+      <div class="pwa-card">
+        <div class="pwa-chip">Insight Focus</div>
+        <h2 class="pwa-title" style="margin: 12px 0 6px;">Pola Order Pagi</h2>
+        <p class="pwa-subtitle">
+          Mayoritas order premium masuk jam 06.00-08.00. Siapkan batch lebih awal.
+        </p>
+        <div class="pwa-grid-2" style="margin-top: 16px;">
+          <button class="pwa-cta" type="button">Buat Rencana</button>
+          <button class="pwa-ghost" type="button">Lihat Detail</button>
+        </div>
+      </div>
+      <div class="pwa-grid-2">
+        {highlights.map((item) => (
+          <div class="pwa-metric">
+            <span class="pwa-metric-title">{item.title}</span>
+            <span class="pwa-metric-value">{item.value}</span>
+            <span class="pwa-subtitle">{item.note}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="pwa-section">
+    <div class="pwa-grid">
+      <div>
+        <div class="pwa-chip">Action Lanes</div>
+        <h3 class="pwa-title" style="margin: 10px 0 6px;">Fokus Prioritas</h3>
+        <p class="pwa-subtitle">Tiga fokus utama untuk keputusan minggu ini.</p>
+      </div>
+      <div class="pwa-grid">
+        {lanes.map((lane) => (
+          <article class="pwa-card">
+            <h4 style="margin: 0 0 6px; font-size: 1.05rem;">{lane.title}</h4>
+            <p class="pwa-subtitle" style="margin: 0;">{lane.body}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="pwa-section">
+    <div class="pwa-grid-2">
+      <div class="pwa-card">
+        <div class="pwa-chip">Quick Notes</div>
+        <h3 class="pwa-title" style="margin: 10px 0 6px;">Catatan Tim</h3>
+        <p class="pwa-subtitle">Kumpulkan insight dari kasir dan delivery.</p>
+        <textarea
+          rows="4"
+          placeholder="Tulis insight singkat"
+          style="width: 100%; border-radius: 14px; border: 1px solid var(--pwa-border); padding: 12px;"
+        ></textarea>
+      </div>
+      <div class="pwa-card">
+        <div class="pwa-chip">Next Moves</div>
+        <ul style="margin: 12px 0 0; padding-left: 18px; color: var(--pwa-muted);">
+          <li>Siapkan promo early-bird untuk repeat buyer.</li>
+          <li>Evaluasi stok roti premium sebelum weekend.</li>
+          <li>Uji packaging baru untuk pesanan gift.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</AdminPwaLayout>

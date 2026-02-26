@@ -1,0 +1,15 @@
+{
+  "name": "Roti Sholawat Admin",
+  "short_name": "RS Admin",
+  "start_url": "/admin/research",
+  "display": "standalone",
+  "background_color": "#f4f1ed",
+  "theme_color": "#f4f1ed",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

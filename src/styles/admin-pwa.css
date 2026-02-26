@@ -1,0 +1,168 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --pwa-bg: #f4f1ed;
+  --pwa-surface: #ffffff;
+  --pwa-surface-2: #f7f3ee;
+  --pwa-ink: #1b1712;
+  --pwa-muted: #6e6257;
+  --pwa-accent: #c48a3a;
+  --pwa-accent-2: #2bb9ae;
+  --pwa-border: #e7ded3;
+  --pwa-shadow: 0 18px 40px rgba(27, 23, 18, 0.08);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: "Space Grotesk", system-ui, sans-serif;
+    background: radial-gradient(
+        1100px 500px at 20% -10%,
+        rgba(196, 138, 58, 0.16),
+        transparent 60%
+      ),
+      radial-gradient(
+        1200px 600px at 110% 10%,
+        rgba(43, 185, 174, 0.12),
+        transparent 55%
+      ),
+      var(--pwa-bg);
+    color: var(--pwa-ink);
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
+@utility pwa-shell {
+  @apply min-h-screen w-full;
+}
+
+@utility pwa-frame {
+  @apply mx-auto flex min-h-screen w-full max-w-[900px] flex-col pb-[92px] pt-16;
+}
+
+@utility pwa-topbar {
+  @apply fixed left-0 right-0 top-0 z-40 mx-auto w-full max-w-[900px] px-4 pt-4;
+}
+
+@utility pwa-topbar-card {
+  @apply flex items-center justify-between gap-3 rounded-[22px] border border-[var(--pwa-border)] bg-white/95 px-4 py-3 shadow-[var(--pwa-shadow)] backdrop-blur;
+}
+
+@utility pwa-chip {
+  @apply inline-flex items-center gap-2 rounded-full border border-[var(--pwa-border)] bg-white px-3 py-1.5 text-[0.75rem] font-semibold uppercase tracking-[0.18em] text-[var(--pwa-muted)];
+}
+
+@utility pwa-title {
+  @apply text-[1.25rem] font-semibold;
+}
+
+@utility pwa-subtitle {
+  @apply text-[0.95rem] text-[var(--pwa-muted)];
+}
+
+@utility pwa-section {
+  @apply mt-6 rounded-[22px] border border-[var(--pwa-border)] bg-[var(--pwa-surface)] p-5 shadow-[var(--pwa-shadow)];
+}
+
+@utility pwa-card {
+  @apply rounded-[18px] border border-[var(--pwa-border)] bg-[var(--pwa-surface-2)] p-4;
+}
+
+@utility pwa-grid {
+  @apply grid gap-4;
+}
+
+@utility pwa-grid-2 {
+  @apply grid gap-4 sm:grid-cols-2;
+}
+
+@utility pwa-cta {
+  @apply inline-flex items-center justify-center gap-2 rounded-[16px] bg-[var(--pwa-accent)] px-4 py-3 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(196,138,58,0.25)] transition-transform active:scale-[0.98];
+}
+
+@utility pwa-ghost {
+  @apply inline-flex items-center justify-center gap-2 rounded-[16px] border border-[var(--pwa-border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--pwa-ink)];
+}
+
+@utility pwa-nav {
+  @apply fixed bottom-0 left-0 right-0 z-50 mx-auto w-full max-w-[900px] px-4 pb-5;
+}
+
+@utility pwa-nav-card {
+  @apply grid grid-cols-4 gap-2 rounded-[22px] border border-[var(--pwa-border)] bg-white/95 p-2 shadow-[var(--pwa-shadow)] backdrop-blur;
+}
+
+@utility pwa-nav-item {
+  @apply flex flex-col items-center justify-center gap-1 rounded-[16px] px-2 py-2 text-[0.7rem] font-semibold text-[var(--pwa-muted)] transition-colors;
+}
+
+@utility pwa-nav-item-active {
+  @apply bg-[rgba(196,138,58,0.15)] text-[var(--pwa-ink)];
+}
+
+@utility pwa-metric {
+  @apply flex flex-col gap-2 rounded-[16px] border border-[var(--pwa-border)] bg-white p-4;
+}
+
+@utility pwa-metric-title {
+  @apply text-[0.75rem] uppercase tracking-[0.2em] text-[var(--pwa-muted)];
+}
+
+@utility pwa-metric-value {
+  @apply text-[1.5rem] font-semibold;
+}
+
+@keyframes pulse-soft {
+  0% {
+    transform: translateY(0);
+    box-shadow: 0 16px 36px rgba(27, 23, 18, 0.06);
+  }
+  50% {
+    transform: translateY(-2px);
+    box-shadow: 0 22px 50px rgba(27, 23, 18, 0.1);
+  }
+  100% {
+    transform: translateY(0);
+    box-shadow: 0 16px 36px rgba(27, 23, 18, 0.06);
+  }
+}
+
+.pwa-hero {
+  animation: pulse-soft 5s ease-in-out infinite;
+}
+
+.research-nav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.research-link {
+  border: 1px solid var(--pwa-border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  color: var(--pwa-muted);
+  text-decoration: none;
+  background: white;
+}
+
+.research-link.active {
+  color: var(--pwa-ink);
+  border-color: var(--pwa-accent);
+}

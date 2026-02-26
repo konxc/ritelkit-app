@@ -1,0 +1,124 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --alt-bg: #f2efe9;
+  --alt-ink: #231f1a;
+  --alt-muted: #746b61;
+  --alt-card: #ffffff;
+  --alt-border: #e2d9cd;
+  --alt-accent: #1f8c7a;
+  --alt-accent-2: #b36a2b;
+  --alt-shadow: 0 20px 45px rgba(24, 20, 15, 0.1);
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: "Manrope", system-ui, sans-serif;
+    color: var(--alt-ink);
+    background:
+      radial-gradient(800px 400px at -10% 10%, rgba(31, 140, 122, 0.15), transparent 60%),
+      radial-gradient(800px 500px at 110% -10%, rgba(179, 106, 43, 0.15), transparent 55%),
+      var(--alt-bg);
+  }
+}
+
+@utility alt-shell {
+  @apply min-h-screen w-full;
+}
+
+@utility alt-header {
+  @apply sticky top-0 z-40 mx-auto w-full max-w-[900px] px-4 pt-5;
+}
+
+@utility alt-header-card {
+  @apply flex items-center justify-between rounded-[26px] border border-[var(--alt-border)] bg-white/90 px-5 py-4 shadow-[var(--alt-shadow)] backdrop-blur;
+}
+
+@utility alt-frame {
+  @apply mx-auto flex min-h-screen w-full max-w-[900px] flex-col gap-6 px-4 pb-[96px] pt-6;
+}
+
+@utility alt-title {
+  @apply text-[1.6rem] font-semibold;
+  font-family: "DM Serif Display", serif;
+}
+
+@utility alt-subtitle {
+  @apply text-[0.95rem] text-[var(--alt-muted)];
+}
+
+@utility alt-section {
+  @apply rounded-[24px] border border-[var(--alt-border)] bg-[var(--alt-card)] p-5 shadow-[var(--alt-shadow)];
+}
+
+@utility alt-row {
+  @apply flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between;
+}
+
+@utility alt-pill {
+  @apply inline-flex items-center gap-2 rounded-full border border-[var(--alt-border)] bg-white px-3 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.2em] text-[var(--alt-muted)];
+}
+
+@utility alt-grid {
+  @apply grid gap-4;
+}
+
+@utility alt-grid-2 {
+  @apply grid gap-4 sm:grid-cols-2;
+}
+
+@utility alt-stat {
+  @apply flex flex-col gap-2 rounded-[18px] border border-[var(--alt-border)] bg-[var(--alt-bg)] p-4;
+}
+
+@utility alt-primary {
+  @apply inline-flex items-center justify-center rounded-[16px] bg-[var(--alt-accent)] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(31,140,122,0.25)] transition-transform active:scale-[0.98];
+}
+
+@utility alt-secondary {
+  @apply inline-flex items-center justify-center rounded-[16px] border border-[var(--alt-border)] bg-white px-4 py-3 text-sm font-semibold;
+}
+
+@utility alt-nav {
+  @apply fixed bottom-0 left-0 right-0 z-50 mx-auto w-full max-w-[900px] px-4 pb-5;
+}
+
+@utility alt-nav-card {
+  @apply grid grid-cols-4 gap-2 rounded-[26px] border border-[var(--alt-border)] bg-white/90 p-2 shadow-[var(--alt-shadow)] backdrop-blur;
+}
+
+@utility alt-nav-item {
+  @apply flex flex-col items-center justify-center gap-1 rounded-[16px] px-2 py-2 text-[0.7rem] font-semibold text-[var(--alt-muted)];
+}
+
+@utility alt-nav-item-active {
+  @apply bg-[rgba(31,140,122,0.12)] text-[var(--alt-ink)];
+}
+
+.research-nav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.research-link {
+  border: 1px solid var(--alt-border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  color: var(--alt-muted);
+  text-decoration: none;
+  background: white;
+}
+
+.research-link.active {
+  color: var(--alt-ink);
+  border-color: var(--alt-accent);
+}

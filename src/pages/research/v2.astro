@@ -1,0 +1,78 @@
+---
+import AdminPwaAltLayout from "../../layouts/AdminPwaAltLayout.astro";
+import VersionNav from "../../components/research/VersionNav.astro";
+
+const lanes = [
+  {
+    title: "Signal Harian",
+    body: "Monitor repeat order dari WhatsApp dan Web.",
+  },
+  {
+    title: "Eksperimen Menu",
+    body: "Coba variasi rasa untuk jam sore.",
+  },
+  {
+    title: "Margin Watch",
+    body: "Pastikan paket promo tetap di atas target margin.",
+  },
+];
+
+const stats = [
+  { label: "Peak Demand", value: "07:15", note: "+12%" },
+  { label: "Avg Basket", value: "Rp 128k", note: "+6%" },
+  { label: "Repeat 7D", value: "54%", note: "Stabil" },
+  { label: "Promo ROI", value: "1.8x", note: "Naik" },
+];
+---
+
+<AdminPwaAltLayout
+  title="Research V2"
+  description="Editorial + operations lab"
+  activeNav="lab"
+>
+  <VersionNav active="v2" />
+
+  <section class="alt-section">
+    <div class="alt-row">
+      <div>
+        <div class="alt-pill">Editorial</div>
+        <h2 class="alt-title" style="margin: 10px 0 6px;">Insight Mingguan</h2>
+        <p class="alt-subtitle">Highlight performa menu dan demand.</p>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button class="alt-primary" type="button">Review KPI</button>
+        <button class="alt-secondary" type="button">Export</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="alt-section">
+    <div class="alt-grid-2">
+      {stats.map((item) => (
+        <div class="alt-stat">
+          <span class="alt-subtitle" style="text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.7rem;">{item.label}</span>
+          <strong style="font-size: 1.35rem;">{item.value}</strong>
+          <span class="alt-subtitle">{item.note}</span>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="alt-section">
+    <div class="alt-grid">
+      <div>
+        <div class="alt-pill">Research Lanes</div>
+        <h3 class="alt-title" style="margin: 10px 0 6px; font-size: 1.35rem;">Prioritas Utama</h3>
+        <p class="alt-subtitle">Tiga fokus utama untuk keputusan minggu ini.</p>
+      </div>
+      <div class="alt-grid">
+        {lanes.map((lane) => (
+          <article class="alt-stat">
+            <strong style="font-size: 1.05rem;">{lane.title}</strong>
+            <p class="alt-subtitle" style="margin: 6px 0 0;">{lane.body}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</AdminPwaAltLayout>

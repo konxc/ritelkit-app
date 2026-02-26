@@ -1,0 +1,66 @@
+---
+import "../../styles/research-v0.css";
+import VersionNav from "../../components/research/VersionNav.astro";
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Research V0</title>
+  </head>
+  <body>
+    <main class="v0-wrap">
+      <section class="v0-hero">
+        <span class="v0-chip">V0 Minimal Flow</span>
+        <h1 class="v0-title">Admin Mobile Baseline</h1>
+        <p class="v0-subtitle">
+          Struktur cepat untuk melihat konten inti tanpa elemen yang mengganggu fokus.
+        </p>
+        <VersionNav active="v0" />
+      </section>
+
+      <section class="v0-grid-2" style="margin-top: 18px;">
+        <article class="v0-card">
+          <p class="v0-chip">Daily Focus</p>
+          <h2 style="margin: 12px 0 6px;">Batch Roti Premium</h2>
+          <p class="v0-subtitle">
+            Target produksi sebelum 08.30 untuk menjaga availability.
+          </p>
+          <div class="v0-actions">
+            <button class="v0-cta" type="button">Mulai Checklist</button>
+            <button class="v0-ghost" type="button">Lihat Detail</button>
+          </div>
+        </article>
+        <article class="v0-card">
+          <p class="v0-chip">Snapshot</p>
+          <div class="v0-grid">
+            <div class="v0-stat">
+              <strong>124</strong>
+              <span class="v0-subtitle">Active Orders</span>
+            </div>
+            <div class="v0-stat">
+              <strong>2.4 jam</strong>
+              <span class="v0-subtitle">Avg Fulfillment</span>
+            </div>
+            <div class="v0-stat">
+              <strong>18%</strong>
+              <span class="v0-subtitle">Cart Abandon</span>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="v0-card" style="margin-top: 16px;">
+        <p class="v0-chip">Field Notes</p>
+        <h3 style="margin: 10px 0 6px;">Catatan Lapangan</h3>
+        <textarea
+          rows="4"
+          class="v0-textarea"
+          placeholder="Tulis insight harian di sini"
+        ></textarea>
+      </section>
+    </main>
+  </body>
+</html>
