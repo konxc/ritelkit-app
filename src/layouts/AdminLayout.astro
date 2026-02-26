@@ -1,7 +1,8 @@
 ---
 import "../styles/admin.css";
 import { ensureCsrfToken } from "../lib/auth";
-const { title = "Dashboard Admin" } = Astro.props;
+import QueryProvider from "../components/admin/QueryProvider.svelte";
+const { title = "Dashboard Admin", dehydratedState = null } = Astro.props;
 const currentPath = Astro.url.pathname;
 const csrfToken = ensureCsrfToken(Astro);
 
@@ -243,7 +244,9 @@ const renderIcon = (iconName: string, active: boolean) => {
                     <div
                         class="bg-transparent lg:bg-white lg:border lg:border-stone-200/60 lg:shadow-[0_8px_30px_rgba(0,0,0,0.04)] lg:rounded-[1.5rem] p-0 lg:p-6 animate-fade-in-up"
                     >
-                        <slot />
+                        <QueryProvider initialData={dehydratedState} client:load>
+                            <slot />
+                        </QueryProvider>
                     </div>
                 </main>
             </div>
