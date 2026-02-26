@@ -5,6 +5,7 @@ export type RuntimeEnv = {
     PUBLIC_WHATSAPP_NUMBER: string;
     PUBLIC_MIDTRANS_CLIENT_KEY: string;
     MIDTRANS_SERVER_KEY: string;
+    PUBLIC_MIDTRANS_MERCHANT_ID: string;
     MIDTRANS_IS_PRODUCTION: string;
     DATABASE_URL: string;
     DATABASE_AUTH_TOKEN?: string;
@@ -20,13 +21,17 @@ export type RuntimeEnv = {
 
 export function getEnv(ctx?: APIContext): RuntimeEnv {
     const runtimeEnv = ctx?.locals?.runtime?.env;
-    const source = runtimeEnv ?? import.meta.env;
+    const source =
+        runtimeEnv ??
+        (typeof import.meta !== "undefined" ? import.meta.env : undefined) ??
+        process.env;
 
     return {
         PUBLIC_SITE_URL: source.PUBLIC_SITE_URL,
         PUBLIC_WHATSAPP_NUMBER: source.PUBLIC_WHATSAPP_NUMBER,
         PUBLIC_MIDTRANS_CLIENT_KEY: source.PUBLIC_MIDTRANS_CLIENT_KEY,
         MIDTRANS_SERVER_KEY: source.MIDTRANS_SERVER_KEY,
+        PUBLIC_MIDTRANS_MERCHANT_ID: source.PUBLIC_MIDTRANS_MERCHANT_ID,
         MIDTRANS_IS_PRODUCTION: source.MIDTRANS_IS_PRODUCTION,
         DATABASE_URL: source.DATABASE_URL,
         DATABASE_AUTH_TOKEN: source.DATABASE_AUTH_TOKEN,
