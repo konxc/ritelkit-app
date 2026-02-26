@@ -247,6 +247,17 @@ CREATE TABLE IF NOT EXISTS order_status_history (
     created_at TEXT NOT NULL,
     FOREIGN KEY(order_id) REFERENCES orders(id)
 );
+
+CREATE TABLE IF NOT EXISTS product_reviews (
+    id TEXT PRIMARY KEY,
+    product_id TEXT NOT NULL,
+    customer_name TEXT NOT NULL,
+    rating INTEGER NOT NULL,
+    comment TEXT,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY(product_id) REFERENCES products(id)
+);
     `;
 
     const statements = schema

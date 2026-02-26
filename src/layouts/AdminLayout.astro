@@ -4,147 +4,543 @@ import { ensureCsrfToken } from "../lib/auth";
 const { title = "Dashboard Admin" } = Astro.props;
 const currentPath = Astro.url.pathname;
 const csrfToken = ensureCsrfToken(Astro);
+
+const isActive = (path: string) => {
+    if (path === "/admin/overview") {
+        return currentPath === "/admin/overview" || currentPath === "/admin";
+    }
+    return currentPath.startsWith(path);
+};
+
+const ICONS: Record<string, string> = {
+    overview:
+        '<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
+    katalog:
+        '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+    pesanan: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>',
+    pemasaran:
+        '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    sistem: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/>',
+    settings:
+        '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+    reports: '<path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/>',
+};
+
+const navGroups = [
+    {
+        title: "Menu Utama",
+        items: [
+            { name: "Overview", path: "/admin/overview", icon: "overview" },
+            { name: "Laporan", path: "/admin/reports", icon: "reports" },
+        ],
+    },
+    {
+        title: "Manajemen",
+        items: [
+            { name: "Katalog", path: "/admin/katalog", icon: "katalog" },
+            { name: "Pesanan", path: "/admin/pesanan", icon: "pesanan" },
+            { name: "Pemasaran", path: "/admin/pemasaran", icon: "pemasaran" },
+            { name: "Sistem", path: "/admin/sistem", icon: "sistem" },
+        ],
+    },
+    {
+        title: "Lainnya",
+        items: [
+            { name: "Profil", path: "/admin/profile", icon: "pemasaran" },
+            { name: "Setup", path: "/admin/settings", icon: "settings" },
+            { name: "UI System", path: "/admin/design-system", icon: "sistem" },
+        ],
+    },
+
+];
+
+
+const renderIcon = (iconName: string, active: boolean) => {
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${active ? "2.5" : "2"}" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 transition-transform duration-300 ${active ? "scale-110" : ""}">${ICONS[iconName]}</svg>`;
+};
 ---
 
 <!doctype html>
 <html lang="id">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width" />
-        <title>{title}</title>
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <title>{title} - Roti Sholawat Admin</title>
         <meta name="csrf-token" content={csrfToken} />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap"
+            rel="stylesheet"
+        />
     </head>
-    <body>
-        <div class="admin-shell">
-            <aside class="admin-sidebar">
-                <div class="admin-brand">Roti Sholawat</div>
-                <nav class="admin-nav">
+    <body
+        class="m-0 font-['Plus_Jakarta_Sans',sans-serif] text-stone-900 bg-[#fdfcf9] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSI+PGVsbGlwc2UgY3g9IjEyIiBjeT0iMTIiIHJ4PSI0IiByeT0iNCIgZmlsbD0icmdiYSgxOTYsMTM4LDU4LDAuMDUpIi8+PC9zdmc+')] bg-repeat bg-fixed antialiased overflow-hidden"
+    >
+        <div class="flex flex-col lg:flex-row h-[100dvh] w-full relative">
+            <!-- Sidebar (Desktop) -->
+            <aside
+                id="admin-sidebar"
+                class="hidden lg:flex w-[280px] shrink-0 bg-white border-r border-stone-200/60 flex-col h-full z-40 px-5 pt-8 pb-4 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-[width] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] will-change-width group relative"
+            >
+                <button
+                    id="sidebar-toggle"
+                    class="absolute -right-3.5 top-9 w-7 h-7 bg-white border border-stone-200 shadow-sm rounded-full flex items-center justify-center text-stone-500 hover:text-[#c48a3a] hover:border-[#c48a3a] transition-all cursor-pointer z-50 text-[10px]"
+                    title="Toggle Sidebar"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="sidebar-toggle-icon transition-transform duration-300"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+
+                <div
+                    class="sidebar-logo-container mb-8 px-4 shrink-0 flex items-center h-8 transition-all duration-300"
+                >
                     <a
                         href="/admin/overview"
-                        class={currentPath === "/admin/overview"
-                            ? "active"
-                            : ""}>Overview</a
+                        class="font-['Syne',sans-serif] font-extrabold text-[1.1rem] xl:text-[1.15rem] tracking-tight text-stone-900 flex items-center gap-2.5 no-underline before:content-[''] before:block before:w-[14px] before:h-[14px] before:bg-[#c48a3a] before:shrink-0 before:rounded-[4px] before:rotate-45"
                     >
-                    <a
-                        href="/admin/reports"
-                        class={currentPath.startsWith("/admin/reports")
-                            ? "active"
-                            : ""}>Laporan</a
-                    >
-                    <a
-                        href="/admin/categories"
-                        class={currentPath.startsWith("/admin/categories")
-                            ? "active"
-                            : ""}>Kategori</a
-                    >
-                    <a
-                        href="/admin/products"
-                        class={currentPath.startsWith("/admin/products")
-                            ? "active"
-                            : ""}>Produk</a
-                    >
-                    <a
-                        href="/admin/inventory"
-                        class={currentPath.startsWith("/admin/inventory")
-                            ? "active"
-                            : ""}>Inventory</a
-                    >
-                    <a
-                        href="/admin/orders"
-                        class={currentPath.startsWith("/admin/orders")
-                            ? "active"
-                            : ""}>Order</a
-                    >
-                    <a
-                        href="/admin/fulfillment"
-                        class={currentPath.startsWith("/admin/fulfillment")
-                            ? "active"
-                            : ""}>Fulfillment</a
-                    >
-                    <a
-                        href="/admin/invoices"
-                        class={currentPath.startsWith("/admin/invoices")
-                            ? "active"
-                            : ""}>Invoice</a
-                    >
-                    <a
-                        href="/admin/refunds"
-                        class={currentPath.startsWith("/admin/refunds")
-                            ? "active"
-                            : ""}>Refund</a
-                    >
-                    <a
-                        href="/admin/customers"
-                        class={currentPath.startsWith("/admin/customers")
-                            ? "active"
-                            : ""}>Pelanggan</a
-                    >
-                    <a
-                        href="/admin/coupons"
-                        class={currentPath.startsWith("/admin/coupons")
-                            ? "active"
-                            : ""}>Kupon</a
-                    >
-                    <a
-                        href="/admin/shipping"
-                        class={currentPath.startsWith("/admin/shipping")
-                            ? "active"
-                            : ""}>Pengiriman</a
-                    >
-                    <a
-                        href="/admin/ads"
-                        class={currentPath.startsWith("/admin/ads")
-                            ? "active"
-                            : ""}>Iklan</a
-                    >
-                    <a
-                        href="/admin/cms"
-                        class={currentPath.startsWith("/admin/cms")
-                            ? "active"
-                            : ""}>Konten</a
-                    >
-                    <a
-                        href="/admin/notifications"
-                        class={currentPath.startsWith("/admin/notifications")
-                            ? "active"
-                            : ""}>Notifikasi</a
-                    >
-                    <a
-                        href="/admin/audit"
-                        class={currentPath.startsWith("/admin/audit")
-                            ? "active"
-                            : ""}>Audit</a
-                    >
-                    <a
-                        href="/admin/users"
-                        class={currentPath.startsWith("/admin/users")
-                            ? "active"
-                            : ""}>Admin</a
-                    >
-                    <a
-                        href="/admin/settings"
-                        class={currentPath.startsWith("/admin/settings")
-                            ? "active"
-                            : ""}>Pengaturan</a
-                    >
+                        <span class="sidebar-text transition-opacity duration-200 whitespace-nowrap overflow-hidden">SHOLAWAT<span class="text-[#c48a3a]">.ENT</span></span>
+                    </a>
+                </div>
+                <!-- Navigation Links inside Sidebar -->
+                <nav
+                    class="flex flex-col gap-6 overflow-y-auto flex-1 custom-scrollbar pb-8 overflow-x-hidden pr-4 -mr-4"
+                >
+                    {
+                        navGroups.map((group, index) => (
+                            <div class="flex flex-col relative group/nav">
+                                <h3 class="px-4 text-[0.7rem] font-bold uppercase tracking-wider text-stone-400 mb-2 sidebar-text transition-opacity duration-200 whitespace-nowrap">
+                                    {group.title}
+                                </h3>
+                                <!-- Mini Sidebar Group Divider (Only visible when collapsed) -->
+                                {index > 0 && <div class="hidden sidebar-divider w-8 h-[1px] bg-stone-200/80 my-2 mx-auto"></div>}
+                                
+                                <div class="flex flex-col gap-1">
+                                    {group.items.map((link) => {
+                                        const active = isActive(link.path);
+                                        return (
+                                            <a
+                                                href={link.path}
+                                                title={link.name}
+                                                class={`flex items-center gap-3 px-4 py-2.5 rounded-2xl text-[0.92rem] font-semibold transition-all duration-300 relative ${active ? "bg-gradient-to-r from-[#c48a3a] to-[#a6722d] text-white shadow-[0_8px_16px_rgba(196,138,58,0.25)]" : "text-stone-500 hover:bg-stone-50 hover:-translate-y-[1px] hover:text-stone-900"}`}
+                                            >
+                                                <div set:html={renderIcon(link.icon, active)} class="shrink-0" />
+                                                <span class="sidebar-text transition-opacity duration-200 whitespace-nowrap">{link.name}</span>
+                                            </a>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ))
+                    }
                 </nav>
             </aside>
-            <main class="admin-main">
-                <header class="admin-topbar">
-                    <h1>{title}</h1>
-                    <form method="post" action="/api/admin/logout">
-                        <input
-                            type="hidden"
-                            name="csrf_token"
-                            value={csrfToken}
-                        />
-                        <button class="btn-ghost" type="submit">Logout</button>
-                    </form>
+
+            <div
+                class="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative"
+            >
+                <!-- Mobile Header -->
+                <header
+                    class="h-[72px] shrink-0 lg:hidden sticky top-0 z-30 bg-white/80 backdrop-blur-2xl border-b border-stone-200/50 px-5 flex items-center justify-between shadow-[0_4px_20px_rgba(0,0,0,0.02)]"
+                >
+                    <a
+                        href="/admin/overview"
+                        class="font-['Syne',sans-serif] font-extrabold text-[1.2rem] tracking-tight text-stone-900 flex items-center gap-2 no-underline before:content-[''] before:w-2.5 before:h-2.5 before:bg-[#c48a3a] before:rounded-[3px] before:rotate-45"
+                    >
+                        SHOLAWAT<span class="text-[#c48a3a] hidden sm:inline"
+                            >.ENT</span
+                        >
+                    </a>
+
+                    <div class="flex items-center gap-3">
+                        <a href="/admin/profile" class="w-10 h-10 rounded-full border border-stone-200/80 bg-white flex items-center justify-center text-stone-500 shadow-sm hover:bg-stone-50 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </a>
+                    </div>
                 </header>
-                <section class="admin-content">
-                    <slot />
-                </section>
-            </main>
+
+                <!-- Desktop Header -->
+                <header
+                    class="hidden lg:flex h-[80px] shrink-0 items-center justify-between px-8 md:px-10 border-b border-stone-200/50 bg-white/50 backdrop-blur-xl z-30 sticky top-0"
+                >
+                    <div class="flex items-center gap-8 flex-1">
+                        <h1
+                            class="font-['Syne',sans-serif] text-[1.4rem] font-bold text-stone-800 m-0 tracking-tight shrink-0"
+                        >
+                            {title}
+                        </h1>
+                        <div class="flex-1 flex justify-center">
+                            <slot name="header-tabs" />
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4 relative shrink-0">
+                        <button class="profile-dropdown-toggle flex items-center gap-3 p-1.5 pr-3 rounded-full border border-stone-200/80 bg-white/80 hover:bg-stone-50 transition-all duration-300 shadow-sm cursor-pointer">
+                            <div class="w-8 h-8 rounded-full bg-stone-100 border border-stone-200/60 flex items-center justify-center text-stone-500 overflow-hidden shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            </div>
+                            <div class="flex flex-col text-left">
+                                <span class="text-[0.85rem] font-bold text-stone-900 leading-tight">Admin</span>
+                                <span class="text-[0.65rem] font-semibold text-stone-400 leading-tight">Administrator</span>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-stone-400 ml-1"><path d="m6 9 6 6 6-6"/></svg>
+                        </button>
+
+                        <div class="profile-dropdown-menu hidden absolute top-full right-0 mt-3 w-60 bg-white border border-stone-100 rounded-2xl shadow-[0_12px_32px_rgba(0,0,0,0.08)] overflow-hidden z-50">
+                            <div class="p-4 border-b border-stone-50 bg-stone-50/50">
+                                <p class="text-xs font-semibold text-stone-400 tracking-wide mb-0.5">Signed in as</p>
+                                <p class="text-sm font-bold text-stone-900 truncate">admin@rotisholawat.com</p>
+                            </div>
+                            <div class="px-2 pt-2 pb-1 border-b border-stone-100 flex flex-col gap-1">
+                                <a href="/admin/profile" data-astro-reload class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[0.9rem] font-semibold text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-stone-400"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    Profil Saya
+                                </a>
+                                <a href="/admin/settings" data-astro-reload class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[0.9rem] font-semibold text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-stone-400"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    Pengaturan Toko
+                                </a>
+                                <a href="https://wa.me/6287825228548" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[0.9rem] font-semibold text-stone-600 hover:text-stone-900 hover:bg-stone-50 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-stone-400"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+                                    Pusat Bantuan
+                                </a>
+                            </div>
+                            <div class="px-2 pb-2 pt-1">
+                                <form method="post" action="/api/admin/logout" class="block m-0">
+                                    <input type="hidden" name="csrf_token" value={csrfToken} />
+                                    <button type="submit" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[0.9rem] font-semibold text-red-600 hover:bg-red-50 transition-colors cursor-pointer">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+                                        Keluar Sesi
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Mobile Sub-Header for Tabs -->
+                {Astro.slots.has("header-tabs") && (
+                    <div class="lg:hidden h-14 shrink-0 bg-white border-b border-stone-200/50 flex items-center px-5 overflow-x-auto custom-scrollbar no-scrollbar scroll-smooth">
+                        <slot name="header-tabs" />
+                    </div>
+                )}
+
+
+                <main
+                    class="flex-1 overflow-y-auto w-full p-4 sm:p-5 md:p-6 lg:p-6 pb-[100px] lg:pb-8 scroll-smooth custom-scrollbar relative z-10"
+                >
+                    <div class="lg:hidden mb-8 pl-1">
+                        <h1
+                            class="font-['Syne',sans-serif] text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-br from-stone-900 to-stone-600 bg-clip-text text-transparent mb-1.5"
+                        >
+                            {title}
+                        </h1>
+                        <p class="text-stone-500 text-sm font-medium">
+                            Dashboard Administrasi
+                        </p>
+                    </div>
+
+                    <div
+                        class="bg-transparent lg:bg-white lg:border lg:border-stone-200/60 lg:shadow-[0_8px_30px_rgba(0,0,0,0.04)] lg:rounded-[1.5rem] p-0 lg:p-6 animate-fade-in-up"
+                    >
+                        <slot />
+                    </div>
+                </main>
+            </div>
+
+            <!-- Mobile Navbar Dock -->
+            <nav
+                class="lg:hidden fixed bottom-3 left-1/2 -translate-x-1/2 bg-stone-900/95 backdrop-blur-xl p-2 rounded-3xl flex items-center gap-1.5 z-50 shadow-[0_20px_40px_rgba(0,0,0,0.25)] border border-white/10 w-max"
+            >
+                <a
+                    href="/admin/overview"
+                    class={`flex flex-col items-center justify-center w-[60px] sm:w-[68px] h-14 rounded-2xl no-underline transition-all duration-300 ${isActive("/admin/overview") ? "text-white bg-white/10" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="mb-1"
+                        ><path
+                            d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+                        ></path><polyline points="9 22 9 12 15 12 15 22"
+                        ></polyline></svg
+                    >
+                    <span
+                        class="text-[0.6rem] font-bold uppercase tracking-wider"
+                        >Home</span
+                    >
+                </a>
+                <a
+                    href="/admin/pesanan"
+                    class={`flex flex-col items-center justify-center w-[60px] sm:w-[68px] h-14 rounded-2xl no-underline transition-all duration-300 ${isActive("/admin/pesanan") ? "text-white bg-white/10" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="mb-1"
+                        ><path
+                            d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                        ></path><polyline points="14 2 14 8 20 8"
+                        ></polyline><line x1="16" y1="13" x2="8" y2="13"
+                        ></line><line x1="16" y1="17" x2="8" y2="17"
+                        ></line><polyline points="10 9 9 9 8 9"></polyline></svg
+                    >
+                    <span
+                        class="text-[0.6rem] font-bold uppercase tracking-wider"
+                        >Order</span
+                    >
+                </a>
+                <a
+                    href="/admin/katalog"
+                    class={`flex flex-col items-center justify-center w-[60px] sm:w-[68px] h-14 rounded-2xl no-underline transition-all duration-300 ${isActive("/admin/katalog") ? "text-white bg-white/10" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="mb-1"
+                        ><path
+                            d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"
+                        ></path><path d="m14 7 3 3"></path><path d="M5 6v4"
+                        ></path><path d="M19 14v4"></path><path d="M10 2v2"
+                        ></path><path d="M7 8H3"></path><path d="M21 16h-4"
+                        ></path><path d="M11 3H9"></path></svg
+                    >
+                    <span
+                        class="text-[0.6rem] font-bold uppercase tracking-wider"
+                        >Produk</span
+                    >
+                </a>
+
+                <a
+                    href="/admin/settings"
+                    class={`flex flex-col items-center justify-center w-[60px] sm:w-[68px] h-14 rounded-2xl no-underline transition-all duration-300 ${isActive("/admin/settings") ? "text-white bg-white/10" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="mb-1"
+                        ><path
+                            d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+                        ></path><circle cx="12" cy="12" r="3"></circle></svg
+                    >
+                    <span
+                        class="text-[0.6rem] font-bold uppercase tracking-wider"
+                        >Setup</span
+                    >
+                </a>
+            </nav>
         </div>
+
+        <style is:global>
+            /* Sidebar Collapsed State Styles */
+            body.sidebar-collapsed #admin-sidebar {
+                width: 88px;
+            }
+
+            body.sidebar-collapsed .sidebar-logo-container {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                margin-bottom: 1rem;
+                padding-bottom: 1rem;
+                justify-content: center;
+                width: 48px;
+                position: relative;
+            }
+
+            body.sidebar-collapsed .sidebar-logo-container::after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 32px;
+                height: 1px;
+                background-color: rgba(231, 229, 228, 0.8);
+            }
+            
+            body.sidebar-collapsed .sidebar-logo-container a {
+                justify-content: center;
+            }
+
+            body.sidebar-collapsed .sidebar-text,
+            body.sidebar-collapsed #admin-sidebar h3 {
+                opacity: 0;
+                width: 0;
+                overflow: hidden;
+                display: none;
+            }
+
+            body.sidebar-collapsed #admin-sidebar nav a {
+                padding-left: 0;
+                padding-right: 0;
+                justify-content: center;
+                width: 48px;
+                height: 48px;
+            }
+
+            body.sidebar-collapsed .sidebar-divider {
+                display: block;
+            }
+
+            body.sidebar-collapsed #admin-sidebar > div:first-child a::before {
+                margin: 0;
+            }
+
+            body.sidebar-collapsed .sidebar-toggle-icon {
+                transform: rotate(180deg);
+            }
+
+            /* Custom Tooltip implementation across standard titles for cleaner UI */
+            body.sidebar-collapsed #admin-sidebar nav a:hover::after {
+                content: attr(title);
+                position: absolute;
+                left: 100%;
+                margin-left: 12px;
+                background: rgba(28, 25, 23, 0.95);
+                color: white;
+                padding: 6px 12px;
+                border-radius: 8px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                white-space: nowrap;
+                z-index: 100;
+                pointer-events: none;
+                animation: tooltipFadeIn 0.2s ease forwards;
+            }
+
+            @keyframes tooltipFadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateX(-4px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+
+            /* Custom Scrollbar for normal layout */
+            .custom-scrollbar::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: rgba(196, 138, 58, 0.2);
+                border-radius: 10px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                background: rgba(196, 138, 58, 0.4);
+            }
+
+            /* Hide scrollbar completely when sidebar is collapsed */
+            body.sidebar-collapsed .custom-scrollbar::-webkit-scrollbar {
+                display: none;
+            }
+            body.sidebar-collapsed .custom-scrollbar {
+                -ms-overflow-style: none;  /* IE and Edge */
+                scrollbar-width: none;  /* Firefox */
+            }
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(12px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            .animate-fade-in-up {
+                animation: fadeInUp 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+            }
+        </style>
     </body>
+
+    <script>
+        // Sidebar Toggle Logic
+        document.addEventListener("DOMContentLoaded", () => {
+            const toggleBtn = document.getElementById("sidebar-toggle");
+            const body = document.body;
+
+            // Check localStorage for saved state
+            const isCollapsed =
+                localStorage.getItem("sidebarState") === "collapsed";
+            if (isCollapsed) {
+                body.classList.add("sidebar-collapsed");
+            } else {
+                body.classList.remove("sidebar-collapsed");
+            }
+
+            toggleBtn?.addEventListener("click", () => {
+                body.classList.toggle("sidebar-collapsed");
+
+                if (body.classList.contains("sidebar-collapsed")) {
+                    localStorage.setItem("sidebarState", "collapsed");
+                } else {
+                    localStorage.setItem("sidebarState", "expanded");
+                }
+            });
+
+            // Profile Dropdown Logic
+            const dropdownToggles = document.querySelectorAll('.profile-dropdown-toggle');
+            
+            dropdownToggles.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    
+                    // Close other dropdowns first
+                    document.querySelectorAll('.profile-dropdown-menu').forEach(menu => {
+                        if (menu !== btn.nextElementSibling) {
+                            menu.classList.add('hidden');
+                        }
+                    });
+                    
+                    const menu = btn.nextElementSibling;
+                    if (menu) {
+                        menu.classList.toggle('hidden');
+                    }
+                });
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', () => {
+                document.querySelectorAll('.profile-dropdown-menu').forEach(menu => {
+                    if (!menu.classList.contains('hidden')) {
+                        menu.classList.add('hidden');
+                    }
+                });
+            });
+        });
+    </script>
 </html>

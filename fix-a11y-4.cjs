@@ -18,6 +18,7 @@ function processFile(file) {
     let originalContent = content;
 
     content = content.replace(/role="button" tabindex="0" on:click={([^}]+)} on:keydown={([^}]+)}/g, (match, clickHandler, keydownHandler) => {
+        void match;
         return `role="button" tabindex="0" onclick={${clickHandler}} onkeydown={${keydownHandler}}`;
     });
 

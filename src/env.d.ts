@@ -5,6 +5,7 @@ interface Env {
     PUBLIC_WHATSAPP_NUMBER: string;
     PUBLIC_MIDTRANS_CLIENT_KEY: string;
     MIDTRANS_SERVER_KEY: string;
+    PUBLIC_MIDTRANS_MERCHANT_ID: string;
     MIDTRANS_IS_PRODUCTION: string;
     DATABASE_URL: string;
     DATABASE_AUTH_TOKEN?: string;
@@ -18,12 +19,12 @@ interface Env {
     R2_PUBLIC_BASE_URL?: string;
 }
 
-interface ImportMetaEnv extends Env {}
+interface ImportMetaEnv extends Env { }
 
 interface ImportMeta {
     readonly env: ImportMetaEnv;
 }
 
 declare namespace App {
-    interface Locals extends Runtime {}
+    interface Locals extends Runtime { }
 }

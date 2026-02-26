@@ -16,7 +16,9 @@
     "validate:astro": "pnpm run astro check",
     "validate:svelte": "svelte-check",
     "smoke:api": "bash scripts/smoke-api.sh",
-    "astro": "astro"
+    "astro": "astro",
+    "seed": "tsx scripts/seed-admin.ts",
+    "capture:research": "node scripts/capture-research.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.6",
@@ -33,14 +35,19 @@
     "astro": "^5.17.1",
     "date-fns": "^4.1.0",
     "pdfkit": "^0.17.2",
+    "playwright": "^1.58.2",
     "sharp": "^0.34.4",
+    "svelte": "^5.53.3",
     "tailwindcss": "^4.2.1",
     "typescript": "^5.9.3"
   },
   "devDependencies": {
     "@types/pdfkit": "^0.17.5",
+    "dotenv": "^17.3.1",
     "svelte-check": "^4.4.3",
     "svelte-check-rs": "^0.9.5",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "wrangler": "^4.67.0"
   }
 }
