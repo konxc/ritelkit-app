@@ -2,11 +2,24 @@
     import AdminDataTable from "../AdminDataTable.svelte";
     import StatusBadge from "../StatusBadge.svelte";
     import RowActions from "../RowActions.svelte";
+    import { trpc } from "../../../lib/trpc";
+    import { createQuery } from "@tanstack/svelte-query";
 
-    let { rows = [] }: { rows: any[] } = $props();
+    let { rows: initialRows = [] }: { rows: any[] } = $props();
+
+    const ordersQuery = createQuery({
+        queryKey: ["orders"],
+        queryFn: () => trpc.orders.list.query({}),
+        initialData: () => ({
+            rows: initialRows,
+            total: initialRows.length,
+            totalPages: 1,
+        }),
+    });
 
     const getStatusType = (status: string) => {
-        switch (status) {
+        if (!status) return "default";
+        switch (status.toLowerCase()) {
             case "completed":
                 return "success";
             case "processing":
@@ -15,25 +28,28 @@
             case "pending":
                 return "default";
             case "cancelled":
-                return "error";
+                return "danger";
             default:
                 return "default";
         }
     };
 
     const getPaymentStatusType = (status: string) => {
-        switch (status) {
+        if (!status) return "default";
+        switch (status.toLowerCase()) {
             case "paid":
                 return "success";
             case "pending":
                 return "warning";
             case "failed":
             case "expired":
-                return "error";
+                return "danger";
             default:
                 return "default";
         }
     };
+
+    const currentRows = $derived($ordersQuery.data?.rows || initialRows);
 </script>
 
 <div class="animate-fade-in">
@@ -50,7 +66,7 @@
             </tr>
         </thead>
         <tbody>
-            {#if rows.length === 0}
+            {#if currentRows.length === 0}
                 <tr>
                     <td
                         colspan="7"
@@ -60,18 +76,18 @@
                     </td>
                 </tr>
             {/if}
-            {#each rows as order (order.id)}
+            {#each currentRows as order (order.id)}
                 <tr
                     class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
                 >
                     <td class="py-4">
                         <span class="font-mono font-bold text-[#c48a3a]"
-                            >{order.order_no}</span
+                            >{order.orderNo}</span
                         >
                     </td>
                     <td class="py-4">
                         <div class="font-bold text-stone-900">
-                            {order.customer_name}
+                            {order.customerName}
                         </div>
                     </td>
                     <td class="py-4 tabular-nums font-bold text-stone-800">
@@ -80,21 +96,22 @@
                     <td class="py-4">
                         <StatusBadge
                             label={order.status}
-                            type={getStatusType(order.status)}
+                            tone={getStatusType(order.status)}
                         />
                     </td>
                     <td class="py-4">
                         <StatusBadge
-                            label={order.payment_status}
-                            type={getPaymentStatusType(order.payment_status)}
+                            label={order.paymentStatus}
+                            tone={getPaymentStatusType(order.paymentStatus)}
                         />
                     </td>
+
                     <td class="py-4 text-stone-500 text-sm font-medium">
-                        {String(order.created_at).split("T")[0]}
+                        {String(order.createdAt).split("T")[0]}
                     </td>
                     <td class="py-4">
                         <RowActions
-                            detailHref={`/admin/orders/${order.order_no}`}
+                            detailHref={`/admin/orders/${order.orderNo}`}
                             showSave={false}
                             showDelete={false}
                         />

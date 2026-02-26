@@ -1,59 +1,57 @@
-<script lang="ts" context="module">
-  export type OrderSettingsPayload = {
-    preorder_only?: boolean;
-    minimum_lead_time_hours?: number;
-    cutoff_time?: string;
-    same_day_enabled?: boolean;
-    available_days?: string[];
-  };
-
-  export type DeliverySettingsPayload = {
-    delivery_province?: string;
-    free_delivery_threshold?: number;
-  };
-</script>
-
 <script lang="ts">
   import SectionHeader from "../SectionHeader.svelte";
   import CrudInlineForm from "../CrudInlineForm.svelte";
   import PanelCard from "../PanelCard.svelte";
-  import { onMount } from "svelte";
+  import ToastNotification from "../ToastNotification.svelte";
+  import { trpc } from "../../../lib/trpc";
+  import { createQuery, createMutation, useQueryClient } from "@tanstack/svelte-query";
 
-  export let orderSettings: OrderSettingsPayload = {};
-  export let deliverySettings: DeliverySettingsPayload = {};
+  let { 
+    orderSettings: initialOrderSettings = {}, 
+    deliverySettings: initialDeliverySettings = {} 
+  } = $props();
 
-  let premiereOnly = orderSettings.preorder_only ?? false;
-  let leadTimeHours = orderSettings.minimum_lead_time_hours ?? 0;
-  let cutoffTime = orderSettings.cutoff_time ?? "";
-  let sameDayEnabled = orderSettings.same_day_enabled ?? false;
-  let availableDays = (orderSettings.available_days || []).join(", ");
-  let deliveryProvince = deliverySettings.delivery_province ?? "DI Yogyakarta";
-  let freeDeliveryThreshold = deliverySettings.free_delivery_threshold ?? 0;
-  let csrfToken = "";
-  let isSaving = false;
-  let isSeeding = false;
+  const queryClient = useQueryClient();
+  let toastRef = $state<ToastNotification>();
 
-  // Simple Custom Toast Logic
-  let toastMessage = "";
-  let toastType = "info"; // "success" | "error" | "info"
-
-  const showToast = (
-    message: string,
-    type: "success" | "error" | "info" = "info",
-  ) => {
-    toastMessage = message;
-    toastType = type;
-    setTimeout(() => {
-      toastMessage = "";
-    }, 3500);
-  };
-
-  onMount(() => {
-    csrfToken =
-      document
-        .querySelector("meta[name='csrf-token']")
-        ?.getAttribute("content") || "";
+  const settingsQuery = createQuery({
+    queryKey: ["settings"],
+    queryFn: () => trpc.settings.getSettings.query(),
+    initialData: {
+      order_settings: initialOrderSettings,
+      delivery_settings: initialDeliverySettings
+    }
   });
+
+  const updateMutation = createMutation({
+    mutationFn: (data: any) => trpc.settings.updateSettings.mutate(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
+      toastRef?.show("Pengaturan berhasil disimpan!", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error")
+  });
+
+  const seedMutation = createMutation({
+    mutationFn: () => trpc.settings.seedData.mutate(),
+    onSuccess: (res) => {
+      toastRef?.show(res.message || "Seed data selesai", "success");
+      setTimeout(() => location.reload(), 1500);
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error")
+  });
+
+  const settings = $derived($settingsQuery.data || {});
+  const os = $derived(settings.order_settings || {});
+  const ds = $derived(settings.delivery_settings || {});
+
+  let preorderOnly = $state(os.preorderOnly ?? os.preorder_only ?? false);
+  let leadTimeHours = $state(os.minimumLeadTimeHours ?? os.minimum_lead_time_hours ?? 0);
+  let cutoffTime = $state(os.cutoffTime ?? os.cutoff_time ?? "");
+  let sameDayEnabled = $state(os.sameDayEnabled ?? os.same_day_enabled ?? false);
+  let availableDays = $state((os.availableDays ?? os.available_days || []).join(", "));
+  let deliveryProvince = $state(ds.deliveryProvince ?? ds.delivery_province ?? "DI Yogyakarta");
+  let freeDeliveryThreshold = $state(ds.freeDeliveryThreshold ?? ds.free_delivery_threshold ?? 0);
 
   const formatDays = (value: string) =>
     value
@@ -61,71 +59,26 @@
       .map((item) => item.trim())
       .filter(Boolean);
 
-  const payloadForSubmit = () => ({
-    order_settings: {
-      preorder_only: premiereOnly,
-      minimum_lead_time_hours: Number(leadTimeHours) || 0,
-      cutoff_time: cutoffTime,
-      same_day_enabled: sameDayEnabled,
-      available_days: formatDays(availableDays),
-    },
-    delivery_settings: {
-      delivery_province: deliveryProvince,
-      free_delivery_threshold: Number(freeDeliveryThreshold) || 0,
-    },
-  });
-
   const handleSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
-    if (isSaving || isSeeding) return;
-
-    isSaving = true;
-    try {
-      const response = await fetch("/api/admin/settings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": csrfToken,
-        },
-        body: JSON.stringify(payloadForSubmit()),
-      });
-      if (!response.ok) {
-        const text = await response.text();
-        showToast(text || `Request gagal (${response.status})`, "error");
-        return;
-      }
-      showToast("Pengaturan berhasil disimpan!", "success");
-      setTimeout(() => location.reload(), 800);
-    } catch (err: any) {
-      showToast(err.message || "Terjadi kesalahan jaringan", "error");
-    } finally {
-      isSaving = false;
-    }
+    updateMutation.mutate({
+      order_settings: {
+        preorderOnly,
+        minimumLeadTimeHours: Number(leadTimeHours),
+        cutoffTime,
+        sameDayEnabled,
+        availableDays: formatDays(availableDays),
+      },
+      delivery_settings: {
+        deliveryProvince,
+        freeDeliveryThreshold: Number(freeDeliveryThreshold),
+      },
+    });
   };
 
-  const handleSeed = async () => {
-    if (isSaving || isSeeding) return;
-    if (!confirm("Generate data demo?")) return;
-
-    isSeeding = true;
-    try {
-      const response = await fetch("/api/admin/seed", {
-        method: "POST",
-        headers: {
-          "X-CSRF-Token": csrfToken,
-        },
-      });
-      if (!response.ok) {
-        const text = await response.text();
-        showToast(text || `Request gagal (${response.status})`, "error");
-        return;
-      }
-      showToast("Seed data selesai", "success");
-      setTimeout(() => location.reload(), 800);
-    } catch (err: any) {
-      showToast(err.message || "Terjadi kesalahan jaringan", "error");
-    } finally {
-      isSeeding = false;
+  const handleSeed = () => {
+    if (confirm("Generate data demo?")) {
+      seedMutation.mutate();
     }
   };
 </script>
@@ -174,10 +127,10 @@
       class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-stone-200 bg-white font-semibold text-stone-600 hover:text-stone-900 hover:border-stone-300 hover:shadow-sm transition-all shadow-sm w-full sm:w-auto shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
       type="button"
       on:click={handleSeed}
-      disabled={isSeeding || isSaving}
+      disabled={seedMutation.isPending || updateMutation.isPending}
       aria-label="Generate Data Demo"
     >
-      {#if isSeeding}
+      {#if seedMutation.isPending}
         <svg
           class="animate-spin -ml-1 mr-2 h-4 w-4 text-stone-600"
           xmlns="http://www.w3.org/2000/svg"
@@ -205,7 +158,7 @@
 
   <form id="settings-form" on:submit={handleSubmit} class="space-y-8">
     <div class="grid gap-8 lg:grid-cols-2">
-      <!-- Panel 1: Model Order -->
+      <-cli Panel 1: Model Order -->
       <div
         class="bg-white p-6 sm:p-8 rounded-3xl border border-stone-200/60 shadow-[0_4px_20px_rgba(0,0,0,0.02)] space-y-6"
       >
@@ -228,7 +181,7 @@
             <div class="relative">
               <select
                 id="preorder"
-                bind:value={premiereOnly}
+                bind:value={preorderOnly}
                 class="w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all text-stone-900 appearance-none cursor-pointer"
               >
                 <option value={true}>Ya, hanya menerima Preorder</option>
@@ -348,7 +301,7 @@
         </div>
       </div>
 
-      <!-- Panel 2: Pengiriman -->
+      <-cli Panel 2: Pengiriman -->
       <div
         class="bg-white p-6 sm:p-8 rounded-3xl border border-stone-200/60 shadow-[0_4px_20px_rgba(0,0,0,0.02)] space-y-6 self-start"
       >
@@ -410,9 +363,9 @@
       <button
         class="flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-[#c48a3a] to-[#a6722d] text-white font-bold shadow-[0_8px_16px_rgba(196,138,58,0.25)] hover:-translate-y-0.5 transition-all w-full md:w-auto disabled:opacity-70 disabled:hover:translate-y-0 disabled:cursor-not-allowed"
         type="submit"
-        disabled={isSaving || isSeeding}
+        disabled={updateMutation.isPending || seedMutation.isPending}
       >
-        {#if isSaving}
+        {#if updateMutation.isPending}
           <svg
             class="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
             xmlns="http://www.w3.org/2000/svg"
@@ -440,84 +393,4 @@
   </form>
 </div>
 
-{#if toastMessage}
-  <div class="fixed bottom-6 right-6 z-50 animate-fade-in-up" role="alert">
-    <div
-      class="flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] border
-      {toastType === 'success'
-        ? 'bg-green-50/95 border-green-200/80'
-        : toastType === 'error'
-          ? 'bg-red-50/95 border-red-200/80'
-          : 'bg-stone-50/95 border-stone-200/80'} backdrop-blur-md"
-    >
-      <div
-        class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center
-        {toastType === 'success'
-          ? 'bg-green-100 text-green-600'
-          : toastType === 'error'
-            ? 'bg-red-100 text-red-600'
-            : 'bg-stone-200 text-stone-600'}"
-      >
-        {#if toastType === "success"}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="3"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            ><polyline points="20 6 9 17 4 12"></polyline></svg
-          >
-        {:else if toastType === "error"}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            ><line x1="18" y1="6" x2="6" y2="18"></line><line
-              x1="6"
-              y1="6"
-              x2="18"
-              y2="18"
-            ></line></svg
-          >
-        {:else}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            ><circle cx="12" cy="12" r="10"></circle><line
-              x1="12"
-              y1="16"
-              x2="12"
-              y2="12"
-            ></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg
-          >
-        {/if}
-      </div>
-      <p
-        class="text-[0.95rem] font-semibold {toastType === 'success'
-          ? 'text-green-800'
-          : toastType === 'error'
-            ? 'text-red-800'
-            : 'text-stone-800'}"
-      >
-        {toastMessage}
-      </p>
-    </div>
-  </div>
-{/if}
+<ToastNotification bind:this={toastRef} />

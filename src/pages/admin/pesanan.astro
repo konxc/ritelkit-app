@@ -7,6 +7,8 @@ import ShippingManager from "../../components/admin/pages/ShippingManager.svelte
 import InvoicesManager from "../../components/admin/pages/InvoicesManager.svelte";
 import RefundsManager from "../../components/admin/pages/RefundsManager.svelte";
 import PaginationNav from "../../components/admin/PaginationNav.svelte";
+import QueryProvider from "../../components/admin/QueryProvider.svelte";
+
 import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 import { parsePage } from "../../lib/admin";
@@ -140,31 +142,37 @@ const tabs = [
         <AdminTabs tabs={tabs} activeTab={tab} />
     </div>
 
-    {tab === "order" && <OrdersManager rows={data.rows as any[]} client:load />}
+    <QueryProvider client:load>
+        {
+            tab === "order" && (
+                <OrdersManager rows={data.rows as any[]} client:load />
+            )
+        }
 
-    {
-        tab === "fulfillment" && (
-            <FulfillmentManager rows={data.rows as any[]} client:load />
-        )
-    }
+        {
+            tab === "fulfillment" && (
+                <FulfillmentManager rows={data.rows as any[]} client:load />
+            )
+        }
 
-    {
-        tab === "shipping" && (
-            <ShippingManager rows={data.rows as any[]} client:load />
-        )
-    }
+        {
+            tab === "shipping" && (
+                <ShippingManager rows={data.rows as any[]} client:load />
+            )
+        }
 
-    {
-        tab === "invoice" && (
-            <InvoicesManager rows={data.rows as any[]} client:load />
-        )
-    }
+        {
+            tab === "invoice" && (
+                <InvoicesManager rows={data.rows as any[]} client:load />
+            )
+        }
 
-    {
-        tab === "refund" && (
-            <RefundsManager rows={data.rows as any[]} client:load />
-        )
-    }
+        {
+            tab === "refund" && (
+                <RefundsManager rows={data.rows as any[]} client:load />
+            )
+        }
+    </QueryProvider>
 
     <PaginationNav
         page={page}

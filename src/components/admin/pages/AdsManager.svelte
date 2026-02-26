@@ -15,123 +15,111 @@
   import RowActions from "../RowActions.svelte";
   import SectionHeader from "../SectionHeader.svelte";
   import ToastNotification from "../ToastNotification.svelte";
-  import { onMount } from "svelte";
+  import { trpc } from "../../../lib/trpc";
+  import {
+    createQuery,
+    createMutation,
+    useQueryClient,
+  } from "@tanstack/svelte-query";
 
-  // ... AdRow definition ...
+  let { rows: initialRows = [] }: { rows: any[] } = $props();
 
-  let { rows = [] }: { rows: AdRow[] } = $props();
+  const queryClient = useQueryClient();
+  let toastRef = $state<ToastNotification>();
 
-  let csrfToken = "";
-  let isSubmitting = $state(false);
-  let rowStates = $state<
-    Record<string, { isSaving?: boolean; isDeleting?: boolean }>
-  >({});
-  let toastRef: ToastNotification;
+  const adsQuery = createQuery({
+    queryKey: ["ads"],
+    queryFn: () => trpc.ads.list.query(),
+    initialData: () => initialRows,
+  });
 
-  onMount(() => {
-    csrfToken =
-      document
-        .querySelector("meta[name='csrf-token']")
-        ?.getAttribute("content") || "";
+  const createAdMutation = createMutation({
+    mutationFn: (data: any) => trpc.ads.create.mutate(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ads"] });
+      toastRef?.show("Campaign berhasil dibuat!", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
+  });
+
+  const updateAdMutation = createMutation({
+    mutationFn: (payload: { id: string; data: any }) =>
+      trpc.ads.update.mutate(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ads"] });
+      toastRef?.show("Campaign diperbarui", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
+  });
+
+  const deleteAdMutation = createMutation({
+    mutationFn: (id: string) => trpc.ads.delete.mutate(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ads"] });
+      toastRef?.show("Campaign dihapus", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
   });
 
   const handleCreate = async (event: SubmitEvent) => {
     event.preventDefault();
-    if (isSubmitting) return;
+    const form = event.currentTarget as HTMLFormElement;
+    const data = new FormData(form);
 
-    const form = event.currentTarget as HTMLFormElement | null;
-    if (!form) return;
-
-    isSubmitting = true;
-    try {
-      const data = new FormData(form);
-      const response = await fetch("/api/admin/ads", {
-        method: "POST",
-        headers: { "X-CSRF-Token": csrfToken },
-        body: data,
-      });
-      if (!response.ok) {
-        toastRef?.show(await response.text(), "error");
-        return;
-      }
-      toastRef?.show("Campaign berhasil dibuat!", "success");
-      setTimeout(() => location.reload(), 800);
-    } catch (err: any) {
-      toastRef?.show(err.message || "Kesalahan jaringan", "error");
-    } finally {
-      isSubmitting = false;
-    }
+    createAdMutation.mutate({
+      name: data.get("name") as string,
+      channel: data.get("channel") as string,
+      budget: Number(data.get("budget")),
+      spend: 0,
+      status: data.get("status") as any,
+      startAt: (data.get("start_at") as string) || null,
+      endAt: (data.get("end_at") as string) || null,
+      notes: (data.get("notes") as string) || null,
+    });
+    form.reset();
   };
 
-  const handleRowClick = async (event: MouseEvent) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
-    const action = target.getAttribute("data-action");
-    if (!action) return;
-    const row = target.closest("tr[data-id]");
-    if (!row) return;
-    const id = row.getAttribute("data-id");
-    if (!id) return;
-
+  const handleRowAction = (
+    id: string,
+    action: string,
+    rowElement: HTMLElement | null,
+  ) => {
     if (action === "delete") {
-      if (!confirm("Hapus campaign ini?")) return;
-
-      rowStates[id] = { ...rowStates[id], isDeleting: true };
-
-      try {
-        const response = await fetch(`/api/admin/ads/${id}`, {
-          method: "DELETE",
-          headers: { "X-CSRF-Token": csrfToken },
-        });
-        if (!response.ok) {
-          toastRef?.show(await response.text(), "error");
-          rowStates[id] = { ...rowStates[id], isDeleting: false };
-          return;
-        }
-        toastRef?.show("Campaign dihapus", "success");
-        setTimeout(() => location.reload(), 800);
-      } catch (err: any) {
-        toastRef?.show(err.message || "Kesalahan jaringan", "error");
-        rowStates[id] = { ...rowStates[id], isDeleting: false };
+      if (confirm("Hapus campaign ini?")) {
+        deleteAdMutation.mutate(id);
       }
-      return;
-    }
-
-    if (action === "save") {
-      rowStates[id] = { ...rowStates[id], isSaving: true };
-
-      try {
-        const fields: Record<string, string> = {};
-        row.querySelectorAll("[data-field]").forEach((cell) => {
-          const field = cell.getAttribute("data-field");
-          if (!field) return;
-          fields[field] = String(cell.textContent?.trim() || "");
-        });
-        const response = await fetch(`/api/admin/ads/${id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-Token": csrfToken,
-          },
-          body: JSON.stringify(fields),
-        });
-        if (!response.ok) {
-          toastRef?.show(await response.text(), "error");
-          rowStates[id] = { ...rowStates[id], isSaving: false };
-          return;
+    } else if (action === "save" && rowElement) {
+      const fields: Record<string, any> = {};
+      rowElement.querySelectorAll("[data-field]").forEach((el) => {
+        const field = el.getAttribute("data-field")!;
+        if (el instanceof HTMLSelectElement || el instanceof HTMLInputElement) {
+          fields[field] = el.value;
+        } else {
+          fields[field] = el.textContent?.trim();
         }
-        toastRef?.show("Campaign diperbarui", "success");
-        setTimeout(() => location.reload(), 800);
-      } catch (err: any) {
-        toastRef?.show(err.message || "Kesalahan jaringan", "error");
-        rowStates[id] = { ...rowStates[id], isSaving: false };
-      }
+      });
+
+      const data = {
+        name: fields.name,
+        channel: fields.channel,
+        budget: Number(fields.budget) || 0,
+        spend: Number(fields.spend) || 0,
+        status: fields.status as any,
+      };
+
+      updateAdMutation.mutate({ id, data });
     }
   };
+
+  const currentAds = $derived($adsQuery.data || initialRows);
 </script>
 
 <SectionHeader title="Buat Campaign" badge="Ads" />
-<CrudInlineForm id="ads-form" on:submit={handleCreate} {isSubmitting}>
+<CrudInlineForm
+  id="ads-form"
+  on:submit={handleCreate}
+  isSubmitting={createAdMutation.isPending}
+>
   <div class="space-y-6 border-b border-stone-100 pb-8 mb-8">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="space-y-1.5">
@@ -239,9 +227,9 @@
     <button
       class="flex items-center justify-center gap-3 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto mt-auto"
       type="submit"
-      disabled={isSubmitting}
+      disabled={createAdMutation.isPending}
     >
-      {#if isSubmitting}
+      {#if createAdMutation.isPending}
         <svg
           class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
           xmlns="http://www.w3.org/2000/svg"
@@ -269,96 +257,87 @@
 <div class="mt-6">
   <SectionHeader title="Daftar Campaign" />
 </div>
-<div
-  role="button"
-  tabindex="0"
-  onclick={handleRowClick}
-  onkeydown={(e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      e.currentTarget.click();
-    }
-  }}
->
-  <AdminDataTable>
-    <thead>
+
+<AdminDataTable>
+  <thead>
+    <tr>
+      <th>Nama</th>
+      <th>Channel</th>
+      <th>Budget</th>
+      <th>Spend</th>
+      <th>Status</th>
+      <th>Aksi</th>
+    </tr>
+  </thead>
+  <tbody>
+    {#if currentAds.length === 0}
       <tr>
-        <th>Nama</th>
-        <th>Channel</th>
-        <th>Budget</th>
-        <th>Spend</th>
-        <th>Status</th>
-        <th>Aksi</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#if rows.length === 0}
-        <tr>
-          <td
-            colspan="6"
-            class="text-center py-12 text-stone-400 text-sm italic"
-            >Belum ada campaign beriklan.</td
-          >
-        </tr>
-      {/if}
-      {#each rows as row (row.id)}
-        <tr
-          data-id={row.id}
-          class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
+        <td colspan="6" class="text-center py-12 text-stone-400 text-sm italic"
+          >Belum ada campaign beriklan.</td
         >
-          <td
-            contenteditable="true"
-            data-field="name"
-            class="py-4 font-bold text-stone-900 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-transparent transition-all"
-            >{row.name}</td
+      </tr>
+    {/if}
+    {#each currentAds as row (row.id)}
+      <tr
+        class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
+      >
+        <td
+          contenteditable="true"
+          data-field="name"
+          class="py-4 font-bold text-stone-900 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-transparent transition-all"
+          >{row.name}</td
+        >
+        <td
+          contenteditable="true"
+          data-field="channel"
+          class="py-4 font-medium text-stone-500 uppercase tracking-widest text-[0.65rem] outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
+          >{row.channel}</td
+        >
+        <td
+          contenteditable="true"
+          data-field="budget"
+          class="py-4 tabular-nums font-bold text-stone-800 outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all w-32 text-center text-sm"
+          >{row.budget}</td
+        >
+        <td
+          contenteditable="true"
+          data-field="spend"
+          class="py-4 tabular-nums font-bold text-rose-600 outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all w-32 text-center text-sm"
+          >{row.spend}</td
+        >
+        <td class="py-4">
+          <select
+            data-field="status"
+            class="px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white transition-all bg-transparent text-xs font-bold uppercase cursor-pointer outline-none"
           >
-          <td
-            contenteditable="true"
-            data-field="channel"
-            class="py-4 font-medium text-stone-500 uppercase tracking-widest text-[0.65rem] outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
-            >{row.channel}</td
-          >
-          <td
-            contenteditable="true"
-            data-field="budget"
-            class="py-4 tabular-nums font-bold text-stone-800 outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all w-32 text-center text-sm"
-            >{row.budget}</td
-          >
-          <td
-            contenteditable="true"
-            data-field="spend"
-            class="py-4 tabular-nums font-bold text-rose-600 outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all w-32 text-center text-sm"
-            >{row.spend}</td
-          >
-          <td class="py-4">
-            <select
-              data-field="status"
-              class="px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white transition-all bg-transparent text-xs font-bold uppercase cursor-pointer outline-none"
+            <option value="draft" selected={row.status === "draft"}
+              >Draft</option
             >
-              <option value="draft" selected={row.status === "draft"}
-                >Draft</option
-              >
-              <option value="active" selected={row.status === "active"}
-                >🟢 Active</option
-              >
-              <option value="paused" selected={row.status === "paused"}
-                >🟡 Paused</option
-              >
-              <option value="completed" selected={row.status === "completed"}
-                >⚪ Completed</option
-              >
-            </select>
-          </td>
-          <td class="py-4">
-            <RowActions
-              isSaving={rowStates[row.id]?.isSaving}
-              isDeleting={rowStates[row.id]?.isDeleting}
-            />
-          </td>
-        </tr>
-      {/each}
-    </tbody>
-  </AdminDataTable>
-</div>
+            <option value="active" selected={row.status === "active"}
+              >🟢 Active</option
+            >
+            <option value="paused" selected={row.status === "paused"}
+              >🟡 Paused</option
+            >
+            <option value="completed" selected={row.status === "completed"}
+              >⚪ Completed</option
+            >
+          </select>
+        </td>
+        <td class="py-4">
+          <RowActions
+            isSaving={updateAdMutation.isPending &&
+              updateAdMutation.variables?.id === row.id}
+            isDeleting={deleteAdMutation.isPending &&
+              deleteAdMutation.variables === row.id}
+            onSave={(e) =>
+              handleRowAction(row.id, "save", e.currentTarget.closest("tr"))}
+            onDelete={() => handleRowAction(row.id, "delete", null)}
+          />
+        </td>
+      </tr>
+    {/each}
+  </tbody>
+</AdminDataTable>
 
 <ToastNotification bind:this={toastRef} />

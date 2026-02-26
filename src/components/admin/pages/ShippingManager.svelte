@@ -16,201 +16,157 @@
   import RowActions from "../RowActions.svelte";
   import ToastNotification from "../ToastNotification.svelte";
   import { initShippingRuleConfig } from "../../../lib/admin-shipping-client";
+  import { trpc } from "../../../lib/trpc";
+  import {
+    createQuery,
+    createMutation,
+    useQueryClient,
+  } from "@tanstack/svelte-query";
   import { onMount } from "svelte";
 
-  let { rows = [] }: { rows: RuleRow[] } = $props();
+  let { rows: initialRows = [] }: { rows: any[] } = $props();
 
-  let csrfToken = "";
-  let configBuilder: (() => unknown) | null = null;
-  let isSubmitting = $state(false);
-  let isSimulating = $state(false);
-  let rowStates = $state<
-    Record<string, { isSaving?: boolean; isDeleting?: boolean }>
-  >({});
+  const queryClient = useQueryClient();
+  let configBuilder: (() => any) | null = null;
   let toastRef: ToastNotification;
 
   onMount(() => {
-    csrfToken =
-      document
-        .querySelector("meta[name='csrf-token']")
-        ?.getAttribute("content") || "";
-
     const form = document.querySelector<HTMLFormElement>("#shipping-rule-form");
     if (form) {
       configBuilder = initShippingRuleConfig(form);
     }
   });
 
+  const rulesQuery = createQuery({
+    queryKey: ["shippingRules"],
+    queryFn: () => trpc.shippingRules.list.query(),
+    initialData: () => initialRows,
+  });
+
+  const createRuleMutation = createMutation({
+    mutationFn: (data: any) => trpc.shippingRules.create.mutate(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shippingRules"] });
+      toastRef?.show("Rule pengiriman berhasil ditambahkan!", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
+  });
+
+  const updateRuleMutation = createMutation({
+    mutationFn: (payload: { id: string; data: any }) =>
+      trpc.shippingRules.update.mutate(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shippingRules"] });
+      toastRef?.show("Rule diperbarui", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
+  });
+
+  const deleteRuleMutation = createMutation({
+    mutationFn: (id: string) => trpc.shippingRules.delete.mutate(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shippingRules"] });
+      toastRef?.show("Rule pengiriman dihapus", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
+  });
+
   const handleCreate = async (event: SubmitEvent) => {
     event.preventDefault();
-    if (isSubmitting) return;
-
     const form = event.currentTarget as HTMLFormElement;
-    isSubmitting = true;
+    const formData = new FormData(form);
+    const config = configBuilder ? configBuilder() : {};
 
-    try {
-      const formData = new FormData(form);
-      const config = configBuilder ? configBuilder() : {};
-      const payload = {
-        ...Object.fromEntries(formData.entries()),
-        config,
-      };
+    createRuleMutation.mutate({
+      name: formData.get("name") as string,
+      type: formData.get("type") as string,
+      priority: Number(formData.get("priority")),
+      config,
+      isActive: true, // Default to true on create
+    });
+    form.reset();
+  };
 
-      const response = await fetch("/api/admin/shipping-rules", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": csrfToken,
-        },
-        body: JSON.stringify(payload),
+  const handleRowAction = (
+    id: string,
+    action: string,
+    rowElement: HTMLElement | null,
+  ) => {
+    if (action === "delete") {
+      if (confirm("Hapus rule ini?")) {
+        deleteRuleMutation.mutate(id);
+      }
+    } else if (action === "save" && rowElement) {
+      const fields: Record<string, any> = {};
+      rowElement.querySelectorAll("[data-field]").forEach((el) => {
+        const field = el.getAttribute("data-field")!;
+        if (
+          el instanceof HTMLSelectElement ||
+          el instanceof HTMLInputElement ||
+          el instanceof HTMLTextAreaElement
+        ) {
+          fields[field] = el.value;
+        } else {
+          fields[field] = el.textContent?.trim();
+        }
       });
 
-      if (!response.ok) {
-        toastRef?.show(await response.text(), "error");
-        return;
-      }
-      toastRef?.show("Rule pengiriman berhasil ditambahkan!", "success");
-      setTimeout(() => location.reload(), 800);
-    } catch (err: any) {
-      toastRef?.show(err.message || "Gagal membuat rule pengiriman", "error");
-    } finally {
-      isSubmitting = false;
+      const data = {
+        name: fields.name,
+        type: fields.type,
+        priority: Number(fields.priority),
+        config: fields.config ? JSON.parse(fields.config) : undefined,
+        isActive: fields.isActive === "true",
+      };
+
+      updateRuleMutation.mutate({ id, data });
     }
   };
 
-  const handleTableClick = async (event: MouseEvent) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
-    const action = target.getAttribute("data-action");
-    if (!action) return;
-    const row = target.closest("tr[data-id]");
-    if (!row) return;
-    const id = row.getAttribute("data-id");
-    if (!id) return;
-
-    if (action === "delete") {
-      if (!confirm("Hapus rule ini?")) return;
-
-      rowStates[id] = { ...rowStates[id], isDeleting: true };
-
-      try {
-        const response = await fetch(`/api/admin/shipping-rules/${id}`, {
-          method: "DELETE",
-          headers: { "X-CSRF-Token": csrfToken },
-        });
-        if (!response.ok) {
-          toastRef?.show(await response.text(), "error");
-          rowStates[id] = { ...rowStates[id], isDeleting: false };
-          return;
-        }
-        toastRef?.show("Rule pengiriman dihapus", "success");
-        setTimeout(() => location.reload(), 800);
-      } catch (err: any) {
-        toastRef?.show(err.message || "Gagal menghapus rule", "error");
-        rowStates[id] = { ...rowStates[id], isDeleting: false };
-      }
-      return;
-    }
-
-    if (action === "save") {
-      rowStates[id] = { ...rowStates[id], isSaving: true };
-
-      try {
-        const fields: Record<string, string> = {};
-        row.querySelectorAll("[data-field]").forEach((cell) => {
-          const field = cell.getAttribute("data-field");
-          if (!field) return;
-          if (
-            cell instanceof HTMLSelectElement ||
-            cell instanceof HTMLInputElement ||
-            cell instanceof HTMLTextAreaElement
-          ) {
-            fields[field] = String(cell.value);
-            return;
-          }
-          fields[field] = String(cell.textContent?.trim() || "");
-        });
-
-        const payload = {
-          name: fields.name || "",
-          type: fields.type || "",
-          priority: Number(fields.priority || 0),
-          config: fields.config ? JSON.parse(fields.config) : {},
-          is_active: fields.is_active,
-        };
-
-        const response = await fetch(`/api/admin/shipping-rules/${id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-Token": csrfToken,
-          },
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.ok) {
-          toastRef?.show(await response.text(), "error");
-          rowStates[id] = { ...rowStates[id], isSaving: false };
-          return;
-        }
-        toastRef?.show("Rule diperbarui", "success");
-        setTimeout(() => location.reload(), 800);
-      } catch (err: any) {
-        toastRef?.show(err.message || "Kesalahan perbaruan", "error");
-        rowStates[id] = { ...rowStates[id], isSaving: false };
-      }
-    }
-  };
-
+  let isSimulating = $state(false);
   let simulateMessage = $state("");
 
   const handleSimulation = async (event: SubmitEvent) => {
     event.preventDefault();
-    if (isSimulating) return;
-
-    const form = event.currentTarget as HTMLFormElement | null;
-    if (!form) return;
+    const form = event.currentTarget as HTMLFormElement;
+    const data = new FormData(form);
+    const payload = {
+      subtotal: Number(data.get("subtotal") || 0),
+      province: String(data.get("province") || ""),
+      city: String(data.get("city") || ""),
+      district: String(data.get("district") || ""),
+      free_shipping: data.get("free_shipping") === "true",
+    };
 
     isSimulating = true;
     simulateMessage = "";
 
     try {
-      const data = new FormData(form);
-      const payload = {
-        subtotal: Number(data.get("subtotal") || 0),
-        province: String(data.get("province") || ""),
-        city: String(data.get("city") || ""),
-        district: String(data.get("district") || ""),
-        free_shipping: String(data.get("free_shipping") || "false") === "true",
-      };
-
+      // Simulation still uses fetch as it's a test endpoint, but could be tRPC-ified too.
+      // For now, let's keep it as is if there's no tRPC procedure for it yet.
       const response = await fetch("/api/admin/shipping-simulate", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": csrfToken,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
-      if (!response.ok) {
-        toastRef?.show(await response.text(), "error");
-        return;
+      if (response.ok) {
+        const result = (await response.json()) as any;
+        simulateMessage = `Rule: ${result.rule} | Ongkir: Rp ${Number(result.fee).toLocaleString("id-ID")}`;
       }
-
-      const result = (await response.json()) as { fee: number; rule: string };
-      simulateMessage = `Rule: ${result.rule} | Ongkir: Rp ${Number(result.fee).toLocaleString("id-ID")}`;
-      toastRef?.show("Simulasi berhasil dijalankan", "success");
-    } catch (err: any) {
-      toastRef?.show(err.message || "Simulasi gagal", "error");
     } finally {
       isSimulating = false;
     }
   };
+
+  const currentRules = $derived($rulesQuery.data || initialRows);
 </script>
 
 <SectionHeader title="Tambah Rule" badge="Ongkir dinamis" />
-<CrudInlineForm id="shipping-rule-form" on:submit={handleCreate} {isSubmitting}>
+<CrudInlineForm
+  id="shipping-rule-form"
+  on:submit={handleCreate}
+  isSubmitting={$createRuleMutation.isPending}
+>
   <div class="space-y-6 border-b border-stone-100 pb-8 mb-8">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <!-- Rule Identity -->
@@ -370,9 +326,9 @@
     <button
       class="flex items-center justify-center gap-3 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto"
       type="submit"
-      disabled={isSubmitting}
+      disabled={$createRuleMutation.isPending}
     >
-      {#if isSubmitting}
+      {#if $createRuleMutation.isPending}
         <svg
           class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
           xmlns="http://www.w3.org/2000/svg"
@@ -521,7 +477,7 @@
   </div>
 </div>
 
-<AdminDataTable class="mt-2" onclick={handleTableClick}>
+<AdminDataTable class="mt-2">
   <thead>
     <tr>
       <th>Nama</th>
@@ -533,16 +489,15 @@
     </tr>
   </thead>
   <tbody>
-    {#if rows.length === 0}
+    {#if currentRules.length === 0}
       <tr>
         <td colspan="6" class="text-center py-12 text-stone-400 text-sm italic"
           >Belum ada rule pengiriman aktif.</td
         >
       </tr>
     {/if}
-    {#each rows as row (row.id)}
+    {#each currentRules as row (row.id)}
       <tr
-        data-id={row.id}
         class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
       >
         <td
@@ -575,22 +530,27 @@
             data-field="config"
             rows="2"
             class="w-full bg-transparent border-transparent hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] rounded-lg px-3 py-1.5 text-[10px] font-mono transition-all outline-none resize-none"
-            >{row.config_json}</textarea
+            >{row.configJson}</textarea
           >
         </td>
         <td class="py-4 text-center">
           <select
-            data-field="is_active"
+            data-field="isActive"
             class="px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white transition-all bg-transparent font-bold cursor-pointer outline-none text-xs"
           >
-            <option value="true" selected={row.is_active}>AKTIF</option>
-            <option value="false" selected={!row.is_active}>NONAKTIF</option>
+            <option value="true" selected={row.isActive}>AKTIF</option>
+            <option value="false" selected={!row.isActive}>NONAKTIF</option>
           </select>
         </td>
         <td class="py-4 text-right pr-4">
           <RowActions
-            isSaving={rowStates[row.id]?.isSaving}
-            isDeleting={rowStates[row.id]?.isDeleting}
+            isSaving={$updateRuleMutation.isPending &&
+              $updateRuleMutation.variables?.id === row.id}
+            isDeleting={$deleteRuleMutation.isPending &&
+              $deleteRuleMutation.variables === row.id}
+            onSave={(e) =>
+              handleRowAction(row.id, "save", e.currentTarget.closest("tr"))}
+            onDelete={() => handleRowAction(row.id, "delete", null)}
           />
         </td>
       </tr>

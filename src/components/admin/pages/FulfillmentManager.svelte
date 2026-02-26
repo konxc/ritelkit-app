@@ -15,146 +15,128 @@
   import RowActions from "../RowActions.svelte";
   import SectionHeader from "../SectionHeader.svelte";
   import ToastNotification from "../ToastNotification.svelte";
+  import { trpc } from "../../../lib/trpc";
+  import {
+    createQuery,
+    createMutation,
+    useQueryClient,
+  } from "@tanstack/svelte-query";
   import { onMount } from "svelte";
 
-  let { rows = [] }: { rows: ShipmentRow[] } = $props();
+  let { rows: initialShipments = [] }: { rows: any[] } = $props();
 
-  let csrfToken = "";
-  let isSubmitting = $state(false);
-  let rowStates = $state<
-    Record<string, { isSaving?: boolean; isDeleting?: boolean }>
-  >({});
+  const queryClient = useQueryClient();
   let toastRef: ToastNotification;
 
-  onMount(() => {
-    csrfToken =
-      document
-        .querySelector("meta[name='csrf-token']")
-        ?.getAttribute("content") || "";
+  // Query for existing shipments
+  const shipmentsQuery = createQuery({
+    queryKey: ["shipments"],
+    queryFn: () => trpc.shipments.list.query({}),
+    initialData: () => initialShipments,
+  });
+
+  // Query for orders that need fulfillment
+  const ordersFulfillmentQuery = createQuery({
+    queryKey: ["orders", "fulfillment"],
+    queryFn: () => trpc.orders.fulfillment.query({}),
+  });
+
+  const shipCreateMutation = createMutation({
+    mutationFn: (data: any) => trpc.shipments.create.mutate(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shipments"] });
+      toastRef?.show("Pengiriman berhasil dibuat!", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
+  });
+
+  const shipUpdateMutation = createMutation({
+    mutationFn: (payload: { id: string; data: any }) =>
+      trpc.shipments.update.mutate(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shipments"] });
+      toastRef?.show("Pengiriman diperbarui", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
+  });
+
+  const shipDeleteMutation = createMutation({
+    mutationFn: (id: string) => trpc.shipments.delete.mutate(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["shipments"] });
+      toastRef?.show("Pengiriman dihapus", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
   });
 
   const handleCreate = async (event: SubmitEvent) => {
     event.preventDefault();
-    if (isSubmitting) return;
-
-    const form = event.currentTarget as HTMLFormElement | null;
-    if (!form) return;
-
-    isSubmitting = true;
-    try {
-      const data = new FormData(form);
-      const response = await fetch("/api/admin/shipments", {
-        method: "POST",
-        headers: { "X-CSRF-Token": csrfToken },
-        body: data,
-      });
-      if (!response.ok) {
-        toastRef?.show(await response.text(), "error");
-        return;
-      }
-      toastRef?.show("Pengiriman berhasil dibuat!", "success");
-      setTimeout(() => location.reload(), 800);
-    } catch (err: any) {
-      toastRef?.show(err.message || "Kesalahan jaringan", "error");
-    } finally {
-      isSubmitting = false;
-    }
+    const form = event.currentTarget as HTMLFormElement;
+    const data = new FormData(form);
+    shipCreateMutation.mutate({
+      orderNo: data.get("orderNo") as string,
+      status: data.get("status") as string,
+      carrier: data.get("carrier") as string,
+      trackingNo: data.get("trackingNo") as string,
+      notes: data.get("notes") as string,
+    });
+    form.reset();
   };
 
-  const handleTableClick = async (event: MouseEvent) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
-    const action = target.getAttribute("data-action");
-    if (!action) return;
-    const row = target.closest("tr[data-id]");
-    if (!row) return;
-    const id = row.getAttribute("data-id");
-    if (!id) return;
-
+  const handleRowAction = (
+    id: string,
+    action: string,
+    rowElement: HTMLElement | null,
+  ) => {
     if (action === "delete") {
-      if (!confirm("Hapus pengiriman ini?")) return;
-
-      rowStates[id] = { ...rowStates[id], isDeleting: true };
-      rowStates = { ...rowStates }; // trigger reactivity
-
-      try {
-        const response = await fetch(`/api/admin/shipments/${id}`, {
-          method: "DELETE",
-          headers: { "X-CSRF-Token": csrfToken },
-        });
-        if (!response.ok) {
-          toastRef?.show(await response.text(), "error");
-          rowStates[id] = { ...rowStates[id], isDeleting: false };
-          return;
-        }
-        toastRef?.show("Pengiriman dihapus", "success");
-        setTimeout(() => location.reload(), 800);
-      } catch (err: any) {
-        toastRef?.show(err.message || "Kesalahan jaringan", "error");
-        rowStates[id] = { ...rowStates[id], isDeleting: false };
+      if (confirm("Hapus pengiriman ini?")) {
+        shipDeleteMutation.mutate(id);
       }
-      return;
-    }
-
-    if (action === "save") {
-      rowStates[id] = { ...rowStates[id], isSaving: true };
-      rowStates = { ...rowStates };
-
-      try {
-        const fields: Record<string, string> = {};
-        row.querySelectorAll("[data-field]").forEach((cell) => {
-          const field = cell.getAttribute("data-field");
-          if (!field) return;
-          if (
-            cell instanceof HTMLSelectElement ||
-            cell instanceof HTMLInputElement
-          ) {
-            fields[field] = String(cell.value);
-            return;
-          }
-          fields[field] = String(cell.textContent?.trim() || "");
-        });
-        const response = await fetch(`/api/admin/shipments/${id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-Token": csrfToken,
-          },
-          body: JSON.stringify(fields),
-        });
-        if (!response.ok) {
-          toastRef?.show(await response.text(), "error");
-          rowStates[id] = { ...rowStates[id], isSaving: false };
-          return;
+    } else if (action === "save" && rowElement) {
+      const data: any = {};
+      rowElement.querySelectorAll("[data-field]").forEach((el) => {
+        if (el instanceof HTMLSelectElement || el instanceof HTMLInputElement) {
+          data[el.getAttribute("data-field")!] = el.value;
+        } else {
+          data[el.getAttribute("data-field")!] = el.textContent?.trim();
         }
-        toastRef?.show("Pengiriman diperbarui", "success");
-        setTimeout(() => location.reload(), 800);
-      } catch (err: any) {
-        toastRef?.show(err.message || "Kesalahan jaringan", "error");
-        rowStates[id] = { ...rowStates[id], isSaving: false };
-      }
+      });
+      shipUpdateMutation.mutate({ id, data });
     }
   };
+
+  const currentShipments = $derived($shipmentsQuery.data || initialShipments);
+  const pendingOrders = $derived($ordersFulfillmentQuery.data || []);
 </script>
 
 <SectionHeader title="Buat Pengiriman" badge="Tracking" />
-<CrudInlineForm id="shipment-form" on:submit={handleCreate} {isSubmitting}>
+<CrudInlineForm
+  id="shipment-form"
+  on:submit={handleCreate}
+  isSubmitting={$shipCreateMutation.isPending}
+>
   <div
     class="flex flex-col md:flex-row flex-wrap gap-4 xl:gap-6 items-end pb-8 border-b border-stone-100 mb-8 w-full"
   >
     <div class="space-y-1.5 w-full md:w-48 shrink-0">
       <label
-        for="order_no"
+        for="orderNo"
         class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
         >Order No</label
       >
       <input
-        id="order_no"
-        name="order_no"
+        id="orderNo"
+        name="orderNo"
+        list="pending-orders"
         required
         placeholder="Cth: ORD-1001"
-        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none"
+        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold"
       />
+      <datalist id="pending-orders">
+        {#each pendingOrders as order}
+          <option value={order.orderNo}>{order.customerName}</option>
+        {/each}
+      </datalist>
     </div>
     <div class="space-y-1.5 w-full md:w-32 shrink-0">
       <label
@@ -188,13 +170,13 @@
     </div>
     <div class="space-y-1.5 w-full md:flex-1 min-w-[150px]">
       <label
-        for="tracking_no"
+        for="trackingNo"
         class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
         >Nomor Resi</label
       >
       <input
-        id="tracking_no"
-        name="tracking_no"
+        id="trackingNo"
+        name="trackingNo"
         placeholder="Masukkan no resi..."
         class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-mono"
       />
@@ -215,9 +197,9 @@
     <button
       class="flex items-center justify-center gap-2 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto"
       type="submit"
-      disabled={isSubmitting}
+      disabled={$shipCreateMutation.isPending}
     >
-      {#if isSubmitting}
+      {#if $shipCreateMutation.isPending}
         <svg
           class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
           xmlns="http://www.w3.org/2000/svg"
@@ -245,96 +227,87 @@
 <div class="mt-6">
   <SectionHeader title="Daftar Pengiriman" />
 </div>
-<div
-  role="button"
-  tabindex="0"
-  onclick={handleTableClick}
-  onkeydown={(e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      e.currentTarget.click();
-    }
-  }}
->
-  <AdminDataTable>
-    <thead>
+
+<AdminDataTable>
+  <thead>
+    <tr>
+      <th>Order</th>
+      <th>Status</th>
+      <th>Kurir</th>
+      <th>Resi</th>
+      <th>Catatan</th>
+      <th>Aksi</th>
+    </tr>
+  </thead>
+  <tbody>
+    {#if currentShipments.length === 0}
       <tr>
-        <th>Order</th>
-        <th>Status</th>
-        <th>Kurir</th>
-        <th>Resi</th>
-        <th>Catatan</th>
-        <th>Aksi</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#if rows.length === 0}
-        <tr>
-          <td
-            colspan="6"
-            class="text-center py-12 text-stone-400 text-sm italic"
-            >Belum ada pengiriman aktif.</td
-          >
-        </tr>
-      {/if}
-      {#each rows as row (row.id)}
-        <tr
-          data-id={row.id}
-          class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
+        <td colspan="6" class="text-center py-12 text-stone-400 text-sm italic"
+          >Belum ada pengiriman aktif.</td
         >
-          <td
-            contenteditable="true"
-            data-field="order_no"
-            class="py-4 font-mono font-bold text-stone-900 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-transparent transition-all"
-            >{row.order_no}</td
+      </tr>
+    {/if}
+    {#each currentShipments as row (row.id)}
+      <tr
+        class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
+      >
+        <td
+          contenteditable="true"
+          data-field="orderNo"
+          class="py-4 font-mono font-bold text-stone-900 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-transparent transition-all"
+          >{row.orderNo}</td
+        >
+        <td class="py-4">
+          <select
+            data-field="status"
+            class="px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-transparent text-sm cursor-pointer outline-none font-bold text-stone-700"
           >
-          <td class="py-4">
-            <select
-              data-field="status"
-              class="px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-transparent text-sm cursor-pointer outline-none font-bold text-stone-700"
+            <option value="packing" selected={row.status === "packing"}
+              >📦 Packing</option
             >
-              <option value="packing" selected={row.status === "packing"}
-                >📦 Packing</option
-              >
-              <option value="shipped" selected={row.status === "shipped"}
-                >🚚 Dikirim</option
-              >
-              <option value="delivered" selected={row.status === "delivered"}
-                >✅ Terkirim</option
-              >
-              <option value="cancelled" selected={row.status === "cancelled"}
-                >❌ Batal</option
-              >
-            </select>
-          </td>
-          <td
-            contenteditable="true"
-            data-field="carrier"
-            class="py-4 font-medium text-stone-600 outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
-            >{row.carrier || "-"}</td
-          >
-          <td
-            contenteditable="true"
-            data-field="tracking_no"
-            class="py-4 font-mono text-sm text-[#c48a3a] font-bold outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
-            >{row.tracking_no || "-"}</td
-          >
-          <td
-            contenteditable="true"
-            data-field="notes"
-            class="py-4 text-stone-500 text-sm italic outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
-            >{row.notes || "-"}</td
-          >
-          <td class="py-4">
-            <RowActions
-              isSaving={rowStates[row.id]?.isSaving}
-              isDeleting={rowStates[row.id]?.isDeleting}
-            />
-          </td>
-        </tr>
-      {/each}
-    </tbody>
-  </AdminDataTable>
-</div>
+            <option value="shipped" selected={row.status === "shipped"}
+              >🚚 Dikirim</option
+            >
+            <option value="delivered" selected={row.status === "delivered"}
+              >✅ Terkirim</option
+            >
+            <option value="cancelled" selected={row.status === "cancelled"}
+              >❌ Batal</option
+            >
+          </select>
+        </td>
+        <td
+          contenteditable="true"
+          data-field="carrier"
+          class="py-4 font-medium text-stone-600 outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
+          >{row.carrier || "-"}</td
+        >
+        <td
+          contenteditable="true"
+          data-field="trackingNo"
+          class="py-4 font-mono text-sm text-[#c48a3a] font-bold outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
+          >{row.trackingNo || "-"}</td
+        >
+        <td
+          contenteditable="true"
+          data-field="notes"
+          class="py-4 text-stone-500 text-sm italic outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
+          >{row.notes || "-"}</td
+        >
+        <td class="py-4">
+          <RowActions
+            isSaving={$shipUpdateMutation.isPending &&
+              $shipUpdateMutation.variables?.id === row.id}
+            isDeleting={$shipDeleteMutation.isPending &&
+              $shipDeleteMutation.variables === row.id}
+            onSave={(e) =>
+              handleRowAction(row.id, "save", e.currentTarget.closest("tr"))}
+            onDelete={() => handleRowAction(row.id, "delete", null)}
+          />
+        </td>
+      </tr>
+    {/each}
+  </tbody>
+</AdminDataTable>
 
 <ToastNotification bind:this={toastRef} />

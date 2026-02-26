@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { trpc } from "../../../lib/trpc";
+  import { createMutation, useQueryClient } from "@tanstack/svelte-query";
   import SectionHeader from "../SectionHeader.svelte";
   import CrudInlineForm from "../CrudInlineForm.svelte";
   import PanelCard from "../PanelCard.svelte";
@@ -8,9 +10,20 @@
 
   let { order = {} }: { order: any } = $props();
 
+  const queryClient = useQueryClient();
   let csrfToken = "";
-  let isSubmitting = $state(false);
   let toastRef: ToastNotification;
+
+  const updateMutation = createMutation({
+    mutationFn: (payload: { id: string; data: any }) =>
+      trpc.orders.update.mutate(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      toastRef?.show("Status order berhasil diperbarui!", "success");
+      setTimeout(() => location.reload(), 800);
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
+  });
 
   onMount(() => {
     csrfToken =
@@ -21,43 +34,19 @@
 
   const handleUpdateStatus = async (event: SubmitEvent) => {
     event.preventDefault();
-    if (isSubmitting) return;
-
-    const form = event.currentTarget as HTMLFormElement | null;
-    if (!form) return;
-
-    isSubmitting = true;
-    try {
-      const data = new FormData(form);
-      const payload = Object.fromEntries(data.entries());
-      delete payload.order_id;
-
-      const endpoint = `/api/admin/orders/${encodeURIComponent(form.getAttribute("data-order") || order.order_no)}`;
-
-      const response = await fetch(endpoint, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": csrfToken,
-        },
-        body: JSON.stringify(payload),
-      });
-      if (!response.ok) {
-        toastRef?.show(await response.text(), "error");
-        return;
-      }
-      toastRef?.show("Status order berhasil diperbarui!", "success");
-      setTimeout(() => location.reload(), 800);
-    } catch (err: any) {
-      toastRef?.show(err.message || "Kesalahan jaringan", "error");
-    } finally {
-      isSubmitting = false;
-    }
+    const form = event.currentTarget as HTMLFormElement;
+    const formData = new FormData(form);
+    const payload: any = {
+      status: formData.get("status"),
+      paymentStatus: formData.get("paymentStatus"),
+      notes: formData.get("notes"),
+    };
+    updateMutation.mutate({ id: order.id, data: payload });
   };
 </script>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-  <PanelCard class="flex flex-col h-full">
+  <PanelCard className="flex flex-col h-full">
     <div class="flex items-center gap-3 mb-4">
       <div
         class="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600"
@@ -75,7 +64,7 @@
     </div>
   </PanelCard>
 
-  <PanelCard class="flex flex-col h-full">
+  <PanelCard className="flex flex-col h-full">
     <div class="flex items-center gap-3 mb-4">
       <div
         class="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600"
@@ -109,7 +98,7 @@
     </div>
   </PanelCard>
 
-  <PanelCard class="flex flex-col h-full md:col-span-2 lg:col-span-1">
+  <PanelCard className="flex flex-col h-full md:col-span-2 lg:col-span-1">
     <div class="flex items-center gap-3 mb-4">
       <div
         class="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600"
@@ -196,7 +185,7 @@
   id="order-status-form"
   data-order={order.order_no}
   on:submit={handleUpdateStatus}
-  {isSubmitting}
+  isSubmitting={$updateMutation.isPending}
 >
   <input type="hidden" name="order_id" value={order.id} />
   <div
@@ -229,29 +218,30 @@
     </div>
     <div class="space-y-1.5 w-full md:w-48 shrink-0">
       <label
-        for="payment_status"
+        for="paymentStatus"
         class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
         >Pembayaran</label
       >
       <select
-        id="payment_status"
-        name="payment_status"
+        id="paymentStatus"
+        name="paymentStatus"
         class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none appearance-none cursor-pointer font-bold"
       >
-        <option value="unpaid" selected={order.payment_status === "unpaid"}
+        <option value="unpaid" selected={order.paymentStatus === "unpaid"}
           >Unpaid</option
         >
-        <option value="paid" selected={order.payment_status === "paid"}
+        <option value="paid" selected={order.paymentStatus === "paid"}
           >Paid</option
         >
-        <option value="failed" selected={order.payment_status === "failed"}
+        <option value="failed" selected={order.paymentStatus === "failed"}
           >Failed</option
         >
-        <option value="refunded" selected={order.payment_status === "refunded"}
+        <option value="refunded" selected={order.paymentStatus === "refunded"}
           >Refunded</option
         >
       </select>
     </div>
+
     <div class="space-y-1.5 w-full md:flex-1">
       <label
         for="notes"
@@ -269,9 +259,9 @@
     <button
       class="flex items-center justify-center gap-3 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto"
       type="submit"
-      disabled={isSubmitting}
+      disabled={$updateMutation.isPending}
     >
-      {#if isSubmitting}
+      {#if $updateMutation.isPending}
         <svg
           class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
           xmlns="http://www.w3.org/2000/svg"

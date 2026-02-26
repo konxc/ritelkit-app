@@ -1,152 +1,137 @@
-<script module lang="ts">
-  export type CouponRow = {
-    id: string | number;
-    code: string;
-    type: string;
-    value: number;
-    min_order: number | null;
-    max_discount: number | null;
-    start_at: string | null;
-    end_at: string | null;
-    usage_limit: number | null;
-    per_user_limit: number | null;
-    is_active: boolean;
-  };
-</script>
-
 <script lang="ts">
   import AdminDataTable from "../AdminDataTable.svelte";
   import CrudInlineForm from "../CrudInlineForm.svelte";
   import RowActions from "../RowActions.svelte";
   import SectionHeader from "../SectionHeader.svelte";
   import ToastNotification from "../ToastNotification.svelte";
-  import { onMount } from "svelte";
+  import { trpc } from "../../../lib/trpc";
+  import {
+    createQuery,
+    createMutation,
+    useQueryClient,
+  } from "@tanstack/svelte-query";
 
-  // ... coupon row definition ...
+  let { rows: initialRows = [] }: { rows: any[] } = $props();
 
-  let { rows = [] }: { rows: CouponRow[] } = $props();
+  const queryClient = useQueryClient();
+  let toastRef = $state<ToastNotification>();
 
-  let csrfToken = "";
-  let isSubmitting = $state(false);
-  let rowStates = $state<
-    Record<string, { isSaving?: boolean; isDeleting?: boolean }>
-  >({});
-  let toastRef: ToastNotification;
+  const couponsQuery = createQuery({
+    queryKey: ["coupons"],
+    queryFn: () => trpc.coupons.list.query(),
+    initialData: () => initialRows,
+  });
 
-  onMount(() => {
-    csrfToken =
-      document
-        .querySelector("meta[name='csrf-token']")
-        ?.getAttribute("content") || "";
+  const createCouponMutation = createMutation({
+    mutationFn: (data: any) => trpc.coupons.create.mutate(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["coupons"] });
+      toastRef?.show("Kupon berhasil ditambahkan!", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
+  });
+
+  const updateCouponMutation = createMutation({
+    mutationFn: (payload: { id: string; data: any }) =>
+      trpc.coupons.update.mutate(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["coupons"] });
+      toastRef?.show("Kupon diperbarui", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
+  });
+
+  const deleteCouponMutation = createMutation({
+    mutationFn: (id: string) => trpc.coupons.delete.mutate(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["coupons"] });
+      toastRef?.show("Kupon dihapus", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
   });
 
   const handleCreate = async (event: SubmitEvent) => {
     event.preventDefault();
-    if (isSubmitting) return;
+    const form = event.currentTarget as HTMLFormElement;
+    const data = new FormData(form);
 
-    const form = event.currentTarget as HTMLFormElement | null;
-    if (!form) return;
-
-    isSubmitting = true;
-    try {
-      const data = new FormData(form);
-      const response = await fetch("/api/admin/coupons", {
-        method: "POST",
-        headers: { "X-CSRF-Token": csrfToken },
-        body: data,
-      });
-      if (!response.ok) {
-        toastRef?.show(await response.text(), "error");
-        return;
-      }
-      toastRef?.show("Kupon berhasil ditambahkan!", "success");
-      setTimeout(() => location.reload(), 800);
-    } catch (err: any) {
-      toastRef?.show(err.message || "Kesalahan jaringan", "error");
-    } finally {
-      isSubmitting = false;
-    }
+    createCouponMutation.mutate({
+      code: data.get("code") as string,
+      type: data.get("type") as string,
+      value: Number(data.get("value")),
+      minOrder: data.get("min_order") ? Number(data.get("min_order")) : null,
+      maxDiscount: data.get("max_discount")
+        ? Number(data.get("max_discount"))
+        : null,
+      startAt: (data.get("start_at") as string) || null,
+      endAt: (data.get("end_at") as string) || null,
+      usageLimit: data.get("usage_limit")
+        ? Number(data.get("usage_limit"))
+        : null,
+      perUserLimit: data.get("per_user_limit")
+        ? Number(data.get("per_user_limit"))
+        : 1,
+      isActive: data.get("is_active") === "true" ? 1 : 0,
+    });
+    form.reset();
   };
 
-  const handleRowAction = async (event: MouseEvent) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
-    const action = target.getAttribute("data-action");
-    if (!action) return;
-    const row = target.closest("tr[data-id]");
-    if (!row) return;
-    const id = row.getAttribute("data-id");
-    if (!id) return;
-
+  const handleRowAction = (
+    id: string,
+    action: string,
+    rowElement: HTMLElement | null,
+  ) => {
     if (action === "delete") {
-      if (!confirm("Hapus kupon ini?")) return;
-
-      rowStates[id] = { ...rowStates[id], isDeleting: true };
-
-      try {
-        const response = await fetch(`/api/admin/coupons/${id}`, {
-          method: "DELETE",
-          headers: { "X-CSRF-Token": csrfToken },
-        });
-        if (!response.ok) {
-          toastRef?.show(await response.text(), "error");
-          rowStates[id] = { ...rowStates[id], isDeleting: false };
-          return;
-        }
-        toastRef?.show("Kupon dihapus", "success");
-        setTimeout(() => location.reload(), 800);
-      } catch (err: any) {
-        toastRef?.show(err.message || "Kesalahan jaringan", "error");
-        rowStates[id] = { ...rowStates[id], isDeleting: false };
+      if (confirm("Hapus kupon ini?")) {
+        deleteCouponMutation.mutate(id);
       }
-      return;
-    }
-
-    if (action === "save") {
-      rowStates[id] = { ...rowStates[id], isSaving: true };
-
-      try {
-        const fields: Record<string, string> = {};
-        row.querySelectorAll("[data-field]").forEach((cell) => {
-          const field = cell.getAttribute("data-field");
-          if (!field) return;
-          if (
-            cell instanceof HTMLSelectElement ||
-            cell instanceof HTMLInputElement
-          ) {
-            fields[field] = String(cell.value);
-            return;
-          }
-          fields[field] = String(cell.textContent?.trim() || "");
-        });
-        const payload = {
-          ...fields,
-        };
-        const response = await fetch(`/api/admin/coupons/${id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-Token": csrfToken,
-          },
-          body: JSON.stringify(payload),
-        });
-        if (!response.ok) {
-          toastRef?.show(await response.text(), "error");
-          rowStates[id] = { ...rowStates[id], isSaving: false };
-          return;
+    } else if (action === "save" && rowElement) {
+      const fields: Record<string, any> = {};
+      rowElement.querySelectorAll("[data-field]").forEach((el) => {
+        const field = el.getAttribute("data-field")!;
+        if (el instanceof HTMLSelectElement || el instanceof HTMLInputElement) {
+          fields[field] = el.value;
+        } else {
+          fields[field] = el.textContent?.trim();
         }
-        toastRef?.show("Kupon diperbarui", "success");
-        setTimeout(() => location.reload(), 800);
-      } catch (err: any) {
-        toastRef?.show(err.message || "Kesalahan perbaruan", "error");
-        rowStates[id] = { ...rowStates[id], isSaving: false };
-      }
+      });
+
+      const data = {
+        code: fields.code,
+        type: fields.type,
+        value: Number(fields.value),
+        minOrder:
+          fields.min_order === "∞" || !fields.min_order
+            ? null
+            : Number(fields.min_order),
+        maxDiscount:
+          fields.max_discount === "∞" || !fields.max_discount
+            ? null
+            : Number(fields.max_discount),
+        startAt:
+          fields.start_at === "-" || !fields.start_at ? null : fields.start_at,
+        endAt: fields.end_at === "-" || !fields.end_at ? null : fields.end_at,
+        usageLimit:
+          fields.usage_limit === "∞" || !fields.usage_limit
+            ? null
+            : Number(fields.usage_limit),
+        perUserLimit: fields.per_user_limit ? Number(fields.per_user_limit) : 1,
+        isActive: fields.is_active === "true" ? 1 : 0,
+      };
+
+      updateCouponMutation.mutate({ id, data });
     }
   };
+
+  const currentCoupons = $derived($couponsQuery.data || initialRows);
 </script>
 
 <SectionHeader title="Tambah Kupon" muted="Promo & diskon" />
-<CrudInlineForm id="coupon-form" on:submit={handleCreate} {isSubmitting}>
+<CrudInlineForm
+  id="coupon-form"
+  on:submit={handleCreate}
+  isSubmitting={createCouponMutation.isPending}
+>
   <div class="space-y-6 border-b border-stone-100 pb-8 mb-8">
     <div
       class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6"
@@ -299,9 +284,9 @@
     <button
       class="flex items-center justify-center gap-3 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto mt-auto"
       type="submit"
-      disabled={isSubmitting}
+      disabled={createCouponMutation.isPending}
     >
-      {#if isSubmitting}
+      {#if createCouponMutation.isPending}
         <svg
           class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
           xmlns="http://www.w3.org/2000/svg"
@@ -329,132 +314,123 @@
 <div class="mt-6">
   <SectionHeader title="Daftar Kupon" muted="Klik sel untuk edit" />
 </div>
-<div
-  role="button"
-  tabindex="0"
-  onclick={handleRowAction}
-  onkeydown={(e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      e.currentTarget.click();
-    }
-  }}
->
-  <AdminDataTable>
-    <thead>
+
+<AdminDataTable>
+  <thead>
+    <tr>
+      <th>Kode</th>
+      <th>Tipe</th>
+      <th>Nilai</th>
+      <th>Min Order</th>
+      <th>Max Diskon</th>
+      <th>Mulai</th>
+      <th>Berakhir</th>
+      <th>Limit</th>
+      <th>Per User</th>
+      <th>Status</th>
+      <th>Aksi</th>
+    </tr>
+  </thead>
+  <tbody>
+    {#if currentCoupons.length === 0}
       <tr>
-        <th>Kode</th>
-        <th>Tipe</th>
-        <th>Nilai</th>
-        <th>Min Order</th>
-        <th>Max Diskon</th>
-        <th>Mulai</th>
-        <th>Berakhir</th>
-        <th>Limit</th>
-        <th>Per User</th>
-        <th>Status</th>
-        <th>Aksi</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#if rows.length === 0}
-        <tr>
-          <td
-            colspan="11"
-            class="text-center py-12 text-stone-400 text-sm italic"
-            >Belum ada kupon aktif.</td
-          >
-        </tr>
-      {/if}
-      {#each rows as row (row.id)}
-        <tr
-          data-id={row.id}
-          class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0 text-xs"
+        <td colspan="11" class="text-center py-12 text-stone-400 text-sm italic"
+          >Belum ada kupon aktif.</td
         >
-          <td
-            contenteditable="true"
-            data-field="code"
-            class="py-4 font-bold text-stone-900 tracking-widest uppercase outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-2 py-1.5 rounded-lg border border-transparent transition-all"
-            >{row.code}</td
+      </tr>
+    {/if}
+    {#each currentCoupons as row (row.id)}
+      <tr
+        class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0 text-xs"
+      >
+        <td
+          contenteditable="true"
+          data-field="code"
+          class="py-4 font-bold text-stone-900 tracking-widest uppercase outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-2 py-1.5 rounded-lg border border-transparent transition-all"
+          >{row.code}</td
+        >
+        <td class="py-4">
+          <select
+            data-field="type"
+            class="px-2 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white transition-all bg-transparent text-[10px] font-bold uppercase cursor-pointer outline-none"
           >
-          <td class="py-4">
-            <select
-              data-field="type"
-              class="px-2 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white transition-all bg-transparent text-[10px] font-bold uppercase cursor-pointer outline-none"
+            <option value="percent" selected={row.type === "percent"}
+              >% Percent</option
             >
-              <option value="percent" selected={row.type === "percent"}
-                >% Percent</option
-              >
-              <option value="fixed" selected={row.type === "fixed"}
-                >Rp Fixed</option
-              >
-              <option
-                value="free_shipping"
-                selected={row.type === "free_shipping"}>🚚 Free Ship</option
-              >
-            </select>
-          </td>
-          <td
-            contenteditable="true"
-            data-field="value"
-            class="py-4 tabular-nums font-bold text-stone-800 outline-none hover:bg-white focus:bg-white px-2 py-1.5 rounded-lg transition-all"
-            >{row.value}</td
-          >
-          <td
-            contenteditable="true"
-            data-field="min_order"
-            class="py-4 tabular-nums text-stone-500 outline-none hover:bg-white focus:bg-white px-2 py-1.5 rounded-lg transition-all"
-            >{row.min_order ?? "0"}</td
-          >
-          <td
-            contenteditable="true"
-            data-field="max_discount"
-            class="py-4 tabular-nums text-stone-500 outline-none hover:bg-white focus:bg-white px-2 py-1.5 rounded-lg transition-all"
-            >{row.max_discount ?? "∞"}</td
-          >
-          <td
-            contenteditable="true"
-            data-field="start_at"
-            class="py-4 font-mono text-stone-400 outline-none hover:bg-white focus:bg-white px-2 py-1.5 rounded-lg transition-all"
-            >{row.start_at ?? "-"}</td
-          >
-          <td
-            contenteditable="true"
-            data-field="end_at"
-            class="py-4 font-mono text-stone-400 outline-none hover:bg-white focus:bg-white px-2 py-1.5 rounded-lg transition-all"
-            >{row.end_at ?? "-"}</td
-          >
-          <td
-            contenteditable="true"
-            data-field="usage_limit"
-            class="py-4 tabular-nums text-stone-700 font-medium outline-none hover:bg-white focus:bg-white px-2 py-1.5 rounded-lg transition-all"
-            >{row.usage_limit ?? "∞"}</td
-          >
-          <td
-            contenteditable="true"
-            data-field="per_user_limit"
-            class="py-4 tabular-nums text-stone-700 font-medium outline-none hover:bg-white focus:bg-white px-2 py-1.5 rounded-lg transition-all"
-            >{row.per_user_limit ?? "1"}</td
-          >
-          <td class="py-4 text-center">
-            <select
-              data-field="is_active"
-              class="px-2 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white transition-all bg-transparent font-bold cursor-pointer outline-none"
+            <option value="fixed" selected={row.type === "fixed"}
+              >Rp Fixed</option
             >
-              <option value="true" selected={row.is_active}>ON</option>
-              <option value="false" selected={!row.is_active}>OFF</option>
-            </select>
-          </td>
-          <td class="py-4">
-            <RowActions
-              isSaving={rowStates[row.id]?.isSaving}
-              isDeleting={rowStates[row.id]?.isDeleting}
-            />
-          </td>
-        </tr>
-      {/each}
-    </tbody>
-  </AdminDataTable>
-</div>
+            <option
+              value="free_shipping"
+              selected={row.type === "free_shipping"}>🚚 Free Ship</option
+            >
+          </select>
+        </td>
+        <td
+          contenteditable="true"
+          data-field="value"
+          class="py-4 tabular-nums font-bold text-stone-800 outline-none hover:bg-white focus:bg-white px-2 py-1.5 rounded-lg transition-all"
+          >{row.value}</td
+        >
+        <td
+          contenteditable="true"
+          data-field="min_order"
+          class="py-4 tabular-nums text-stone-500 outline-none hover:bg-white focus:bg-white px-2 py-1.5 rounded-lg transition-all"
+          >{row.minOrder ?? "0"}</td
+        >
+        <td
+          contenteditable="true"
+          data-field="max_discount"
+          class="py-4 tabular-nums text-stone-500 outline-none hover:bg-white focus:bg-white px-2 py-1.5 rounded-lg transition-all"
+          >{row.maxDiscount ?? "∞"}</td
+        >
+        <td
+          contenteditable="true"
+          data-field="start_at"
+          class="py-4 font-mono text-stone-400 outline-none hover:bg-white focus:bg-white px-2 py-1.5 rounded-lg transition-all"
+          >{row.startAt ?? "-"}</td
+        >
+        <td
+          contenteditable="true"
+          data-field="end_at"
+          class="py-4 font-mono text-stone-400 outline-none hover:bg-white focus:bg-white px-2 py-1.5 rounded-lg transition-all"
+          >{row.endAt ?? "-"}</td
+        >
+        <td
+          contenteditable="true"
+          data-field="usage_limit"
+          class="py-4 tabular-nums text-stone-700 font-medium outline-none hover:bg-white focus:bg-white px-2 py-1.5 rounded-lg transition-all"
+          >{row.usageLimit ?? "∞"}</td
+        >
+        <td
+          contenteditable="true"
+          data-field="per_user_limit"
+          class="py-4 tabular-nums text-stone-700 font-medium outline-none hover:bg-white focus:bg-white px-2 py-1.5 rounded-lg transition-all"
+          >{row.perUserLimit ?? "1"}</td
+        >
+        <td class="py-4 text-center">
+          <select
+            data-field="is_active"
+            class="px-2 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white transition-all bg-transparent font-bold cursor-pointer outline-none"
+          >
+            <option value="true" selected={row.isActive === 1}>ON</option>
+            <option value="false" selected={row.isActive === 0}>OFF</option>
+          </select>
+        </td>
+        <td class="py-4">
+          <RowActions
+            isSaving={updateCouponMutation.isPending &&
+              updateCouponMutation.variables?.id === row.id}
+            isDeleting={deleteCouponMutation.isPending &&
+              deleteCouponMutation.variables === row.id}
+            onSave={(e) =>
+              handleRowAction(row.id, "save", e.currentTarget.closest("tr"))}
+            onDelete={() => handleRowAction(row.id, "delete", null)}
+          />
+        </td>
+      </tr>
+    {/each}
+  </tbody>
+</AdminDataTable>
 
 <ToastNotification bind:this={toastRef} />

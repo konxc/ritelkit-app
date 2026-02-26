@@ -3,69 +3,59 @@
   import CrudInlineForm from "../CrudInlineForm.svelte";
   import AdminDataTable from "../AdminDataTable.svelte";
   import ToastNotification from "../ToastNotification.svelte";
-  import { onMount } from "svelte";
-
-  type Product = {
-    id: number | string;
-    name: string;
-    sku: string | null;
-    stock: number | null;
-    price: number | null;
-  };
-
-  type Movement = {
-    id: number | string;
-    product_name: string | null;
-    type: string;
-    qty: number;
-    ref_order_no: string | null;
-    notes: string | null;
-    created_at: string;
-  };
+  import { trpc } from "../../../lib/trpc";
+  import {
+    createQuery,
+    createMutation,
+    useQueryClient,
+  } from "@tanstack/svelte-query";
 
   let {
-    products = [],
-    movements = [],
-  }: { products: Product[]; movements: Movement[] } = $props();
+    products: initialProducts = [],
+    movements: initialMovements = [],
+  }: { products: any[]; movements: any[] } = $props();
 
-  let csrfToken = "";
-  let isSubmitting = $state(false);
-  let toastRef: ToastNotification;
+  const queryClient = useQueryClient();
+  let toastRef = $state<ToastNotification>();
 
-  onMount(() => {
-    csrfToken =
-      document
-        .querySelector("meta[name='csrf-token']")
-        ?.getAttribute("content") || "";
+  const productsQuery = createQuery({
+    queryKey: ["inventory-products"],
+    queryFn: () => trpc.inventory.listProducts.query(),
+    initialData: () => initialProducts,
+  });
+
+  const movementsQuery = createQuery({
+    queryKey: ["inventory-movements"],
+    queryFn: () => trpc.inventory.listMovements.query(),
+    initialData: () => initialMovements,
+  });
+
+  const createMovementMutation = createMutation({
+    mutationFn: (data: any) => trpc.inventory.createMovement.mutate(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["inventory-products"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory-movements"] });
+      toastRef?.show("Stok berhasil diperbarui!", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
   });
 
   const handleCreate = async (event: SubmitEvent) => {
     event.preventDefault();
-    if (isSubmitting) return;
+    const form = event.currentTarget as HTMLFormElement;
+    const data = new FormData(form);
 
-    const form = event.currentTarget as HTMLFormElement | null;
-    if (!form) return;
-
-    isSubmitting = true;
-    try {
-      const data = new FormData(form);
-      const response = await fetch("/api/admin/inventory-movements", {
-        method: "POST",
-        headers: { "X-CSRF-Token": csrfToken },
-        body: data,
-      });
-      if (!response.ok) {
-        toastRef?.show(await response.text(), "error");
-        return;
-      }
-      toastRef?.show("Stok berhasil diperbarui!", "success");
-      setTimeout(() => location.reload(), 800);
-    } catch (err: any) {
-      toastRef?.show(err.message || "Kesalahan jaringan", "error");
-    } finally {
-      isSubmitting = false;
-    }
+    createMovementMutation.mutate({
+      productId: data.get("product_id") as string,
+      type: data.get("type") as any,
+      qty: Number(data.get("qty")),
+      notes: (data.get("notes") as string) || undefined,
+    });
+    form.reset();
   };
+
+  const currentProducts = $derived($productsQuery.data || initialProducts);
+  const currentMovements = $derived($movementsQuery.data || initialMovements);
 
   const fieldIds = {
     product: "inventory-product",
@@ -77,7 +67,11 @@
 
 <SectionHeader title="Tambah Mutasi Stok" badge="Restock & Penyesuaian" />
 
-<CrudInlineForm id="inventory-form" on:submit={handleCreate} {isSubmitting}>
+<CrudInlineForm
+  id="inventory-form"
+  on:submit={handleCreate}
+  isSubmitting={createMovementMutation.isPending}
+>
   <div
     class="flex flex-col md:flex-row gap-4 xl:gap-6 items-end pb-8 border-b border-stone-100 mb-8 w-full"
   >
@@ -94,7 +88,7 @@
         class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none appearance-none cursor-pointer"
       >
         <option value="" disabled selected>Pilih Produk</option>
-        {#each products as product}
+        {#each currentProducts as product}
           <option value={product.id}>{product.name}</option>
         {/each}
       </select>
@@ -146,9 +140,9 @@
     <button
       class="flex items-center justify-center gap-2 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto"
       type="submit"
-      disabled={isSubmitting}
+      disabled={createMovementMutation.isPending}
     >
-      {#if isSubmitting}
+      {#if createMovementMutation.isPending}
         <svg
           class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
           xmlns="http://www.w3.org/2000/svg"
@@ -186,14 +180,14 @@
     </tr>
   </thead>
   <tbody>
-    {#if products.length === 0}
+    {#if currentProducts.length === 0}
       <tr>
         <td colspan="4" class="text-center py-12 text-stone-400 text-sm italic"
           >Belum ada produk terdaftar.</td
         >
       </tr>
     {/if}
-    {#each products as product}
+    {#each currentProducts as product}
       <tr
         class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
       >
@@ -227,14 +221,14 @@
     </tr>
   </thead>
   <tbody>
-    {#if movements.length === 0}
+    {#if currentMovements.length === 0}
       <tr>
         <td colspan="6" class="text-center py-12 text-stone-400 text-sm italic"
           >Belum ada riwayat mutasi.</td
         >
       </tr>
     {/if}
-    {#each movements as movement}
+    {#each currentMovements as movement}
       <tr
         class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0 text-sm"
       >
@@ -268,11 +262,11 @@
               : ""}{movement.qty}
         </td>
         <td class="py-4 font-mono text-xs text-[#c48a3a]"
-          >{movement.ref_order_no || "-"}</td
+          >{movement.refOrderNo || "-"}</td
         >
         <td class="py-4 text-stone-500">{movement.notes || "-"}</td>
         <td class="py-4 tabular-nums text-stone-400 text-xs"
-          >{String(movement.created_at).split("T")[0]}</td
+          >{String(movement.createdAt).split("T")[0]}</td
         >
       </tr>
     {/each}

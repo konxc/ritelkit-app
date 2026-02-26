@@ -14,23 +14,34 @@
   import AdminDataTable from "../AdminDataTable.svelte";
   import StatusBadge from "../StatusBadge.svelte";
   import ToastNotification from "../ToastNotification.svelte";
-  import { onMount } from "svelte";
+  import { trpc } from "../../../lib/trpc";
+  import {
+    createQuery,
+    createMutation,
+    useQueryClient,
+  } from "@tanstack/svelte-query";
 
-  let { rows = [] }: { rows: InvoiceRow[] } = $props();
+  let { rows: initialRows = [] }: { rows: any[] } = $props();
 
+  const queryClient = useQueryClient();
   let orderNo = $state("");
-  let isSubmitting = $state(false);
-  let csrfToken = $state("");
   let toastRef = $state<ToastNotification>();
 
-  onMount(async () => {
-    try {
-      const res = await fetch("/api/admin/csrf");
-      const data = (await res.json()) as { csrfToken: string };
-      csrfToken = data.csrfToken;
-    } catch (e) {
-      console.error("Failed to fetch CSRF token", e);
-    }
+  const invoicesQuery = createQuery({
+    queryKey: ["invoices"],
+    queryFn: () => trpc.invoices.list.query(),
+    initialData: () => initialRows,
+  });
+
+  const createInvoiceMutation = createMutation({
+    mutationFn: (data: { orderNo: string }) =>
+      trpc.invoices.create.mutate(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      toastRef?.show("Invoice berhasil dibuat", "success");
+      orderNo = "";
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
   });
 
   const formatCurrency = (value: number | undefined) =>
@@ -44,38 +55,18 @@
 
   const handleSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
-    if (isSubmitting) return;
-
-    const form = event.currentTarget as HTMLFormElement | null;
-    if (!form) return;
-
-    isSubmitting = true;
-
-    try {
-      const data = new FormData(form);
-      const response = await fetch("/api/admin/invoices", {
-        method: "POST",
-        headers: { "X-CSRF-Token": csrfToken },
-        body: data,
-      });
-
-      if (!response.ok) {
-        toastRef?.show(await response.text(), "error");
-        return;
-      }
-
-      toastRef?.show("Invoice berhasil dibuat", "success");
-      setTimeout(() => location.reload(), 800);
-    } catch (err: any) {
-      toastRef?.show(err.message || "Gagal membuat invoice", "error");
-    } finally {
-      isSubmitting = false;
-    }
+    createInvoiceMutation.mutate({ orderNo });
   };
+
+  const currentInvoices = $derived($invoicesQuery.data || initialRows);
 </script>
 
 <SectionHeader title="Buat Invoice" badge="Manual" />
-<CrudInlineForm id="invoice-form" on:submit={handleSubmit} {isSubmitting}>
+<CrudInlineForm
+  id="invoice-form"
+  on:submit={handleSubmit}
+  isSubmitting={$createInvoiceMutation.isPending}
+>
   <div
     class="flex flex-col md:flex-row gap-4 xl:gap-6 items-end pb-8 border-b border-stone-100 mb-8 w-full"
   >
@@ -97,9 +88,9 @@
     <button
       class="flex items-center justify-center gap-3 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto"
       type="submit"
-      disabled={isSubmitting || !orderNo}
+      disabled={$createInvoiceMutation.isPending || !orderNo}
     >
-      {#if isSubmitting}
+      {#if $createInvoiceMutation.isPending}
         <svg
           class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
           xmlns="http://www.w3.org/2000/svg"
@@ -130,7 +121,7 @@
     muted="Auto update status di tahap berikutnya"
   />
 </div>
-<AdminDataTable class="mt-4" onclick={() => {}}>
+<AdminDataTable class="mt-4">
   <thead>
     <tr>
       <th>Invoice</th>
@@ -141,26 +132,26 @@
     </tr>
   </thead>
   <tbody>
-    {#if rows.length === 0}
+    {#if currentInvoices.length === 0}
       <tr>
         <td colspan="5" class="text-center py-12 text-stone-400 text-sm italic"
           >Belum ada invoice diterbitkan.</td
         >
       </tr>
     {/if}
-    {#each rows as inv (inv.invoice_no)}
+    {#each currentInvoices as inv (inv.invoiceNo)}
       <tr
         class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
       >
         <td class="py-4">
           <a
-            href={`/admin/invoices/${inv.invoice_no}`}
+            href={`/admin/invoices/${inv.invoiceNo}`}
             class="font-bold text-stone-900 hover:text-[#c48a3a] underline decoration-stone-200 underline-offset-4 transition-colors"
           >
-            {inv.invoice_no}
+            {inv.invoiceNo}
           </a>
         </td>
-        <td class="py-4 font-mono text-xs text-stone-500">{inv.order_no}</td>
+        <td class="py-4 font-mono text-xs text-stone-500">{inv.orderNo}</td>
         <td class="py-4 tabular-nums font-bold text-stone-800"
           >{formatCurrency(inv.total)}</td
         >
@@ -171,7 +162,7 @@
           />
         </td>
         <td class="py-4 font-mono text-xs text-stone-400"
-          >{String(inv.issued_at).split("T")[0]}</td
+          >{String(inv.issuedAt).split("T")[0]}</td
         >
       </tr>
     {/each}

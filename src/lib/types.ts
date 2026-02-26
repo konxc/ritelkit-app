@@ -82,6 +82,16 @@ export const CouponSchema = BaseEntitySchema.extend({
 
 export type Coupon = z.infer<typeof CouponSchema>;
 
+// Customer
+export const CustomerSchema = BaseEntitySchema.extend({
+    name: z.string().min(1, "Nama wajib diisi"),
+    email: z.string().email().optional().nullable(),
+    phone: z.string().min(1, "No. telepon wajib diisi"),
+    notes: z.string().optional().nullable(),
+});
+
+export type Customer = z.infer<typeof CustomerSchema>;
+
 // Notification
 export const NotificationSchema = z.object({
     id: z.uuid(),
@@ -97,9 +107,54 @@ export const NotificationSchema = z.object({
 
 export type Notification = z.infer<typeof NotificationSchema>;
 
+// Ads Campaign
+export const AdsCampaignSchema = BaseEntitySchema.extend({
+    name: z.string().min(1, "Nama wajib diisi"),
+    channel: z.string().min(1, "Channel wajib diisi"),
+    budget: z.number().int().min(0),
+    spend: z.number().int().min(0).default(0),
+    status: z.enum(["draft", "active", "paused", "completed"]),
+    startAt: z.string().optional().nullable(),
+    endAt: z.string().optional().nullable(),
+    notes: z.string().optional().nullable(),
+});
+
+export type AdsCampaign = z.infer<typeof AdsCampaignSchema>;
+
+// Inventory Movement
+export const InventoryMovementSchema = z.object({
+    id: z.string(),
+    productId: z.string(),
+    type: z.enum(["in", "out", "adjustment"]),
+    qty: z.number(),
+    notes: z.string().optional().nullable(),
+    refOrderNo: z.string().optional().nullable(),
+    createdAt: z.string(),
+});
+
+export type InventoryMovement = z.infer<typeof InventoryMovementSchema>;
+
+// Settings
+export const OrderSettingsSchema = z.object({
+    preorderOnly: z.boolean().default(false),
+    minimumLeadTimeHours: z.number().default(0),
+    cutoffTime: z.string().default(""),
+    sameDayEnabled: z.boolean().default(false),
+    availableDays: z.array(z.string()).default([]),
+});
+
+export type OrderSettings = z.infer<typeof OrderSettingsSchema>;
+
+export const DeliverySettingsSchema = z.object({
+    deliveryProvince: z.string().default("DI Yogyakarta"),
+    freeDeliveryThreshold: z.number().default(0),
+});
+
+export type DeliverySettings = z.infer<typeof DeliverySettingsSchema>;
+
 // Audit Log
 export const AuditLogSchema = z.object({
-    id: z.uuid(),
+    id: z.string(),
     actorEmail: z.string().optional().nullable(),
     action: z.string(),
     entityType: z.string(),

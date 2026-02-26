@@ -7,7 +7,7 @@
     stock: number;
     category_id?: string | null;
     category_name?: string | null;
-    is_active: boolean;
+    isActive: boolean;
     images_json?: string;
   };
 
@@ -24,24 +24,67 @@
   import SectionHeader from "../SectionHeader.svelte";
   import ToastNotification from "../ToastNotification.svelte";
   import { onMount } from "svelte";
+  import { trpc } from "../../../lib/trpc";
   import {
-    attachDrop,
-    parseUrls,
+    createQuery,
+    createMutation,
+    useQueryClient,
+  } from "@tanstack/svelte-query";
+  import {
     renderGallery,
     uploadFiles,
+    attachDrop,
+    parseUrls,
   } from "../../../lib/admin-product-client";
+  import type { Product } from "../../../lib/types";
+
+  type ProductRow = Product & { categoryName?: string | null };
+  type CategoryOption = { id: string; name: string };
 
   let {
-    rows = [],
+    rows: initialRows = [],
+
     categories = [],
   }: { rows: ProductRow[]; categories: CategoryOption[] } = $props();
 
+  const queryClient = useQueryClient();
   let csrfToken = "";
-  let isSubmitting = $state(false);
-  let rowStates = $state<
-    Record<string, { isSaving?: boolean; isDeleting?: boolean }>
-  >({});
   let toastRef: ToastNotification;
+
+  // Use tRPC Query for real-time syncing
+  const productsQuery = createQuery({
+    queryKey: ["products"],
+    queryFn: () => trpc.products.list.query(),
+    initialData: () => initialRows as any,
+  });
+
+  const createMutationFn = createMutation({
+    mutationFn: (data: any) => trpc.products.create.mutate(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toastRef?.show("Produk berhasil ditambahkan!", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
+  });
+
+  const updateMutation = createMutation({
+    mutationFn: (payload: { id: string; data: any }) =>
+      trpc.products.update.mutate(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toastRef?.show("Produk diperbarui", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
+  });
+
+  const deleteMutation = createMutation({
+    mutationFn: (id: string) => trpc.products.delete.mutate(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toastRef?.show("Produk dihapus", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
+  });
 
   onMount(() => {
     csrfToken =
@@ -52,138 +95,64 @@
 
   const productFormHandler = async (event: SubmitEvent) => {
     event.preventDefault();
-    if (isSubmitting) return;
+    const form = event.currentTarget as HTMLFormElement;
+    const formData = new FormData(form);
 
-    const form = event.currentTarget as HTMLFormElement | null;
-    if (!form) return;
-
-    isSubmitting = true;
-    try {
-      const data = new FormData(form);
-      const response = await fetch("/api/admin/products", {
-        method: "POST",
-        headers: { "X-CSRF-Token": csrfToken },
-        body: data,
-      });
-      if (!response.ok) {
-        toastRef?.show(await response.text(), "error");
-        return;
+    // Transform FormData to Object
+    const payload: any = {};
+    formData.forEach((value, key) => {
+      if (key === "price" || key === "stock" || key === "cost") {
+        payload[key] = Number(value);
+      } else if (key === "isActive") {
+        payload[key] = value === "true" ? 1 : 0;
+      } else if (key === "image_urls") {
+        payload["imagesJson"] = JSON.stringify(parseUrls(String(value)));
+      } else {
+        payload[key] = value;
       }
-      toastRef?.show("Produk berhasil ditambahkan!", "success");
-      setTimeout(() => location.reload(), 800);
-    } catch (err: any) {
-      toastRef?.show(err.message || "Kesalahan jaringan", "error");
-    } finally {
-      isSubmitting = false;
-    }
+    });
+
+    createMutationFn.mutate(payload);
+    form.reset();
   };
 
-  const handleRowClick = async (event: MouseEvent) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
-    const action = target.getAttribute("data-action");
-    if (!action) return;
-    const rowEl = target.closest("tr[data-id]");
-    if (!rowEl) return;
-    const id = rowEl.getAttribute("data-id");
-    if (!id) return;
-
+  const handleRowAction = async (
+    id: string,
+    action: string,
+    rowEl: HTMLElement,
+  ) => {
     if (action === "delete") {
       if (!confirm("Hapus produk ini?")) return;
-
-      rowStates[id] = { ...rowStates[id], isDeleting: true };
-      rowStates = { ...rowStates };
-
-      try {
-        const response = await fetch(`/api/admin/products/${id}`, {
-          method: "DELETE",
-          headers: { "X-CSRF-Token": csrfToken },
-        });
-        if (!response.ok) {
-          toastRef?.show(await response.text(), "error");
-          rowStates[id] = { ...rowStates[id], isDeleting: false };
-          return;
-        }
-        toastRef?.show("Produk dihapus", "success");
-        setTimeout(() => location.reload(), 800);
-      } catch (err: any) {
-        toastRef?.show(err.message || "Kesalahan jaringan", "error");
-        rowStates[id] = { ...rowStates[id], isDeleting: false };
-      }
+      deleteMutation.mutate(id);
       return;
     }
 
     if (action === "save") {
-      rowStates[id] = { ...rowStates[id], isSaving: true };
-      rowStates = { ...rowStates };
-
-      try {
-        const payload: Record<string, unknown> = {};
-        rowEl.querySelectorAll("[data-field]").forEach((cell) => {
-          const field = cell.getAttribute("data-field");
-          if (!field) return;
-          if (
-            cell instanceof HTMLSelectElement ||
-            cell instanceof HTMLInputElement
-          ) {
-            payload[field] = cell.value;
-            return;
-          }
-          if (field === "images_json") {
-            payload[field] = JSON.parse(
-              cell.getAttribute("data-value") || "[]",
-            );
-            return;
-          }
-          payload[field] = cell.textContent?.trim() || "";
-        });
-        const response = await fetch(`/api/admin/products/${id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-Token": csrfToken,
-          },
-          body: JSON.stringify(payload),
-        });
-        if (!response.ok) {
-          toastRef?.show(await response.text(), "error");
-          rowStates[id] = { ...rowStates[id], isSaving: false };
+      const payload: Record<string, any> = {};
+      rowEl.querySelectorAll("[data-field]").forEach((cell) => {
+        const field = cell.getAttribute("data-field");
+        if (!field) return;
+        if (
+          cell instanceof HTMLSelectElement ||
+          cell instanceof HTMLInputElement
+        ) {
+          payload[field] =
+            field === "isActive" ? (cell.value === "true" ? 1 : 0) : cell.value;
           return;
         }
-        toastRef?.show("Produk diperbarui", "success");
-        setTimeout(() => location.reload(), 800);
-      } catch (err: any) {
-        toastRef?.show(err.message || "Kesalahan jaringan", "error");
-        rowStates[id] = { ...rowStates[id], isSaving: false };
-      }
+        if (field === "images_json") {
+          payload[field] = cell.getAttribute("data-value") || "[]";
+          return;
+        }
+        payload[field] = cell.textContent?.trim() || "";
+      });
+
+      // Simple transformation
+      if (payload.price) payload.price = Number(payload.price);
+      if (payload.stock) payload.stock = Number(payload.stock);
+
+      updateMutation.mutate({ id, data: payload });
     }
-  };
-
-  const updateGallery = (input: HTMLInputElement, container: HTMLElement) => {
-    const urls = parseUrls(input.value);
-    renderGallery(container, urls, (next) => {
-      input.value = next.join(",");
-      updateGallery(input, container);
-    });
-  };
-
-  const attachGalleryHandlers = (input: HTMLInputElement) => {
-    const container = document.querySelector<HTMLDivElement>(
-      `[data-gallery-input=${input.id}]`,
-    );
-    if (!container) return;
-    const update = (next: string[]) => {
-      input.value = next.join(",");
-      renderGallery(container, next, update);
-    };
-    const initial = parseUrls(input.value);
-    update(initial);
-    attachDrop(container, async (files) => {
-      const urls = await uploadFiles(files, csrfToken);
-      const current = parseUrls(input.value);
-      input.value = [...current, ...urls].join(",");
-      update(parseUrls(input.value));
-    });
   };
 
   const setupGallery = () => {
@@ -194,7 +163,21 @@
       const urls = await uploadFiles(files, csrfToken);
       const current = parseUrls(input.value);
       input.value = [...current, ...urls].join(",");
-      updateGallery(input, container);
+      const next = parseUrls(input.value);
+      renderGallery(container, next, (updated) => {
+        input.value = updated.join(",");
+        renderGallery(container, updated, (up) => {
+          input.value = up.join(",");
+        });
+      });
+    });
+  };
+
+  const attachGalleryHandlers = (node: HTMLElement) => {
+    const value = node.getAttribute("data-value") || "[]";
+    const next = JSON.parse(value);
+    renderGallery(node, next, (updated) => {
+      node.setAttribute("data-value", JSON.stringify(updated));
     });
   };
 
@@ -203,10 +186,17 @@
       setupGallery();
     }
   });
+
+  const currentRows = $derived($productsQuery.data || initialRows);
 </script>
 
 <SectionHeader title="Tambah Produk" badge="E-commerce Ready" />
-<CrudInlineForm id="product-form" on:submit={productFormHandler} {isSubmitting}>
+
+<CrudInlineForm
+  id="product-form"
+  on:submit={productFormHandler}
+  isSubmitting={$createMutationFn.isPending}
+>
   <div class="space-y-6 border-b border-stone-100 pb-8 mb-8">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div class="space-y-1.5">
@@ -244,7 +234,7 @@
         >
         <select
           id="category_id"
-          name="category_id"
+          name="categoryId"
           class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm appearance-none cursor-pointer outline-none"
         >
           <option value="">Pilih Kategori</option>
@@ -284,16 +274,16 @@
       </div>
       <div class="space-y-1.5">
         <label
-          for="is_active"
+          for="isActive"
           class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
           >Status</label
         >
         <select
-          id="is_active"
-          name="is_active"
+          id="isActive"
+          name="isActive"
           class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm appearance-none cursor-pointer outline-none"
         >
-          <option value="true">Aktif</option>
+          <option value="true" selected>Aktif</option>
           <option value="false">Draf</option>
         </select>
       </div>
@@ -367,9 +357,9 @@
     <button
       class="flex items-center justify-center gap-3 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto mt-auto"
       type="submit"
-      disabled={isSubmitting}
+      disabled={$createMutationFn.isPending}
     >
-      {#if isSubmitting}
+      {#if $createMutationFn.isPending}
         <svg
           class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
           xmlns="http://www.w3.org/2000/svg"
@@ -397,18 +387,7 @@
 <div class="mt-6">
   <SectionHeader title="Daftar Produk" muted="Klik sel untuk edit" />
 </div>
-<div
-  class="mt-2"
-  role="button"
-  tabindex="0"
-  onclick={handleRowClick}
-  onkeydown={(e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      e.currentTarget.click();
-    }
-  }}
->
+<div class="mt-2" role="button" tabindex="0">
   <AdminDataTable>
     <thead>
       <tr>
@@ -422,7 +401,7 @@
       </tr>
     </thead>
     <tbody>
-      {#if rows.length === 0}
+      {#if currentRows.length === 0}
         <tr>
           <td
             colspan="7"
@@ -431,7 +410,7 @@
           >
         </tr>
       {/if}
-      {#each rows as row (row.id)}
+      {#each currentRows as row (row.id)}
         <tr
           data-id={row.id}
           class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
@@ -440,7 +419,8 @@
             <div
               class="edit-gallery thumbnail-gallery"
               data-field="images_json"
-              data-value={row.images_json || "[]"}
+              data-value={row.imagesJson || "[]"}
+              use:attachGalleryHandlers
             ></div>
           </td>
           <td class="py-4">
@@ -465,12 +445,12 @@
           </td>
           <td class="py-4">
             <select
-              data-field="category_id"
+              data-field="categoryId"
               class="px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-transparent text-sm cursor-pointer outline-none"
             >
               <option value="">Tanpa Kategori</option>
               {#each categories as cat}
-                <option value={cat.id} selected={cat.id === row.category_id}>
+                <option value={cat.id} selected={cat.id === row.categoryId}>
                   {cat.name}
                 </option>
               {/each}
@@ -496,17 +476,22 @@
           </td>
           <td class="py-4">
             <select
-              data-field="is_active"
+              data-field="isActive"
               class="px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-transparent text-sm cursor-pointer outline-none font-medium"
             >
-              <option value="true" selected={row.is_active}>Aktif</option>
-              <option value="false" selected={!row.is_active}>Draf</option>
+              <option value="true" selected={row.isActive === 1}>Aktif</option>
+              <option value="false" selected={row.isActive === 0}>Draf</option>
             </select>
           </td>
           <td class="py-4">
             <RowActions
-              isSaving={rowStates[row.id]?.isSaving}
-              isDeleting={rowStates[row.id]?.isDeleting}
+              isSaving={$updateMutation.isPending &&
+                $updateMutation.variables?.id === row.id}
+              isDeleting={$deleteMutation.isPending &&
+                $deleteMutation.variables === row.id}
+              onSave={(e) =>
+                handleRowAction(row.id, "save", e.currentTarget.closest("tr")!)}
+              onDelete={() => handleRowAction(row.id, "delete", null!)}
             />
           </td>
         </tr>
@@ -514,5 +499,7 @@
     </tbody>
   </AdminDataTable>
 </div>
+
+<ToastNotification bind:this={toastRef} />
 
 <ToastNotification bind:this={toastRef} />

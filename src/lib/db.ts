@@ -1,8 +1,11 @@
 import { createClient, type Client } from "@libsql/client";
+import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
 import type { APIContext } from "astro";
 import { getEnv } from "./env";
+import * as schema from "../db/schema";
 
 let client: Client | null = null;
+let db: LibSQLDatabase<typeof schema> | null = null;
 let initialized = false;
 
 export function getDb(ctx?: APIContext): Client {
@@ -15,6 +18,15 @@ export function getDb(ctx?: APIContext): Client {
     }
     return client;
 }
+
+export function getDrizzle(ctx?: APIContext): LibSQLDatabase<typeof schema> {
+    if (!db) {
+        const client = getDb(ctx);
+        db = drizzle(client, { schema });
+    }
+    return db;
+}
+
 
 export async function initDb(ctx?: APIContext) {
     if (initialized) return;

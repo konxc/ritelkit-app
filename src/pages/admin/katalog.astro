@@ -114,7 +114,7 @@ const tabs = [
     {
         tab === "kategori" && (
             <QueryProvider client:load>
-                <CategoriesManager rows={categoriesData as any[]} />
+                <CategoriesManager rows={categoriesData as any[]} client:load />
             </QueryProvider>
         )
     }
@@ -126,6 +126,7 @@ const tabs = [
                     <ProductsManager
                         rows={productsData.rows as any[]}
                         categories={productsData.categories as any[]}
+                        client:load
                     />
                 </QueryProvider>
 

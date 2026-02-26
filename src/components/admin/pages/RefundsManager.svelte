@@ -16,130 +16,106 @@
   import StatusBadge from "../StatusBadge.svelte";
   import SectionHeader from "../SectionHeader.svelte";
   import ToastNotification from "../ToastNotification.svelte";
-  import { onMount } from "svelte";
+  import { trpc } from "../../../lib/trpc";
+  import {
+    createQuery,
+    createMutation,
+    useQueryClient,
+  } from "@tanstack/svelte-query";
 
-  // -- type definition ...
+  let { rows: initialRows = [] }: { rows: any[] } = $props();
 
-  let { rows = [] }: { rows: RefundRow[] } = $props();
+  const queryClient = useQueryClient();
+  let toastRef = $state<ToastNotification>();
 
-  let csrfToken = "";
-  let isSubmitting = $state(false);
-  let rowStates = $state<
-    Record<string, { isSaving?: boolean; isDeleting?: boolean }>
-  >({});
-  let toastRef: ToastNotification;
+  const refundsQuery = createQuery({
+    queryKey: ["refunds"],
+    queryFn: () => trpc.refunds.list.query(),
+    initialData: () => initialRows,
+  });
 
-  onMount(() => {
-    csrfToken =
-      document
-        .querySelector("meta[name='csrf-token']")
-        ?.getAttribute("content") || "";
+  const createRefundMutation = createMutation({
+    mutationFn: (data: any) => trpc.refunds.create.mutate(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["refunds"] });
+      toastRef?.show("Refund berhasil ditambah!", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
+  });
+
+  const updateRefundMutation = createMutation({
+    mutationFn: (payload: { id: string; data: any }) =>
+      trpc.refunds.update.mutate(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["refunds"] });
+      toastRef?.show("Refund diperbarui", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
+  });
+
+  const deleteRefundMutation = createMutation({
+    mutationFn: (id: string) => trpc.refunds.delete.mutate(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["refunds"] });
+      toastRef?.show("Refund dihapus", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
   });
 
   const handleCreate = async (event: SubmitEvent) => {
     event.preventDefault();
-    if (isSubmitting) return;
+    const form = event.currentTarget as HTMLFormElement;
+    const data = new FormData(form);
 
-    const form = event.currentTarget as HTMLFormElement | null;
-    if (!form) return;
-
-    isSubmitting = true;
-    try {
-      const data = new FormData(form);
-      const response = await fetch("/api/admin/refunds", {
-        method: "POST",
-        headers: { "X-CSRF-Token": csrfToken },
-        body: data,
-      });
-      if (!response.ok) {
-        toastRef?.show(await response.text(), "error");
-        return;
-      }
-      toastRef?.show("Refund berhasil ditambah!", "success");
-      setTimeout(() => location.reload(), 800);
-    } catch (err: any) {
-      toastRef?.show(err.message || "Kesalahan jaringan", "error");
-    } finally {
-      isSubmitting = false;
-    }
+    createRefundMutation.mutate({
+      orderNo: data.get("order_no") as string,
+      amount: Number(data.get("amount")),
+      status: data.get("status") as string,
+      reason: data.get("reason") as string,
+    });
+    form.reset();
   };
 
-  const handleRowAction = async (event: MouseEvent) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
-    const action = target.getAttribute("data-action");
-    if (!action) return;
-    const row = target.closest("tr[data-id]");
-    if (!row) return;
-    const id = row.getAttribute("data-id");
-    if (!id) return;
-
+  const handleRowAction = (
+    id: string,
+    action: string,
+    rowElement: HTMLElement | null,
+  ) => {
     if (action === "delete") {
-      if (!confirm("Hapus refund ini?")) return;
-
-      rowStates[id] = { ...rowStates[id], isDeleting: true };
-
-      try {
-        const response = await fetch(`/api/admin/refunds/${id}`, {
-          method: "DELETE",
-          headers: { "X-CSRF-Token": csrfToken },
-        });
-        if (!response.ok) {
-          toastRef?.show(await response.text(), "error");
-          rowStates[id] = { ...rowStates[id], isDeleting: false };
-          return;
-        }
-        toastRef?.show("Refund dihapus", "success");
-        setTimeout(() => location.reload(), 800);
-      } catch (err: any) {
-        toastRef?.show(err.message || "Kesalahan jaringan", "error");
-        rowStates[id] = { ...rowStates[id], isDeleting: false };
+      if (confirm("Hapus refund ini?")) {
+        deleteRefundMutation.mutate(id);
       }
-      return;
-    }
-
-    if (action === "save") {
-      rowStates[id] = { ...rowStates[id], isSaving: true };
-
-      try {
-        const fields: Record<string, string> = {};
-        row.querySelectorAll("[data-field]").forEach((cell) => {
-          const field = cell.getAttribute("data-field");
-          if (!field) return;
-          if (
-            cell instanceof HTMLSelectElement ||
-            cell instanceof HTMLInputElement
-          ) {
-            fields[field] = String(cell.value);
-            return;
-          }
-          fields[field] = String(cell.textContent?.trim() || "");
-        });
-        const response = await fetch(`/api/admin/refunds/${id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-Token": csrfToken,
-          },
-          body: JSON.stringify(fields),
-        });
-        if (!response.ok) {
-          toastRef?.show(await response.text(), "error");
-          rowStates[id] = { ...rowStates[id], isSaving: false };
-          return;
+    } else if (action === "save" && rowElement) {
+      const fields: Record<string, any> = {};
+      rowElement.querySelectorAll("[data-field]").forEach((el) => {
+        const field = el.getAttribute("data-field")!;
+        if (el instanceof HTMLSelectElement || el instanceof HTMLInputElement) {
+          fields[field] = el.value;
+        } else {
+          fields[field] = el.textContent?.trim();
         }
-        toastRef?.show("Refund diperbarui", "success");
-        setTimeout(() => location.reload(), 800);
-      } catch (err: any) {
-        toastRef?.show(err.message || "Kesalahan jaringan", "error");
-        rowStates[id] = { ...rowStates[id], isSaving: false };
-      }
+      });
+
+      const data = {
+        orderNo: fields.orderNo,
+        amount: Number(fields.amount),
+        status: fields.status,
+        reason: fields.reason,
+      };
+
+      updateRefundMutation.mutate({ id, data });
     }
   };
+
+  const currentRefunds = $derived($refundsQuery.data || initialRows);
 </script>
 
 <SectionHeader title="Buat Refund" />
-<CrudInlineForm id="refund-form" on:submit={handleCreate} {isSubmitting}>
+<CrudInlineForm
+  id="refund-form"
+  on:submit={handleCreate}
+  isSubmitting={$createRefundMutation.isPending}
+>
   <div
     class="grid grid-cols-2 md:grid-cols-4 gap-4 border-b border-stone-100 pb-5 w-full"
   >
@@ -203,9 +179,9 @@
     <button
       class="flex items-center justify-center gap-2 h-[38px] px-6 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full sm:w-auto mt-auto"
       type="submit"
-      disabled={isSubmitting}
+      disabled={$createRefundMutation.isPending}
     >
-      {#if isSubmitting}
+      {#if $createRefundMutation.isPending}
         <svg
           class="animate-spin -ml-1 h-3.5 w-3.5 text-white"
           xmlns="http://www.w3.org/2000/svg"
@@ -234,46 +210,54 @@
   <StatusBadge label="Dana Keluar" tone="danger" />
 </div>
 
-<div
-  role="button"
-  tabindex="0"
-  onclick={handleRowAction}
-  onkeydown={(e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      e.currentTarget.click();
-    }
-  }}
->
-  <AdminDataTable>
-    <thead>
-      <tr>
-        <th>Order</th>
-        <th>Jumlah</th>
-        <th>Status</th>
-        <th>Gateway</th>
-        <th>Alasan</th>
-        <th>Aksi</th>
+<AdminDataTable>
+  <thead>
+    <tr>
+      <th>Order</th>
+      <th>Jumlah</th>
+      <th>Status</th>
+      <th>Gateway</th>
+      <th>Alasan</th>
+      <th>Aksi</th>
+    </tr>
+  </thead>
+  <tbody>
+    {#each currentRefunds as row (row.id)}
+      <tr data-id={row.id}>
+        <td contenteditable="true" data-field="orderNo">{row.orderNo}</td>
+        <td contenteditable="true" data-field="amount">{row.amount}</td>
+        <td class="py-4">
+          <select
+            data-field="status"
+            class="px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white transition-all bg-transparent text-xs font-bold uppercase cursor-pointer outline-none"
+          >
+            <option value="requested" selected={row.status === "requested"}
+              >Requested</option
+            >
+            <option value="approved" selected={row.status === "approved"}
+              >Approved</option
+            >
+            <option value="rejected" selected={row.status === "rejected"}
+              >Rejected</option
+            >
+          </select>
+        </td>
+        <td>{row.providerStatus || "-"}</td>
+        <td contenteditable="true" data-field="reason">{row.reason || ""}</td>
+        <td>
+          <RowActions
+            isSaving={$updateRefundMutation.isPending &&
+              $updateRefundMutation.variables?.id === row.id}
+            isDeleting={$deleteRefundMutation.isPending &&
+              $deleteRefundMutation.variables === row.id}
+            onSave={(e) =>
+              handleRowAction(row.id, "save", e.currentTarget.closest("tr"))}
+            onDelete={() => handleRowAction(row.id, "delete", null)}
+          />
+        </td>
       </tr>
-    </thead>
-    <tbody>
-      {#each rows as row (row.id)}
-        <tr data-id={row.id}>
-          <td contenteditable="true" data-field="order_no">{row.order_no}</td>
-          <td contenteditable="true" data-field="amount">{row.amount}</td>
-          <td contenteditable="true" data-field="status">{row.status}</td>
-          <td>{row.provider_status || "-"}</td>
-          <td contenteditable="true" data-field="reason">{row.reason || ""}</td>
-          <td>
-            <RowActions
-              isSaving={rowStates[row.id]?.isSaving}
-              isDeleting={rowStates[row.id]?.isDeleting}
-            />
-          </td>
-        </tr>
-      {/each}
-    </tbody>
-  </AdminDataTable>
-</div>
+    {/each}
+  </tbody>
+</AdminDataTable>
 
 <ToastNotification bind:this={toastRef} />

@@ -1,0 +1,97 @@
+import { adminProcedure, router } from "../trpc";
+import { orders } from "../../db/schema";
+import { OrderSchema } from "../../lib/types";
+import { eq, desc, asc, like, or, inArray, sql } from "drizzle-orm";
+
+import { z } from "zod";
+
+export const orderRouter = router({
+    list: adminProcedure
+        .input(z.object({
+            q: z.string().optional(),
+            status: z.array(z.string()).optional(),
+            limit: z.number().default(20),
+            offset: z.number().default(0),
+        }))
+        .query(async ({ ctx, input }) => {
+            const { q, status, limit, offset } = input;
+
+            let whereClause = [];
+            if (q) {
+                whereClause.push(
+                    or(
+                        like(orders.orderNo, `%${q}%`),
+                        like(orders.customerName, `%${q}%`),
+                        like(orders.customerPhone, `%${q}%`)
+                    )
+                );
+            }
+            if (status && status.length > 0) {
+                whereClause.push(inArray(orders.status, status));
+            }
+
+            const baseQuery = ctx.db.select().from(orders);
+            const finalQuery = whereClause.length > 0
+                ? baseQuery.where(sql`${sql.join(whereClause, sql` AND `)}`)
+                : baseQuery;
+
+            const rows = await finalQuery
+                .orderBy(desc(orders.createdAt))
+                .limit(limit)
+                .offset(offset);
+
+            // Get total count for pagination
+            const countQuery = ctx.db.select({ count: sql<number>`count(*)` }).from(orders);
+            const finalCountQuery = whereClause.length > 0
+                ? countQuery.where(sql`${sql.join(whereClause, sql` AND `)}`)
+                : countQuery;
+
+            const countResult = await finalCountQuery;
+            const total = Number(countResult[0]?.count || 0);
+
+            return {
+                rows,
+                total,
+                totalPages: Math.ceil(total / limit)
+            };
+        }),
+
+    fulfillment: adminProcedure
+        .input(z.object({
+            limit: z.number().default(20),
+            offset: z.number().default(0),
+        }))
+        .query(async ({ ctx, input }) => {
+            return await ctx.db
+                .select()
+                .from(orders)
+                .where(inArray(orders.status, ["pending", "processing"]))
+                .orderBy(asc(orders.createdAt))
+                .limit(input.limit)
+                .offset(input.offset);
+        }),
+
+
+    get: adminProcedure
+        .input(z.string())
+        .query(async ({ ctx, input }) => {
+            const result = await ctx.db
+                .select()
+                .from(orders)
+                .where(eq(orders.orderNo, input));
+            return result[0];
+        }),
+
+    update: adminProcedure
+        .input(z.object({
+            id: z.string(),
+            data: OrderSchema.partial().omit({ id: true, createdAt: true, updatedAt: true })
+        }))
+        .mutation(async ({ ctx, input }) => {
+            const now = new Date().toISOString();
+            await ctx.db.update(orders)
+                .set({ ...input.data, updatedAt: now })
+                .where(eq(orders.id, input.id));
+            return { ok: true };
+        }),
+});

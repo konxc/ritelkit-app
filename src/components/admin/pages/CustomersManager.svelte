@@ -14,121 +14,106 @@
   import SectionHeader from "../SectionHeader.svelte";
   import RowActions from "../RowActions.svelte";
   import ToastNotification from "../ToastNotification.svelte";
-  import { onMount } from "svelte";
+  import { trpc } from "../../../lib/trpc";
+  import {
+    createQuery,
+    createMutation,
+    useQueryClient,
+  } from "@tanstack/svelte-query";
 
-  let { rows = [] }: { rows: CustomerRow[] } = $props();
+  let { rows: initialRows = [] }: { rows: any[] } = $props();
 
-  let csrfToken = "";
-  let isSubmitting = $state(false);
-  let rowStates = $state<
-    Record<string, { isSaving?: boolean; isDeleting?: boolean }>
-  >({});
-  let toastRef: ToastNotification;
+  const queryClient = useQueryClient();
+  let toastRef = $state<ToastNotification>();
 
-  onMount(() => {
-    csrfToken =
-      document
-        .querySelector("meta[name='csrf-token']")
-        ?.getAttribute("content") || "";
+  const customersQuery = createQuery({
+    queryKey: ["customers"],
+    queryFn: () => trpc.customers.list.query(),
+    initialData: () => initialRows,
+  });
+
+  const createCustomerMutation = createMutation({
+    mutationFn: (data: any) => trpc.customers.create.mutate(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+      toastRef?.show("Pelanggan berhasil ditambahkan!", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
+  });
+
+  const updateCustomerMutation = createMutation({
+    mutationFn: (payload: { id: string; data: any }) =>
+      trpc.customers.update.mutate(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+      toastRef?.show("Pelanggan diperbarui", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
+  });
+
+  const deleteCustomerMutation = createMutation({
+    mutationFn: (id: string) => trpc.customers.delete.mutate(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+      toastRef?.show("Pelanggan dihapus", "success");
+    },
+    onError: (err: any) => toastRef?.show(err.message, "error"),
   });
 
   const handleCreate = async (event: SubmitEvent) => {
     event.preventDefault();
-    if (isSubmitting) return;
+    const form = event.currentTarget as HTMLFormElement;
+    const data = new FormData(form);
 
-    const form = event.currentTarget as HTMLFormElement | null;
-    if (!form) return;
-
-    isSubmitting = true;
-    try {
-      const data = new FormData(form);
-      const response = await fetch("/api/admin/customers", {
-        method: "POST",
-        headers: { "X-CSRF-Token": csrfToken },
-        body: data,
-      });
-      if (!response.ok) {
-        toastRef?.show(await response.text(), "error");
-        return;
-      }
-      toastRef?.show("Pelanggan berhasil ditambahkan!", "success");
-      setTimeout(() => location.reload(), 800);
-    } catch (err: any) {
-      toastRef?.show(err.message || "Kesalahan jaringan", "error");
-    } finally {
-      isSubmitting = false;
-    }
+    createCustomerMutation.mutate({
+      name: data.get("name") as string,
+      phone: data.get("phone") as string,
+      email: (data.get("email") as string) || null,
+      notes: (data.get("notes") as string) || null,
+    });
+    form.reset();
   };
 
-  const handleRowAction = async (event: MouseEvent) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
-    const action = target.getAttribute("data-action");
-    if (!action) return;
-    const row = target.closest("tr[data-id]");
-    if (!row) return;
-    const id = row.getAttribute("data:id") || row.getAttribute("data-id");
-    if (!id) return;
-
+  const handleRowAction = (
+    id: string,
+    action: string,
+    rowElement: HTMLElement | null,
+  ) => {
     if (action === "delete") {
-      if (!confirm("Hapus pelanggan ini?")) return;
-
-      rowStates[id] = { ...rowStates[id], isDeleting: true };
-
-      try {
-        const response = await fetch(`/api/admin/customers/${id}`, {
-          method: "DELETE",
-          headers: { "X-CSRF-Token": csrfToken },
-        });
-        if (!response.ok) {
-          toastRef?.show(await response.text(), "error");
-          rowStates[id] = { ...rowStates[id], isDeleting: false };
-          return;
-        }
-        toastRef?.show("Pelanggan dihapus", "success");
-        setTimeout(() => location.reload(), 800);
-      } catch (err: any) {
-        toastRef?.show(err.message || "Kesalahan jaringan", "error");
-        rowStates[id] = { ...rowStates[id], isDeleting: false };
+      if (confirm("Hapus pelanggan ini?")) {
+        deleteCustomerMutation.mutate(id);
       }
-      return;
-    }
-
-    if (action === "save") {
-      rowStates[id] = { ...rowStates[id], isSaving: true };
-
-      try {
-        const fields: Record<string, string> = {};
-        row.querySelectorAll("[data-field]").forEach((cell) => {
-          const field = cell.getAttribute("data-field");
-          if (!field) return;
-          fields[field] = String(cell.textContent?.trim() || "");
-        });
-        const response = await fetch(`/api/admin/customers/${id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-Token": csrfToken,
-          },
-          body: JSON.stringify(fields),
-        });
-        if (!response.ok) {
-          toastRef?.show(await response.text(), "error");
-          rowStates[id] = { ...rowStates[id], isSaving: false };
-          return;
+    } else if (action === "save" && rowElement) {
+      const fields: Record<string, any> = {};
+      rowElement.querySelectorAll("[data-field]").forEach((el) => {
+        const field = el.getAttribute("data-field")!;
+        if (el instanceof HTMLInputElement) {
+          fields[field] = el.value;
+        } else {
+          fields[field] = el.textContent?.trim();
         }
-        toastRef?.show("Pelanggan diperbarui", "success");
-        setTimeout(() => location.reload(), 800);
-      } catch (err: any) {
-        toastRef?.show(err.message || "Kesalahan jaringan", "error");
-        rowStates[id] = { ...rowStates[id], isSaving: false };
-      }
+      });
+
+      const data = {
+        name: fields.name,
+        phone: fields.phone,
+        email: fields.email === "-" ? null : fields.email,
+        notes: fields.notes === "-" ? null : fields.notes,
+      };
+
+      updateCustomerMutation.mutate({ id, data });
     }
   };
+
+  const currentCustomers = $derived($customersQuery.data || initialRows);
 </script>
 
 <SectionHeader title="Tambah Pelanggan" badge="CRM" />
-<CrudInlineForm id="customer-form" on:submit={handleCreate} {isSubmitting}>
+<CrudInlineForm
+  id="customer-form"
+  on:submit={handleCreate}
+  isSubmitting={createCustomerMutation.isPending}
+>
   <div
     class="flex flex-col md:flex-row flex-wrap gap-4 xl:gap-6 items-end pb-8 border-b border-stone-100 mb-8 w-full"
   >
@@ -190,9 +175,9 @@
     <button
       class="flex items-center justify-center gap-3 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto"
       type="submit"
-      disabled={isSubmitting}
+      disabled={createCustomerMutation.isPending}
     >
-      {#if isSubmitting}
+      {#if createCustomerMutation.isPending}
         <svg
           class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
           xmlns="http://www.w3.org/2000/svg"
@@ -220,77 +205,68 @@
 <div class="mt-6">
   <SectionHeader title="Daftar Pelanggan" muted="Cari detail lalu klik" />
 </div>
-<div
-  role="button"
-  tabindex="0"
-  onclick={handleRowAction}
-  onkeydown={(e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      e.currentTarget.click();
-    }
-  }}
->
-  <AdminDataTable>
-    <thead>
+
+<AdminDataTable>
+  <thead>
+    <tr>
+      <th>Nama</th>
+      <th>Telepon</th>
+      <th>Email</th>
+      <th>Catatan</th>
+      <th>Aksi</th>
+    </tr>
+  </thead>
+  <tbody>
+    {#if currentCustomers.length === 0}
       <tr>
-        <th>Nama</th>
-        <th>Telepon</th>
-        <th>Email</th>
-        <th>Catatan</th>
-        <th>Aksi</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#if rows.length === 0}
-        <tr>
-          <td
-            colspan="5"
-            class="text-center py-12 text-stone-400 text-sm italic"
-            >Belum ada data pelanggan.</td
-          >
-        </tr>
-      {/if}
-      {#each rows as row (row.id)}
-        <tr
-          data-id={row.id}
-          class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
+        <td colspan="5" class="text-center py-12 text-stone-400 text-sm italic"
+          >Belum ada data pelanggan.</td
         >
-          <td
-            contenteditable="true"
-            data-field="name"
-            class="py-4 font-bold text-stone-900 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-transparent transition-all"
-            >{row.name}</td
-          >
-          <td
-            contenteditable="true"
-            data-field="phone"
-            class="py-4 font-mono text-[#c48a3a] font-bold outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
-            >{row.phone}</td
-          >
-          <td
-            contenteditable="true"
-            data-field="email"
-            class="py-4 text-stone-600 outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
-            >{row.email || "-"}</td
-          >
-          <td
-            contenteditable="true"
-            data-field="notes"
-            class="py-4 text-stone-500 text-sm italic outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
-            >{row.notes || "-"}</td
-          >
-          <td class="py-4">
-            <RowActions
-              detailHref={`/admin/customers/${row.id}`}
-              isSaving={rowStates[row.id]?.isSaving}
-              isDeleting={rowStates[row.id]?.isDeleting}
-            />
-          </td>
-        </tr>
-      {/each}
-    </tbody>
-  </AdminDataTable>
-</div>
+      </tr>
+    {/if}
+    {#each currentCustomers as row (row.id)}
+      <tr
+        class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
+      >
+        <td
+          contenteditable="true"
+          data-field="name"
+          class="py-4 font-bold text-stone-900 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-transparent transition-all"
+          >{row.name}</td
+        >
+        <td
+          contenteditable="true"
+          data-field="phone"
+          class="py-4 font-mono text-[#c48a3a] font-bold outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
+          >{row.phone}</td
+        >
+        <td
+          contenteditable="true"
+          data-field="email"
+          class="py-4 text-stone-600 outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
+          >{row.email || "-"}</td
+        >
+        <td
+          contenteditable="true"
+          data-field="notes"
+          class="py-4 text-stone-500 text-sm italic outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
+          >{row.notes || "-"}</td
+        >
+        <td class="py-4">
+          <RowActions
+            detailHref={`/admin/customers/${row.id}`}
+            isSaving={updateCustomerMutation.isPending &&
+              updateCustomerMutation.variables?.id === row.id}
+            isDeleting={deleteCustomerMutation.isPending &&
+              deleteCustomerMutation.variables === row.id}
+            onSave={(e) =>
+              handleRowAction(row.id, "save", e.currentTarget.closest("tr"))}
+            onDelete={() => handleRowAction(row.id, "delete", null)}
+          />
+        </td>
+      </tr>
+    {/each}
+  </tbody>
+</AdminDataTable>
 
 <ToastNotification bind:this={toastRef} />

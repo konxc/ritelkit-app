@@ -13,6 +13,8 @@
     isSaving = false,
     isDeleting = false,
     isSending = false,
+    onSave,
+    onDelete,
   }: {
     detailHref?: string;
     detailLabel?: string;
@@ -25,6 +27,10 @@
     isSaving?: boolean;
     isDeleting?: boolean;
     isSending?: boolean;
+    onSave?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
+    onDelete?: (
+      event: MouseEvent & { currentTarget: HTMLButtonElement },
+    ) => void;
   } = $props();
 </script>
 
@@ -72,6 +78,7 @@
       class="btn-ghost flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
       data-action="save"
       disabled={isSaving}
+      onclick={onSave}
     >
       {#if isSaving}
         <svg
@@ -101,6 +108,7 @@
       class="btn-ghost text-red-600 hover:text-red-700 hover:bg-red-50 flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
       data-action="delete"
       disabled={isDeleting}
+      onclick={onDelete}
     >
       {#if isDeleting}
         <svg

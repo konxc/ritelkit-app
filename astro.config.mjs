@@ -37,7 +37,9 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
     ssr: {
+      noExternal: ["@tanstack/svelte-query", "@trpc/server", "@trpc/client"],
       external: [
+
         "zlib",
         "fs",
         "events",
