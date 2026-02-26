@@ -1,0 +1,13 @@
+---
+const { active = "index" } = Astro.props;
+const isActive = (value: string) => (active === value ? "active" : "");
+---
+
+<nav class="research-nav">
+  <a class={`research-link ${isActive("index")}`} href="/research">Overview</a>
+  <a class={`research-link ${isActive("v0")}`} href="/research/v0">V0</a>
+  <a class={`research-link ${isActive("v1")}`} href="/research/v1">V1</a>
+  <a class={`research-link ${isActive("v2")}`} href="/research/v2">V2</a>
+  <a class={`research-link ${isActive("v3")}`} href="/research/v3">V3</a>
+  <a class={`research-link ${isActive("v4")}`} href="/research/v4">V4</a>
+</nav>
