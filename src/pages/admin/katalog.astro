@@ -1,0 +1,196 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import AdminTabs from "../../components/admin/AdminTabs.astro";
+import CategoriesManager from "../../components/admin/pages/CategoriesManager.svelte";
+import ProductsManager from "../../components/admin/pages/ProductsManager.svelte";
+import InventoryManager from "../../components/admin/pages/InventoryManager.svelte";
+import PaginationNav from "../../components/admin/PaginationNav.svelte";
+import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
+import AdminFilterForm from "../../components/admin/AdminFilterForm.svelte";
+import { requireAdmin } from "../../lib/auth";
+import { initDb, getDb } from "../../lib/db";
+import { parsePage } from "../../lib/admin";
+
+await initDb(Astro);
+const admin = await requireAdmin(Astro);
+if (!admin) {
+    return Astro.redirect("/admin/login");
+}
+
+const db = getDb(Astro);
+const tab = Astro.url.searchParams.get("tab") || "kategori";
+const { page, q, offset, limit } = parsePage(Astro.url, 20);
+
+// Data for Tabs
+let categoriesData: any[] = [];
+let productsData: any = { rows: [], categories: [] };
+let inventoryData: any = { products: [], movements: [] };
+let totalPages = 1;
+
+if (tab === "kategori") {
+    const res = await db.execute(
+        "SELECT id, name, slug, sort_order, is_active FROM categories ORDER BY sort_order ASC, name ASC",
+    );
+    categoriesData = res.rows;
+} else if (tab === "produk") {
+    const where = q ? "WHERE p.name LIKE ? OR p.sku LIKE ?" : "";
+    const args = q ? [`%${q}%`, `%${q}%`] : [];
+    const productsRes = await db.execute({
+        sql: `SELECT p.id, p.name, p.sku, p.price, p.stock, p.category_id, c.name as category_name, p.is_active, p.images_json
+              FROM products p
+              LEFT JOIN categories c ON c.id = p.category_id
+              ${where}
+              ORDER BY p.created_at DESC
+              LIMIT ? OFFSET ?`,
+        args: [...args, limit, offset],
+    });
+    const countRes = await db.execute({
+        sql: `SELECT COUNT(*) as count FROM products p ${where}`,
+        args,
+    });
+    const total = Number((countRes.rows[0] as any)?.count || 0);
+    totalPages = Math.max(1, Math.ceil(total / limit));
+    const categoriesRes = await db.execute(
+        "SELECT id, name FROM categories ORDER BY name ASC",
+    );
+
+    productsData = {
+        rows: productsRes.rows,
+        categories: categoriesRes.rows,
+    };
+} else if (tab === "inventory") {
+    const where = q ? "WHERE name LIKE ? OR sku LIKE ?" : "";
+    const args = q ? [`%${q}%`, `%${q}%`] : [];
+    const productsRes = await db.execute({
+        sql: `SELECT id, name, sku, stock, price FROM products ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+        args: [...args, limit, offset],
+    });
+    const countRes = await db.execute({
+        sql: `SELECT COUNT(*) as count FROM products ${where}`,
+        args,
+    });
+    const total = Number((countRes.rows[0] as any)?.count || 0);
+    totalPages = Math.max(1, Math.ceil(total / limit));
+
+    const movementsRes = await db.execute(
+        `SELECT m.id, m.type, m.qty, m.notes, m.ref_order_no, m.created_at, p.name as product_name
+         FROM inventory_movements m
+         LEFT JOIN products p ON p.id = m.product_id
+         ORDER BY m.created_at DESC
+         LIMIT 30`,
+    );
+    inventoryData = {
+        products: productsRes.rows,
+        movements: movementsRes.rows,
+    };
+}
+
+const tabs = [
+    {
+        id: "kategori",
+        label: "Kategori",
+        icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
+    },
+    {
+        id: "produk",
+        label: "Produk",
+        icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>',
+    },
+    {
+        id: "inventory",
+        label: "Inventory",
+        icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>',
+    },
+];
+---
+
+<AdminLayout title="Katalog">
+    <div slot="header-tabs">
+        <AdminTabs tabs={tabs} activeTab={tab} />
+    </div>
+
+    {
+        tab === "kategori" && (
+            <CategoriesManager rows={categoriesData as any[]} client:load />
+        )
+    }
+
+    {
+        tab === "produk" && (
+            <>
+                <ProductsManager
+                    rows={productsData.rows as any[]}
+                    categories={productsData.categories as any[]}
+                    client:load
+                />
+                <PaginationNav
+                    page={page}
+                    totalPages={totalPages}
+                    prevHref={
+                        page > 1
+                            ? `?tab=produk&q=${encodeURIComponent(q)}&page=${page - 1}`
+                            : undefined
+                    }
+                    nextHref={
+                        page < totalPages
+                            ? `?tab=produk&q=${encodeURIComponent(q)}&page=${page + 1}`
+                            : undefined
+                    }
+                />
+            </>
+        )
+    }
+
+    {
+        tab === "inventory" && (
+            <>
+                <InventoryManager
+                    products={inventoryData.products as any[]}
+                    movements={inventoryData.movements as any[]}
+                    client:load
+                />
+
+                <AdminToolbar title="Stok Produk">
+                    <AdminFilterForm>
+                        <input type="hidden" name="tab" value="inventory" />
+                        <input
+                            name="q"
+                            placeholder="Cari nama / SKU"
+                            value={q}
+                        />
+                        <button class="btn-ghost" type="submit">
+                            Cari
+                        </button>
+                        <a
+                            class="btn-ghost"
+                            href="/api/admin/export?entity=products"
+                        >
+                            Export Produk
+                        </a>
+                        <a
+                            class="btn-ghost"
+                            href="/api/admin/export?entity=inventory"
+                        >
+                            Export Mutasi
+                        </a>
+                    </AdminFilterForm>
+                </AdminToolbar>
+
+                <PaginationNav
+                    page={page}
+                    totalPages={totalPages}
+                    prevHref={
+                        page > 1
+                            ? `?tab=inventory&q=${encodeURIComponent(q)}&page=${page - 1}`
+                            : undefined
+                    }
+                    nextHref={
+                        page < totalPages
+                            ? `?tab=inventory&q=${encodeURIComponent(q)}&page=${page + 1}`
+                            : undefined
+                    }
+                />
+            </>
+        )
+    }
+</AdminLayout>

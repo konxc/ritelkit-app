@@ -1,0 +1,148 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { requireAdmin, ensureCsrfToken } from "../../lib/auth";
+import { initDb, getDb } from "../../lib/db";
+
+await initDb(Astro);
+const admin = await requireAdmin(Astro);
+if (!admin) {
+    return Astro.redirect(
+        Number(
+            (
+                await getDb(Astro).execute(
+                    "SELECT COUNT(*) as count FROM admin_users",
+                )
+            ).rows[0]?.count || 0,
+        ) === 0
+            ? "/admin/setup"
+            : "/admin/login",
+    );
+}
+const csrfToken = ensureCsrfToken(Astro);
+---
+
+<AdminLayout title="Profil Admin">
+    <div class="max-w-md mx-auto pt-4 sm:pt-8 w-full animate-fade-in-up">
+        <!-- Profile Card -->
+        <div
+            class="bg-white rounded-3xl border border-stone-200/80 shadow-[0_12px_40px_rgba(0,0,0,0.04)] p-8 text-center flex flex-col items-center mb-8 relative overflow-hidden"
+        >
+            <!-- decorative bg -->
+            <div
+                class="absolute inset-0 bg-gradient-to-br from-[#c48a3a]/5 to-transparent pointer-events-none"
+            >
+            </div>
+
+            <div
+                class="w-24 h-24 mb-6 rounded-full bg-stone-100 border-4 border-white shadow-[0_8px_24px_rgba(196,138,58,0.15)] flex items-center justify-center text-[#c48a3a] relative z-10"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="40"
+                    height="40"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    ><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
+                    ></path><circle cx="12" cy="7" r="4"></circle></svg
+                >
+            </div>
+
+            <h2
+                class="font-['Syne',sans-serif] text-2xl font-bold text-stone-900 mb-2 relative z-10"
+            >
+                Admin Roti Sholawat
+            </h2>
+            <p
+                class="text-sm font-semibold text-stone-500 bg-stone-100 px-4 py-1.5 rounded-full relative z-10"
+            >
+                {admin.email}
+            </p>
+        </div>
+
+        <div class="flex flex-col gap-3">
+            <h3 class="font-bold text-stone-900 mb-2 pl-2">Menu Profil</h3>
+
+            <a
+                href="/admin/settings"
+                class="flex items-center justify-between p-4 bg-white rounded-2xl border border-stone-200/80 hover:border-[#c48a3a]/30 hover:shadow-md transition-all group no-underline"
+            >
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-11 h-11 rounded-xl bg-stone-50 flex items-center justify-center text-stone-500 group-hover:bg-[#c48a3a]/10 group-hover:text-[#c48a3a] transition-colors"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            ><path
+                                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+                            ></path><circle cx="12" cy="12" r="3"></circle></svg
+                        >
+                    </div>
+                    <div>
+                        <div
+                            class="font-bold text-[0.95rem] text-stone-900 group-hover:text-[#c48a3a] transition-colors"
+                        >
+                            Pengaturan Lengkap
+                        </div>
+                        <div class="text-[0.8rem] font-medium text-stone-500">
+                            Kelola website, SEO, & banner
+                        </div>
+                    </div>
+                </div>
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="text-stone-300 group-hover:text-[#c48a3a] group-hover:translate-x-1 transition-all"
+                    ><path d="m9 18 6-6-6-6"></path></svg
+                >
+            </a>
+
+            <form
+                method="post"
+                action="/api/admin/logout"
+                class="block m-0 mt-4"
+            >
+                <input type="hidden" name="csrf_token" value={csrfToken} />
+                <button
+                    type="submit"
+                    class="w-full h-[56px] flex items-center justify-center gap-3 p-4 bg-red-50 text-red-600 rounded-2xl font-bold hover:bg-red-600 hover:text-white transition-all cursor-pointer shadow-sm border border-red-100"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        ><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
+                        ></path><polyline points="16 17 21 12 16 7"
+                        ></polyline><line x1="21" x2="9" y1="12" y2="12"
+                        ></line></svg
+                    >
+                    Keluar Sesi
+                </button>
+            </form>
+        </div>
+    </div>
+</AdminLayout>

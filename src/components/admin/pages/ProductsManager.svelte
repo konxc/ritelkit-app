@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script module lang="ts">
   export type ProductRow = {
     id: string | number;
     name: string;
@@ -22,7 +22,8 @@
   import CrudInlineForm from "../CrudInlineForm.svelte";
   import RowActions from "../RowActions.svelte";
   import SectionHeader from "../SectionHeader.svelte";
-  import { getCsrfToken } from "../../../lib/admin-client";
+  import ToastNotification from "../ToastNotification.svelte";
+  import { onMount } from "svelte";
   import {
     attachDrop,
     parseUrls,
@@ -30,25 +31,51 @@
     uploadFiles,
   } from "../../../lib/admin-product-client";
 
-  export let rows: ProductRow[] = [];
-  export let categories: CategoryOption[] = [];
-  const csrfToken = getCsrfToken();
+  let {
+    rows = [],
+    categories = [],
+  }: { rows: ProductRow[]; categories: CategoryOption[] } = $props();
+
+  let csrfToken = "";
+  let isSubmitting = $state(false);
+  let rowStates = $state<
+    Record<string, { isSaving?: boolean; isDeleting?: boolean }>
+  >({});
+  let toastRef: ToastNotification;
+
+  onMount(() => {
+    csrfToken =
+      document
+        .querySelector("meta[name='csrf-token']")
+        ?.getAttribute("content") || "";
+  });
 
   const productFormHandler = async (event: SubmitEvent) => {
     event.preventDefault();
+    if (isSubmitting) return;
+
     const form = event.currentTarget as HTMLFormElement | null;
     if (!form) return;
-    const data = new FormData(form);
-    const response = await fetch("/api/admin/products", {
-      method: "POST",
-      headers: { "X-CSRF-Token": csrfToken },
-      body: data,
-    });
-    if (!response.ok) {
-      alert(await response.text());
-      return;
+
+    isSubmitting = true;
+    try {
+      const data = new FormData(form);
+      const response = await fetch("/api/admin/products", {
+        method: "POST",
+        headers: { "X-CSRF-Token": csrfToken },
+        body: data,
+      });
+      if (!response.ok) {
+        toastRef?.show(await response.text(), "error");
+        return;
+      }
+      toastRef?.show("Produk berhasil ditambahkan!", "success");
+      setTimeout(() => location.reload(), 800);
+    } catch (err: any) {
+      toastRef?.show(err.message || "Kesalahan jaringan", "error");
+    } finally {
+      isSubmitting = false;
     }
-    location.reload();
   };
 
   const handleRowClick = async (event: MouseEvent) => {
@@ -63,49 +90,72 @@
 
     if (action === "delete") {
       if (!confirm("Hapus produk ini?")) return;
-      const response = await fetch(`/api/admin/products/${id}`, {
-        method: "DELETE",
-        headers: { "X-CSRF-Token": csrfToken },
-      });
-      if (!response.ok) {
-        alert(await response.text());
-        return;
+
+      rowStates[id] = { ...rowStates[id], isDeleting: true };
+      rowStates = { ...rowStates };
+
+      try {
+        const response = await fetch(`/api/admin/products/${id}`, {
+          method: "DELETE",
+          headers: { "X-CSRF-Token": csrfToken },
+        });
+        if (!response.ok) {
+          toastRef?.show(await response.text(), "error");
+          rowStates[id] = { ...rowStates[id], isDeleting: false };
+          return;
+        }
+        toastRef?.show("Produk dihapus", "success");
+        setTimeout(() => location.reload(), 800);
+      } catch (err: any) {
+        toastRef?.show(err.message || "Kesalahan jaringan", "error");
+        rowStates[id] = { ...rowStates[id], isDeleting: false };
       }
-      location.reload();
       return;
     }
 
     if (action === "save") {
-      const payload: Record<string, unknown> = {};
-      rowEl.querySelectorAll("[data-field]").forEach((cell) => {
-        const field = cell.getAttribute("data-field");
-        if (!field) return;
-        if (
-          cell instanceof HTMLSelectElement ||
-          cell instanceof HTMLInputElement
-        ) {
-          payload[field] = cell.value;
+      rowStates[id] = { ...rowStates[id], isSaving: true };
+      rowStates = { ...rowStates };
+
+      try {
+        const payload: Record<string, unknown> = {};
+        rowEl.querySelectorAll("[data-field]").forEach((cell) => {
+          const field = cell.getAttribute("data-field");
+          if (!field) return;
+          if (
+            cell instanceof HTMLSelectElement ||
+            cell instanceof HTMLInputElement
+          ) {
+            payload[field] = cell.value;
+            return;
+          }
+          if (field === "images_json") {
+            payload[field] = JSON.parse(
+              cell.getAttribute("data-value") || "[]",
+            );
+            return;
+          }
+          payload[field] = cell.textContent?.trim() || "";
+        });
+        const response = await fetch(`/api/admin/products/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken,
+          },
+          body: JSON.stringify(payload),
+        });
+        if (!response.ok) {
+          toastRef?.show(await response.text(), "error");
+          rowStates[id] = { ...rowStates[id], isSaving: false };
           return;
         }
-        if (field === "images_json") {
-          payload[field] = JSON.parse(cell.getAttribute("data-value") || "[]");
-          return;
-        }
-        payload[field] = cell.textContent?.trim() || "";
-      });
-      const response = await fetch(`/api/admin/products/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": csrfToken,
-        },
-        body: JSON.stringify(payload),
-      });
-      if (!response.ok) {
-        alert(await response.text());
-        return;
+        toastRef?.show("Produk diperbarui", "success");
+        setTimeout(() => location.reload(), 800);
+      } catch (err: any) {
+        toastRef?.show(err.message || "Kesalahan jaringan", "error");
+        rowStates[id] = { ...rowStates[id], isSaving: false };
       }
-      location.reload();
     }
   };
 
@@ -148,81 +198,200 @@
     });
   };
 
-  $: if (typeof window !== "undefined") {
-    setupGallery();
-  }
+  $effect(() => {
+    if (typeof window !== "undefined") {
+      setupGallery();
+    }
+  });
 </script>
 
 <SectionHeader title="Tambah Produk" badge="E-commerce Ready" />
-<CrudInlineForm id="product-form" on:submit={productFormHandler}>
-  <div class="grid grid-2">
-    <div>
-      <label for="name">Nama Produk</label>
-      <input id="name" name="name" required />
+<CrudInlineForm id="product-form" on:submit={productFormHandler} {isSubmitting}>
+  <div class="space-y-6 border-b border-stone-100 pb-8 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="space-y-1.5">
+        <label
+          for="name"
+          class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
+          >Nama Produk</label
+        >
+        <input
+          id="name"
+          name="name"
+          required
+          placeholder="Cth: Roti Manis"
+          class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none"
+        />
+      </div>
+      <div class="space-y-1.5">
+        <label
+          for="sku"
+          class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
+          >SKU (Opsional)</label
+        >
+        <input
+          id="sku"
+          name="sku"
+          placeholder="PROD-001"
+          class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none"
+        />
+      </div>
+      <div class="space-y-1.5">
+        <label
+          for="category_id"
+          class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
+          >Kategori</label
+        >
+        <select
+          id="category_id"
+          name="category_id"
+          class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm appearance-none cursor-pointer outline-none"
+        >
+          <option value="">Pilih Kategori</option>
+          {#each categories as cat}
+            <option value={cat.id}>{cat.name}</option>
+          {/each}
+        </select>
+      </div>
+      <div class="space-y-1.5">
+        <label
+          for="price"
+          class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
+          >Harga (Rp)</label
+        >
+        <input
+          id="price"
+          name="price"
+          type="number"
+          value="0"
+          required
+          class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none"
+        />
+      </div>
+      <div class="space-y-1.5">
+        <label
+          for="stock"
+          class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
+          >Stok</label
+        >
+        <input
+          id="stock"
+          name="stock"
+          type="number"
+          placeholder="0"
+          class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none"
+        />
+      </div>
+      <div class="space-y-1.5">
+        <label
+          for="is_active"
+          class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
+          >Status</label
+        >
+        <select
+          id="is_active"
+          name="is_active"
+          class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm appearance-none cursor-pointer outline-none"
+        >
+          <option value="true">Aktif</option>
+          <option value="false">Draf</option>
+        </select>
+      </div>
     </div>
-    <div>
-      <label for="sku">SKU (Opsional)</label>
-      <input id="sku" name="sku" />
-    </div>
-    <div>
-      <label for="category_id">Kategori</label>
-      <select id="category_id" name="category_id">
-        <option value="">Pilih Kategori</option>
-        {#each categories as cat}
-          <option value={cat.id}>{cat.name}</option>
-        {/each}
-      </select>
-    </div>
-    <div>
-      <label for="is_active">Status</label>
-      <select id="is_active" name="is_active">
-        <option value="true">Aktif</option>
-        <option value="false">Draf</option>
-      </select>
-    </div>
-    <div>
-      <label for="price">Harga (Rp)</label>
-      <input id="price" name="price" type="number" value="0" required />
-    </div>
-    <div>
-      <label for="stock">Stok</label>
-      <input
-        id="stock"
-        name="stock"
-        type="number"
-        placeholder="Bisa dikosongkan"
-      />
+    <div class="space-y-1.5">
+      <label
+        for="description"
+        class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
+        >Deskripsi</label
+      >
+      <textarea
+        id="description"
+        name="description"
+        rows="3"
+        placeholder="Berikan deskripsi singkat produk..."
+        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm resize-none outline-none"
+      ></textarea>
     </div>
   </div>
-  <div class="mt-3">
-    <label for="description">Deskripsi</label>
-    <textarea id="description" name="description" rows="3"></textarea>
-  </div>
-  <div class="field mt-3">
-    <label for="file-input">Gambar Produk</label>
-    <div class="upload-zone" id="upload-zone">
+  <div class="field mt-4 space-y-1">
+    <label
+      for="file-input"
+      class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
+      >Gambar Produk</label
+    >
+    <div
+      class="upload-zone border-2 border-dashed border-stone-200/80 rounded-2xl p-6 hover:bg-stone-50/50 hover:border-[#c48a3a]/40 transition-colors text-center cursor-pointer relative"
+      id="upload-zone"
+    >
       <input
         type="file"
         id="file-input"
         multiple
         accept="image/*"
-        class="hidden"
+        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
       />
-      <div class="upload-placeholder">
-        <span>Drag & drop gambar atau klik untuk upload</span>
-        <p class="muted">Urutan gambar pertama = Foto Utama</p>
+      <div class="upload-placeholder flex flex-col items-center gap-2">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="text-stone-400"
+          ><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle
+            cx="8.5"
+            cy="8.5"
+            r="1.5"
+          ></circle><polyline points="21 15 16 10 5 21"></polyline></svg
+        >
+        <span class="text-sm font-semibold text-stone-600"
+          >Drag & drop gambar atau klik untuk upload</span
+        >
+        <p class="muted text-xs text-stone-400 font-medium">
+          Urutan gambar pertama = Foto Utama
+        </p>
       </div>
     </div>
     <div
       id="new-gallery"
-      class="thumbnail-gallery"
+      class="thumbnail-gallery mt-2"
       data-has="false"
       data-gallery-input="new-image-urls"
     ></div>
-    <div id="upload-status" class="muted mt-1.5"></div>
+    <div id="upload-status" class="muted mt-1.5 text-xs"></div>
     <input type="hidden" name="image_urls" id="new-image-urls" />
   </div>
-  <button class="primary mt-5" type="submit">Tambah Produk</button>
+  <div class="flex items-end mt-4">
+    <button
+      class="flex items-center justify-center gap-3 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto mt-auto"
+      type="submit"
+      disabled={isSubmitting}
+    >
+      {#if isSubmitting}
+        <svg
+          class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          ><circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle><path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path></svg
+        >
+      {/if}
+      Tambah Produk
+    </button>
+  </div>
 </CrudInlineForm>
 
 <div class="mt-6">
@@ -232,8 +401,8 @@
   class="mt-2"
   role="button"
   tabindex="0"
-  on:click={handleRowClick}
-  on:keydown={(e) => {
+  onclick={handleRowClick}
+  onkeydown={(e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       e.currentTarget.click();
@@ -253,26 +422,52 @@
       </tr>
     </thead>
     <tbody>
+      {#if rows.length === 0}
+        <tr>
+          <td
+            colspan="7"
+            class="text-center py-12 text-stone-400 text-sm italic"
+            >Belum ada produk terdaftar.</td
+          >
+        </tr>
+      {/if}
       {#each rows as row (row.id)}
-        <tr data-id={row.id}>
-          <td>
+        <tr
+          data-id={row.id}
+          class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
+        >
+          <td class="py-4">
             <div
               class="edit-gallery thumbnail-gallery"
               data-field="images_json"
               data-value={row.images_json || "[]"}
             ></div>
           </td>
-          <td>
-            <div contenteditable="true" data-field="name">{row.name}</div>
-            <div class="muted text-[0.8em]">
+          <td class="py-4">
+            <div
+              contenteditable="true"
+              data-field="name"
+              class="font-bold text-stone-900 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-transparent transition-all"
+            >
+              {row.name}
+            </div>
+            <div
+              class="text-[0.7rem] font-bold text-stone-400 uppercase tracking-widest mt-1 ml-3"
+            >
               SKU:
-              <span contenteditable="true" data-field="sku"
+              <span
+                contenteditable="true"
+                data-field="sku"
+                class="text-stone-600 ml-1 outline-none hover:bg-white focus:bg-white px-1.5 py-0.5 rounded transition-all"
                 >{row.sku || "-"}</span
               >
             </div>
           </td>
-          <td>
-            <select data-field="category_id">
+          <td class="py-4">
+            <select
+              data-field="category_id"
+              class="px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-transparent text-sm cursor-pointer outline-none"
+            >
               <option value="">Tanpa Kategori</option>
               {#each categories as cat}
                 <option value={cat.id} selected={cat.id === row.category_id}>
@@ -281,19 +476,43 @@
               {/each}
             </select>
           </td>
-          <td contenteditable="true" data-field="price">{row.price}</td>
-          <td contenteditable="true" data-field="stock">{row.stock}</td>
-          <td>
-            <select data-field="is_active">
+          <td class="py-4">
+            <div
+              contenteditable="true"
+              data-field="price"
+              class="tabular-nums font-bold text-stone-800 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-transparent transition-all w-32 text-center"
+            >
+              {row.price}
+            </div>
+          </td>
+          <td class="py-4">
+            <div
+              contenteditable="true"
+              data-field="stock"
+              class="tabular-nums font-bold text-stone-800 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-transparent transition-all w-24 text-center"
+            >
+              {row.stock}
+            </div>
+          </td>
+          <td class="py-4">
+            <select
+              data-field="is_active"
+              class="px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-transparent text-sm cursor-pointer outline-none font-medium"
+            >
               <option value="true" selected={row.is_active}>Aktif</option>
               <option value="false" selected={!row.is_active}>Draf</option>
             </select>
           </td>
-          <td>
-            <RowActions />
+          <td class="py-4">
+            <RowActions
+              isSaving={rowStates[row.id]?.isSaving}
+              isDeleting={rowStates[row.id]?.isDeleting}
+            />
           </td>
         </tr>
       {/each}
     </tbody>
   </AdminDataTable>
 </div>
+
+<ToastNotification bind:this={toastRef} />

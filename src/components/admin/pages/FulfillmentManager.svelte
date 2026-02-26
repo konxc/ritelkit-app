@@ -1,11 +1,5 @@
-<script lang="ts">
-  import AdminDataTable from "../AdminDataTable.svelte";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
-  import RowActions from "../RowActions.svelte";
-  import SectionHeader from "../SectionHeader.svelte";
-  import { getCsrfToken } from "../../../lib/admin-client";
-
-  type ShipmentRow = {
+<script module lang="ts">
+  export type ShipmentRow = {
     id: string | number;
     order_no: string;
     status: string;
@@ -13,25 +7,58 @@
     tracking_no?: string | null;
     notes?: string | null;
   };
+</script>
 
-  export let rows: ShipmentRow[] = [];
-  const csrfToken = getCsrfToken();
+<script lang="ts">
+  import AdminDataTable from "../AdminDataTable.svelte";
+  import CrudInlineForm from "../CrudInlineForm.svelte";
+  import RowActions from "../RowActions.svelte";
+  import SectionHeader from "../SectionHeader.svelte";
+  import ToastNotification from "../ToastNotification.svelte";
+  import { onMount } from "svelte";
+
+  let { rows = [] }: { rows: ShipmentRow[] } = $props();
+
+  let csrfToken = "";
+  let isSubmitting = $state(false);
+  let rowStates = $state<
+    Record<string, { isSaving?: boolean; isDeleting?: boolean }>
+  >({});
+  let toastRef: ToastNotification;
+
+  onMount(() => {
+    csrfToken =
+      document
+        .querySelector("meta[name='csrf-token']")
+        ?.getAttribute("content") || "";
+  });
 
   const handleCreate = async (event: SubmitEvent) => {
     event.preventDefault();
+    if (isSubmitting) return;
+
     const form = event.currentTarget as HTMLFormElement | null;
     if (!form) return;
-    const data = new FormData(form);
-    const response = await fetch("/api/admin/shipments", {
-      method: "POST",
-      headers: { "X-CSRF-Token": csrfToken },
-      body: data,
-    });
-    if (!response.ok) {
-      alert(await response.text());
-      return;
+
+    isSubmitting = true;
+    try {
+      const data = new FormData(form);
+      const response = await fetch("/api/admin/shipments", {
+        method: "POST",
+        headers: { "X-CSRF-Token": csrfToken },
+        body: data,
+      });
+      if (!response.ok) {
+        toastRef?.show(await response.text(), "error");
+        return;
+      }
+      toastRef?.show("Pengiriman berhasil dibuat!", "success");
+      setTimeout(() => location.reload(), 800);
+    } catch (err: any) {
+      toastRef?.show(err.message || "Kesalahan jaringan", "error");
+    } finally {
+      isSubmitting = false;
     }
-    location.reload();
   };
 
   const handleTableClick = async (event: MouseEvent) => {
@@ -46,83 +73,189 @@
 
     if (action === "delete") {
       if (!confirm("Hapus pengiriman ini?")) return;
-      const response = await fetch(`/api/admin/shipments/${id}`, {
-        method: "DELETE",
-        headers: { "X-CSRF-Token": csrfToken },
-      });
-      if (!response.ok) {
-        alert(await response.text());
-        return;
+
+      rowStates[id] = { ...rowStates[id], isDeleting: true };
+      rowStates = { ...rowStates }; // trigger reactivity
+
+      try {
+        const response = await fetch(`/api/admin/shipments/${id}`, {
+          method: "DELETE",
+          headers: { "X-CSRF-Token": csrfToken },
+        });
+        if (!response.ok) {
+          toastRef?.show(await response.text(), "error");
+          rowStates[id] = { ...rowStates[id], isDeleting: false };
+          return;
+        }
+        toastRef?.show("Pengiriman dihapus", "success");
+        setTimeout(() => location.reload(), 800);
+      } catch (err: any) {
+        toastRef?.show(err.message || "Kesalahan jaringan", "error");
+        rowStates[id] = { ...rowStates[id], isDeleting: false };
       }
-      location.reload();
       return;
     }
 
     if (action === "save") {
-      const fields: Record<string, string> = {};
-      row.querySelectorAll("[data-field]").forEach((cell) => {
-        const field = cell.getAttribute("data-field");
-        if (!field) return;
-        if (
-          cell instanceof HTMLSelectElement ||
-          cell instanceof HTMLInputElement
-        ) {
-          fields[field] = String(cell.value);
+      rowStates[id] = { ...rowStates[id], isSaving: true };
+      rowStates = { ...rowStates };
+
+      try {
+        const fields: Record<string, string> = {};
+        row.querySelectorAll("[data-field]").forEach((cell) => {
+          const field = cell.getAttribute("data-field");
+          if (!field) return;
+          if (
+            cell instanceof HTMLSelectElement ||
+            cell instanceof HTMLInputElement
+          ) {
+            fields[field] = String(cell.value);
+            return;
+          }
+          fields[field] = String(cell.textContent?.trim() || "");
+        });
+        const response = await fetch(`/api/admin/shipments/${id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken,
+          },
+          body: JSON.stringify(fields),
+        });
+        if (!response.ok) {
+          toastRef?.show(await response.text(), "error");
+          rowStates[id] = { ...rowStates[id], isSaving: false };
           return;
         }
-        fields[field] = String(cell.textContent?.trim() || "");
-      });
-      const response = await fetch(`/api/admin/shipments/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": csrfToken,
-        },
-        body: JSON.stringify(fields),
-      });
-      if (!response.ok) {
-        alert(await response.text());
-        return;
+        toastRef?.show("Pengiriman diperbarui", "success");
+        setTimeout(() => location.reload(), 800);
+      } catch (err: any) {
+        toastRef?.show(err.message || "Kesalahan jaringan", "error");
+        rowStates[id] = { ...rowStates[id], isSaving: false };
       }
-      location.reload();
     }
   };
 </script>
 
 <SectionHeader title="Buat Pengiriman" badge="Tracking" />
-<CrudInlineForm id="shipment-form" on:submit={handleCreate}>
-  <div>
-    <label for="order_no">Order No</label>
-    <input id="order_no" name="order_no" required />
+<CrudInlineForm id="shipment-form" on:submit={handleCreate} {isSubmitting}>
+  <div
+    class="flex flex-col md:flex-row flex-wrap gap-4 xl:gap-6 items-end pb-8 border-b border-stone-100 mb-8 w-full"
+  >
+    <div class="space-y-1.5 w-full md:w-48 shrink-0">
+      <label
+        for="order_no"
+        class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
+        >Order No</label
+      >
+      <input
+        id="order_no"
+        name="order_no"
+        required
+        placeholder="Cth: ORD-1001"
+        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none"
+      />
+    </div>
+    <div class="space-y-1.5 w-full md:w-32 shrink-0">
+      <label
+        for="status"
+        class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
+        >Status Awal</label
+      >
+      <select
+        id="status"
+        name="status"
+        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm appearance-none cursor-pointer outline-none font-medium"
+      >
+        <option value="packing">Packing</option>
+        <option value="shipped">Dikirim</option>
+        <option value="delivered">Terkirim</option>
+        <option value="cancelled">Batal</option>
+      </select>
+    </div>
+    <div class="space-y-1.5 w-full md:w-40 shrink-0">
+      <label
+        for="carrier"
+        class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
+        >Kurir / Ekspedisi</label
+      >
+      <input
+        id="carrier"
+        name="carrier"
+        placeholder="Cth: JNE, J&T"
+        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none"
+      />
+    </div>
+    <div class="space-y-1.5 w-full md:flex-1 min-w-[150px]">
+      <label
+        for="tracking_no"
+        class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
+        >Nomor Resi</label
+      >
+      <input
+        id="tracking_no"
+        name="tracking_no"
+        placeholder="Masukkan no resi..."
+        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-mono"
+      />
+    </div>
+    <div class="space-y-1.5 w-full md:flex-1">
+      <label
+        for="notes"
+        class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
+        >Catatan Internal</label
+      >
+      <input
+        id="notes"
+        name="notes"
+        placeholder="Opsional"
+        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none"
+      />
+    </div>
+    <button
+      class="flex items-center justify-center gap-2 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto"
+      type="submit"
+      disabled={isSubmitting}
+    >
+      {#if isSubmitting}
+        <svg
+          class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          ><circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle><path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path></svg
+        >
+      {/if}
+      Buat Tracking
+    </button>
   </div>
-  <div>
-    <label for="carrier">Kurir</label>
-    <input id="carrier" name="carrier" />
-  </div>
-  <div>
-    <label for="tracking_no">Resi</label>
-    <input id="tracking_no" name="tracking_no" />
-  </div>
-  <div>
-    <label for="status">Status</label>
-    <select id="status" name="status">
-      <option value="packing">Packing</option>
-      <option value="shipped">Dikirim</option>
-      <option value="delivered">Terkirim</option>
-      <option value="cancelled">Batal</option>
-    </select>
-  </div>
-  <div>
-    <label for="notes">Catatan</label>
-    <input id="notes" name="notes" />
-  </div>
-  <button class="primary" type="submit">Simpan</button>
 </CrudInlineForm>
 
 <div class="mt-6">
   <SectionHeader title="Daftar Pengiriman" />
 </div>
-<div role="button" tabindex="0" onclick={handleTableClick} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
+<div
+  role="button"
+  tabindex="0"
+  onclick={handleTableClick}
+  onkeydown={(e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      e.currentTarget.click();
+    }
+  }}
+>
   <AdminDataTable>
     <thead>
       <tr>
@@ -135,18 +268,73 @@
       </tr>
     </thead>
     <tbody>
+      {#if rows.length === 0}
+        <tr>
+          <td
+            colspan="6"
+            class="text-center py-12 text-stone-400 text-sm italic"
+            >Belum ada pengiriman aktif.</td
+          >
+        </tr>
+      {/if}
       {#each rows as row (row.id)}
-        <tr data-id={row.id}>
-          <td contenteditable="true" data-field="order_no">{row.order_no}</td>
-          <td contenteditable="true" data-field="status">{row.status}</td>
-          <td contenteditable="true" data-field="carrier">{row.carrier || ""}</td>
-          <td contenteditable="true" data-field="tracking_no">{row.tracking_no || ""}</td>
-          <td contenteditable="true" data-field="notes">{row.notes || ""}</td>
-          <td>
-            <RowActions />
+        <tr
+          data-id={row.id}
+          class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
+        >
+          <td
+            contenteditable="true"
+            data-field="order_no"
+            class="py-4 font-mono font-bold text-stone-900 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-transparent transition-all"
+            >{row.order_no}</td
+          >
+          <td class="py-4">
+            <select
+              data-field="status"
+              class="px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-transparent text-sm cursor-pointer outline-none font-bold text-stone-700"
+            >
+              <option value="packing" selected={row.status === "packing"}
+                >📦 Packing</option
+              >
+              <option value="shipped" selected={row.status === "shipped"}
+                >🚚 Dikirim</option
+              >
+              <option value="delivered" selected={row.status === "delivered"}
+                >✅ Terkirim</option
+              >
+              <option value="cancelled" selected={row.status === "cancelled"}
+                >❌ Batal</option
+              >
+            </select>
+          </td>
+          <td
+            contenteditable="true"
+            data-field="carrier"
+            class="py-4 font-medium text-stone-600 outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
+            >{row.carrier || "-"}</td
+          >
+          <td
+            contenteditable="true"
+            data-field="tracking_no"
+            class="py-4 font-mono text-sm text-[#c48a3a] font-bold outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
+            >{row.tracking_no || "-"}</td
+          >
+          <td
+            contenteditable="true"
+            data-field="notes"
+            class="py-4 text-stone-500 text-sm italic outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
+            >{row.notes || "-"}</td
+          >
+          <td class="py-4">
+            <RowActions
+              isSaving={rowStates[row.id]?.isSaving}
+              isDeleting={rowStates[row.id]?.isDeleting}
+            />
           </td>
         </tr>
       {/each}
     </tbody>
   </AdminDataTable>
 </div>
+
+<ToastNotification bind:this={toastRef} />

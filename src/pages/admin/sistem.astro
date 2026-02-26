@@ -1,0 +1,155 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import AdminTabs from "../../components/admin/AdminTabs.astro";
+import CmsManager from "../../components/admin/pages/CmsManager.svelte";
+import NotificationsManager from "../../components/admin/pages/NotificationsManager.svelte";
+import AuditLogManager from "../../components/admin/pages/AuditLogManager.svelte";
+import AdminUsersManager from "../../components/admin/pages/AdminUsersManager.svelte";
+import PaginationNav from "../../components/admin/PaginationNav.svelte";
+import { requireAdmin } from "../../lib/auth";
+import { initDb, getDb } from "../../lib/db";
+import { parsePage } from "../../lib/admin";
+
+await initDb(Astro);
+const admin = await requireAdmin(Astro);
+if (!admin) {
+    return Astro.redirect("/admin/login");
+}
+
+const db = getDb(Astro);
+const tab = Astro.url.searchParams.get("tab") || "konten";
+const { page, q, offset, limit } = parsePage(Astro.url, 30);
+
+// Data for Tabs
+let cmsData: any[] = [];
+let notificationsData: any[] = [];
+let auditData: any[] = [];
+let adminUsersData: any[] = [];
+let totalPages = 1;
+
+if (tab === "konten") {
+    const res = await db.execute(
+        "SELECT id, slug, title, is_active, created_at FROM cms_pages ORDER BY title ASC",
+    );
+    cmsData = res.rows;
+} else if (tab === "notifikasi") {
+    const where = q ? "WHERE recipient LIKE ? OR template LIKE ?" : "";
+    const args = q ? [`%${q}%`, `%${q}%`] : [];
+    const notificationsRes = await db.execute({
+        sql: `SELECT id, channel, recipient, template, status, created_at, sent_at FROM notifications ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+        args: [...args, limit, offset],
+    });
+    const countRes = await db.execute({
+        sql: `SELECT COUNT(*) as count FROM notifications ${where}`,
+        args,
+    });
+    notificationsData = notificationsRes.rows;
+    const total = Number((countRes.rows[0] as any)?.count || 0);
+    totalPages = Math.max(1, Math.ceil(total / limit));
+} else if (tab === "audit") {
+    const where = q
+        ? "WHERE actor_email LIKE ? OR action LIKE ? OR entity_type LIKE ?"
+        : "";
+    const args = q ? [`%${q}%`, `%${q}%`, `%${q}%`] : [];
+    const logsRes = await db.execute({
+        sql: `SELECT id, actor_email, action, entity_type, entity_id, created_at FROM audit_logs ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+        args: [...args, limit, offset],
+    });
+    const countRes = await db.execute({
+        sql: `SELECT COUNT(*) as count FROM audit_logs ${where}`,
+        args,
+    });
+    auditData = logsRes.rows;
+    const total = Number((countRes.rows[0] as any)?.count || 0);
+    totalPages = Math.max(1, Math.ceil(total / limit));
+} else if (tab === "admin") {
+    const res = await db.execute(
+        "SELECT id, email, role, created_at FROM admin_users ORDER BY created_at DESC",
+    );
+    adminUsersData = res.rows;
+}
+
+const tabs = [
+    {
+        id: "konten",
+        label: "Konten",
+        icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>',
+    },
+    {
+        id: "notifikasi",
+        label: "Notifikasi",
+        icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
+    },
+    {
+        id: "audit",
+        label: "Audit",
+        icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>',
+    },
+    {
+        id: "admin",
+        label: "Admin",
+        icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>',
+    },
+];
+---
+
+<AdminLayout title="Sistem">
+    <div slot="header-tabs">
+        <AdminTabs tabs={tabs} activeTab={tab} />
+    </div>
+
+    {tab === "konten" && <CmsManager rows={cmsData as any[]} client:load />}
+
+    {
+        tab === "notifikasi" && (
+            <>
+                <NotificationsManager
+                    rows={notificationsData as any[]}
+                    client:load
+                />
+                <PaginationNav
+                    page={page}
+                    totalPages={totalPages}
+                    prevHref={
+                        page > 1
+                            ? `?tab=notifikasi&q=${encodeURIComponent(q)}&page=${page - 1}`
+                            : undefined
+                    }
+                    nextHref={
+                        page < totalPages
+                            ? `?tab=notifikasi&q=${encodeURIComponent(q)}&page=${page + 1}`
+                            : undefined
+                    }
+                />
+            </>
+        )
+    }
+
+    {
+        tab === "audit" && (
+            <>
+                <AuditLogManager rows={auditData as any[]} client:load />
+                <PaginationNav
+                    page={page}
+                    totalPages={totalPages}
+                    prevHref={
+                        page > 1
+                            ? `?tab=audit&q=${encodeURIComponent(q)}&page=${page - 1}`
+                            : undefined
+                    }
+                    nextHref={
+                        page < totalPages
+                            ? `?tab=audit&q=${encodeURIComponent(q)}&page=${page + 1}`
+                            : undefined
+                    }
+                />
+            </>
+        )
+    }
+
+    {
+        tab === "admin" && (
+            <AdminUsersManager rows={adminUsersData as any[]} client:load />
+        )
+    }
+</AdminLayout>
