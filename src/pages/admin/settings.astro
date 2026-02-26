@@ -2,27 +2,28 @@
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import SettingsManager from "../../components/admin/pages/SettingsManager.svelte";
 import { requireAdmin } from "../../lib/auth";
-import { initDb, getDb } from "../../lib/db";
+import { appRouter } from "../../server/router";
+import { createContext } from "../../server/context";
+import { createQueryClient } from "../../lib/queryClient";
+import { dehydrate } from "@tanstack/svelte-query";
 
-await initDb(Astro);
 const admin = await requireAdmin(Astro);
 if (!admin) {
     return Astro.redirect("/admin/login");
 }
-const db = getDb(Astro);
-const settingsRows = await db.execute("SELECT key, value_json FROM settings");
-const settings: Record<string, any> = {};
-for (const row of settingsRows.rows) {
-    settings[String(row.key)] = JSON.parse(String(row.value_json));
-}
-const orderSettings = settings.order_settings || {};
-const deliverySettings = settings.delivery_settings || {};
+
+// SSR Pre-fetching
+const queryClient = createQueryClient();
+const trpc = appRouter.createCaller(await createContext(Astro));
+
+await queryClient.prefetchQuery({
+    queryKey: ["settings"],
+    queryFn: () => trpc.settings.getSettings(),
+});
+
+const dehydratedState = dehydrate(queryClient);
 ---
 
-<AdminLayout title="Pengaturan">
-    <SettingsManager
-        orderSettings={orderSettings}
-        deliverySettings={deliverySettings}
-        client:load
-    />
+<AdminLayout title="Pengaturan" dehydratedState={dehydratedState}>
+    <SettingsManager client:load />
 </AdminLayout>

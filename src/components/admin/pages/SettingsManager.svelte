@@ -4,12 +4,13 @@
   import PanelCard from "../PanelCard.svelte";
   import ToastNotification from "../ToastNotification.svelte";
   import { trpc } from "../../../lib/trpc";
-  import { createQuery, createMutation, useQueryClient } from "@tanstack/svelte-query";
+  import {
+    createQuery,
+    createMutation,
+    useQueryClient,
+  } from "@tanstack/svelte-query";
 
-  let { 
-    orderSettings: initialOrderSettings = {}, 
-    deliverySettings: initialDeliverySettings = {} 
-  } = $props();
+  let {} = $props();
 
   const queryClient = useQueryClient();
   let toastRef = $state<ToastNotification>();
@@ -17,10 +18,6 @@
   const settingsQuery = createQuery({
     queryKey: ["settings"],
     queryFn: () => trpc.settings.getSettings.query(),
-    initialData: {
-      order_settings: initialOrderSettings,
-      delivery_settings: initialDeliverySettings
-    }
   });
 
   const updateMutation = createMutation({
@@ -29,29 +26,46 @@
       queryClient.invalidateQueries({ queryKey: ["settings"] });
       toastRef?.show("Pengaturan berhasil disimpan!", "success");
     },
-    onError: (err: any) => toastRef?.show(err.message, "error")
+    onError: (err: any) => toastRef?.show(err.message, "error"),
   });
 
   const seedMutation = createMutation({
     mutationFn: () => trpc.settings.seedData.mutate(),
-    onSuccess: (res) => {
+    onSuccess: (res: any) => {
       toastRef?.show(res.message || "Seed data selesai", "success");
       setTimeout(() => location.reload(), 1500);
     },
-    onError: (err: any) => toastRef?.show(err.message, "error")
+    onError: (err: any) => toastRef?.show(err.message, "error"),
   });
 
   const settings = $derived($settingsQuery.data || {});
   const os = $derived(settings.order_settings || {});
   const ds = $derived(settings.delivery_settings || {});
 
-  let preorderOnly = $state(os.preorderOnly ?? os.preorder_only ?? false);
-  let leadTimeHours = $state(os.minimumLeadTimeHours ?? os.minimum_lead_time_hours ?? 0);
-  let cutoffTime = $state(os.cutoffTime ?? os.cutoff_time ?? "");
-  let sameDayEnabled = $state(os.sameDayEnabled ?? os.same_day_enabled ?? false);
-  let availableDays = $state((os.availableDays ?? os.available_days || []).join(", "));
-  let deliveryProvince = $state(ds.deliveryProvince ?? ds.delivery_province ?? "DI Yogyakarta");
-  let freeDeliveryThreshold = $state(ds.freeDeliveryThreshold ?? ds.free_delivery_threshold ?? 0);
+  let preorderOnly = $state(false);
+  let leadTimeHours = $state(0);
+  let cutoffTime = $state("");
+  let sameDayEnabled = $state(false);
+  let availableDays = $state("");
+  let deliveryProvince = $state("DI Yogyakarta");
+  let freeDeliveryThreshold = $state(0);
+
+  $effect(() => {
+    if ($settingsQuery.data) {
+      preorderOnly = os.preorderOnly ?? os.preorder_only ?? false;
+      leadTimeHours =
+        os.minimumLeadTimeHours ?? os.minimum_lead_time_hours ?? 0;
+      cutoffTime = os.cutoffTime ?? os.cutoff_time ?? "";
+      sameDayEnabled = os.sameDayEnabled ?? os.same_day_enabled ?? false;
+      availableDays = ((os.availableDays ?? os.available_days) || []).join(
+        ", ",
+      );
+      deliveryProvince =
+        ds.deliveryProvince ?? ds.delivery_province ?? "DI Yogyakarta";
+      freeDeliveryThreshold =
+        ds.freeDeliveryThreshold ?? ds.free_delivery_threshold ?? 0;
+    }
+  });
 
   const formatDays = (value: string) =>
     value
@@ -126,7 +140,7 @@
     <button
       class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-stone-200 bg-white font-semibold text-stone-600 hover:text-stone-900 hover:border-stone-300 hover:shadow-sm transition-all shadow-sm w-full sm:w-auto shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
       type="button"
-      on:click={handleSeed}
+      onclick={handleSeed}
       disabled={seedMutation.isPending || updateMutation.isPending}
       aria-label="Generate Data Demo"
     >
@@ -156,9 +170,9 @@
     </button>
   </div>
 
-  <form id="settings-form" on:submit={handleSubmit} class="space-y-8">
+  <form id="settings-form" onsubmit={handleSubmit} class="space-y-8">
     <div class="grid gap-8 lg:grid-cols-2">
-      <-cli Panel 1: Model Order -->
+      <!-- Panel 1: Model Order -->
       <div
         class="bg-white p-6 sm:p-8 rounded-3xl border border-stone-200/60 shadow-[0_4px_20px_rgba(0,0,0,0.02)] space-y-6"
       >
@@ -301,7 +315,7 @@
         </div>
       </div>
 
-      <-cli Panel 2: Pengiriman -->
+      <!-- Panel 2: Pengiriman -->
       <div
         class="bg-white p-6 sm:p-8 rounded-3xl border border-stone-200/60 shadow-[0_4px_20px_rgba(0,0,0,0.02)] space-y-6 self-start"
       >
