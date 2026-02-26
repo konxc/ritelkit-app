@@ -10,7 +10,6 @@ interface Props {
 
 const { tabs, activeTab } = Astro.props;
 const baseUrl = Astro.url.pathname;
-const searchParams = new URLSearchParams(Astro.url.search);
 
 // Clean up pagination/search params when switching main tabs if needed,
 // but usually we want to keep them if they are common.

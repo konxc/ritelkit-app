@@ -662,10 +662,10 @@ export async function seedAdminData(db: Client, options: SeedOptions) {
   const categoryMap = await buildCategoryMap(db);
   await ensureProducts(db, now, categoryMap);
   const productMap = await buildProductMap(db);
-  await ensureProductReviews(db, now, productMap);
+  await ensureProductReviews(db, productMap);
   await ensureCoupons(db, now);
   const couponMap = await buildCouponMap(db);
-  await ensureCustomers(db, now);
+  await ensureCustomers(db);
   await ensureSettings(db, now);
   await ensureAds(db, now);
   await ensureCmsPages(db, now);
@@ -673,8 +673,8 @@ export async function seedAdminData(db: Client, options: SeedOptions) {
   await ensureOrders(db, couponMap, productMap);
   const orderMap = await buildOrderMap(db);
   await ensureShipments(db, orderMap, now);
-  await ensureRefunds(db, orderMap, now);
-  await ensureInvoices(db, orderMap, now);
+  await ensureRefunds(db, orderMap);
+  await ensureInvoices(db, orderMap);
   await ensureOrderStatusHistory(db, orderMap);
   await ensureInventoryMovements(db, productMap);
   await ensureCouponUsages(db, now, orderMap, couponMap);
@@ -760,7 +760,7 @@ async function ensureProducts(db: Client, now: string, categoryMap: Record<strin
   }
 }
 
-async function ensureProductReviews(db: Client, now: string, productMap: Record<string, { id: string }>) {
+async function ensureProductReviews(db: Client, productMap: Record<string, { id: string }>) {
   const count = await db.execute("SELECT COUNT(*) as count FROM product_reviews");
   if (Number((count.rows[0] as any)?.count || 0) > 0) return;
   for (const review of sampleReviews) {
@@ -812,7 +812,7 @@ async function ensureCoupons(db: Client, now: string) {
   }
 }
 
-async function ensureCustomers(db: Client, now: string) {
+async function ensureCustomers(db: Client) {
   for (const customer of sampleCustomers) {
     const exists = await db.execute({
       sql: "SELECT id FROM customers WHERE phone = ?",
@@ -1076,7 +1076,7 @@ async function ensureShipments(db: Client, orderMap: Record<string, { id: string
   }
 }
 
-async function ensureRefunds(db: Client, orderMap: Record<string, { id: string; order_no: string }>, now: string) {
+async function ensureRefunds(db: Client, orderMap: Record<string, { id: string; order_no: string }>) {
   const count = await db.execute("SELECT COUNT(*) as count FROM refunds");
   if (Number((count.rows[0] as any)?.count || 0) > 0) return;
   for (const fixture of refundFixtures) {
@@ -1099,7 +1099,7 @@ async function ensureRefunds(db: Client, orderMap: Record<string, { id: string; 
   }
 }
 
-async function ensureInvoices(db: Client, orderMap: Record<string, { id: string; order_no: string }>, now: string) {
+async function ensureInvoices(db: Client, orderMap: Record<string, { id: string; order_no: string }>) {
   const count = await db.execute("SELECT COUNT(*) as count FROM invoices");
   if (Number((count.rows[0] as any)?.count || 0) > 0) return;
   for (const fixture of invoiceFixtures) {
@@ -1311,20 +1311,6 @@ async function buildOrderMap(db: Client) {
         id: String(row.id),
         order_no: String(row.order_no),
         created_at: String(row.created_at || new Date().toISOString()),
-        customer_email: String(row.customer_email || ""),
-        customer_phone: String(row.customer_phone || ""),
-      };
-    }
-  });
-  return map;
-}
-
-async function buildOrderContactMap(db: Client) {
-  const rows = await db.execute("SELECT order_no, customer_email, customer_phone FROM orders");
-  const map: Record<string, { customer_email: string; customer_phone: string }> = {};
-  (rows.rows as any[]).forEach((row) => {
-    if (row.order_no) {
-      map[String(row.order_no)] = {
         customer_email: String(row.customer_email || ""),
         customer_phone: String(row.customer_phone || ""),
       };

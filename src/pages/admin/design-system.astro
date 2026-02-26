@@ -4,19 +4,16 @@ import { requireAdmin } from "../../lib/auth";
 import { initDb, getDb } from "../../lib/db";
 
 await initDb(Astro);
+const db = getDb(Astro);
 const admin = await requireAdmin(Astro);
 if (!admin) {
-    return Astro.redirect(
-        Number(
-            (
-                await getDb(Astro).execute(
-                    "SELECT COUNT(*) as count FROM admin_users",
-                )
-            ).rows[0]?.count || 0,
-        ) === 0
-            ? "/admin/setup"
-            : "/admin/login",
-    );
+    const adminCountResult = await db.execute("SELECT COUNT(*) as count FROM admin_users");
+    const shouldRedirectToSetup =
+        Number(adminCountResult.rows[0]?.count || 0) === 0;
+    if (shouldRedirectToSetup) {
+        return Astro.redirect("/admin/setup");
+    }
+    return Astro.redirect("/admin/login");
 }
 
 const title = "Design System";

@@ -7,7 +7,6 @@ export const POST = async (context: APIContext) => {
   const admin = await requireAdmin(context);
   if (!admin) return new Response("Unauthorized", { status: 401 });
 
-  const { request } = context;
   if (!verifyCsrf(context)) {
     return new Response("Invalid CSRF token", { status: 403 });
   }
