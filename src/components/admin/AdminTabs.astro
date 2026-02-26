@@ -1,0 +1,59 @@
+---
+interface Props {
+    tabs: {
+        id: string;
+        label: string;
+        icon?: string;
+    }[];
+    activeTab: string;
+}
+
+const { tabs, activeTab } = Astro.props;
+const baseUrl = Astro.url.pathname;
+const searchParams = new URLSearchParams(Astro.url.search);
+
+// Clean up pagination/search params when switching main tabs if needed,
+// but usually we want to keep them if they are common.
+// For now, let's keep it simple and just change the 'tab' param.
+---
+
+<div
+    class="flex items-center gap-1.5 p-1 rounded-2xl w-full sm:w-max overflow-x-auto no-scrollbar"
+>
+    {
+        tabs.map((tab) => {
+            const isActive = tab.id === activeTab;
+            const url = new URL(Astro.url.origin + baseUrl);
+            url.searchParams.set("tab", tab.id);
+
+            return (
+                <a
+                    href={url.search}
+                    class={`flex items-center gap-2 px-4 py-2 rounded-xl text-[0.85rem] font-bold transition-all duration-300 no-underline whitespace-nowrap justify-center border-2 ${
+                        isActive
+                            ? "bg-[#c48a3a]/5 border-[#c48a3a] text-[#c48a3a] shadow-[0_4px_12px_rgba(196,138,58,0.12)]"
+                            : "border-transparent text-stone-400 hover:text-stone-900 hover:bg-stone-50"
+                    }`}
+                >
+                    {tab.icon && (
+                        <span
+                            class={`${isActive ? "text-[#c48a3a]" : "text-stone-300"} transition-colors`}
+                            set:html={tab.icon}
+                        />
+                    )}
+                    {tab.label}
+                </a>
+            );
+        })
+    }
+</div>
+
+<style>
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+    }
+</style>
