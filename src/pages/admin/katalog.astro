@@ -3,7 +3,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 import AdminTabs from "../../components/admin/AdminTabs.astro";
 import CategoriesManager from "../../components/admin/pages/CategoriesManager.svelte";
 import ProductsManager from "../../components/admin/pages/ProductsManager.svelte";
+import QueryProvider from "../../components/admin/QueryProvider.svelte";
 import InventoryManager from "../../components/admin/pages/InventoryManager.svelte";
+
 import PaginationNav from "../../components/admin/PaginationNav.svelte";
 import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
 import AdminFilterForm from "../../components/admin/AdminFilterForm.svelte";
@@ -111,18 +113,22 @@ const tabs = [
 
     {
         tab === "kategori" && (
-            <CategoriesManager rows={categoriesData as any[]} client:load />
+            <QueryProvider client:load>
+                <CategoriesManager rows={categoriesData as any[]} />
+            </QueryProvider>
         )
     }
 
     {
         tab === "produk" && (
             <>
-                <ProductsManager
-                    rows={productsData.rows as any[]}
-                    categories={productsData.categories as any[]}
-                    client:load
-                />
+                <QueryProvider client:load>
+                    <ProductsManager
+                        rows={productsData.rows as any[]}
+                        categories={productsData.categories as any[]}
+                    />
+                </QueryProvider>
+
                 <PaginationNav
                     page={page}
                     totalPages={totalPages}
