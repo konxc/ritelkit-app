@@ -1,7 +1,7 @@
 ---
 import "../../styles/research-v4.css";
-import { initDb, getDb } from "../../lib/db";
 import VersionNav from "../../components/research/VersionNav.astro";
+import { getDb, initDb } from "../../lib/db";
 
 // Mocking required database logic for research file
 await initDb(Astro);
@@ -9,74 +9,74 @@ const db = getDb(Astro);
 
 // Fetch stats for realistic feel
 const ordersToday = await db.execute(
-    "SELECT COUNT(*) as count FROM orders WHERE date(created_at) = date('now')",
+	"SELECT COUNT(*) as count FROM orders WHERE date(created_at) = date('now')",
 );
 const revenueToday = await db.execute(
-    "SELECT COALESCE(SUM(total),0) as total FROM orders WHERE date(created_at) = date('now')",
+	"SELECT COALESCE(SUM(total),0) as total FROM orders WHERE date(created_at) = date('now')",
 );
 const activeProducts = await db.execute(
-    "SELECT COUNT(*) as count FROM products WHERE is_active = 1",
+	"SELECT COUNT(*) as count FROM products WHERE is_active = 1",
 );
 const pendingShipments = await db.execute(
-    "SELECT COUNT(*) as count FROM shipments WHERE status IN ('packing','shipped')",
+	"SELECT COUNT(*) as count FROM shipments WHERE status IN ('packing','shipped')",
 );
 
 const stats = [
-    {
-        label: "Orders",
-        value: (ordersToday.rows[0] as any)?.count || 0,
-        icon: "🧾",
-    },
-    {
-        label: "Revenue",
-        value: `Rp ${Number((revenueToday.rows[0] as any)?.total || 0).toLocaleString("id-ID")}`,
-        icon: "💰",
-    },
-    {
-        label: "Products",
-        value: (activeProducts.rows[0] as any)?.count || 0,
-        icon: "🥐",
-    },
-    {
-        label: "Shipping",
-        value: (pendingShipments.rows[0] as any)?.count || 0,
-        icon: "📦",
-    },
+	{
+		label: "Orders",
+		value: (ordersToday.rows[0] as any)?.count || 0,
+		icon: "🧾",
+	},
+	{
+		label: "Revenue",
+		value: `Rp ${Number((revenueToday.rows[0] as any)?.total || 0).toLocaleString("id-ID")}`,
+		icon: "💰",
+	},
+	{
+		label: "Products",
+		value: (activeProducts.rows[0] as any)?.count || 0,
+		icon: "🥐",
+	},
+	{
+		label: "Shipping",
+		value: (pendingShipments.rows[0] as any)?.count || 0,
+		icon: "📦",
+	},
 ];
 
 const menuItems = [
-    {
-        title: "Laporan Bisnis",
-        desc: "Analisis performa & finansial",
-        icon: "📊",
-        link: "/admin/reports",
-    },
-    {
-        title: "Produk & Kategori",
-        desc: "Manajemen katalog roti",
-        icon: "🥐",
-        link: "/admin/products",
-    },
-    {
-        title: "Manajemen Order",
-        desc: "Proses pesanan baru",
-        icon: "🧾",
-        link: "/admin/orders",
-    },
-    {
-        title: "Fulfillment",
-        desc: "Packing & pengiriman",
-        icon: "📦",
-        link: "/admin/fulfillment",
-    },
+	{
+		title: "Laporan Bisnis",
+		desc: "Analisis performa & finansial",
+		icon: "📊",
+		link: "/admin/reports",
+	},
+	{
+		title: "Produk & Kategori",
+		desc: "Manajemen katalog roti",
+		icon: "🥐",
+		link: "/admin/products",
+	},
+	{
+		title: "Manajemen Order",
+		desc: "Proses pesanan baru",
+		icon: "🧾",
+		link: "/admin/orders",
+	},
+	{
+		title: "Fulfillment",
+		desc: "Packing & pengiriman",
+		icon: "📦",
+		link: "/admin/fulfillment",
+	},
 ];
 
 const sideNav = [
-    { label: "Home", icon: "🏠", link: "/admin", active: true },
-    { label: "Orders", icon: "🧾", link: "/admin/orders" },
-    { label: "Inventory", icon: "📦", link: "/admin/inventory" },
-    { label: "Customers", icon: "👥", link: "/admin/customers" },
-    { label: "Settings", icon: "⚙️", link: "/admin/settings" },
+	{ label: "Home", icon: "🏠", link: "/admin", active: true },
+	{ label: "Orders", icon: "🧾", link: "/admin/orders" },
+	{ label: "Inventory", icon: "📦", link: "/admin/inventory" },
+	{ label: "Customers", icon: "👥", link: "/admin/customers" },
+	{ label: "Settings", icon: "⚙️", link: "/admin/settings" },
 ];
 ---
 
