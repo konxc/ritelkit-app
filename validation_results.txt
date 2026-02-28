@@ -1,0 +1,259 @@
+
+> roti-sholawat@0.0.1 validate /home/dev/project/roti-sholawat
+> pnpm run validate:all
+
+
+> roti-sholawat@0.0.1 validate:all /home/dev/project/roti-sholawat
+> pnpm run validate:astro && pnpm run validate:cf && pnpm run validate:svelte && pnpm run validate:runes-admin && pnpm run validate:admin-architecture
+
+
+> roti-sholawat@0.0.1 validate:astro /home/dev/project/roti-sholawat
+> pnpm run astro check
+
+
+> roti-sholawat@0.0.1 astro /home/dev/project/roti-sholawat
+> astro check
+
+19:39:37 [@astrojs/cloudflare] Enabling sessions with Cloudflare KV with the "SESSION" KV binding.
+19:39:37 [@astrojs/cloudflare] If you see the error "Invalid binding `SESSION`" in your build output, you need to add the binding to your wrangler config file.
+19:39:37 [content] Syncing content
+19:39:37 [content] Synced content
+19:39:37 [types] Generated 44ms
+19:39:37 [check] Getting diagnostics for Astro files in /home/dev/project/roti-sholawat...
+[96msrc/lib/reports.ts[0m:[93m3[0m:[93m1[0m - [93mwarning[0m[90m ts(6133): [0m'BaseSQLiteDatabase' is declared but its value is never read.
+
+[7m3[0m import type { BaseSQLiteDatabase } from "drizzle-orm/sqlite-core";
+[7m [0m [93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[96msrc/lib/reports.ts[0m:[93m1[0m:[93m44[0m - [93mwarning[0m[90m ts(6133): [0m'like' is declared but its value is never read.
+
+[7m1[0m import { eq, sql, and, gte, lte, desc, or, like } from "drizzle-orm";
+[7m [0m [93m                                           ~~~~[0m
+[96msrc/lib/reports.ts[0m:[93m1[0m:[93m29[0m - [93mwarning[0m[90m ts(6133): [0m'lte' is declared but its value is never read.
+
+[7m1[0m import { eq, sql, and, gte, lte, desc, or, like } from "drizzle-orm";
+[7m [0m [93m                            ~~~[0m
+
+[96msrc/pages/admin/overview.astro[0m:[93m28[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'publicEnv' is declared but its value is never read.
+
+[7m28[0m const publicEnv = {
+[7m  [0m [93m      ~~~~~~~~~[0m
+[96msrc/pages/admin/overview.astro[0m:[93m15[0m:[93m11[0m - [93mwarning[0m[90m ts(6133): [0m'userCount' is declared but its value is never read.
+
+[7m15[0m     const userCount = await db
+[7m  [0m [93m          ~~~~~~~~~[0m
+
+Result (147 files): 
+- 0 errors
+- 0 warnings
+- 5 hints
+
+
+> roti-sholawat@0.0.1 validate:cf /home/dev/project/roti-sholawat
+> pnpm run generate-types && tsc
+
+
+> roti-sholawat@0.0.1 generate-types /home/dev/project/roti-sholawat
+> XDG_CONFIG_HOME=/tmp/wrangler wrangler types
+
+
+ ⛅️ wrangler 4.67.0 (update available 4.69.0)
+─────────────────────────────────────────────
+Generating project types...
+
+declare namespace Cloudflare {
+	interface ProductionEnv {
+		PUBLIC_SITE_URL: string;
+		PUBLIC_WHATSAPP_NUMBER: string;
+		PUBLIC_MIDTRANS_CLIENT_KEY: string;
+		MIDTRANS_SERVER_KEY: string;
+		PUBLIC_MIDTRANS_MERCHANT_ID: string;
+		MIDTRANS_IS_PRODUCTION: string;
+		DATABASE_URL: string;
+		DATABASE_AUTH_TOKEN: string;
+		ADMIN_SESSION_SECRET: string;
+		SETUP_TOKEN: string;
+		UPLOAD_DRIVER: string;
+		R2_ACCOUNT_ID: string;
+		R2_ACCESS_KEY_ID: string;
+		R2_SECRET_ACCESS_KEY: string;
+		R2_BUCKET: string;
+		R2_PUBLIC_BASE_URL: string;
+	}
+	interface Env {
+		PUBLIC_SITE_URL: string;
+		PUBLIC_WHATSAPP_NUMBER: string;
+		PUBLIC_MIDTRANS_CLIENT_KEY: string;
+		MIDTRANS_SERVER_KEY: string;
+		PUBLIC_MIDTRANS_MERCHANT_ID: string;
+		MIDTRANS_IS_PRODUCTION: string;
+		DATABASE_URL: string;
+		DATABASE_AUTH_TOKEN: string;
+		ADMIN_SESSION_SECRET: string;
+		SETUP_TOKEN: string;
+		UPLOAD_DRIVER: string;
+		R2_ACCOUNT_ID: string;
+		R2_ACCESS_KEY_ID: string;
+		R2_SECRET_ACCESS_KEY: string;
+		R2_BUCKET: string;
+		R2_PUBLIC_BASE_URL: string;
+		SESSION?: KVNamespace;
+	}
+}
+interface Env extends Cloudflare.Env {}
+type StringifyValues<EnvType extends Record<string, unknown>> = {
+	[Binding in keyof EnvType]: EnvType[Binding] extends string ? EnvType[Binding] : string;
+};
+declare namespace NodeJS {
+	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "PUBLIC_SITE_URL" | "PUBLIC_WHATSAPP_NUMBER" | "PUBLIC_MIDTRANS_CLIENT_KEY" | "MIDTRANS_SERVER_KEY" | "PUBLIC_MIDTRANS_MERCHANT_ID" | "MIDTRANS_IS_PRODUCTION" | "DATABASE_URL" | "DATABASE_AUTH_TOKEN" | "ADMIN_SESSION_SECRET" | "SETUP_TOKEN" | "UPLOAD_DRIVER" | "R2_ACCOUNT_ID" | "R2_ACCESS_KEY_ID" | "R2_SECRET_ACCESS_KEY" | "R2_BUCKET" | "R2_PUBLIC_BASE_URL">> {}
+}
+
+Generating runtime types...
+
+Runtime types generated.
+
+
+✨ Types written to worker-configuration.d.ts
+
+📖 Read about runtime types
+https://developers.cloudflare.com/workers/languages/typescript/#generate-types
+📣 Remember to rerun 'wrangler types' after you change your wrangler.toml file.
+
+
+> roti-sholawat@0.0.1 validate:svelte /home/dev/project/roti-sholawat
+> svelte-check
+
+Loading svelte-check in workspace: /home/dev/project/roti-sholawat
+Getting Svelte diagnostics...
+
+/home/dev/project/roti-sholawat/src/components/admin/ImageGallery.svelte:44:9
+Warn: `<div>` with a dragstart, drop or dragover handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions (svelte)
+    {#each urls as url, i (url + i)}
+        <div
+            class="group relative w-20 h-20 rounded-xl overflow-hidden border border-stone-200 bg-stone-50 shadow-sm"
+            draggable={editable}
+            ondragstart={() => handleDragStart(i)}
+            ondrop={(e) => {
+                e.preventDefault();
+                handleDrop(i);
+            }}
+            ondragover={(e) => e.preventDefault()}
+        >
+            <img src={url} alt="Gallery" class="w-full h-full object-cover" />
+
+            {#if editable}
+                <div
+                    class="absolute inset-x-0 bottom-0 py-1 px-1 bg-black/40 backdrop-blur-sm flex justify-around opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                    <button
+                        type="button"
+                        class="text-white hover:text-[#c48a3a] text-[10px]"
+                        onclick={() => handleMove(i, -1)}>◀</button
+                    >
+                    <button
+                        type="button"
+                        class="text-white hover:text-[#c48a3a] text-[10px]"
+                        onclick={() => handleMove(i, 1)}>▶</button
+                    >
+                    <button
+                        type="button"
+                        class="text-white hover:text-red-400 text-[10px]"
+                        onclick={() => handleDelete(i)}>✕</button
+                    >
+                </div>
+                {#if i === 0}
+                    <div class="absolute top-0 right-0 p-1">
+                        <div
+                            class="bg-[#c48a3a] text-[8px] text-white px-1 rounded-sm font-bold uppercase"
+                        >
+                            Main
+                        </div>
+                    </div>
+                {/if}
+            {/if}
+        </div>
+    {/each}
+
+/home/dev/project/roti-sholawat/src/components/admin/pages/CategoriesManager.svelte:71:7
+Error: Object literal may only specify known properties, and 'sortOrder' does not exist in type 'CategoryMutationInput'. (ts)
+      slug: formData.get("slug") as string,
+      sortOrder: Number(formData.get("sort_order") || 0),
+      isActive: formData.get("isActive") === "true" ? 1 : 0,
+
+/home/dev/project/roti-sholawat/src/components/admin/pages/ProductsManager.svelte:343:5
+Warn: `<div>` with a drop handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions (svelte)
+    >
+    <div
+      class="upload-zone border-2 border-dashed border-stone-200/80 rounded-2xl p-6 hover:bg-stone-50/50 hover:border-[#c48a3a]/40 transition-colors text-center cursor-pointer relative"
+      id="upload-zone"
+      onover={(e) => e.preventDefault()}
+      ondrop={handleDrop}
+    >
+      <input
+        type="file"
+        id="file-input"
+        multiple
+        accept="image/*"
+        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        onchange={handleFileUpload}
+      />
+      <div class="upload-placeholder flex flex-col items-center gap-2">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="text-stone-400"
+          ><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle
+            cx="8.5"
+            cy="8.5"
+            r="1.5"
+          ></circle><polyline points="21 15 16 10 5 21"></polyline></svg
+        >
+        <span class="text-sm font-semibold text-stone-600"
+          >Drag & drop gambar atau klik untuk upload</span
+        >
+        <p class="muted text-xs text-stone-400 font-medium">
+          Urutan gambar pertama = Foto Utama
+        </p>
+      </div>
+    </div>
+    <div class="mt-4">
+
+/home/dev/project/roti-sholawat/src/components/admin/pages/ProductsManager.svelte:346:7
+Error: Object literal may only specify known properties, and '"onover"' does not exist in type 'HTMLProps<"div", HTMLAttributes<any>>'. (ts)
+      id="upload-zone"
+      onover={(e) => e.preventDefault()}
+      ondrop={handleDrop}
+
+/home/dev/project/roti-sholawat/src/components/admin/pages/ProductsManager.svelte:346:16
+Error: Parameter 'e' implicitly has an 'any' type. (ts)
+      id="upload-zone"
+      onover={(e) => e.preventDefault()}
+      ondrop={handleDrop}
+
+/home/dev/project/roti-sholawat/src/components/admin/pages/KatalogTabContent.svelte:25:6
+Error: Property 'rows' is missing in type '{}' but required in type '$$ComponentProps'. (ts)
+  {#if tab === "kategori"}
+    <CategoriesManager />
+  {:else if tab === "produk"}
+
+/home/dev/project/roti-sholawat/src/components/storefront/CheckoutForm.svelte:45:53
+Error: Argument of type '(item: CartItem) => { product_id: string; qty: number; }' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => { product_id: string; qty: number; }'.
+  Types of parameters 'item' and 'value' are incompatible.
+    Type 'unknown' is not assignable to type 'CartItem'. (ts)
+        const formData = new FormData(formElement);
+        const items = Array.from(cart.values()).map((item: CartItem) => ({
+            product_id: item.id,
+            qty: item.qty,
+        }));
+
+====================================
+svelte-check found 5 errors and 2 warnings in 5 files
+ ELIFECYCLE  Command failed with exit code 1.
+ ELIFECYCLE  Command failed with exit code 1.
+ ELIFECYCLE  Command failed with exit code 1.
