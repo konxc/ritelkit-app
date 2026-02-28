@@ -132,12 +132,13 @@ const handleRowAction = async (
   onsubmit={categoryFormHandler}
   isSubmitting={isSubmitting}
 >
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-    <div class="field">
+<div class="space-y-6 border-b border-stone-100 pb-8 mb-8">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="space-y-1.5">
       <label
         for="name"
-        class="block text-xs font-semibold text-stone-500 uppercase mb-1"
-        >Nama</label
+        class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+        >Nama Kategori</label
       >
       <input
         name="name"
@@ -145,13 +146,13 @@ const handleRowAction = async (
         required
         bind:value={newName}
         placeholder="Cth: Roti Manis"
-        class="w-full px-3 py-2 rounded-lg border border-stone-200 outline-none focus:ring-2 focus:ring-[#c48a3a]/20"
+        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 outline-none focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm placeholder:text-stone-300 shadow-sm"
       />
     </div>
-    <div class="field">
+    <div class="space-y-1.5">
       <label
         for="slug"
-        class="block text-xs font-semibold text-stone-500 uppercase mb-1"
+        class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
         >Slug</label
       >
       <input
@@ -159,47 +160,47 @@ const handleRowAction = async (
         id="slug"
         bind:value={newSlug}
         placeholder="roti-manis"
-        class="w-full px-3 py-2 rounded-lg border border-stone-200 outline-none focus:ring-2 focus:ring-[#c48a3a]/20"
+        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 outline-none focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-stone-50 text-sm placeholder:text-stone-300 shadow-sm font-mono text-stone-600"
       />
     </div>
-    <div class="field">
+    <div class="space-y-1.5">
       <label
         for="sort_order"
-        class="block text-xs font-semibold text-stone-500 uppercase mb-1"
-        >Urutan</label
+        class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+        >Urutan (Prioritas)</label
       >
       <input
         name="sort_order"
         id="sort_order"
         type="number"
         value="0"
-        class="w-full px-3 py-2 rounded-lg border border-stone-200 outline-none focus:ring-2 focus:ring-[#c48a3a]/20"
+        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 outline-none focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm shadow-sm tabular-nums"
       />
     </div>
-    <div class="field">
+    <div class="space-y-1.5">
       <label
         for="isActive"
-        class="block text-xs font-semibold text-stone-500 uppercase mb-1"
+        class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
         >Status</label
       >
       <select
         name="isActive"
         id="isActive"
-        class="w-full px-3 py-2 rounded-lg border border-stone-200 outline-none focus:ring-2 focus:ring-[#c48a3a]/20"
+        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 outline-none focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm shadow-sm cursor-pointer font-medium appearance-none"
       >
-        <option value="true">Aktif</option>
-        <option value="false">Draft</option>
+        <option value="true">🟢 Aktif (Publik)</option>
+        <option value="false">🔴 Draft (Tersembunyi)</option>
       </select>
     </div>
   </div>
-  <div class="flex items-end pt-4">
+  <div class="flex items-center justify-end pt-2">
     <button
-      class="btn-sn-primary w-full md:w-auto mt-auto h-[42px] px-8 rounded-xl bg-stone-900 text-white font-semibold disabled:opacity-50"
+      class="flex items-center justify-center gap-2 h-[42px] px-8 rounded-xl bg-gradient-to-r from-[#c48a3a] to-[#a6722d] text-white text-sm font-bold hover:shadow-[0_4px_12px_rgba(196,138,58,0.25)] hover:-translate-y-0.5 transition-all shadow-md w-full sm:w-auto disabled:opacity-70 disabled:cursor-not-allowed"
       type="submit"
       disabled={isSubmitting}
     >
       {#if isSubmitting}
-        <svg class="animate-spin h-4 w-4 mr-2 inline" viewBox="0 0 24 24"
+        <svg class="animate-spin h-4 w-4 mr-1 inline" viewBox="0 0 24 24"
           ><circle
             class="opacity-25"
             cx="12"
@@ -213,10 +214,13 @@ const handleRowAction = async (
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
           ></path></svg
         >
+      {:else}
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
       {/if}
-      Tambah Kategori
+      Tambah Kategori Baru
     </button>
   </div>
+</div>
 </CrudInlineForm>
 
 <div class="mt-8">
@@ -224,63 +228,79 @@ const handleRowAction = async (
   <AdminDataTable>
     <thead>
       <tr>
-        <th>Nama</th>
-        <th>Slug</th>
+        <th>Kategori</th>
+        <th>URL Slug</th>
         <th>Urutan</th>
-        <th>Status</th>
-        <th>Aksi</th>
+        <th>Visibilitas</th>
+        <th class="text-right">Aksi</th>
       </tr>
     </thead>
     <tbody>
+      {#if categories.length === 0}
+        <tr>
+          <td colspan="5" class="py-12">
+            <div class="flex flex-col items-center justify-center text-center">
+              <div class="w-16 h-16 bg-stone-50 rounded-full flex items-center justify-center text-stone-300 mb-3 border border-stone-100">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>
+              </div>
+              <p class="text-sm font-bold text-stone-900 mb-1">Daftar Kategori Kosong</p>
+              <p class="text-xs text-stone-500 max-w-[200px]">Belum ada kategori yang dibuat. Gunakan form di atas untuk menambahkannya.</p>
+            </div>
+          </td>
+        </tr>
+      {/if}
       {#each categories as row (row.id)}
         <tr
           transition:fade={{ duration: 200 }}
           data-id={row.id}
+          class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
         >
-          <td
-            ><div
+          <td class="py-4">
+            <div
               contenteditable="true"
               data-field="name"
-              class="outline-none px-2 py-1 rounded hover:bg-stone-50"
+              class="outline-none px-3 py-1.5 rounded-lg hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all font-bold text-stone-900 border border-transparent"
             >
               {row.name}
-            </div></td
-          >
-          <td
-            ><div
+            </div>
+          </td>
+          <td class="py-4">
+            <div
               contenteditable="true"
               data-field="slug"
-              class="outline-none px-2 py-1 rounded hover:bg-stone-50"
+              class="outline-none px-3 py-1.5 rounded-lg hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all font-mono text-[0.8rem] text-stone-500 border border-transparent"
             >
               {row.slug || ""}
-            </div></td
-          >
-          <td
-            ><div
+            </div>
+          </td>
+          <td class="py-4">
+            <div
               contenteditable="true"
               data-field="sortOrder"
-              class="outline-none px-2 py-1 rounded hover:bg-stone-50 text-center"
+              class="outline-none px-3 py-1.5 rounded-lg hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all font-bold text-stone-600 text-center border border-transparent w-16"
             >
               {row.sortOrder}
-            </div></td
-          >
-          <td>
+            </div>
+          </td>
+          <td class="py-4">
             <select
               data-field="isActive"
-              class="outline-none bg-transparent cursor-pointer"
+              class="outline-none px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white bg-transparent transition-all cursor-pointer font-bold text-xs"
             >
-              <option value="true" selected={row.isActive === 1}>Aktif</option>
-              <option value="false" selected={row.isActive === 0}>Draft</option>
+              <option value="true" selected={row.isActive === 1}>🟢 AKTIF</option>
+              <option value="false" selected={row.isActive === 0}>🔴 DRAFT</option>
             </select>
           </td>
-          <td>
-            <RowActions
-              isSaving={processingId === row.id}
-              isDeleting={processingId === row.id}
-              onSave={(e) =>
-                handleRowAction(row.id, "save", e.currentTarget.closest("tr")!)}
-              onDelete={() => handleRowAction(row.id, "delete", null!)}
-            />
+          <td class="py-4 pr-4">
+            <div class="flex justify-end">
+              <RowActions
+                isSaving={processingId === row.id}
+                isDeleting={processingId === row.id}
+                onSave={(e) =>
+                  handleRowAction(row.id, "save", e.currentTarget.closest("tr")!)}
+                onDelete={() => handleRowAction(row.id, "delete", null!)}
+              />
+            </div>
           </td>
         </tr>
       {/each}
