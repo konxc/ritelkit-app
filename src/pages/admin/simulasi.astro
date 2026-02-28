@@ -1,0 +1,33 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import SimulasiManager from "../../components/admin/pages/SimulasiManager.svelte";
+
+// 1. SSR FETCHING (Ini menggantikan tRPC useQuery di client-side)
+// Di Astro, kita melakukan fetch data di "Server" sebelum HTML dikirim ke browser.
+// Contoh asli menggunakan Drizzle ORM:
+// const initialData = await db.select().from(schema.dummyTable);
+
+// Simulasi Data Dummy dari API/Database
+const initialDataFromServer = [
+  { id: "1", name: "Data SSR 1 (Diambil via Drizzle)" },
+  { id: "2", name: "Data SSR 2 (Diambil via Drizzle)" },
+  { id: "3", name: "Astro merender ini di HTML langsung!" }
+];
+---
+
+<AdminLayout title="Simulasi Arsitektur">
+  <div class="p-6">
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold tracking-tight">Simulator Arsitektur Baru</h1>
+      <p class="text-muted-foreground mt-2">
+        Halaman ini mendemonstrasikan secara langsung bagaimana SSR Astro, Svelte 5 Runes, 
+        dan Astro Actions bekerja sama menggantikan tRPC + TanStack Query.
+      </p>
+    </div>
+
+    <!-- 2. HYDRATION (Client:load) -->
+    <!-- Kita melempar data server sebagai `initial state` ke komponen Svelte -->
+    <!-- Komponen ini akan tampil instan di browser (SEO friendly & No Loading Spinner) -->
+    <SimulasiManager client:load initialData={initialDataFromServer} />
+  </div>
+</AdminLayout>

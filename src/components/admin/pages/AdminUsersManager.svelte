@@ -1,111 +1,144 @@
 <script lang="ts">
-  import AdminDataTable from "../AdminDataTable.svelte";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
-  import RowActions from "../RowActions.svelte";
-  import SectionHeader from "../SectionHeader.svelte";
-  import { getCsrfToken } from "../../../lib/admin-client";
+import { actions } from "astro:actions";
+import { fade, fly } from "svelte/transition";
+import type { AdminUser } from "../../../lib/types";
+import AdminDataTable from "../AdminDataTable.svelte";
+import CrudInlineForm from "../CrudInlineForm.svelte";
+import RowActions from "../RowActions.svelte";
+import SectionHeader from "../SectionHeader.svelte";
+import ToastNotification from "../ToastNotification.svelte";
 
-  type UserRow = {
-    id: string | number;
-    email: string;
-    role: string | null;
-  };
+let { rows: initialRows = [] }: { rows?: AdminUser[] } = $props();
 
-  let { rows }: { rows: UserRow[] } = $props();
+let toastRef = $state<ToastNotification>();
+let rows = $state<AdminUser[]>([]);
+let isSubmitting = $state(false);
+let savingId = $state<string | null>(null);
+let deletingId = $state<string | null>(null);
 
-  const csrfToken = getCsrfToken();
+// Sync with initialRows from SSR
+$effect(() => {
+	rows = initialRows;
+});
 
-  const handleCreate = async (event: SubmitEvent) => {
-    event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement | null;
-    if (!form) return;
-    const data = new FormData(form);
-    const response = await fetch("/api/admin/users", {
-      method: "POST",
-      headers: { "X-CSRF-Token": csrfToken },
-      body: data,
-    });
-    if (!response.ok) {
-      alert(await response.text());
-      return;
-    }
-    location.reload();
-  };
+const refreshData = async () => {
+	const { data, error } = await actions.listAdminUsers({});
+	if (!error && data) {
+		rows = data as AdminUser[];
+	}
+};
 
-  const handleTableClick = async (event: MouseEvent) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
-    const action = target.getAttribute("data-action");
-    if (!action) return;
-    const row = target.closest("tr[data-id]");
-    if (!row) return;
-    const id = row.getAttribute("data-id");
-    if (!id) return;
+const handleCreate = async (event: SubmitEvent) => {
+	event.preventDefault();
+	const form = event.currentTarget as HTMLFormElement | null;
+	if (!form) return;
+	const formData = new FormData(form);
+	const data = {
+		email: String(formData.get("email") || ""),
+		password: String(formData.get("password") || ""),
+		role: String(formData.get("role") || "admin") as "owner" | "admin" | "editor",
+	};
 
-    if (action === "delete") {
-      if (!confirm("Hapus admin ini?")) return;
-      const response = await fetch(`/api/admin/users/${id}`, {
-        method: "DELETE",
-        headers: { "X-CSRF-Token": csrfToken },
-      });
-      if (!response.ok) {
-        alert(await response.text());
-        return;
-      }
-      location.reload();
-      return;
-    }
+	isSubmitting = true;
+	const { error } = await actions.createAdminUser(data);
+	isSubmitting = false;
 
-    if (action === "save") {
-      const role = String(
-        row.querySelector("[data-field='role']")?.textContent?.trim() || "",
-      );
-      const password = String(
-        (row.querySelector("[data-field='password']") as HTMLInputElement | null)?.value ||
-          "",
-      );
-      const response = await fetch(`/api/admin/users/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": csrfToken,
-        },
-        body: JSON.stringify({ role, password }),
-      });
-      if (!response.ok) {
-        alert(await response.text());
-        return;
-      }
-      location.reload();
-    }
-  };
+	if (error) {
+		toastRef?.show(error.message, "error");
+	} else {
+		toastRef?.show("Admin ditambahkan", "success");
+		await refreshData();
+		form.reset();
+	}
+};
+
+const handleRowAction = async (
+	id: string,
+	action: string,
+	rowEl: HTMLElement | null,
+) => {
+	if (action === "delete") {
+		if (!confirm("Hapus admin ini?")) return;
+		deletingId = id;
+		const { error } = await actions.deleteAdminUser(id);
+		deletingId = null;
+		if (error) {
+			toastRef?.show(error.message, "error");
+		} else {
+			toastRef?.show("Admin dihapus", "success");
+			await refreshData();
+		}
+		return;
+	}
+
+	if (action === "save" && rowEl) {
+		const role = String(
+			rowEl.querySelector("[data-field='role']")?.textContent?.trim() || "",
+		);
+		const password = String(
+			(
+				rowEl.querySelector(
+					"[data-field='password']",
+				) as HTMLInputElement | null
+			)?.value || "",
+		);
+
+		savingId = id;
+		// Standardized updateAdminUser in index.ts
+		const { error } = await actions.updateAdminUser({
+			id,
+			data: {
+				role: role as "owner" | "admin" | "editor",
+				password: password || undefined,
+			},
+		});
+		savingId = null;
+
+		if (error) {
+			toastRef?.show(error.message, "error");
+		} else {
+			toastRef?.show("Admin diperbarui", "success");
+			await refreshData();
+		}
+	}
+};
 </script>
-
+<div in:fly={{ y: 20, duration: 400, delay: 100 }}>
 <SectionHeader title="Tambah Admin" badge="Role" />
-<CrudInlineForm id="user-form" on:submit={handleCreate}>
+<CrudInlineForm
+  id="user-form"
+  onsubmit={handleCreate}
+  isSubmitting={isSubmitting}
+>
   <div>
     <label for="email">Email</label>
     <input id="email" name="email" type="email" required />
   </div>
   <div>
     <label for="password">Password</label>
-    <input id="password" name="password" type="password" required minlength="8" />
+    <input
+      id="password"
+      name="password"
+      type="password"
+      required
+      minlength="8"
+    />
   </div>
   <div>
     <label for="role">Role</label>
     <select id="role" name="role">
       <option value="owner">Owner</option>
       <option value="admin">Admin</option>
-      <option value="staff">Staff</option>
+      <option value="editor">Editor</option>
     </select>
   </div>
-  <button class="primary" type="submit">Tambah</button>
+  <button class="primary" type="submit" disabled={isSubmitting}>Tambah</button>
 </CrudInlineForm>
 
 <div class="mt-6">
   <SectionHeader title="Daftar Admin" muted="Edit role / reset password" />
 </div>
-<div role="button" tabindex="0" onclick={handleTableClick} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
+<div class="mt-2">
   <AdminDataTable>
     <thead>
       <tr>
@@ -117,17 +150,34 @@
     </thead>
     <tbody>
       {#each rows as row (row.id)}
-        <tr data-id={row.id}>
+        <tr
+          transition:fade={{ duration: 200 }}
+          data-id={row.id}
+        >
           <td>{row.email}</td>
-          <td contenteditable="true" data-field="role">{row.role || "owner"}</td>
+          <td contenteditable="true" data-field="role">{row.role || "owner"}</td
+          >
           <td>
-            <input data-field="password" type="password" placeholder="Kosong = tidak diubah" />
+            <input
+              data-field="password"
+              type="password"
+              placeholder="Kosong = tidak diubah"
+            />
           </td>
           <td>
-            <RowActions />
+            <RowActions
+              isSaving={savingId === row.id}
+              isDeleting={deletingId === row.id}
+              onSave={(e) =>
+                handleRowAction(row.id, "save", e.currentTarget.closest("tr")!)}
+              onDelete={() => handleRowAction(row.id, "delete", null)}
+            />
           </td>
         </tr>
       {/each}
-    </tbody>
+</tbody>
   </AdminDataTable>
 </div>
+</div>
+
+<ToastNotification bind:this={toastRef} />

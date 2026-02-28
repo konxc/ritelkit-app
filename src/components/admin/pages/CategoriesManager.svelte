@@ -1,116 +1,136 @@
 <script lang="ts">
-  import AdminDataTable from "../AdminDataTable.svelte";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
-  import RowActions from "../RowActions.svelte";
-  import SectionHeader from "../SectionHeader.svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import { onMount } from "svelte";
-  import { trpc } from "../../../lib/trpc";
-  import {
-    createQuery,
-    createMutation,
-    useQueryClient,
-  } from "@tanstack/svelte-query";
-  import type { Category } from "../../../lib/types";
+import { trpc } from "../../../lib/trpc";
+import { fade, fly } from "svelte/transition";
+import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+import type { Category } from "../../../lib/types";
+import AdminDataTable from "../AdminDataTable.svelte";
+import CrudInlineForm from "../CrudInlineForm.svelte";
+import RowActions from "../RowActions.svelte";
+import SectionHeader from "../SectionHeader.svelte";
+import ToastNotification from "../ToastNotification.svelte";
 
-  let { rows: initialRows = [] }: { rows: Category[] } = $props();
+type CategoryMutationInput = {
+	name: string;
+	slug: string;
+	isActive: number;
+	sortOrder?: number;
+};
 
-  const queryClient = useQueryClient();
-  let csrfToken = "";
-  let toastRef: ToastNotification;
+let { rows: initialRows = [] }: { rows?: Category[] } = $props();
 
-  const categoriesQuery = createQuery({
-    queryKey: ["categories"],
-    queryFn: () => trpc.categories.list.query(),
-    initialData: () => initialRows as any,
-  });
+const queryClient = useQueryClient();
+let toastRef = $state<ToastNotification>();
+let newName = $state("");
+let newSlug = $state("");
+let isSubmitting = $state(false);
+let processingId = $state<string | null>(null);
 
-  const createMutationFn = createMutation({
-    mutationFn: (data: any) => trpc.categories.create.mutate(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
-      toastRef?.show("Kategori ditambahkan", "success");
-    },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+const categoriesQuery = createQuery(() => ({
+	queryKey: ["categories.list"],
+	queryFn: () => trpc.categories.list.query(),
+	initialData: initialRows.length > 0 ? initialRows : undefined,
+	refetchOnMount: false,
+	staleTime: 1000 * 60 * 5,
+}));
 
-  const updateMutation = createMutation({
-    mutationFn: (payload: { id: string; data: any }) =>
-      trpc.categories.update.mutate(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
-      toastRef?.show("Kategori diperbarui", "success");
-    },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+let categories = $derived((categoriesQuery.data as Category[]) || initialRows);
 
-  const deleteMutation = createMutation({
-    mutationFn: (id: string) => trpc.categories.delete.mutate(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
-      toastRef?.show("Kategori dihapus", "success");
-    },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+$effect(() => {
+	if (newName) {
+		newSlug = newName
+			.toLowerCase()
+			.replace(/ /g, "-")
+			.replace(/[^\w-]+/g, "");
+	}
+});
 
-  onMount(() => {
-    csrfToken =
-      document
-        .querySelector("meta[name='csrf-token']")
-        ?.getAttribute("content") || "";
-  });
+const categoryFormHandler = async (event: SubmitEvent) => {
+	event.preventDefault();
+	const form = event.currentTarget as HTMLFormElement;
+	const formData = new FormData(form);
+	const payload: CategoryMutationInput = {
+		name: formData.get("name") as string,
+		slug: formData.get("slug") as string,
+		sortOrder: Number(formData.get("sort_order") || 0),
+		isActive: formData.get("isActive") === "true" ? 1 : 0,
+	};
 
-  const categoryFormHandler = async (event: SubmitEvent) => {
-    event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement;
-    const formData = new FormData(form);
-    const payload: any = {
-      name: formData.get("name") as string,
-      slug: formData.get("slug") as string,
-      sortOrder: Number(formData.get("sort_order") || 0),
-      isActive: formData.get("isActive") === "true" ? 1 : 0,
-    };
-    createMutationFn.mutate(payload);
-    form.reset();
-  };
+	isSubmitting = true;
+	try {
+		await trpc.categories.create.mutate(payload);
+		queryClient.invalidateQueries({ queryKey: ["categories.list"] });
+		toastRef?.show("Kategori ditambahkan", "success");
+		form.reset();
+		newName = "";
+		newSlug = "";
+	} catch (error: unknown) {
+		const message = error instanceof Error ? error.message : "Gagal menambah kategori";
+		toastRef?.show(message, "error");
+	} finally {
+		isSubmitting = false;
+	}
+};
 
-  const handleRowAction = async (
-    id: string,
-    action: string,
-    rowEl: HTMLElement,
-  ) => {
-    if (action === "delete") {
-      if (!confirm("Hapus kategori ini?")) return;
-      deleteMutation.mutate(id);
-      return;
-    }
+const handleRowAction = async (
+	id: string,
+	action: "save" | "delete",
+	rowEl: HTMLElement,
+) => {
+	if (action === "delete") {
+		if (!confirm("Hapus kategori ini?")) return;
+		processingId = id;
+		try {
+			await trpc.categories.delete.mutate(id);
+			queryClient.invalidateQueries({ queryKey: ["categories.list"] });
+			toastRef?.show("Kategori dihapus", "success");
+		} catch (error: unknown) {
+			const message = error instanceof Error ? error.message : "Gagal menghapus kategori";
+			toastRef?.show(message, "error");
+		} finally {
+			processingId = null;
+		}
+		return;
+	}
 
-    if (action === "save") {
-      const payload: any = {};
-      rowEl.querySelectorAll("[data-field]").forEach((cell) => {
-        const field = cell.getAttribute("data-field");
-        if (!field) return;
-        if (cell instanceof HTMLSelectElement) {
-          payload[field] = cell.value === "true" ? 1 : 0;
-        } else if (cell instanceof HTMLInputElement) {
-          payload[field] = cell.value;
-        } else {
-          payload[field] = cell.textContent?.trim() || "";
-        }
-      });
-      if (payload.sortOrder) payload.sortOrder = Number(payload.sortOrder);
-      updateMutation.mutate({ id, data: payload });
-    }
-  };
+	if (action === "save") {
+		const payload: Record<string, string | number> = {};
+		rowEl.querySelectorAll("[data-field]").forEach((cell) => {
+			const field = cell.getAttribute("data-field");
+			if (!field) return;
+			if (cell instanceof HTMLSelectElement) {
+				payload[field] = cell.value === "true" ? 1 : 0;
+			} else if (cell instanceof HTMLInputElement) {
+				payload[field] = cell.value;
+			} else {
+				payload[field] = cell.textContent?.trim() || "";
+			}
+		});
 
-  const currentRows = $derived($categoriesQuery.data || initialRows);
+		if (payload.sortOrder) payload.sortOrder = Number(payload.sortOrder);
+
+		processingId = id;
+		try {
+			await trpc.categories.update.mutate({
+				id,
+				data: payload as Partial<CategoryMutationInput>,
+			});
+			queryClient.invalidateQueries({ queryKey: ["categories.list"] });
+			toastRef?.show("Kategori diperbarui", "success");
+		} catch (error: unknown) {
+			const message = error instanceof Error ? error.message : "Gagal memperbarui kategori";
+			toastRef?.show(message, "error");
+		} finally {
+			processingId = null;
+		}
+	}
+};
 </script>
-
+<div in:fly={{ y: 20, duration: 400, delay: 100 }}>
 <SectionHeader title="Tambah Kategori" badge="Product Organization" />
 <CrudInlineForm
   id="category-form"
-  on:submit={categoryFormHandler}
-  isSubmitting={$createMutationFn.isPending}
+  onsubmit={categoryFormHandler}
+  isSubmitting={isSubmitting}
 >
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
     <div class="field">
@@ -123,6 +143,7 @@
         name="name"
         id="name"
         required
+        bind:value={newName}
         placeholder="Cth: Roti Manis"
         class="w-full px-3 py-2 rounded-lg border border-stone-200 outline-none focus:ring-2 focus:ring-[#c48a3a]/20"
       />
@@ -136,6 +157,7 @@
       <input
         name="slug"
         id="slug"
+        bind:value={newSlug}
         placeholder="roti-manis"
         class="w-full px-3 py-2 rounded-lg border border-stone-200 outline-none focus:ring-2 focus:ring-[#c48a3a]/20"
       />
@@ -174,9 +196,9 @@
     <button
       class="btn-sn-primary w-full md:w-auto mt-auto h-[42px] px-8 rounded-xl bg-stone-900 text-white font-semibold disabled:opacity-50"
       type="submit"
-      disabled={$createMutationFn.isPending}
+      disabled={isSubmitting}
     >
-      {#if $createMutationFn.isPending}
+      {#if isSubmitting}
         <svg class="animate-spin h-4 w-4 mr-2 inline" viewBox="0 0 24 24"
           ><circle
             class="opacity-25"
@@ -210,8 +232,11 @@
       </tr>
     </thead>
     <tbody>
-      {#each currentRows as row (row.id)}
-        <tr data-id={row.id}>
+      {#each categories as row (row.id)}
+        <tr
+          transition:fade={{ duration: 200 }}
+          data-id={row.id}
+        >
           <td
             ><div
               contenteditable="true"
@@ -250,10 +275,8 @@
           </td>
           <td>
             <RowActions
-              isSaving={$updateMutation.isPending &&
-                $updateMutation.variables?.id === row.id}
-              isDeleting={$deleteMutation.isPending &&
-                $deleteMutation.variables === row.id}
+              isSaving={processingId === row.id}
+              isDeleting={processingId === row.id}
               onSave={(e) =>
                 handleRowAction(row.id, "save", e.currentTarget.closest("tr")!)}
               onDelete={() => handleRowAction(row.id, "delete", null!)}
@@ -263,6 +286,7 @@
       {/each}
     </tbody>
   </AdminDataTable>
+</div>
 </div>
 
 <ToastNotification bind:this={toastRef} />

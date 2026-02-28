@@ -1,137 +1,69 @@
 <script lang="ts">
-  import { trpc } from "../../../lib/trpc";
-  import { createMutation, useQueryClient } from "@tanstack/svelte-query";
-  import SectionHeader from "../SectionHeader.svelte";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
-  import PanelCard from "../PanelCard.svelte";
-  import StatusBadge from "../StatusBadge.svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import { onMount } from "svelte";
+import { trpc } from "../../../lib/trpc";
+import { useQueryClient } from "@tanstack/svelte-query";
+import type { Order } from "../../../lib/types";
+import CrudInlineForm from "../CrudInlineForm.svelte";
+import PanelCard from "../PanelCard.svelte";
+import SectionHeader from "../SectionHeader.svelte";
+import StatusBadge from "../StatusBadge.svelte";
+import ToastNotification from "../ToastNotification.svelte";
 
-  let { order = {} }: { order: any } = $props();
+type OrderItem = { name: string; qty: number; price: number; total: number };
+type ShippingAddress = {
+	province?: string;
+	city?: string;
+	district?: string;
+	delivery_date?: string;
+	delivery_time?: string;
+};
+type OrderDetail = Order & {
+	parsedItems?: OrderItem[];
+	shipping_address_json?: ShippingAddress;
+	customerName: string;
+	customerPhone: string;
+	customerEmail?: string | null;
+};
 
-  const queryClient = useQueryClient();
-  let csrfToken = "";
-  let toastRef: ToastNotification;
+let { order: initialOrder = {} as OrderDetail }: { order?: OrderDetail } =
+	$props();
 
-  const updateMutation = createMutation({
-    mutationFn: (payload: { id: string; data: any }) =>
-      trpc.orders.update.mutate(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      toastRef?.show("Status order berhasil diperbarui!", "success");
-      setTimeout(() => location.reload(), 800);
-    },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+let order = $state<OrderDetail>({} as OrderDetail);
+$effect(() => {
+	order = initialOrder;
+});
+let toastRef = $state<ToastNotification>();
+let isSubmitting = $state(false);
 
-  onMount(() => {
-    csrfToken =
-      document
-        .querySelector("meta[name='csrf-token']")
-        ?.getAttribute("content") || "";
-  });
+const queryClient = useQueryClient();
 
-  const handleUpdateStatus = async (event: SubmitEvent) => {
-    event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement;
-    const formData = new FormData(form);
-    const payload: any = {
-      status: formData.get("status"),
-      paymentStatus: formData.get("paymentStatus"),
-      notes: formData.get("notes"),
-    };
-    updateMutation.mutate({ id: order.id, data: payload });
-  };
+// Sync with initialOrder from SSR if it changes
+$effect(() => {
+	order = initialOrder;
+});
+
+const handleUpdateStatus = async (event: SubmitEvent) => {
+	event.preventDefault();
+	// The form inputs are bound to `order.status`, `order.paymentStatus`, `order.notes`
+	// so the `order` state is already updated.
+	const data = {
+		status: order.status,
+		paymentStatus: order.paymentStatus,
+		notes: order.notes,
+	};
+
+	isSubmitting = true;
+	try {
+		await trpc.orders.update.mutate({ id: order.id, data });
+		toastRef?.show("Order updated", "success");
+		queryClient.invalidateQueries({ queryKey: ["orders.list"] });
+	} catch (error: any) {
+		toastRef?.show(error.message, "error");
+	} finally {
+		isSubmitting = false;
+	}
+};
 </script>
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-  <PanelCard className="flex flex-col h-full">
-    <div class="flex items-center gap-3 mb-4">
-      <div
-        class="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600"
-      >
-        👤
-      </div>
-      <strong class="text-stone-900">Informasi Pelanggan</strong>
-    </div>
-    <div class="space-y-1">
-      <p class="font-bold text-stone-900">{order.customer_name}</p>
-      <p class="text-stone-500 font-mono text-sm">{order.customer_phone}</p>
-      <p class="text-stone-400 text-sm italic">
-        {order.customer_email || "Tanpa email"}
-      </p>
-    </div>
-  </PanelCard>
-
-  <PanelCard className="flex flex-col h-full">
-    <div class="flex items-center gap-3 mb-4">
-      <div
-        class="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600"
-      >
-        📊
-      </div>
-      <strong class="text-stone-900">Status & Pembayaran</strong>
-    </div>
-    <div class="space-y-3">
-      <div class="flex flex-wrap gap-2">
-        <StatusBadge
-          label={order.status.toUpperCase()}
-          tone={order.status === "processing"
-            ? "success"
-            : order.status === "cancelled"
-              ? "danger"
-              : "default"}
-        />
-        <StatusBadge
-          label={`PAYMENT: ${order.payment_status.toUpperCase()}`}
-          tone={order.payment_status === "paid"
-            ? "success"
-            : order.payment_status === "failed"
-              ? "danger"
-              : "default"}
-        />
-      </div>
-      <p class="text-xl font-bold text-[#c48a3a] tabular-nums">
-        Rp {Number(order.total).toLocaleString("id-ID")}
-      </p>
-    </div>
-  </PanelCard>
-
-  <PanelCard className="flex flex-col h-full md:col-span-2 lg:col-span-1">
-    <div class="flex items-center gap-3 mb-4">
-      <div
-        class="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-stone-600"
-      >
-        📍
-      </div>
-      <strong class="text-stone-900">Pengiriman</strong>
-    </div>
-    <div class="space-y-1 text-sm">
-      <p class="font-bold text-stone-800">
-        {order.shipping_address_json?.province ?? "-"} › {order
-          .shipping_address_json?.city ?? "-"}
-      </p>
-      <p class="text-stone-600">
-        {order.shipping_address_json?.district ?? ""}
-      </p>
-      <div class="pt-2 flex items-center gap-2 text-stone-500 font-medium">
-        <span>📅 {order.shipping_address_json?.delivery_date || "-"}</span>
-        <span class="text-stone-300">|</span>
-        <span>🕒 {order.shipping_address_json?.delivery_time || "-"}</span>
-      </div>
-    </div>
-  </PanelCard>
-</div>
-
-<div
-  class="mb-10 bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-sm"
->
-  <div class="px-6 py-4 bg-stone-50 border-b border-stone-200">
-    <strong class="text-stone-900 uppercase tracking-widest text-xs"
-      >Rincian Item</strong
-    >
-  </div>
   <div class="overflow-x-auto">
     <table class="w-full text-left border-collapse">
       <thead>
@@ -175,7 +107,6 @@
       </tbody>
     </table>
   </div>
-</div>
 
 <SectionHeader
   title="Kelola Pesanan"
@@ -183,9 +114,9 @@
 />
 <CrudInlineForm
   id="order-status-form"
-  data-order={order.order_no}
-  on:submit={handleUpdateStatus}
-  isSubmitting={$updateMutation.isPending}
+  data-order={order.orderNo}
+  onsubmit={handleUpdateStatus}
+  isSubmitting={isSubmitting}
 >
   <input type="hidden" name="order_id" value={order.id} />
   <div
@@ -227,16 +158,16 @@
         name="paymentStatus"
         class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none appearance-none cursor-pointer font-bold"
       >
-        <option value="unpaid" selected={order.paymentStatus === "unpaid"}
+        <option value="unpaid" selected={order.paymentStatus === "unpaid"}>
           >Unpaid</option
         >
-        <option value="paid" selected={order.paymentStatus === "paid"}
+        <option value="paid" selected={order.paymentStatus === "paid"}>
           >Paid</option
         >
-        <option value="failed" selected={order.paymentStatus === "failed"}
+        <option value="failed" selected={order.paymentStatus === "failed"}>
           >Failed</option
         >
-        <option value="refunded" selected={order.paymentStatus === "refunded"}
+        <option value="refunded" selected={order.paymentStatus === "refunded"}>
           >Refunded</option
         >
       </select>
@@ -259,9 +190,9 @@
     <button
       class="flex items-center justify-center gap-3 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto"
       type="submit"
-      disabled={$updateMutation.isPending}
+      disabled={isSubmitting}
     >
-      {#if $updateMutation.isPending}
+      {#if isSubmitting}
         <svg
           class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
           xmlns="http://www.w3.org/2000/svg"

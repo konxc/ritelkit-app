@@ -1,23 +1,37 @@
 <script module lang="ts">
-  export type CmsPageRow = {
-    id: string;
-    slug: string;
-    title: string;
-    is_active: boolean;
-    updated_at: string | Date;
-  };
+export type CmsPageRow = {
+	id: string;
+	slug: string;
+	title: string;
+	contentMd?: string;
+	isActive?: number;
+	updatedAt?: string | Date;
+};
 </script>
 
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { fade, fly } from "svelte/transition";
   import SectionHeader from "../SectionHeader.svelte";
   import CrudInlineForm from "../CrudInlineForm.svelte";
   import AdminDataTable from "../AdminDataTable.svelte";
   import RowActions from "../RowActions.svelte";
   import ActionGroup from "../ActionGroup.svelte";
   import ToastNotification from "../ToastNotification.svelte";
+  import { actions } from "astro:actions";
 
-  let { rows = [] }: { rows: CmsPageRow[] } = $props();
+  let {
+    rows: initialRows = [],
+    q = "",
+    page = 1,
+    limit = 30,
+  }: {
+    rows?: CmsPageRow[];
+    q?: string;
+    page?: number;
+    limit?: number;
+  } = $props();
+
+  const offset = $derived((page - 1) * limit);
 
   let pageId = $state("");
   let title = $state("");
@@ -25,21 +39,31 @@
   let contentMd = $state("");
   let isActive = $state("true");
 
-  let csrfToken = "";
   let isSubmitting = $state(false);
+  let rows = $state<CmsPageRow[]>([]);
   let rowStates = $state<
     Record<
       string,
       { isSaving?: boolean; isDeleting?: boolean; isEditing?: boolean }
     >
   >({});
-  let toastRef: ToastNotification;
+  let toastRef = $state<ToastNotification>();
 
-  onMount(() => {
-    csrfToken =
-      document
-        .querySelector("meta[name='csrf-token']")
-        ?.getAttribute("content") || "";
+  const refreshData = async () => {
+    const { data, error } = await actions.listCmsPages({ q, limit, offset });
+    if (!error && data) {
+      rows = data.rows as CmsPageRow[];
+    }
+  };
+
+  // Sync with initialRows from SSR
+  $effect(() => {
+    rows = initialRows;
+  });
+
+  // Re-fetch when props change (search/pagination)
+  $effect(() => {
+    refreshData();
   });
 
   const resetForm = () => {
@@ -55,114 +79,67 @@
     if (isSubmitting) return;
 
     isSubmitting = true;
-    try {
-      const payload = {
-        title,
-        slug,
-        content_md: contentMd,
-        is_active: isActive === "true",
-      };
+    const payload = {
+      title,
+      slug,
+      contentMd,
+      isActive: isActive === "true",
+    };
 
-      const endpoint = pageId
-        ? `/api/admin/cms-pages/${pageId}`
-        : "/api/admin/cms-pages";
-      const method = pageId ? "PUT" : "POST";
+    const { error } = pageId 
+      ? await actions.updateCmsPage({ id: pageId, data: payload })
+      : await actions.createCmsPage(payload);
 
-      const response = await fetch(endpoint, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-Token": csrfToken,
-        },
-        body: JSON.stringify(payload),
-      });
+    isSubmitting = false;
 
-      if (!response.ok) {
-        toastRef?.show(await response.text(), "error");
-        return;
-      }
-      toastRef?.show(
-        pageId ? "Halaman diperbarui!" : "Halaman dibuat!",
-        "success",
-      );
-      setTimeout(() => location.reload(), 800);
-    } catch (err: any) {
-      toastRef?.show(err.message || "Gagal menyimpan", "error");
-    } finally {
-      isSubmitting = false;
+    if (error) {
+      toastRef?.show(error.message, "error");
+    } else {
+      toastRef?.show(pageId ? "Halaman diperbarui!" : "Halaman dibuat!", "success");
+      resetForm();
+      await refreshData();
     }
   };
 
   const handleClear = () => resetForm();
 
-  const handleTableClick = async (event: MouseEvent) => {
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) return;
-    const action = target.getAttribute("data-action");
-    if (!action) return;
-    const row = target.closest("tr[data-id]");
-    if (!row) return;
-    const id = row.getAttribute("data-id");
-    if (!id) return;
+  const handleEdit = async (id: string) => {
+    rowStates[id] = { ...rowStates[id], isEditing: true };
 
-    if (action === "delete") {
-      if (!confirm("Hapus halaman ini?")) return;
-
-      rowStates[id] = { ...rowStates[id], isDeleting: true };
-
-      try {
-        const response = await fetch(`/api/admin/cms-pages/${id}`, {
-          method: "DELETE",
-          headers: { "X-CSRF-Token": csrfToken },
-        });
-        if (!response.ok) {
-          toastRef?.show(await response.text(), "error");
-          rowStates[id] = { ...rowStates[id], isDeleting: false };
-          return;
-        }
-        toastRef?.show("Halaman dihapus", "success");
-        setTimeout(() => location.reload(), 800);
-      } catch (err: any) {
-        toastRef?.show(err.message, "error");
-        rowStates[id] = { ...rowStates[id], isDeleting: false };
-      }
-      return;
+    const { data, error } = await actions.getCmsPage(id);
+    if (!error && data) {
+      pageId = id;
+      title = data.title || "";
+      slug = data.slug || "";
+      contentMd = data.contentMd || "";
+      isActive = data.isActive === 1 ? "true" : "false";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (error) {
+      toastRef?.show(error.message, "error");
     }
+    
+    rowStates[id] = { ...rowStates[id], isEditing: false };
+  };
 
-    if (action === "edit") {
-      rowStates[id] = { ...rowStates[id], isEditing: true };
+  const handleDelete = async (id: string) => {
+    if (!confirm("Hapus halaman ini?")) return;
 
-      try {
-        pageId = id;
-        title =
-          row.querySelector("[data-field='title']")?.textContent?.trim() || "";
-        slug =
-          row.querySelector("[data-field='slug']")?.textContent?.trim() || "";
-        const activeText =
-          row.querySelector("[data-field='is_active']")?.textContent?.trim() ||
-          "true";
-        isActive = activeText === "true" ? "true" : "false";
-
-        const response = await fetch(`/api/admin/cms-pages/${id}`);
-        if (!response.ok) {
-          toastRef?.show(await response.text(), "error");
-          return;
-        }
-        const data = (await response.json()) as { content_md?: string };
-        contentMd = data.content_md || "";
-
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } catch (err: any) {
-        toastRef?.show(err.message, "error");
-      } finally {
-        rowStates[id] = { ...rowStates[id], isEditing: false };
-      }
+    rowStates[id] = { ...rowStates[id], isDeleting: true };
+    const { error } = await actions.deleteCmsPage(id);
+    
+    if (error) {
+      toastRef?.show(error.message, "error");
+    } else {
+      toastRef?.show("Halaman dihapus", "success");
+      await refreshData();
     }
+    rowStates[id] = { ...rowStates[id], isDeleting: false };
   };
 </script>
 
+<div in:fly={{ y: 20, duration: 400, delay: 100 }}>
 <SectionHeader title="Buat Halaman" badge="Brand Awareness" />
-<CrudInlineForm id="cms-form" on:submit={handleSubmit} {isSubmitting}>
+<CrudInlineForm id="cms-form" onsubmit={handleSubmit} {isSubmitting}>
   <input type="hidden" name="page_id" value={pageId} />
   <div class="space-y-4 border-b border-stone-100 pb-5">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -266,48 +243,41 @@
   </div>
 </CrudInlineForm>
 
-<div
-  role="button"
-  tabindex="0"
-  onclick={handleTableClick}
-  onkeydown={(e) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      e.currentTarget.click();
-    }
-  }}
->
-  <AdminDataTable class="mt-6">
-    <thead>
-      <tr>
-        <th>Judul</th>
-        <th>Slug</th>
-        <th>Status</th>
-        <th>Update</th>
-        <th>Aksi</th>
+<AdminDataTable class="mt-6">
+  <thead>
+    <tr>
+      <th>Judul</th>
+      <th>Slug</th>
+      <th>Status</th>
+      <th>Update</th>
+      <th>Aksi</th>
+    </tr>
+  </thead>
+  <tbody>
+    {#each rows as p (p.id)}
+      <tr
+        transition:fade={{ duration: 200 }}
+        data-id={p.id}>
+        <td data-field="title">{p.title}</td>
+        <td data-field="slug">{p.slug}</td>
+        <td data-field="isActive">
+          {p.isActive === 1 ? "true" : "false"}
+        </td>
+        <td>{String(p.updatedAt ?? "").split("T")[0]}</td>
+        <td>
+          <RowActions
+            viewHref={`/content/${p.slug}`}
+            showEdit={true}
+            onEdit={() => handleEdit(p.id)}
+            onDelete={() => handleDelete(p.id)}
+            isDeleting={rowStates[p.id]?.isDeleting}
+            isSaving={rowStates[p.id]?.isEditing}
+          />
+        </td>
       </tr>
-    </thead>
-    <tbody>
-      {#each rows as p}
-        <tr data-id={p.id}>
-          <td data-field="title">{p.title}</td>
-          <td data-field="slug">{p.slug}</td>
-          <td data-field="is_active">
-            {p.is_active ? "true" : "false"}
-          </td>
-          <td>{String(p.updated_at).split("T")[0]}</td>
-          <td>
-            <RowActions
-              viewHref={`/content/${p.slug}`}
-              showEdit={true}
-              isDeleting={rowStates[p.id]?.isDeleting}
-              isSaving={rowStates[p.id]?.isEditing}
-            />
-          </td>
-        </tr>
-      {/each}
-    </tbody>
-  </AdminDataTable>
+    {/each}
+  </tbody>
+</AdminDataTable>
 </div>
 
 <ToastNotification bind:this={toastRef} />

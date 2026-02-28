@@ -6,49 +6,64 @@
   import ToastNotification from "../ToastNotification.svelte";
   import { trpc } from "../../../lib/trpc";
   import {
+    fade,
+    fly,
+  } from "svelte/transition";
+  import {
     createQuery,
     createMutation,
     useQueryClient,
   } from "@tanstack/svelte-query";
 
-  let { rows: initialRows = [] }: { rows: any[] } = $props();
+  import type { Coupon } from "../../../lib/types";
+
+  let { rows: initialRows = [] }: { rows: Coupon[] } = $props();
 
   const queryClient = useQueryClient();
   let toastRef = $state<ToastNotification>();
 
-  const couponsQuery = createQuery({
+  const couponsQuery = createQuery(() => ({
     queryKey: ["coupons"],
     queryFn: () => trpc.coupons.list.query(),
-    initialData: () => initialRows,
-  });
+    initialData: initialRows.length > 0 ? initialRows : undefined,
+  }));
 
-  const createCouponMutation = createMutation({
+  const createCouponMutation = createMutation(() => ({
     mutationFn: (data: any) => trpc.coupons.create.mutate(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["coupons"] });
       toastRef?.show("Kupon berhasil ditambahkan!", "success");
     },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : "Gagal menambah kupon";
+      toastRef?.show(message, "error");
+    },
+  }));
 
-  const updateCouponMutation = createMutation({
+  const updateCouponMutation = createMutation(() => ({
     mutationFn: (payload: { id: string; data: any }) =>
       trpc.coupons.update.mutate(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["coupons"] });
       toastRef?.show("Kupon diperbarui", "success");
     },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : "Gagal memperbarui kupon";
+      toastRef?.show(message, "error");
+    },
+  }));
 
-  const deleteCouponMutation = createMutation({
+  const deleteCouponMutation = createMutation(() => ({
     mutationFn: (id: string) => trpc.coupons.delete.mutate(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["coupons"] });
       toastRef?.show("Kupon dihapus", "success");
     },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : "Gagal menghapus kupon";
+      toastRef?.show(message, "error");
+    },
+  }));
 
   const handleCreate = async (event: SubmitEvent) => {
     event.preventDefault();
@@ -86,7 +101,7 @@
         deleteCouponMutation.mutate(id);
       }
     } else if (action === "save" && rowElement) {
-      const fields: Record<string, any> = {};
+      const fields: Record<string, string> = {};
       rowElement.querySelectorAll("[data-field]").forEach((el) => {
         const field = el.getAttribute("data-field")!;
         if (el instanceof HTMLSelectElement || el instanceof HTMLInputElement) {
@@ -123,9 +138,9 @@
     }
   };
 
-  const currentCoupons = $derived($couponsQuery.data || initialRows);
+  let currentCoupons = $derived((couponsQuery.data as Coupon[]) || initialRows);
 </script>
-
+<div in:fly={{ y: 20, duration: 400, delay: 100 }}>
 <SectionHeader title="Tambah Kupon" muted="Promo & diskon" />
 <CrudInlineForm
   id="coupon-form"
@@ -341,6 +356,7 @@
     {/if}
     {#each currentCoupons as row (row.id)}
       <tr
+        transition:fade={{ duration: 200 }}
         class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0 text-xs"
       >
         <td
@@ -432,5 +448,6 @@
     {/each}
   </tbody>
 </AdminDataTable>
+</div>
 
 <ToastNotification bind:this={toastRef} />

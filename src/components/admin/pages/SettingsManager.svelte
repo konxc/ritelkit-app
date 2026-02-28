@@ -1,103 +1,79 @@
 <script lang="ts">
-  import SectionHeader from "../SectionHeader.svelte";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
-  import PanelCard from "../PanelCard.svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import { trpc } from "../../../lib/trpc";
-  import {
-    createQuery,
-    createMutation,
-    useQueryClient,
-  } from "@tanstack/svelte-query";
+import { actions } from "astro:actions";
+import { fly } from "svelte/transition";
+import ToastNotification from "../ToastNotification.svelte";
 
-  let {} = $props();
+let toastRef = $state<ToastNotification>();
+let isSubmitting = $state(false);
+let isSeeding = $state(false);
 
-  const queryClient = useQueryClient();
-  let toastRef = $state<ToastNotification>();
+let preorderOnly = $state(false);
+let leadTimeHours = $state(0);
+let cutoffTime = $state("");
+let sameDayEnabled = $state(false);
+let availableDays = $state("");
+let deliveryProvince = $state("DI Yogyakarta");
+let freeDeliveryThreshold = $state(0);
 
-  const settingsQuery = createQuery({
-    queryKey: ["settings"],
-    queryFn: () => trpc.settings.getSettings.query(),
-  });
+const fetchSettings = async () => {
+	const { data, error } = await actions.getSettings({});
+	if (!error && data) {
+		const os = data.order_settings || {};
+		const ds = data.delivery_settings || {};
 
-  const updateMutation = createMutation({
-    mutationFn: (data: any) => trpc.settings.updateSettings.mutate(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["settings"] });
-      toastRef?.show("Pengaturan berhasil disimpan!", "success");
-    },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+		preorderOnly = os.preorderOnly ?? os.preorder_only ?? false;
+		leadTimeHours = os.minimumLeadTimeHours ?? os.minimum_lead_time_hours ?? 0;
+		cutoffTime = os.cutoffTime ?? os.cutoff_time ?? "";
+		sameDayEnabled = os.sameDayEnabled ?? os.same_day_enabled ?? false;
+		availableDays = (os.availableDays ?? os.available_days ?? []).join(", ");
+		deliveryProvince =
+			ds.deliveryProvince ?? ds.delivery_province ?? "DI Yogyakarta";
+		freeDeliveryThreshold =
+			ds.freeDeliveryThreshold ?? ds.free_delivery_threshold ?? 0;
+	}
+};
 
-  const seedMutation = createMutation({
-    mutationFn: () => trpc.settings.seedData.mutate(),
-    onSuccess: (res: any) => {
-      toastRef?.show(res.message || "Seed data selesai", "success");
-      setTimeout(() => location.reload(), 1500);
-    },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+$effect(() => {
+	fetchSettings();
+});
 
-  const settings = $derived($settingsQuery.data || {});
-  const os = $derived(settings.order_settings || {});
-  const ds = $derived(settings.delivery_settings || {});
+const formatDays = (value: string) =>
+	value
+		.split(/[,;]/)
+		.map((item) => item.trim())
+		.filter(Boolean);
 
-  let preorderOnly = $state(false);
-  let leadTimeHours = $state(0);
-  let cutoffTime = $state("");
-  let sameDayEnabled = $state(false);
-  let availableDays = $state("");
-  let deliveryProvince = $state("DI Yogyakarta");
-  let freeDeliveryThreshold = $state(0);
+const handleSubmit = async (event: SubmitEvent) => {
+	event.preventDefault();
+	isSubmitting = true;
+	const { error } = await actions.updateSettings({
+		orderSettings: {
+			preorderOnly,
+			minimumLeadTimeHours: Number(leadTimeHours),
+			cutoffTime,
+			sameDayEnabled,
+			availableDays: formatDays(availableDays),
+		},
+		deliverySettings: {
+			deliveryProvince,
+			freeDeliveryThreshold: Number(freeDeliveryThreshold),
+		},
+	});
+	isSubmitting = false;
 
-  $effect(() => {
-    if ($settingsQuery.data) {
-      preorderOnly = os.preorderOnly ?? os.preorder_only ?? false;
-      leadTimeHours =
-        os.minimumLeadTimeHours ?? os.minimum_lead_time_hours ?? 0;
-      cutoffTime = os.cutoffTime ?? os.cutoff_time ?? "";
-      sameDayEnabled = os.sameDayEnabled ?? os.same_day_enabled ?? false;
-      availableDays = ((os.availableDays ?? os.available_days) || []).join(
-        ", ",
-      );
-      deliveryProvince =
-        ds.deliveryProvince ?? ds.delivery_province ?? "DI Yogyakarta";
-      freeDeliveryThreshold =
-        ds.freeDeliveryThreshold ?? ds.free_delivery_threshold ?? 0;
-    }
-  });
+	if (error) {
+		toastRef?.show(error.message, "error");
+	} else {
+		toastRef?.show("Pengaturan berhasil disimpan!", "success");
+	}
+};
 
-  const formatDays = (value: string) =>
-    value
-      .split(/[,;]/)
-      .map((item) => item.trim())
-      .filter(Boolean);
-
-  const handleSubmit = async (event: SubmitEvent) => {
-    event.preventDefault();
-    updateMutation.mutate({
-      order_settings: {
-        preorderOnly,
-        minimumLeadTimeHours: Number(leadTimeHours),
-        cutoffTime,
-        sameDayEnabled,
-        availableDays: formatDays(availableDays),
-      },
-      delivery_settings: {
-        deliveryProvince,
-        freeDeliveryThreshold: Number(freeDeliveryThreshold),
-      },
-    });
-  };
-
-  const handleSeed = () => {
-    if (confirm("Generate data demo?")) {
-      seedMutation.mutate();
-    }
-  };
+const handleSeed = async () => {
+	toastRef?.show("Fungsi Generate Data Demo dinonaktifkan sementara.", "error");
+};
 </script>
 
-<div class="space-y-8 animate-fade-in-up">
+<div in:fly={{ y: 20, duration: 400, delay: 100 }} class="space-y-8">
   <div>
     <h1
       class="font-['Syne',sans-serif] text-3xl font-extrabold text-stone-900 tracking-tight"
@@ -141,10 +117,10 @@
       class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border border-stone-200 bg-white font-semibold text-stone-600 hover:text-stone-900 hover:border-stone-300 hover:shadow-sm transition-all shadow-sm w-full sm:w-auto shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
       type="button"
       onclick={handleSeed}
-      disabled={seedMutation.isPending || updateMutation.isPending}
+      disabled={isSeeding || isSubmitting}
       aria-label="Generate Data Demo"
     >
-      {#if seedMutation.isPending}
+      {#if isSeeding}
         <svg
           class="animate-spin -ml-1 mr-2 h-4 w-4 text-stone-600"
           xmlns="http://www.w3.org/2000/svg"
@@ -377,9 +353,9 @@
       <button
         class="flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-[#c48a3a] to-[#a6722d] text-white font-bold shadow-[0_8px_16px_rgba(196,138,58,0.25)] hover:-translate-y-0.5 transition-all w-full md:w-auto disabled:opacity-70 disabled:hover:translate-y-0 disabled:cursor-not-allowed"
         type="submit"
-        disabled={updateMutation.isPending || seedMutation.isPending}
+        disabled={isSubmitting || isSeeding}
       >
-        {#if updateMutation.isPending}
+        {#if isSubmitting}
           <svg
             class="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
             xmlns="http://www.w3.org/2000/svg"

@@ -1,10 +1,10 @@
 <script module lang="ts">
   export type ShipmentRow = {
     id: string | number;
-    order_no: string;
+    orderNo: string;
     status: string;
     carrier?: string | null;
-    tracking_no?: string | null;
+    trackingNo?: string | null;
     notes?: string | null;
   };
 </script>
@@ -16,6 +16,7 @@
   import SectionHeader from "../SectionHeader.svelte";
   import ToastNotification from "../ToastNotification.svelte";
   import { trpc } from "../../../lib/trpc";
+  import { fade, fly } from "svelte/transition";
   import {
     createQuery,
     createMutation,
@@ -23,51 +24,60 @@
   } from "@tanstack/svelte-query";
   import { onMount } from "svelte";
 
-  let { rows: initialShipments = [] }: { rows: any[] } = $props();
+  let { rows: initialShipments = [] }: { rows: ShipmentRow[] } = $props();
 
   const queryClient = useQueryClient();
   let toastRef: ToastNotification;
 
   // Query for existing shipments
-  const shipmentsQuery = createQuery({
+  const shipmentsQuery = createQuery(() => ({
     queryKey: ["shipments"],
     queryFn: () => trpc.shipments.list.query({}),
-    initialData: () => initialShipments,
-  });
+    initialData: initialShipments.length > 0 ? initialShipments : undefined,
+  }));
 
   // Query for orders that need fulfillment
-  const ordersFulfillmentQuery = createQuery({
+  const ordersFulfillmentQuery = createQuery(() => ({
     queryKey: ["orders", "fulfillment"],
     queryFn: () => trpc.orders.fulfillment.query({}),
-  });
+  }));
 
-  const shipCreateMutation = createMutation({
+  const shipCreateMutation = createMutation(() => ({
     mutationFn: (data: any) => trpc.shipments.create.mutate(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shipments"] });
       toastRef?.show("Pengiriman berhasil dibuat!", "success");
     },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : "Gagal membuat pengiriman";
+      toastRef?.show(message, "error");
+    },
+  }));
 
-  const shipUpdateMutation = createMutation({
+  const shipUpdateMutation = createMutation(() => ({
     mutationFn: (payload: { id: string; data: any }) =>
       trpc.shipments.update.mutate(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shipments"] });
       toastRef?.show("Pengiriman diperbarui", "success");
     },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : "Gagal memperbarui pengiriman";
+      toastRef?.show(message, "error");
+    },
+  }));
 
-  const shipDeleteMutation = createMutation({
+  const shipDeleteMutation = createMutation(() => ({
     mutationFn: (id: string) => trpc.shipments.delete.mutate(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shipments"] });
       toastRef?.show("Pengiriman dihapus", "success");
     },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : "Gagal menghapus pengiriman";
+      toastRef?.show(message, "error");
+    },
+  }));
 
   const handleCreate = async (event: SubmitEvent) => {
     event.preventDefault();
@@ -101,19 +111,19 @@
           data[el.getAttribute("data-field")!] = el.textContent?.trim();
         }
       });
-      shipUpdateMutation.mutate({ id, data });
+      shipUpdateMutation.mutate({ id, data: data as any });
     }
   };
 
-  const currentShipments = $derived($shipmentsQuery.data || initialShipments);
-  const pendingOrders = $derived($ordersFulfillmentQuery.data || []);
+  let currentShipments = $derived((shipmentsQuery.data as ShipmentRow[]) || initialShipments);
+  let pendingOrders = $derived(ordersFulfillmentQuery.data || []);
 </script>
-
+<div in:fly={{ y: 20, duration: 400, delay: 100 }}>
 <SectionHeader title="Buat Pengiriman" badge="Tracking" />
 <CrudInlineForm
   id="shipment-form"
   on:submit={handleCreate}
-  isSubmitting={$shipCreateMutation.isPending}
+  isSubmitting={shipCreateMutation.isPending}
 >
   <div
     class="flex flex-col md:flex-row flex-wrap gap-4 xl:gap-6 items-end pb-8 border-b border-stone-100 mb-8 w-full"
@@ -136,6 +146,9 @@
         {#each pendingOrders as order}
           <option value={order.orderNo}>{order.customerName}</option>
         {/each}
+        {#if pendingOrders.length === 0}
+          <option value="" disabled>Belum ada order untuk diproses</option>
+        {/if}
       </datalist>
     </div>
     <div class="space-y-1.5 w-full md:w-32 shrink-0">
@@ -149,10 +162,10 @@
         name="status"
         class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm appearance-none cursor-pointer outline-none font-medium"
       >
-        <option value="packing">Packing</option>
-        <option value="shipped">Dikirim</option>
-        <option value="delivered">Terkirim</option>
-        <option value="cancelled">Batal</option>
+        <option value="packing">📦 Packing</option>
+        <option value="shipped">🚚 Dikirim</option>
+        <option value="delivered">✅ Terkirim</option>
+        <option value="cancelled">❌ Batal</option>
       </select>
     </div>
     <div class="space-y-1.5 w-full md:w-40 shrink-0">
@@ -164,9 +177,20 @@
       <input
         id="carrier"
         name="carrier"
+        list="kurir-options"
         placeholder="Cth: JNE, J&T"
         class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none"
       />
+      <datalist id="kurir-options">
+        <option value="JNE Express"></option>
+        <option value="J&T Express"></option>
+        <option value="SiCepat Ekspres"></option>
+        <option value="Anteraja"></option>
+        <option value="Pos Indonesia"></option>
+        <option value="GoSend"></option>
+        <option value="GrabExpress"></option>
+        <option value="Paxel"></option>
+      </datalist>
     </div>
     <div class="space-y-1.5 w-full md:flex-1 min-w-[150px]">
       <label
@@ -197,9 +221,9 @@
     <button
       class="flex items-center justify-center gap-2 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto"
       type="submit"
-      disabled={$shipCreateMutation.isPending}
+      disabled={shipCreateMutation.isPending}
     >
-      {#if $shipCreateMutation.isPending}
+      {#if shipCreateMutation.isPending}
         <svg
           class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
           xmlns="http://www.w3.org/2000/svg"
@@ -249,6 +273,7 @@
     {/if}
     {#each currentShipments as row (row.id)}
       <tr
+        transition:fade={{ duration: 200 }}
         class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
       >
         <td
@@ -294,12 +319,12 @@
           class="py-4 text-stone-500 text-sm italic outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
           >{row.notes || "-"}</td
         >
-        <td class="py-4">
+        <td class="py-4 text-right pr-4">
           <RowActions
-            isSaving={$shipUpdateMutation.isPending &&
-              $shipUpdateMutation.variables?.id === row.id}
-            isDeleting={$shipDeleteMutation.isPending &&
-              $shipDeleteMutation.variables === row.id}
+            isSaving={shipUpdateMutation.isPending &&
+              (shipUpdateMutation.variables as any)?.id === row.id}
+            isDeleting={shipDeleteMutation.isPending &&
+              (shipDeleteMutation.variables as any) === row.id}
             onSave={(e) =>
               handleRowAction(row.id, "save", e.currentTarget.closest("tr"))}
             onDelete={() => handleRowAction(row.id, "delete", null)}
@@ -309,5 +334,6 @@
     {/each}
   </tbody>
 </AdminDataTable>
+</div>
 
 <ToastNotification bind:this={toastRef} />

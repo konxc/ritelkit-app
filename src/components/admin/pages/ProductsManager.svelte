@@ -1,201 +1,235 @@
-<script module lang="ts">
-  export type ProductRow = {
-    id: string | number;
-    name: string;
-    sku?: string | null;
-    price: number;
-    stock: number;
-    category_id?: string | null;
-    category_name?: string | null;
-    isActive: boolean;
-    images_json?: string;
-  };
-
-  export type CategoryOption = {
-    id: string | number;
-    name: string;
-  };
-</script>
-
 <script lang="ts">
-  import AdminDataTable from "../AdminDataTable.svelte";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
-  import RowActions from "../RowActions.svelte";
-  import SectionHeader from "../SectionHeader.svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import { onMount } from "svelte";
-  import { trpc } from "../../../lib/trpc";
-  import {
-    createQuery,
-    createMutation,
-    useQueryClient,
-  } from "@tanstack/svelte-query";
-  import {
-    renderGallery,
-    uploadFiles,
-    attachDrop,
-    parseUrls,
-  } from "../../../lib/admin-product-client";
-  import type { Product } from "../../../lib/types";
+import { trpc } from "../../../lib/trpc";
+import { fade, fly } from "svelte/transition";
+import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+import { onMount } from "svelte";
+import type { Product } from "../../../lib/types";
+import { parseUrls, uploadFiles } from "../../../lib/upload-utils";
+import AdminDataTable from "../AdminDataTable.svelte";
+import CrudInlineForm from "../CrudInlineForm.svelte";
+import ImageGallery from "../ImageGallery.svelte";
+import RowActions from "../RowActions.svelte";
+import SectionHeader from "../SectionHeader.svelte";
+import ToastNotification from "../ToastNotification.svelte";
 
-  type ProductRow = Product & { categoryName?: string | null };
-  type CategoryOption = { id: string; name: string };
+type ProductRow = Pick<
+	Product,
+	| "id"
+	| "name"
+	| "sku"
+	| "price"
+	| "stock"
+	| "isActive"
+	| "categoryId"
+	| "slug"
+	| "description"
+	| "imagesJson"
+> & {
+	categoryName?: string | null;
+};
 
-  let {
-    rows: initialRows = [],
+type CategoryOption = { id: string | number; name: string };
+type ProductMutationInput = {
+	name: string;
+	slug: string;
+	description?: string | null;
+	categoryId?: string | null;
+	price: number;
+	cost?: number | null;
+	stock?: number | null;
+	isActive: number;
+	imagesJson?: string | null;
+};
 
-    categories = [],
-  }: { rows: ProductRow[]; categories: CategoryOption[] } = $props();
+let {
+	rows: initialRows = [],
+	categories = [],
+}: {
+	rows?: ProductRow[];
+	categories?: CategoryOption[];
+} = $props();
 
-  const queryClient = useQueryClient();
-  let csrfToken = "";
-  let toastRef: ToastNotification;
+const queryClient = useQueryClient();
+let isMutating = $state(false);
 
-  // Use tRPC Query for real-time syncing
-  const productsQuery = createQuery({
-    queryKey: ["products"],
-    queryFn: () => trpc.products.list.query(),
-    initialData: () => initialRows as any,
-  });
+let csrfToken = "";
+let toastRef: ToastNotification;
 
-  const createMutationFn = createMutation({
-    mutationFn: (data: any) => trpc.products.create.mutate(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      toastRef?.show("Produk berhasil ditambahkan!", "success");
-    },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+onMount(() => {
+	csrfToken =
+		document
+			.querySelector("meta[name='csrf-token']")
+			?.getAttribute("content") || "";
+});
 
-  const updateMutation = createMutation({
-    mutationFn: (payload: { id: string; data: any }) =>
-      trpc.products.update.mutate(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      toastRef?.show("Produk diperbarui", "success");
-    },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+const productsQuery = createQuery(() => ({
+	queryKey: ["products.list"],
+	queryFn: () => trpc.products.list.query(),
+	initialData: initialRows.length > 0 ? initialRows as any : undefined,
+	refetchOnMount: false,
+	staleTime: 1000 * 60 * 5,
+}));
 
-  const deleteMutation = createMutation({
-    mutationFn: (id: string) => trpc.products.delete.mutate(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["products"] });
-      toastRef?.show("Produk dihapus", "success");
-    },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+let currentRows = $derived((productsQuery.data as ProductRow[]) || initialRows);
 
-  onMount(() => {
-    csrfToken =
-      document
-        .querySelector("meta[name='csrf-token']")
-        ?.getAttribute("content") || "";
-  });
+const handleCreate = async (payload: ProductMutationInput) => {
+	isMutating = true;
+	try {
+		await trpc.products.create.mutate(payload);
+		queryClient.invalidateQueries({ queryKey: ["products.list"] });
+		toastRef?.show("Produk berhasil ditambahkan!", "success");
+		return true;
+	} catch (err: any) {
+		toastRef?.show(err.message || "Gagal menambah produk", "error");
+		return false;
+	} finally {
+		isMutating = false;
+	}
+};
 
-  const productFormHandler = async (event: SubmitEvent) => {
-    event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement;
-    const formData = new FormData(form);
+const handleUpdate = async (
+	id: string,
+	data: Partial<ProductMutationInput>,
+) => {
+	isMutating = true;
+	try {
+		await trpc.products.update.mutate({ id, data });
+		queryClient.invalidateQueries({ queryKey: ["products.list"] });
+		toastRef?.show("Produk diperbarui", "success");
+	} catch (err: any) {
+		toastRef?.show(err.message || "Gagal memperbarui produk", "error");
+	} finally {
+		isMutating = false;
+	}
+};
 
-    // Transform FormData to Object
-    const payload: any = {};
-    formData.forEach((value, key) => {
-      if (key === "price" || key === "stock" || key === "cost") {
-        payload[key] = Number(value);
-      } else if (key === "isActive") {
-        payload[key] = value === "true" ? 1 : 0;
-      } else if (key === "image_urls") {
-        payload["imagesJson"] = JSON.stringify(parseUrls(String(value)));
-      } else {
-        payload[key] = value;
-      }
-    });
+const handleDelete = async (id: string) => {
+	if (!confirm("Hapus produk ini?")) return;
+	isMutating = true;
+	try {
+		await trpc.products.delete.mutate(id);
+		queryClient.invalidateQueries({ queryKey: ["products.list"] });
+		toastRef?.show("Produk dihapus", "success");
+	} catch (err: any) {
+		toastRef?.show(err.message || "Gagal menghapus produk", "error");
+	} finally {
+		isMutating = false;
+	}
+};
 
-    createMutationFn.mutate(payload);
-    form.reset();
-  };
+let newImageUrls = $state<string[]>([]);
+let uploadStatus = $state("");
+let newName = $state("");
+let newSlug = $derived(
+	newName
+		.toLowerCase()
+		.trim()
+		.replace(/ /g, "-")
+		.replace(/[^\w-]+/g, ""),
+);
 
-  const handleRowAction = async (
-    id: string,
-    action: string,
-    rowEl: HTMLElement,
-  ) => {
-    if (action === "delete") {
-      if (!confirm("Hapus produk ini?")) return;
-      deleteMutation.mutate(id);
-      return;
-    }
+const handleFileUpload = async (event: Event) => {
+	const input = event.target as HTMLInputElement;
+	if (!input.files?.length) return;
+	try {
+		uploadStatus = "Mengupload...";
+		const urls = await uploadFiles(input.files, csrfToken);
+		newImageUrls = [...newImageUrls, ...urls];
+		uploadStatus = "";
+	} catch (err: any) {
+		toastRef?.show(err.message, "error");
+		uploadStatus = "Gagal upload";
+	}
+};
 
-    if (action === "save") {
-      const payload: Record<string, any> = {};
-      rowEl.querySelectorAll("[data-field]").forEach((cell) => {
-        const field = cell.getAttribute("data-field");
-        if (!field) return;
-        if (
-          cell instanceof HTMLSelectElement ||
-          cell instanceof HTMLInputElement
-        ) {
-          payload[field] =
-            field === "isActive" ? (cell.value === "true" ? 1 : 0) : cell.value;
-          return;
-        }
-        if (field === "images_json") {
-          payload[field] = cell.getAttribute("data-value") || "[]";
-          return;
-        }
-        payload[field] = cell.textContent?.trim() || "";
-      });
+const handleDrop = async (event: DragEvent) => {
+	event.preventDefault();
+	const files = event.dataTransfer?.files;
+	if (!files?.length) return;
+	try {
+		uploadStatus = "Mengupload...";
+		const urls = await uploadFiles(files, csrfToken);
+		newImageUrls = [...newImageUrls, ...urls];
+		uploadStatus = "";
+	} catch (err: any) {
+		toastRef?.show(err.message, "error");
+		uploadStatus = "Gagal upload";
+	}
+};
 
-      // Simple transformation
-      if (payload.price) payload.price = Number(payload.price);
-      if (payload.stock) payload.stock = Number(payload.stock);
+const productFormHandler = async (event: SubmitEvent) => {
+	event.preventDefault();
+	const form = event.currentTarget as HTMLFormElement;
+	const formData = new FormData(form);
 
-      updateMutation.mutate({ id, data: payload });
-    }
-  };
+	const payload = {
+		name: String(formData.get("name") || ""),
+		sku: String(formData.get("sku") || "") || null,
+		categoryId: String(formData.get("categoryId") || "") || null,
+		price: Number(formData.get("price") || 0),
+		stock: formData.get("stock") ? Number(formData.get("stock")) : null,
+		isActive: formData.get("isActive") === "true" ? 1 : 0,
+		description: String(formData.get("description") || "") || null,
+		imagesJson: JSON.stringify(newImageUrls),
+		slug: newSlug || `item-${Date.now()}`,
+	};
 
-  const setupGallery = () => {
-    const input = document.querySelector<HTMLInputElement>("#new-image-urls");
-    const container = document.querySelector<HTMLElement>("#new-gallery");
-    if (!input || !container) return;
-    attachDrop(container, async (files) => {
-      const urls = await uploadFiles(files, csrfToken);
-      const current = parseUrls(input.value);
-      input.value = [...current, ...urls].join(",");
-      const next = parseUrls(input.value);
-      renderGallery(container, next, (updated) => {
-        input.value = updated.join(",");
-        renderGallery(container, updated, (up) => {
-          input.value = up.join(",");
-        });
-      });
-    });
-  };
+	const ok = await handleCreate(payload as ProductMutationInput);
+	if (ok) {
+		form.reset();
+		newImageUrls = [];
+		newName = "";
+	}
+};
 
-  const attachGalleryHandlers = (node: HTMLElement) => {
-    const value = node.getAttribute("data-value") || "[]";
-    const next = JSON.parse(value);
-    renderGallery(node, next, (updated) => {
-      node.setAttribute("data-value", JSON.stringify(updated));
-    });
-  };
+const handleRowAction = async (
+	id: string | number,
+	action: string,
+	rowEl: HTMLElement,
+) => {
+	const resolvedId = String(id);
 
-  $effect(() => {
-    if (typeof window !== "undefined") {
-      setupGallery();
-    }
-  });
+	if (action === "delete") {
+		await handleDelete(resolvedId);
+		return;
+	}
 
-  const currentRows = $derived($productsQuery.data || initialRows);
+	if (action === "save") {
+		const payload: Record<string, string | number | null> = {};
+		rowEl.querySelectorAll("[data-field]").forEach((cell) => {
+			const field = cell.getAttribute("data-field");
+			if (!field) return;
+			if (
+				cell instanceof HTMLSelectElement ||
+				cell instanceof HTMLInputElement
+			) {
+				payload[field] =
+					field === "isActive" ? (cell.value === "true" ? 1 : 0) : cell.value;
+				return;
+			}
+			if (field === "images_json") {
+				payload["imagesJson"] = cell.getAttribute("data-value") || "[]";
+				return;
+			}
+			payload[field] = cell.textContent?.trim() || "";
+		});
+
+		if (payload.price) payload.price = Number(payload.price);
+		if (payload.stock) payload.stock = Number(payload.stock);
+
+		await handleUpdate(resolvedId, payload as Partial<ProductMutationInput>);
+	}
+};
+
+const currentCategories = $derived(categories);
 </script>
-
+<div in:fly={{ y: 20, duration: 400, delay: 100 }}>
 <SectionHeader title="Tambah Produk" badge="E-commerce Ready" />
 
 <CrudInlineForm
   id="product-form"
-  on:submit={productFormHandler}
-  isSubmitting={$createMutationFn.isPending}
+  onsubmit={productFormHandler}
+  isSubmitting={isMutating}
 >
   <div class="space-y-6 border-b border-stone-100 pb-8 mb-8">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -209,6 +243,7 @@
           id="name"
           name="name"
           required
+          bind:value={newName}
           placeholder="Cth: Roti Manis"
           class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none"
         />
@@ -238,7 +273,7 @@
           class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm appearance-none cursor-pointer outline-none"
         >
           <option value="">Pilih Kategori</option>
-          {#each categories as cat}
+          {#each currentCategories as cat}
             <option value={cat.id}>{cat.name}</option>
           {/each}
         </select>
@@ -312,6 +347,10 @@
     <div
       class="upload-zone border-2 border-dashed border-stone-200/80 rounded-2xl p-6 hover:bg-stone-50/50 hover:border-[#c48a3a]/40 transition-colors text-center cursor-pointer relative"
       id="upload-zone"
+      role="button"
+      tabindex="0"
+      ondragover={(e: DragEvent) => e.preventDefault()}
+      ondrop={handleDrop}
     >
       <input
         type="file"
@@ -319,6 +358,7 @@
         multiple
         accept="image/*"
         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        onchange={handleFileUpload}
       />
       <div class="upload-placeholder flex flex-col items-center gap-2">
         <svg
@@ -344,22 +384,21 @@
         </p>
       </div>
     </div>
-    <div
-      id="new-gallery"
-      class="thumbnail-gallery mt-2"
-      data-has="false"
-      data-gallery-input="new-image-urls"
-    ></div>
-    <div id="upload-status" class="muted mt-1.5 text-xs"></div>
-    <input type="hidden" name="image_urls" id="new-image-urls" />
+    <div class="mt-4">
+      <ImageGallery
+        urls={newImageUrls}
+        onChange={(next) => (newImageUrls = next)}
+      />
+    </div>
+    <div id="upload-status" class="muted mt-1.5 text-xs">{uploadStatus}</div>
   </div>
   <div class="flex items-end mt-4">
     <button
       class="flex items-center justify-center gap-3 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto mt-auto"
       type="submit"
-      disabled={$createMutationFn.isPending}
+      disabled={isMutating}
     >
-      {#if $createMutationFn.isPending}
+      {#if isMutating}
         <svg
           class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
           xmlns="http://www.w3.org/2000/svg"
@@ -412,16 +451,19 @@
       {/if}
       {#each currentRows as row (row.id)}
         <tr
+          transition:fade={{ duration: 200 }}
           data-id={row.id}
           class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
         >
           <td class="py-4">
-            <div
-              class="edit-gallery thumbnail-gallery"
-              data-field="images_json"
-              data-value={row.imagesJson || "[]"}
-              use:attachGalleryHandlers
-            ></div>
+            <div data-field="images_json" data-value={row.imagesJson || "[]"}>
+              <ImageGallery
+                urls={parseUrls(row.imagesJson || "[]")}
+                onChange={(next) => {
+                  row.imagesJson = JSON.stringify(next);
+                }}
+              />
+            </div>
           </td>
           <td class="py-4">
             <div
@@ -449,7 +491,7 @@
               class="px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-transparent text-sm cursor-pointer outline-none"
             >
               <option value="">Tanpa Kategori</option>
-              {#each categories as cat}
+              {#each currentCategories as cat}
                 <option value={cat.id} selected={cat.id === row.categoryId}>
                   {cat.name}
                 </option>
@@ -485,10 +527,8 @@
           </td>
           <td class="py-4">
             <RowActions
-              isSaving={$updateMutation.isPending &&
-                $updateMutation.variables?.id === row.id}
-              isDeleting={$deleteMutation.isPending &&
-                $deleteMutation.variables === row.id}
+              isSaving={isMutating}
+              isDeleting={isMutating}
               onSave={(e) =>
                 handleRowAction(row.id, "save", e.currentTarget.closest("tr")!)}
               onDelete={() => handleRowAction(row.id, "delete", null!)}
@@ -499,7 +539,6 @@
     </tbody>
   </AdminDataTable>
 </div>
-
-<ToastNotification bind:this={toastRef} />
+</div>
 
 <ToastNotification bind:this={toastRef} />

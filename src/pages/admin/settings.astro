@@ -1,29 +1,16 @@
 ---
+import SettingsPageContent from "../../components/admin/pages/SettingsPageContent.svelte";
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import SettingsManager from "../../components/admin/pages/SettingsManager.svelte";
 import { requireAdmin } from "../../lib/auth";
-import { appRouter } from "../../server/router";
-import { createContext } from "../../server/context";
-import { createQueryClient } from "../../lib/queryClient";
-import { dehydrate } from "@tanstack/svelte-query";
+import { initDb } from "../../lib/db";
 
+await initDb(Astro);
 const admin = await requireAdmin(Astro);
 if (!admin) {
-    return Astro.redirect("/admin/login");
+	return Astro.redirect("/admin/login");
 }
-
-// SSR Pre-fetching
-const queryClient = createQueryClient();
-const trpc = appRouter.createCaller(await createContext(Astro));
-
-await queryClient.prefetchQuery({
-    queryKey: ["settings"],
-    queryFn: () => trpc.settings.getSettings(),
-});
-
-const dehydratedState = dehydrate(queryClient);
 ---
 
-<AdminLayout title="Pengaturan" dehydratedState={dehydratedState}>
-    <SettingsManager client:load />
+<AdminLayout title="Pengaturan">
+  <SettingsPageContent client:load />
 </AdminLayout>

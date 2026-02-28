@@ -1,23 +1,31 @@
 ---
 import "../../styles/global.css";
-import { initDb, getDb } from "../../lib/db";
-import { getEnv } from "../../lib/env";
+import { actions } from "astro:actions";
 import { ensureCsrfToken, getAdminSession } from "../../lib/auth";
+import { getDb, initDb } from "../../lib/db";
+import { getEnv } from "../../lib/env";
+
 await initDb(Astro);
 const db = getDb(Astro);
 const result = await db.execute("SELECT COUNT(*) as count FROM admin_users");
 const adminCount = Number(result.rows[0]?.count || 0);
 if (adminCount === 0) {
-    return Astro.redirect("/admin/setup");
+	return Astro.redirect("/admin/setup");
 }
 const session = await getAdminSession(Astro);
 if (session) {
-    return Astro.redirect("/admin");
+	return Astro.redirect("/admin");
 }
+
+const call = Astro.getActionResult(actions.adminLogin);
+if (call?.data) {
+	return Astro.redirect("/admin");
+}
+
 const env = getEnv(Astro);
 const csrfToken = ensureCsrfToken(Astro);
 const info = Astro.url.searchParams.get("info");
-const error = Astro.url.searchParams.get("error");
+const error = call?.error?.message || Astro.url.searchParams.get("error");
 const success = Astro.url.searchParams.get("success");
 ---
 
@@ -48,27 +56,15 @@ const success = Astro.url.searchParams.get("success");
                 )
             }
             {
-                error === "invalid" && (
-                    <p class="mt-4 text-[0.9rem] text-[#6b625a]">
-                        Email atau password salah.
+                error && (
+                    <p class="mt-4 text-[0.9rem] text-red-600 font-medium">
+                        {error === "invalid" ? "Email atau password salah." : 
+                         error === "rate" ? "Terlalu banyak percobaan, coba lagi nanti." :
+                         error === "csrf" ? "Sesi form kadaluarsa, refresh halaman." : error}
                     </p>
                 )
             }
-            {
-                error === "rate" && (
-                    <p class="mt-4 text-[0.9rem] text-[#6b625a]">
-                        Terlalu banyak percobaan, coba lagi nanti.
-                    </p>
-                )
-            }
-            {
-                error === "csrf" && (
-                    <p class="mt-4 text-[0.9rem] text-[#6b625a]">
-                        Sesi form kadaluarsa, refresh halaman.
-                    </p>
-                )
-            }
-            <form method="post" action="/api/admin/login">
+            <form method="post" action={actions.adminLogin}>
                 <input type="hidden" name="csrf_token" value={csrfToken} />
                 <label>Email</label>
                 <input

@@ -1,71 +1,83 @@
-<script module lang="ts">
-  export type InvoiceRow = {
-    invoice_no: string;
-    order_no: string;
-    total: number;
-    status: string;
-    issued_at: string | Date;
-  };
-</script>
-
 <script lang="ts">
-  import CrudInlineForm from "../CrudInlineForm.svelte";
-  import SectionHeader from "../SectionHeader.svelte";
-  import AdminDataTable from "../AdminDataTable.svelte";
-  import StatusBadge from "../StatusBadge.svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import { trpc } from "../../../lib/trpc";
-  import {
-    createQuery,
-    createMutation,
-    useQueryClient,
-  } from "@tanstack/svelte-query";
+import { trpc } from "../../../lib/trpc";
+import { fade, fly } from "svelte/transition";
+import { createQuery } from "@tanstack/svelte-query";
+import { actions } from "astro:actions";
+import AdminDataTable from "../AdminDataTable.svelte";
+import CrudInlineForm from "../CrudInlineForm.svelte";
+import SectionHeader from "../SectionHeader.svelte";
+import StatusBadge from "../StatusBadge.svelte";
+import ToastNotification from "../ToastNotification.svelte";
 
-  let { rows: initialRows = [] }: { rows: any[] } = $props();
+export type InvoiceRow = {
+	invoiceNo: string;
+	orderNo: string;
+	total: number;
+	status: string;
+	issuedAt: string | Date;
+	dueAt?: string | null;
+};
 
-  const queryClient = useQueryClient();
-  let orderNo = $state("");
-  let toastRef = $state<ToastNotification>();
+let {
+	rows: initialRows = [],
+	page = 1,
+	limit = 20,
+}: {
+	rows?: InvoiceRow[];
+	page?: number;
+	limit?: number;
+} = $props();
 
-  const invoicesQuery = createQuery({
-    queryKey: ["invoices"],
-    queryFn: () => trpc.invoices.list.query(),
-    initialData: () => initialRows,
-  });
+const offset = $derived((page - 1) * limit);
 
-  const createInvoiceMutation = createMutation({
-    mutationFn: (data: { orderNo: string }) =>
-      trpc.invoices.create.mutate(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["invoices"] });
-      toastRef?.show("Invoice berhasil dibuat", "success");
-      orderNo = "";
-    },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+const invoicesQuery = createQuery(() => ({
+	queryKey: ["invoices.list", { limit, offset }],
+	queryFn: () => trpc.invoices.list.query({ limit, offset }),
+	initialData:
+		initialRows.length > 0
+			? initialRows
+			: undefined,
+	refetchOnMount: false,
+	staleTime: 1000 * 60 * 5,
+}));
 
-  const formatCurrency = (value: number | undefined) =>
-    `Rp ${Number(value ?? 0).toLocaleString("id-ID")}`;
+let currentInvoices = $derived(
+	(invoicesQuery.data as InvoiceRow[]) || initialRows,
+);
 
-  const badgeTone = (status: string) => {
-    if (status === "paid") return "success";
-    if (status === "void") return "danger";
-    return "default";
-  };
+let isSubmitting = $state(false);
+let orderNo = $state("");
+let toastRef = $state<ToastNotification>();
 
-  const handleSubmit = async (event: SubmitEvent) => {
-    event.preventDefault();
-    createInvoiceMutation.mutate({ orderNo });
-  };
+const badgeTone = (status: string) => {
+	if (status === "paid") return "success";
+	if (status === "void") return "danger";
+	return "default";
+};
 
-  const currentInvoices = $derived($invoicesQuery.data || initialRows);
+const handleSubmit = async (event: SubmitEvent) => {
+	event.preventDefault();
+	isSubmitting = true;
+	try {
+		const { error } = await actions.createInvoice({ orderNo });
+		if (error) {
+			toastRef?.show(error.message, "error");
+		} else {
+			toastRef?.show("Invoice berhasil dibuat", "success");
+			orderNo = "";
+			invoicesQuery.refetch();
+		}
+	} finally {
+		isSubmitting = false;
+	}
+};
 </script>
-
+<div in:fly={{ y: 20, duration: 400, delay: 100 }}>
 <SectionHeader title="Buat Invoice" badge="Manual" />
 <CrudInlineForm
   id="invoice-form"
-  on:submit={handleSubmit}
-  isSubmitting={$createInvoiceMutation.isPending}
+  onsubmit={handleSubmit}
+  isSubmitting={isSubmitting}
 >
   <div
     class="flex flex-col md:flex-row gap-4 xl:gap-6 items-end pb-8 border-b border-stone-100 mb-8 w-full"
@@ -88,9 +100,9 @@
     <button
       class="flex items-center justify-center gap-3 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto"
       type="submit"
-      disabled={$createInvoiceMutation.isPending || !orderNo}
+      disabled={isSubmitting || !orderNo}
     >
-      {#if $createInvoiceMutation.isPending}
+      {#if isSubmitting}
         <svg
           class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
           xmlns="http://www.w3.org/2000/svg"
@@ -134,39 +146,35 @@
   <tbody>
     {#if currentInvoices.length === 0}
       <tr>
-        <td colspan="5" class="text-center py-12 text-stone-400 text-sm italic"
-          >Belum ada invoice diterbitkan.</td
-        >
+        <td colspan="5" class="text-center py-12 text-stone-400 text-sm italic">
+          Belum ada invoice yang diterbitkan.
+        </td>
       </tr>
     {/if}
-    {#each currentInvoices as inv (inv.invoiceNo)}
+    {#each currentInvoices as row (row.invoiceNo)}
       <tr
+        transition:fade={{ duration: 200 }}
         class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
       >
-        <td class="py-4">
-          <a
-            href={`/admin/invoices/${inv.invoiceNo}`}
-            class="font-bold text-stone-900 hover:text-[#c48a3a] underline decoration-stone-200 underline-offset-4 transition-colors"
-          >
-            {inv.invoiceNo}
-          </a>
+        <td class="py-4 font-mono font-bold text-stone-900 border border-transparent px-3 py-1.5 rounded-lg transition-all">
+          {row.invoiceNo}
         </td>
-        <td class="py-4 font-mono text-xs text-stone-500">{inv.orderNo}</td>
-        <td class="py-4 tabular-nums font-bold text-stone-800"
-          >{formatCurrency(inv.total)}</td
-        >
-        <td class="py-4">
-          <StatusBadge
-            label={inv.status.toUpperCase()}
-            tone={badgeTone(inv.status)}
-          />
+        <td class="py-4 font-mono font-medium text-stone-600 px-3 py-1.5">
+          {row.orderNo}
         </td>
-        <td class="py-4 font-mono text-xs text-stone-400"
-          >{String(inv.issuedAt).split("T")[0]}</td
-        >
+        <td class="py-4 font-mono font-bold text-stone-800 tabular-nums px-3 py-1.5">
+          <span class="text-stone-400 text-xs mr-1 font-sans">Rp</span>{row.total?.toLocaleString("id-ID")}
+        </td>
+        <td class="py-4 px-3 py-1.5">
+          <StatusBadge label={row.status} tone={badgeTone(row.status)} />
+        </td>
+        <td class="py-4 text-stone-500 text-sm font-medium px-3 py-1.5">
+          {new Date(row.issuedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+        </td>
       </tr>
     {/each}
   </tbody>
 </AdminDataTable>
+</div>
 
 <ToastNotification bind:this={toastRef} />

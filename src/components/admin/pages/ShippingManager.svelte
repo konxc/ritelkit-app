@@ -1,171 +1,211 @@
-<script module lang="ts">
-  export type RuleRow = {
-    id: string | number;
-    name: string;
-    type: string;
-    priority: number;
-    config_json: string;
-    is_active: boolean;
-  };
-</script>
-
 <script lang="ts">
-  import AdminDataTable from "../AdminDataTable.svelte";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
-  import SectionHeader from "../SectionHeader.svelte";
-  import RowActions from "../RowActions.svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import { initShippingRuleConfig } from "../../../lib/admin-shipping-client";
-  import { trpc } from "../../../lib/trpc";
-  import {
-    createQuery,
-    createMutation,
-    useQueryClient,
-  } from "@tanstack/svelte-query";
-  import { onMount } from "svelte";
+import { trpc } from "../../../lib/trpc";
+import { fade, fly } from "svelte/transition";
+import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+import { actions } from "astro:actions";
+import AdminDataTable from "../AdminDataTable.svelte";
+import CrudInlineForm from "../CrudInlineForm.svelte";
+import RowActions from "../RowActions.svelte";
+import SectionHeader from "../SectionHeader.svelte";
+import ToastNotification from "../ToastNotification.svelte";
 
-  let { rows: initialRows = [] }: { rows: any[] } = $props();
+export type RuleRow = {
+	id: string | number;
+	name: string;
+	type: string;
+	priority: number;
+	configJson: string;
+	isActive: boolean | number;
+};
 
-  const queryClient = useQueryClient();
-  let configBuilder: (() => any) | null = null;
-  let toastRef: ToastNotification;
+type ShippingRuleInput = {
+	name: string;
+	type: string;
+	priority: number;
+	config: Record<string, unknown>;
+	isActive: boolean | number;
+};
 
-  onMount(() => {
-    const form = document.querySelector<HTMLFormElement>("#shipping-rule-form");
-    if (form) {
-      configBuilder = initShippingRuleConfig(form);
-    }
-  });
+let { rows: initialRows = [] }: { rows: RuleRow[] } = $props();
 
-  const rulesQuery = createQuery({
-    queryKey: ["shippingRules"],
-    queryFn: () => trpc.shippingRules.list.query(),
-    initialData: () => initialRows,
-  });
+const queryClient = useQueryClient();
+let toastRef = $state<ToastNotification>();
+let isSubmitting = $state(false);
 
-  const createRuleMutation = createMutation({
-    mutationFn: (data: any) => trpc.shippingRules.create.mutate(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["shippingRules"] });
-      toastRef?.show("Rule pengiriman berhasil ditambahkan!", "success");
-    },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+const rulesQuery = createQuery(() => ({
+	queryKey: ["shippingRules.list"],
+	queryFn: () => trpc.shippingRules.list.query(),
+	initialData: initialRows.length > 0 ? initialRows : undefined,
+	refetchOnMount: false,
+	staleTime: 1000 * 60 * 5,
+}));
 
-  const updateRuleMutation = createMutation({
-    mutationFn: (payload: { id: string; data: any }) =>
-      trpc.shippingRules.update.mutate(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["shippingRules"] });
-      toastRef?.show("Rule diperbarui", "success");
-    },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+let currentRules = $derived((rulesQuery.data as RuleRow[]) || initialRows);
 
-  const deleteRuleMutation = createMutation({
-    mutationFn: (id: string) => trpc.shippingRules.delete.mutate(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["shippingRules"] });
-      toastRef?.show("Rule pengiriman dihapus", "success");
-    },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+// Reactive state for the create form
+let configType = $state("flat");
+let flatFee = $state(10000);
+let thresholdAmount = $state(150000);
+let thresholdFee = $state(10000);
+let zoneList = $state("");
 
-  const handleCreate = async (event: SubmitEvent) => {
-    event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement;
-    const formData = new FormData(form);
-    const config = configBuilder ? configBuilder() : {};
+const currentConfig = $derived.by(() => {
+	if (configType === "flat") return { fee: flatFee };
+	if (configType === "free_threshold")
+		return { threshold: thresholdAmount, fee: thresholdFee };
+	if (configType === "zone") {
+		const zones = zoneList
+			.split("\n")
+			.map((line) => line.trim())
+			.filter(Boolean)
+			.map((line) => {
+				const [province, city, district, fee] = line.split("|");
+				return {
+					province: (province || "").trim(),
+					city: (city || "").trim(),
+					district: (district || "").trim(),
+					fee: Number(fee || 0),
+				};
+			});
+		return { zones };
+	}
+	return {};
+});
 
-    createRuleMutation.mutate({
-      name: formData.get("name") as string,
-      type: formData.get("type") as string,
-      priority: Number(formData.get("priority")),
-      config,
-      isActive: true, // Default to true on create
-    });
-    form.reset();
-  };
+const configPreview = $derived(JSON.stringify(currentConfig));
 
-  const handleRowAction = (
-    id: string,
-    action: string,
-    rowElement: HTMLElement | null,
-  ) => {
-    if (action === "delete") {
-      if (confirm("Hapus rule ini?")) {
-        deleteRuleMutation.mutate(id);
-      }
-    } else if (action === "save" && rowElement) {
-      const fields: Record<string, any> = {};
-      rowElement.querySelectorAll("[data-field]").forEach((el) => {
-        const field = el.getAttribute("data-field")!;
-        if (
-          el instanceof HTMLSelectElement ||
-          el instanceof HTMLInputElement ||
-          el instanceof HTMLTextAreaElement
-        ) {
-          fields[field] = el.value;
-        } else {
-          fields[field] = el.textContent?.trim();
-        }
-      });
+let savingId = $state<string | null>(null);
+let deletingId = $state<string | null>(null);
 
-      const data = {
-        name: fields.name,
-        type: fields.type,
-        priority: Number(fields.priority),
-        config: fields.config ? JSON.parse(fields.config) : undefined,
-        isActive: fields.isActive === "true",
-      };
+const handleCreate = async (event: SubmitEvent) => {
+	event.preventDefault();
+	const form = event.currentTarget as HTMLFormElement;
+	const formData = new FormData(form);
 
-      updateRuleMutation.mutate({ id, data });
-    }
-  };
+	isSubmitting = true;
+	try {
+		await trpc.shippingRules.create.mutate({
+			name: formData.get("name") as string,
+			type: configType,
+			priority: Number(formData.get("priority")),
+			config: currentConfig,
+			isActive: true,
+		});
 
-  let isSimulating = $state(false);
-  let simulateMessage = $state("");
+		toastRef?.show("Rule pengiriman berhasil ditambahkan!", "success");
+		form.reset();
+		configType = "flat";
+		flatFee = 10000;
+		thresholdAmount = 150000;
+		thresholdFee = 10000;
+		zoneList = "";
+		queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
+	} catch (error: unknown) {
+		const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+		toastRef?.show(message, "error");
+	} finally {
+		isSubmitting = false;
+	}
+};
 
-  const handleSimulation = async (event: SubmitEvent) => {
-    event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement;
-    const data = new FormData(form);
-    const payload = {
-      subtotal: Number(data.get("subtotal") || 0),
-      province: String(data.get("province") || ""),
-      city: String(data.get("city") || ""),
-      district: String(data.get("district") || ""),
-      free_shipping: data.get("free_shipping") === "true",
-    };
+const handleRowAction = async (
+	id: string | number,
+	action: string,
+	rowElement: HTMLElement | null,
+) => {
+	const resolvedId = String(id);
+	if (action === "delete") {
+		if (confirm("Hapus rule ini?")) {
+			deletingId = resolvedId;
+			try {
+				await trpc.shippingRules.delete.mutate(resolvedId);
+				toastRef?.show("Rule pengiriman dihapus", "success");
+				queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
+			} catch (error: unknown) {
+				const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+				toastRef?.show(message, "error");
+			} finally {
+				deletingId = null;
+			}
+		}
+	} else if (action === "save" && rowElement) {
+		const fields: Record<string, string> = {};
+		rowElement.querySelectorAll("[data-field]").forEach((el) => {
+			const field = el.getAttribute("data-field")!;
+			if (
+				el instanceof HTMLSelectElement ||
+				el instanceof HTMLInputElement ||
+				el instanceof HTMLTextAreaElement
+			) {
+				fields[field] = el.value;
+			} else {
+				fields[field] = el.textContent?.trim() || "";
+			}
+		});
 
-    isSimulating = true;
-    simulateMessage = "";
+		const data = {
+			name: fields.name,
+			type: fields.type,
+			priority: Number(fields.priority),
+			config: fields.config
+				? (JSON.parse(fields.config) as Record<string, unknown>)
+				: undefined,
+			isActive: fields.isActive === "true",
+		};
 
-    try {
-      // Simulation still uses fetch as it's a test endpoint, but could be tRPC-ified too.
-      // For now, let's keep it as is if there's no tRPC procedure for it yet.
-      const response = await fetch("/api/admin/shipping-simulate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (response.ok) {
-        const result = (await response.json()) as any;
-        simulateMessage = `Rule: ${result.rule} | Ongkir: Rp ${Number(result.fee).toLocaleString("id-ID")}`;
-      }
-    } finally {
-      isSimulating = false;
-    }
-  };
+		savingId = resolvedId;
+		try {
+			await trpc.shippingRules.update.mutate({
+				id: resolvedId,
+				data,
+			});
+			toastRef?.show("Rule diperbarui", "success");
+			queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
+		} catch (error: unknown) {
+			const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+			toastRef?.show(message, "error");
+		} finally {
+			savingId = null;
+		}
+	}
+};
 
-  const currentRules = $derived($rulesQuery.data || initialRows);
+let isSimulating = $state(false);
+let simulateMessage = $state("");
+
+const handleSimulation = async (event: SubmitEvent) => {
+	event.preventDefault();
+	const form = event.currentTarget as HTMLFormElement;
+	const formData = new FormData(form);
+	const payload = {
+		subtotal: Number(formData.get("subtotal") || 0),
+		province: String(formData.get("province") || ""),
+		city: String(formData.get("city") || ""),
+		district: String(formData.get("district") || ""),
+		freeShipping: formData.get("free_shipping") === "true",
+	};
+
+	isSimulating = true;
+	simulateMessage = "";
+
+	try {
+		const { data, error } = await actions.simulateShipping(payload);
+		if (!error && data) {
+			simulateMessage = `Rule: ${String(data.rule || "-")} | Ongkir: Rp ${Number(data.fee || 0).toLocaleString("id-ID")}`;
+		} else if (error) {
+			simulateMessage = `Error: ${error.message}`;
+		}
+	} finally {
+		isSimulating = false;
+	}
+};
 </script>
-
+<div in:fly={{ y: 20, duration: 400, delay: 100 }}>
 <SectionHeader title="Tambah Rule" badge="Ongkir dinamis" />
 <CrudInlineForm
   id="shipping-rule-form"
-  on:submit={handleCreate}
-  isSubmitting={$createRuleMutation.isPending}
+  onsubmit={handleCreate}
+  isSubmitting={isSubmitting}
 >
   <div class="space-y-6 border-b border-stone-100 pb-8 mb-8">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -197,11 +237,12 @@
             <select
               id="type"
               name="type"
+              bind:value={configType}
               class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none appearance-none cursor-pointer font-medium"
             >
-              <option value="flat">Flat Fee</option>
-              <option value="free_threshold">Threshold</option>
-              <option value="zone">Zonasi</option>
+              <option value="flat">💵 Flat Fee</option>
+              <option value="free_threshold">🛒 Free Threshold</option>
+              <option value="zone">🗺️ Zonasi</option>
             </select>
           </div>
           <div class="space-y-1.5">
@@ -215,7 +256,7 @@
               name="priority"
               type="number"
               value="100"
-              class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold"
+              class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold tabular-nums"
             />
           </div>
         </div>
@@ -223,80 +264,84 @@
 
       <!-- Config Inputs -->
       <div class="lg:col-span-2 space-y-4">
-        <label
+        <p
           class="block text-xs font-semibold text-stone-400 uppercase tracking-widest mb-2"
-          >Konfigurasi Aturan</label
         >
+          Konfigurasi Aturan
+        </p>
 
-        <div id="flat-config" class="space-y-1.5">
-          <label
-            for="flat_fee"
-            class="block text-xs font-semibold text-stone-600"
-            >Flat Fee (Rp)</label
-          >
-          <input
-            id="flat_fee"
-            name="flat_fee"
-            type="number"
-            value="10000"
-            class="w-full md:w-64 px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold tabular-nums"
-          />
-        </div>
-
-        <div
-          id="threshold-config"
-          class="hidden grid grid-cols-1 md:grid-cols-2 gap-6"
-        >
-          <div class="space-y-1.5">
+        {#if configType === "flat"}
+          <div id="flat-config" class="space-y-1.5">
             <label
-              for="threshold_amount"
+              for="flat_fee"
               class="block text-xs font-semibold text-stone-600"
-              >Min. Belanja untuk Gratis (Rp)</label
+              >Flat Fee (Rp)</label
             >
             <input
-              id="threshold_amount"
-              name="threshold_amount"
+              id="flat_fee"
+              name="flat_fee"
               type="number"
-              value="150000"
-              class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold tabular-nums"
+              bind:value={flatFee}
+              class="w-full md:w-64 px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold tabular-nums"
             />
           </div>
-          <div class="space-y-1.5">
-            <label
-              for="threshold_fee"
-              class="block text-xs font-semibold text-stone-600"
-              >Biaya di bawah limit (Rp)</label
-            >
-            <input
-              id="threshold_fee"
-              name="threshold_fee"
-              type="number"
-              value="10000"
-              class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold tabular-nums"
-            />
-          </div>
-        </div>
-
-        <div id="zone-config" class="hidden space-y-1.5">
-          <label
-            for="zone_list"
-            class="block text-xs font-semibold text-stone-600"
-            >Daftar Zona (Pihak Ke-3 / Custom)</label
+        {:else if configType === "free_threshold"}
+          <div
+            id="threshold-config"
+            class="grid grid-cols-1 md:grid-cols-2 gap-6"
           >
-          <textarea
-            id="zone_list"
-            name="zone_list"
-            rows="4"
-            placeholder="DI Yogyakarta|Bantul|Sewon|8000\nDI Yogyakarta|Sleman||12000"
-            class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm font-mono outline-none resize-none"
-          ></textarea>
-          <p class="text-[10px] text-stone-400 italic mt-1">
-            Format: <span
-              class="bg-stone-50 px-1 py-0.5 rounded border border-stone-100"
-              >provinsi|kota|kecamatan|biaya</span
-            >, pisahkan baris baru.
-          </p>
-        </div>
+            <div class="space-y-1.5">
+              <label
+                for="threshold_amount"
+                class="block text-xs font-semibold text-stone-600"
+                >Min. Belanja untuk Gratis (Rp)</label
+              >
+              <input
+                id="threshold_amount"
+                name="threshold_amount"
+                type="number"
+                bind:value={thresholdAmount}
+                class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold tabular-nums"
+              />
+            </div>
+            <div class="space-y-1.5">
+              <label
+                for="threshold_fee"
+                class="block text-xs font-semibold text-stone-600"
+                >Biaya di bawah limit (Rp)</label
+              >
+              <input
+                id="threshold_fee"
+                name="threshold_fee"
+                type="number"
+                bind:value={thresholdFee}
+                class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold tabular-nums"
+              />
+            </div>
+          </div>
+        {:else if configType === "zone"}
+          <div id="zone-config" class="space-y-1.5">
+            <label
+              for="zone_list"
+              class="block text-xs font-semibold text-stone-600"
+              >Daftar Zona (Pihak Ke-3 / Custom)</label
+            >
+            <textarea
+              id="zone_list"
+              name="zone_list"
+              rows="4"
+              bind:value={zoneList}
+              placeholder="DI Yogyakarta|Bantul|Sewon|8000\nDI Yogyakarta|Sleman||12000"
+              class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm font-mono outline-none resize-none"
+            ></textarea>
+            <p class="text-[10px] text-stone-400 italic mt-1">
+              Format: <span
+                class="bg-stone-50 px-1 py-0.5 rounded border border-stone-100"
+                >provinsi|kota|kecamatan|biaya</span
+              >, pisahkan baris baru.
+            </p>
+          </div>
+        {/if}
 
         <div class="pt-2">
           <label
@@ -308,6 +353,7 @@
             id="config_preview"
             name="config_preview"
             rows="2"
+            value={configPreview}
             readonly
             class="w-full px-4 py-2.5 rounded-xl border border-stone-100 bg-stone-50 text-stone-400 text-[11px] font-mono overflow-auto resize-none outline-none cursor-default"
           ></textarea>
@@ -326,9 +372,9 @@
     <button
       class="flex items-center justify-center gap-3 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto"
       type="submit"
-      disabled={$createRuleMutation.isPending}
+      disabled={isSubmitting}
     >
-      {#if $createRuleMutation.isPending}
+      {#if isSubmitting}
         <svg
           class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
           xmlns="http://www.w3.org/2000/svg"
@@ -363,7 +409,7 @@
   >
     <CrudInlineForm
       class="p-8"
-      on:submit={handleSimulation}
+      onsubmit={handleSimulation}
       isSubmitting={isSimulating}
     >
       <div class="grid grid-cols-2 lg:grid-cols-5 gap-6">
@@ -466,10 +512,11 @@
         </button>
         {#if simulateMessage}
           <div
-            class="bg-stone-50 text-stone-800 px-6 py-2.5 rounded-xl text-sm font-semibold border border-stone-200 flex-1 flex items-center shadow-inner w-full"
+            class="bg-stone-900 text-white px-6 py-2.5 rounded-xl text-sm font-semibold border-none flex-1 flex items-center shadow-lg w-full transition-all duration-300"
+            transition:fade={{ duration: 200 }}
           >
-            <span class="mr-3 text-lg">🚚</span>
-            {simulateMessage}
+            <span class="mr-3 text-lg">{simulateMessage.includes("Error") ? '❌' : '✅'}</span>
+            <span class="opacity-90 leading-relaxed font-mono">{simulateMessage}</span>
           </div>
         {/if}
       </div>
@@ -498,6 +545,7 @@
     {/if}
     {#each currentRules as row (row.id)}
       <tr
+        transition:fade={{ duration: 200 }}
         class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
       >
         <td
@@ -511,12 +559,12 @@
             data-field="type"
             class="px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white transition-all bg-transparent text-xs font-bold uppercase cursor-pointer outline-none"
           >
-            <option value="flat" selected={row.type === "flat"}>Flat</option>
+            <option value="flat" selected={row.type === "flat"}>💵 Flat</option>
             <option
               value="free_threshold"
-              selected={row.type === "free_threshold"}>Threshold</option
+              selected={row.type === "free_threshold"}>🛒 Threshold</option
             >
-            <option value="zone" selected={row.type === "zone"}>Zone</option>
+            <option value="zone" selected={row.type === "zone"}>🗺️ Zone</option>
           </select>
         </td>
         <td
@@ -538,16 +586,14 @@
             data-field="isActive"
             class="px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white transition-all bg-transparent font-bold cursor-pointer outline-none text-xs"
           >
-            <option value="true" selected={row.isActive}>AKTIF</option>
-            <option value="false" selected={!row.isActive}>NONAKTIF</option>
+            <option value="true" selected={!!row.isActive}>🟢 AKTIF</option>
+            <option value="false" selected={!row.isActive}>🔴 NONAKTIF</option>
           </select>
         </td>
         <td class="py-4 text-right pr-4">
           <RowActions
-            isSaving={$updateRuleMutation.isPending &&
-              $updateRuleMutation.variables?.id === row.id}
-            isDeleting={$deleteRuleMutation.isPending &&
-              $deleteRuleMutation.variables === row.id}
+            isSaving={savingId === row.id}
+            isDeleting={deletingId === row.id}
             onSave={(e) =>
               handleRowAction(row.id, "save", e.currentTarget.closest("tr"))}
             onDelete={() => handleRowAction(row.id, "delete", null)}
@@ -557,5 +603,6 @@
     {/each}
   </tbody>
 </AdminDataTable>
+</div>
 
 <ToastNotification bind:this={toastRef} />

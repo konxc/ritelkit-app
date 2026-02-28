@@ -1,23 +1,38 @@
 ---
+import OrderDetailPageContent from "../../../components/admin/pages/OrderDetailPageContent.svelte";
 import AdminLayout from "../../../layouts/AdminLayout.astro";
-import OrderDetailManager from "../../../components/admin/pages/OrderDetailManager.svelte";
 import { requireAdmin } from "../../../lib/auth";
-import { initDb, getDb } from "../../../lib/db";
+import { getDb, initDb } from "../../../lib/db";
 
 await initDb(Astro);
 const admin = await requireAdmin(Astro);
 if (!admin) {
-    return Astro.redirect("/admin/login");
+	return Astro.redirect("/admin/login");
 }
 const orderNo = Astro.params.order_no;
 const db = getDb(Astro);
 const result = await db.execute({
-    sql: "SELECT * FROM orders WHERE order_no = ?",
-    args: [orderNo ?? ""],
+	sql: "SELECT * FROM orders WHERE order_no = ?",
+	args: [orderNo ?? ""],
 });
-const order = result.rows[0] as any;
+const order = result.rows[0] as unknown as
+	| {
+			id: string;
+			order_no: string;
+			status: string;
+			payment_status: string;
+			customer_name: string;
+			customer_phone: string;
+			customer_email?: string | null;
+			shipping_address_json: string;
+			items_json: string;
+			total: number;
+			notes?: string | null;
+			parsedItems?: unknown[];
+	  }
+	| undefined;
 if (!order) {
-    return Astro.redirect("/admin/orders");
+	return Astro.redirect("/admin/orders");
 }
 const items = JSON.parse(String(order.items_json || "[]"));
 const address = JSON.parse(String(order.shipping_address_json || "{}"));
@@ -26,5 +41,5 @@ order.shipping_address_json = address;
 ---
 
 <AdminLayout title={`Order ${order.order_no}`}>
-    <OrderDetailManager order={order} client:load />
+    <OrderDetailPageContent order={order} client:load />
 </AdminLayout>

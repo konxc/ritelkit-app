@@ -1,72 +1,68 @@
 ---
-import AdminLayout from "../../layouts/AdminLayout.astro";
+import { actions } from "astro:actions";
 import AdminTabs from "../../components/admin/AdminTabs.astro";
-import CustomersManager from "../../components/admin/pages/CustomersManager.svelte";
-import CouponsManager from "../../components/admin/pages/CouponsManager.svelte";
-import AdsManager from "../../components/admin/pages/AdsManager.svelte";
 import PaginationNav from "../../components/admin/PaginationNav.svelte";
-import { requireAdmin } from "../../lib/auth";
-import { initDb, getDb } from "../../lib/db";
+import PemasaranTabContent from "../../components/admin/pages/PemasaranTabContent.svelte";
+import AdminLayout from "../../layouts/AdminLayout.astro";
 import { parsePage } from "../../lib/admin";
+import { requireAdmin } from "../../lib/auth";
+import { initDb } from "../../lib/db";
+import { appRouter } from "../../server/router";
+import { createContext } from "../../server/context";
 
 await initDb(Astro);
 const admin = await requireAdmin(Astro);
 if (!admin) {
-    return Astro.redirect("/admin/login");
+	return Astro.redirect("/admin/login");
 }
 
-const db = getDb(Astro);
 const tab = Astro.url.searchParams.get("tab") || "pelanggan";
 const { page, q, offset, limit } = parsePage(Astro.url, 20);
 
+const trpc = appRouter.createCaller(await createContext(Astro as any));
+
 // Data for Tabs
-let customersData: any[] = [];
-let couponsData: any[] = [];
-let adsData: any[] = [];
+let initialData: any = null;
 let totalPages = 1;
 
 if (tab === "pelanggan") {
-    const where = q ? "WHERE name LIKE ? OR phone LIKE ? OR email LIKE ?" : "";
-    const args = q ? [`%${q}%`, `%${q}%`, `%${q}%`] : [];
-    const customersRes = await db.execute({
-        sql: `SELECT id, name, email, phone, notes, created_at FROM customers ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
-        args: [...args, limit, offset],
-    });
-    const countRes = await db.execute({
-        sql: `SELECT COUNT(*) as count FROM customers ${where}`,
-        args,
-    });
-    customersData = customersRes.rows;
-    const total = Number((countRes.rows[0] as any)?.count || 0);
-    totalPages = Math.max(1, Math.ceil(total / limit));
+	const result = await Astro.callAction(actions.listCustomers, {
+		q,
+		limit,
+		offset,
+	});
+	if (result.data) {
+		initialData = result.data;
+		totalPages = Math.max(1, Math.ceil(result.data.total / limit));
+	}
 } else if (tab === "kupon") {
-    const res = await db.execute(
-        "SELECT * FROM coupons ORDER BY created_at DESC",
-    );
-    couponsData = res.rows;
+	const data = await trpc.coupons.list();
+	if (data) {
+		initialData = data;
+	}
 } else if (tab === "iklan") {
-    const res = await db.execute(
-        "SELECT * FROM ads_campaigns ORDER BY created_at DESC",
-    );
-    adsData = res.rows;
+	const data = await trpc.ads.list();
+	if (data) {
+		initialData = data;
+	}
 }
 
 const tabs = [
-    {
-        id: "pelanggan",
-        label: "Pelanggan",
-        icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-    },
-    {
-        id: "kupon",
-        label: "Kupon",
-        icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a4 4 0 0 0 4-4V8a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v8a4 4 0 0 0 4 4h12Z"/><path d="M2 12h20"/><path d="M6 12v.01"/><path d="M10 12v.01"/><path d="M14 12v.01"/><path d="M18 12v.01"/></svg>',
-    },
-    {
-        id: "iklan",
-        label: "Iklan",
-        icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="12" x="3" y="6" rx="2" ry="2"/><path d="M3 10h18"/><path d="M7 6v12"/><path d="M15 13h.01"/></svg>',
-    },
+	{
+		id: "pelanggan",
+		label: "Pelanggan",
+		icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+	},
+	{
+		id: "kupon",
+		label: "Kupon",
+		icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a4 4 0 0 0 4-4V8a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v8a4 4 0 0 0 4 4h12Z"/><path d="M2 12h20"/><path d="M6 12v.01"/><path d="M10 12v.01"/><path d="M14 12v.01"/><path d="M18 12v.01"/></svg>',
+	},
+	{
+		id: "iklan",
+		label: "Iklan",
+		icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="12" x="3" y="6" rx="2" ry="2"/><path d="M3 10h18"/><path d="M7 6v12"/><path d="M15 13h.01"/></svg>',
+	},
 ];
 ---
 
@@ -75,33 +71,31 @@ const tabs = [
         <AdminTabs tabs={tabs} activeTab={tab} />
     </div>
 
+    <PemasaranTabContent
+        {tab}
+        {q}
+        {page}
+        {limit}
+        {initialData}
+        client:load
+    />
+
     {
         tab === "pelanggan" && (
-            <>
-                <CustomersManager rows={customersData as any[]} client:load />
-                <PaginationNav
-                    page={page}
-                    totalPages={totalPages}
-                    prevHref={
-                        page > 1
-                            ? `?tab=pelanggan&q=${encodeURIComponent(q)}&page=${page - 1}`
-                            : undefined
-                    }
-                    nextHref={
-                        page < totalPages
-                            ? `?tab=pelanggan&q=${encodeURIComponent(q)}&page=${page + 1}`
-                            : undefined
-                    }
-                />
-            </>
+            <PaginationNav
+                page={page}
+                totalPages={totalPages}
+                prevHref={
+                    page > 1
+                        ? `?tab=pelanggan&q=${encodeURIComponent(q)}&page=${page - 1}`
+                        : undefined
+                }
+                nextHref={
+                    page < totalPages
+                        ? `?tab=pelanggan&q=${encodeURIComponent(q)}&page=${page + 1}`
+                        : undefined
+                }
+            />
         )
     }
-
-    {
-        tab === "kupon" && (
-            <CouponsManager rows={couponsData as any[]} client:load />
-        )
-    }
-
-    {tab === "iklan" && <AdsManager rows={adsData as any[]} client:load />}
 </AdminLayout>

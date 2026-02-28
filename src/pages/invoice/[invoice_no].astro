@@ -1,32 +1,32 @@
 ---
-import { initDb, getDb } from "../../lib/db";
 import { requireAdmin } from "../../lib/auth";
+import { getDb, initDb } from "../../lib/db";
 import "../../styles/global.css";
 
 await initDb(Astro);
 const invoiceNo = Astro.params.invoice_no;
 const db = getDb(Astro);
 const result = await db.execute({
-    sql: `SELECT i.*, o.order_no, o.customer_name, o.customer_phone, o.total, o.items_json, o.shipping_address_json
+	sql: `SELECT i.*, o.order_no, o.customer_name, o.customer_phone, o.total, o.items_json, o.shipping_address_json
           FROM invoices i JOIN orders o ON o.id = i.order_id
           WHERE i.invoice_no = ?`,
-    args: [invoiceNo ?? ""],
+	args: [invoiceNo ?? ""],
 });
 const invoice = result.rows[0] as any;
 if (!invoice) {
-    return Astro.redirect("/");
+	return Astro.redirect("/");
 }
 
 const admin = await requireAdmin(Astro);
 if (!admin) {
-    const phone = Astro.url.searchParams.get("phone") || "";
-    const normalizePhone = (value: string) => value.replace(/[^\d]/g, "");
-    const allowed =
-        normalizePhone(phone) ===
-        normalizePhone(String(invoice.customer_phone || ""));
-    if (!allowed) {
-        return Astro.redirect("/");
-    }
+	const phone = Astro.url.searchParams.get("phone") || "";
+	const normalizePhone = (value: string) => value.replace(/[^\d]/g, "");
+	const allowed =
+		normalizePhone(phone) ===
+		normalizePhone(String(invoice.customer_phone || ""));
+	if (!allowed) {
+		return Astro.redirect("/");
+	}
 }
 
 const items = JSON.parse(String(invoice.items_json || "[]"));

@@ -1,21 +1,24 @@
 ---
+import { actions } from "astro:actions";
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import { requireAdmin, ensureCsrfToken } from "../../lib/auth";
-import { initDb, getDb } from "../../lib/db";
+import { ensureCsrfToken, requireAdmin } from "../../lib/auth";
+import { getDb, initDb } from "../../lib/db";
 
 await initDb(Astro);
 const db = getDb(Astro);
 const admin = await requireAdmin(Astro);
 if (!admin) {
-    const adminCountResult = await db.execute("SELECT COUNT(*) as count FROM admin_users");
-    const shouldRedirectToSetup =
-        Number(adminCountResult.rows[0]?.count || 0) === 0;
-    if (shouldRedirectToSetup) {
-        return Astro.redirect("/admin/setup");
-    }
-    return Astro.redirect("/admin/login");
+	const adminCountResult = await db.execute(
+		"SELECT COUNT(*) as count FROM admin_users",
+	);
+	const shouldRedirectToSetup =
+		Number(adminCountResult.rows[0]?.count || 0) === 0;
+	if (shouldRedirectToSetup) {
+		return Astro.redirect("/admin/setup");
+	}
+	return Astro.redirect("/admin/login");
 }
-const csrfToken = ensureCsrfToken(Astro);
+ensureCsrfToken(Astro);
 ---
 
 <AdminLayout title="Profil Admin">
@@ -114,10 +117,9 @@ const csrfToken = ensureCsrfToken(Astro);
 
             <form
                 method="post"
-                action="/api/admin/logout"
+                action={actions.adminLogout}
                 class="block m-0 mt-4"
             >
-                <input type="hidden" name="csrf_token" value={csrfToken} />
                 <button
                     type="submit"
                     class="w-full h-[56px] flex items-center justify-center gap-3 p-4 bg-red-50 text-red-600 rounded-2xl font-bold hover:bg-red-600 hover:text-white transition-all cursor-pointer shadow-sm border border-red-100"

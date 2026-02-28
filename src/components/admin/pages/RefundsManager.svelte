@@ -1,120 +1,139 @@
-<script module lang="ts">
-  export type RefundRow = {
-    id: string | number;
-    order_no: string;
-    amount: number;
-    status: string;
-    provider_status?: string | null;
-    reason?: string | null;
-  };
-</script>
-
 <script lang="ts">
-  import AdminDataTable from "../AdminDataTable.svelte";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
-  import RowActions from "../RowActions.svelte";
-  import StatusBadge from "../StatusBadge.svelte";
-  import SectionHeader from "../SectionHeader.svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import { trpc } from "../../../lib/trpc";
-  import {
-    createQuery,
-    createMutation,
-    useQueryClient,
-  } from "@tanstack/svelte-query";
+import { trpc } from "../../../lib/trpc";
+import { fade, fly } from "svelte/transition";
+import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+import AdminDataTable from "../AdminDataTable.svelte";
+import CrudInlineForm from "../CrudInlineForm.svelte";
+import RowActions from "../RowActions.svelte";
+import SectionHeader from "../SectionHeader.svelte";
+import StatusBadge from "../StatusBadge.svelte";
+import ToastNotification from "../ToastNotification.svelte";
 
-  let { rows: initialRows = [] }: { rows: any[] } = $props();
+export type RefundRow = {
+	id: string | number;
+	orderNo: string;
+	amount: number;
+	status: string;
+	providerStatus?: string | null;
+	providerResponseJson?: string | null;
+	reason?: string | null;
+	createdAt?: string;
+	updatedAt?: string;
+};
 
-  const queryClient = useQueryClient();
-  let toastRef = $state<ToastNotification>();
+let {
+	rows: initialRows = [],
+	page = 1,
+	limit = 20,
+}: {
+	rows?: RefundRow[];
+	page?: number;
+	limit?: number;
+} = $props();
 
-  const refundsQuery = createQuery({
-    queryKey: ["refunds"],
-    queryFn: () => trpc.refunds.list.query(),
-    initialData: () => initialRows,
-  });
+const offset = $derived((page - 1) * limit);
+const queryClient = useQueryClient();
 
-  const createRefundMutation = createMutation({
-    mutationFn: (data: any) => trpc.refunds.create.mutate(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["refunds"] });
-      toastRef?.show("Refund berhasil ditambah!", "success");
-    },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+let toastRef = $state<ToastNotification>();
+let isSubmitting = $state(false);
 
-  const updateRefundMutation = createMutation({
-    mutationFn: (payload: { id: string; data: any }) =>
-      trpc.refunds.update.mutate(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["refunds"] });
-      toastRef?.show("Refund diperbarui", "success");
-    },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+const refundsQuery = createQuery(() => ({
+	queryKey: ["refunds.list", { limit, offset }],
+	queryFn: () => trpc.refunds.list.query({ limit, offset }),
+	initialData: initialRows.length > 0 ? { rows: initialRows, total: initialRows.length } : undefined,
+	refetchOnMount: false,
+	staleTime: 1000 * 60 * 5,
+}));
 
-  const deleteRefundMutation = createMutation({
-    mutationFn: (id: string) => trpc.refunds.delete.mutate(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["refunds"] });
-      toastRef?.show("Refund dihapus", "success");
-    },
-    onError: (err: any) => toastRef?.show(err.message, "error"),
-  });
+let currentRefunds = $derived((refundsQuery.data?.rows as RefundRow[]) || initialRows);
+let total = $derived(refundsQuery.data?.total || 0);
+let isFetching = $derived(refundsQuery.isFetching);
 
-  const handleCreate = async (event: SubmitEvent) => {
-    event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement;
-    const data = new FormData(form);
+let savingId = $state<string | null>(null);
+let deletingId = $state<string | null>(null);
 
-    createRefundMutation.mutate({
-      orderNo: data.get("order_no") as string,
-      amount: Number(data.get("amount")),
-      status: data.get("status") as string,
-      reason: data.get("reason") as string,
-    });
-    form.reset();
-  };
+const handleCreate = async (event: SubmitEvent) => {
+	event.preventDefault();
+	const form = event.currentTarget as HTMLFormElement;
+	const formData = new FormData(form);
 
-  const handleRowAction = (
-    id: string,
-    action: string,
-    rowElement: HTMLElement | null,
-  ) => {
-    if (action === "delete") {
-      if (confirm("Hapus refund ini?")) {
-        deleteRefundMutation.mutate(id);
-      }
-    } else if (action === "save" && rowElement) {
-      const fields: Record<string, any> = {};
-      rowElement.querySelectorAll("[data-field]").forEach((el) => {
-        const field = el.getAttribute("data-field")!;
-        if (el instanceof HTMLSelectElement || el instanceof HTMLInputElement) {
-          fields[field] = el.value;
-        } else {
-          fields[field] = el.textContent?.trim();
-        }
-      });
+	isSubmitting = true;
+	try {
+		await trpc.refunds.create.mutate({
+			orderNo: formData.get("order_no") as string,
+			amount: Number(formData.get("amount")),
+			status: formData.get("status") as string,
+			reason: (formData.get("reason") as string) || undefined,
+		});
 
-      const data = {
-        orderNo: fields.orderNo,
-        amount: Number(fields.amount),
-        status: fields.status,
-        reason: fields.reason,
-      };
+		toastRef?.show("Refund berhasil ditambah!", "success");
+		form.reset();
+		queryClient.invalidateQueries({ queryKey: ["refunds.list"] });
+	} catch (error: unknown) {
+		const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+		toastRef?.show(message, "error");
+	} finally {
+		isSubmitting = false;
+	}
+};
 
-      updateRefundMutation.mutate({ id, data });
-    }
-  };
+const handleRowAction = async (
+	id: string | number,
+	action: string,
+	rowElement: HTMLElement | null,
+) => {
+	const resolvedId = String(id);
+	if (action === "delete") {
+		if (confirm("Hapus refund ini?")) {
+			deletingId = resolvedId;
+			try {
+				await trpc.refunds.delete.mutate(resolvedId);
+				toastRef?.show("Refund dihapus", "success");
+				queryClient.invalidateQueries({ queryKey: ["refunds.list"] });
+			} catch (error: unknown) {
+				const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+				toastRef?.show(message, "error");
+			} finally {
+				deletingId = null;
+			}
+		}
+	} else if (action === "save" && rowElement) {
+		const fields: Record<string, string> = {};
+		rowElement.querySelectorAll("[data-field]").forEach((el) => {
+			const field = el.getAttribute("data-field")!;
+			if (el instanceof HTMLSelectElement || el instanceof HTMLInputElement) {
+				fields[field] = el.value;
+			} else {
+				fields[field] = el.textContent?.trim() || "";
+			}
+		});
 
-  const currentRefunds = $derived($refundsQuery.data || initialRows);
+		const data = {
+			amount: Number(fields.amount),
+			status: fields.status,
+			reason: fields.reason || undefined,
+		};
+
+		savingId = resolvedId;
+		try {
+			await trpc.refunds.update.mutate({ id: resolvedId, data });
+			toastRef?.show("Refund diperbarui", "success");
+			queryClient.invalidateQueries({ queryKey: ["refunds.list"] });
+		} catch (error: unknown) {
+			const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+			toastRef?.show(message, "error");
+		} finally {
+			savingId = null;
+		}
+	}
+};
 </script>
-
+<div in:fly={{ y: 20, duration: 400, delay: 100 }}>
 <SectionHeader title="Buat Refund" />
 <CrudInlineForm
   id="refund-form"
-  on:submit={handleCreate}
-  isSubmitting={$createRefundMutation.isPending}
+  onsubmit={handleCreate}
+  isSubmitting={isSubmitting}
 >
   <div
     class="grid grid-cols-2 md:grid-cols-4 gap-4 border-b border-stone-100 pb-5 w-full"
@@ -129,7 +148,7 @@
         id="order_no"
         name="order_no"
         required
-        class="w-full px-3 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm"
+        class="w-full px-3 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold tabular-nums"
       />
     </div>
     <div class="space-y-1">
@@ -150,16 +169,17 @@
       <label
         for="status"
         class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-        >Status</label
+        >Status Awal</label
       >
       <select
         id="status"
         name="status"
-        class="w-full px-3 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm appearance-none cursor-pointer"
+        class="w-full px-3 py-2 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm appearance-none cursor-pointer outline-none font-medium"
       >
-        <option value="requested">Requested</option>
-        <option value="approved">Approved</option>
-        <option value="rejected">Rejected</option>
+        <option value="pending">⏳ Pending</option>
+        <option value="processing">🔄 Diproses</option>
+        <option value="completed">✅ Selesai</option>
+        <option value="failed">❌ Gagal</option>
       </select>
     </div>
     <div class="space-y-1">
@@ -179,9 +199,9 @@
     <button
       class="flex items-center justify-center gap-2 h-[38px] px-6 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full sm:w-auto mt-auto"
       type="submit"
-      disabled={$createRefundMutation.isPending}
+      disabled={isSubmitting}
     >
-      {#if $createRefundMutation.isPending}
+      {#if isSubmitting}
         <svg
           class="animate-spin -ml-1 h-3.5 w-3.5 text-white"
           xmlns="http://www.w3.org/2000/svg"
@@ -222,23 +242,41 @@
     </tr>
   </thead>
   <tbody>
+    {#if currentRefunds.length === 0}
+      <tr>
+        <td colspan="6" class="text-center py-12 text-stone-400 text-sm italic">
+          {#if isFetching}Memuat data...{:else}Belum ada refund yang sesuai kriteria.{/if}
+        </td>
+      </tr>
+    {/if}
     {#each currentRefunds as row (row.id)}
-      <tr data-id={row.id}>
+      <tr
+        transition:fade={{ duration: 200 }}
+        data-id={row.id}
+      >
         <td contenteditable="true" data-field="orderNo">{row.orderNo}</td>
-        <td contenteditable="true" data-field="amount">{row.amount}</td>
+        <td
+          contenteditable="true"
+          data-field="amount"
+          class="py-4 tabular-nums font-mono font-bold text-stone-800 outline-none hover:bg-white focus:bg-white px-3 py-1.5 rounded-lg transition-all"
+          ><span class="text-stone-400 text-xs mr-1 font-sans">Rp</span>{row.amount}</td
+        >
         <td class="py-4">
           <select
             data-field="status"
             class="px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white transition-all bg-transparent text-xs font-bold uppercase cursor-pointer outline-none"
           >
-            <option value="requested" selected={row.status === "requested"}
-              >Requested</option
+            <option value="pending" selected={row.status === "pending"}
+              >⏳ Pending</option
             >
-            <option value="approved" selected={row.status === "approved"}
-              >Approved</option
+            <option value="processing" selected={row.status === "processing"}
+              >🔄 Proses</option
             >
-            <option value="rejected" selected={row.status === "rejected"}
-              >Rejected</option
+            <option value="completed" selected={row.status === "completed"}
+              >✅ Selesai</option
+            >
+            <option value="failed" selected={row.status === "failed"}
+              >❌ Gagal</option
             >
           </select>
         </td>
@@ -246,10 +284,8 @@
         <td contenteditable="true" data-field="reason">{row.reason || ""}</td>
         <td>
           <RowActions
-            isSaving={$updateRefundMutation.isPending &&
-              $updateRefundMutation.variables?.id === row.id}
-            isDeleting={$deleteRefundMutation.isPending &&
-              $deleteRefundMutation.variables === row.id}
+            isSaving={savingId === row.id}
+            isDeleting={deletingId === row.id}
             onSave={(e) =>
               handleRowAction(row.id, "save", e.currentTarget.closest("tr"))}
             onDelete={() => handleRowAction(row.id, "delete", null)}
@@ -260,4 +296,7 @@
   </tbody>
 </AdminDataTable>
 
+</div>
+
 <ToastNotification bind:this={toastRef} />
+
