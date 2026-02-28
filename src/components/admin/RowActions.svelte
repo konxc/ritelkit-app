@@ -1,37 +1,39 @@
 <script lang="ts">
-  import ActionGroup from "./ActionGroup.svelte";
+import ActionGroup from "./ActionGroup.svelte";
 
-  let {
-    detailHref,
-    detailLabel = "Detail",
-    viewHref,
-    viewLabel = "Lihat",
-    showEdit = false,
-    showSend = false,
-    showSave = true,
-    showDelete = true,
-    isSaving = false,
-    isDeleting = false,
-    isSending = false,
-    onSave,
-    onDelete,
-  }: {
-    detailHref?: string;
-    detailLabel?: string;
-    viewHref?: string;
-    viewLabel?: string;
-    showEdit?: boolean;
-    showSend?: boolean;
-    showSave?: boolean;
-    showDelete?: boolean;
-    isSaving?: boolean;
-    isDeleting?: boolean;
-    isSending?: boolean;
-    onSave?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
-    onDelete?: (
-      event: MouseEvent & { currentTarget: HTMLButtonElement },
-    ) => void;
-  } = $props();
+let {
+	detailHref,
+	detailLabel = "Detail",
+	viewHref,
+	viewLabel = "Lihat",
+	showEdit = false,
+	showSend = false,
+	showSave = true,
+	showDelete = true,
+	isSaving = false,
+	isDeleting = false,
+	isSending = false,
+	onSave,
+	onDelete,
+	onSend,
+	onEdit,
+}: {
+	detailHref?: string;
+	detailLabel?: string;
+	viewHref?: string;
+	viewLabel?: string;
+	showEdit?: boolean;
+	showSend?: boolean;
+	showSave?: boolean;
+	showDelete?: boolean;
+	isSaving?: boolean;
+	isDeleting?: boolean;
+	isSending?: boolean;
+	onSave?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
+	onDelete?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
+	onSend?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
+	onEdit?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
+} = $props();
 </script>
 
 <ActionGroup>
@@ -42,13 +44,14 @@
     <a class="btn-ghost" href={viewHref} target="_blank">{viewLabel}</a>
   {/if}
   {#if showEdit}
-    <button class="btn-ghost" data-action="edit">Edit</button>
+    <button class="btn-ghost" data-action="edit" onclick={onEdit}>Edit</button>
   {/if}
   {#if showSend}
     <button
       class="btn-ghost flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
       data-action="send"
       disabled={isSending}
+      onclick={onSend}
     >
       {#if isSending}
         <svg

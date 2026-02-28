@@ -1,13 +1,13 @@
 <script lang="ts">
-  let {
-    title,
-    badge,
-    muted,
-  }: {
-    title: string;
-    badge?: string;
-    muted?: string;
-  } = $props();
+let {
+	title,
+	badge,
+	muted,
+}: {
+	title: string;
+	badge?: string;
+	muted?: string;
+} = $props();
 </script>
 
 <div class="section-header">
