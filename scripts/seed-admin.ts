@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
-import { initDb, getDb } from "../src/lib/db.ts";
 import { seedAdminData } from "../src/lib/admin-seed.ts";
+import { getDb, initDb } from "../src/lib/db.ts";
 
 dotenv.config({ path: ".env.local" });
 
