@@ -23,7 +23,7 @@ type InventoryMovement = {
 	notes: string | null;
 	refOrderNo: string | null;
 	createdAt: string;
-	productName: string | null;
+	product_name: string | null;
 };
 
 type MovementInput = {
@@ -106,119 +106,116 @@ const fieldIds = {
   onsubmit={handleCreate}
   isSubmitting={isSubmitting}
 >
-  <div
-    class="flex flex-col md:flex-row gap-4 xl:gap-6 items-end pb-8 border-b border-stone-100 mb-8 w-full"
-  >
-    <div class="space-y-1.5 w-full md:flex-1">
-      <label
-        for={fieldIds.product}
-        class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-        >Produk</label
-      >
-      <select
-        id={fieldIds.product}
-        name="product_id"
-        required
-        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none appearance-none cursor-pointer"
-      >
-        <option value="" disabled selected>Pilih Produk</option>
-        {#each currentProducts as product}
-          <option value={product.id}>{product.name}</option>
-        {/each}
-      </select>
-    </div>
-    <div class="space-y-1.5 w-full md:w-48 shrink-0">
-      <label
-        for={fieldIds.type}
-        class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-        >Tipe Mutasi</label
-      >
-      <select
-        id={fieldIds.type}
-        name="type"
-        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none appearance-none cursor-pointer"
-      >
-        <option value="in">Stok Masuk (+)</option>
-        <option value="out">Stok Keluar (-)</option>
-        <option value="adjustment">Penyesuaian (Set)</option>
-      </select>
-    </div>
-    <div class="space-y-1.5 w-full md:w-32 shrink-0">
-      <label
-        for={fieldIds.qty}
-        class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-        >Jumlah</label
-      >
-      <input
-        id={fieldIds.qty}
-        name="qty"
-        type="number"
-        required
-        placeholder="0"
-        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none"
-      />
-    </div>
-    <div class="space-y-1.5 w-full md:flex-1">
-      <label
-        for={fieldIds.notes}
-        class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-        >Catatan / Alasan</label
-      >
-      <input
-        id={fieldIds.notes}
-        name="notes"
-        placeholder="Cth: Restock Supplier"
-        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none"
-      />
-    </div>
-    <button
-      class="flex items-center justify-center gap-2 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto"
-      type="submit"
-      disabled={isSubmitting}
-    >
-      {#if isSubmitting}
-        <svg
-          class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          ><circle
-            class="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            stroke-width="4"
-          ></circle><path
-            class="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          ></path></svg
+  <div class="p-6 md:p-8 bg-white/50 border border-stone-100 rounded-3xl backdrop-blur-sm self-start mb-10 w-full mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6 items-end">
+      <div class="space-y-1.5 lg:col-span-4">
+        <label
+          for={fieldIds.product}
+          class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+          >Produk Target</label
         >
-      {/if}
-      Update Stok
-    </button>
+        <select
+          id={fieldIds.product}
+          name="product_id"
+          required
+          class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none shadow-sm appearance-none cursor-pointer font-medium"
+        >
+          <option value="" disabled selected>Pilih Produk...</option>
+          {#each currentProducts as product}
+            <option value={product.id}>{product.name}</option>
+          {/each}
+        </select>
+      </div>
+      <div class="space-y-1.5 lg:col-span-2">
+        <label
+          for={fieldIds.type}
+          class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+          >Tipe Mutasi</label
+        >
+        <select
+          id={fieldIds.type}
+          name="type"
+          class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none shadow-sm appearance-none cursor-pointer font-medium"
+        >
+          <option value="in">🟢 Masuk (+)</option>
+          <option value="out">🔴 Keluar (-)</option>
+          <option value="adjustment">🟤 Set (Adj)</option>
+        </select>
+      </div>
+      <div class="space-y-1.5 lg:col-span-2">
+        <label
+          for={fieldIds.qty}
+          class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+          >Jumlah</label
+        >
+        <input
+          id={fieldIds.qty}
+          name="qty"
+          type="number"
+          required
+          placeholder="0"
+          min="1"
+          class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none shadow-sm font-bold tabular-nums text-center"
+        />
+      </div>
+      <div class="space-y-1.5 lg:col-span-4">
+        <label
+          for={fieldIds.notes}
+          class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+          >Catatan / Alasan</label
+        >
+        <input
+          id={fieldIds.notes}
+          name="notes"
+          placeholder="Cth: Restock dari Supplier A"
+          class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-stone-50 focus:bg-white text-sm outline-none shadow-sm"
+        />
+      </div>
+    </div>
+    
+    <div class="flex justify-end mt-6">
+      <button
+        class="flex items-center justify-center gap-2 h-[46px] px-10 rounded-xl bg-gradient-to-r from-[#c48a3a] to-[#a6722d] text-white text-sm font-bold hover:shadow-[0_4px_12px_rgba(196,138,58,0.25)] hover:-translate-y-0.5 transition-all shadow-md w-full sm:w-auto disabled:opacity-70 disabled:cursor-not-allowed"
+        type="submit"
+        disabled={isSubmitting}
+      >
+        {#if isSubmitting}
+          <svg class="animate-spin h-4 w-4 mr-1 inline" viewBox="0 0 24 24"
+            ><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        {:else}
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        {/if}
+        Proses Mutasi Stok
+      </button>
+    </div>
   </div>
 </CrudInlineForm>
 
-<div class="mt-6">
-  <SectionHeader title="Stok Produk" muted="Klik sel untuk edit" />
+<div class="mt-6 mb-4">
+  <SectionHeader title="Stok Produk Aktual" muted="Klik nominal stok untuk edit" />
 </div>
 <AdminDataTable>
   <thead>
     <tr>
-      <th>Produk</th>
-      <th>SKU</th>
-      <th>Stok</th>
-      <th>Harga</th>
+      <th>Produk ID</th>
+      <th>SKU Code</th>
+      <th class="text-right">Ketersediaan Stok</th>
+      <th class="text-right">Harga Aktual</th>
     </tr>
   </thead>
   <tbody>
     {#if currentProducts.length === 0}
       <tr>
-        <td colspan="4" class="text-center py-12 text-stone-400 text-sm italic"
-          >Belum ada produk terdaftar.</td
-        >
+        <td colspan="4" class="py-12">
+          <div class="flex flex-col items-center justify-center text-center">
+            <div class="w-16 h-16 bg-stone-50 rounded-full flex items-center justify-center text-stone-300 mb-3 border border-stone-100">
+               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>
+            </div>
+            <p class="text-sm font-bold text-stone-900 mb-1">Daftar Produk Kosong</p>
+          </div>
+        </td>
       </tr>
     {/if}
     {#each currentProducts as product (product.id)}
@@ -226,41 +223,52 @@ const fieldIds = {
         transition:fade={{ duration: 200 }}
         class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
       >
-        <td class="py-4 font-bold text-stone-900">{product.name}</td>
-        <td class="py-4 font-mono text-xs text-stone-500"
-          >{product.sku || "-"}</td
-        >
-        <td class="py-4 tabular-nums font-bold text-stone-800 text-center"
-          >{product.stock ?? 0}</td
-        >
-        <td class="py-4 tabular-nums font-bold text-stone-800 text-right pr-4"
-          >Rp {Number(product.price ?? 0).toLocaleString("id-ID")}</td
+        <td class="py-4 font-bold text-stone-900 text-[0.95rem] pl-3">{product.name}</td>
+        <td class="py-4">
+           <span class="font-mono text-[0.7rem] text-stone-500 bg-stone-50 border border-stone-100 px-2 py-0.5 rounded-md shadow-sm">
+             {product.sku || "N/A"}
+           </span>
+        </td>
+        <td class="py-4 text-right">
+             <div
+               class="tabular-nums font-bold text-stone-700 bg-stone-50 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-4 py-1.5 rounded-lg border border-stone-100 transition-all w-24 text-right ml-auto shadow-inner inline-block"
+             >
+               {product.stock ?? 0}
+             </div>
+        </td>
+        <td class="py-4 tabular-nums font-bold text-stone-600 text-right pr-6"
+          ><span class="text-[0.6rem] text-stone-400 mr-1">Rp</span> {Number(product.price ?? 0).toLocaleString("id-ID")}</td
         >
       </tr>
     {/each}
   </tbody>
 </AdminDataTable>
 
-<div class="mt-6">
-  <SectionHeader title="Mutasi Terakhir" muted="30 entri terakhir" />
+<div class="mt-12 mb-4">
+  <SectionHeader title="Log Mutasi Terakhir" badge="Otomatis" muted="30 riwayat stok terbaru" />
 </div>
 <AdminDataTable>
   <thead>
     <tr>
       <th>Produk</th>
-      <th>Tipe</th>
-      <th>Qty</th>
+      <th>Aktivitas</th>
+      <th class="text-right">Mutasi Qty</th>
       <th>Order Ref</th>
-      <th>Catatan</th>
-      <th>Tanggal</th>
+      <th>Catatan Admin</th>
+      <th class="text-right">Tanggal Log</th>
     </tr>
   </thead>
   <tbody>
     {#if currentMovements.length === 0}
       <tr>
-        <td colspan="6" class="text-center py-12 text-stone-400 text-sm italic"
-          >Belum ada riwayat mutasi.</td
-        >
+        <td colspan="6" class="py-12">
+          <div class="flex flex-col items-center justify-center text-center">
+            <div class="w-16 h-16 bg-stone-50 rounded-full flex items-center justify-center text-stone-300 mb-3 border border-stone-100">
+               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <p class="text-sm font-bold text-stone-900 mb-1">Riwayat Log Kosong</p>
+          </div>
+        </td>
       </tr>
     {/if}
     {#each currentMovements as movement (movement.id)}
@@ -268,28 +276,28 @@ const fieldIds = {
         transition:fade={{ duration: 200 }}
         class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0 text-sm"
       >
-        <td class="py-4 font-medium text-stone-900"
-          >{movement.product_name || "-"}</td
+        <td class="py-4 font-bold text-stone-800"
+          >{movement.productName || "-"}</td
         >
         <td class="py-4">
           <span
-            class={`px-2.5 py-1 rounded-full text-[0.65rem] font-bold uppercase tracking-wider ${
+            class={`px-3 py-1 rounded-full text-[0.65rem] font-bold uppercase tracking-wider shadow-sm ${
               movement.type === "in"
                 ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
                 : movement.type === "out"
                   ? "bg-rose-50 text-rose-700 border border-rose-100"
-                  : "bg-stone-100 text-stone-600 border border-stone-200"
+                  : "bg-stone-50 text-stone-600 border border-stone-200"
             }`}
           >
             {movement.type === "in"
-              ? "Masuk"
+              ? "🟢 Masuk (+)"
               : movement.type === "out"
-                ? "Keluar"
-                : "Adj"}
+                ? "🔴 Keluar (-)"
+                : "🟤 Set (Adj)"}
           </span>
         </td>
         <td
-          class={`py-4 tabular-nums font-bold ${movement.type === "in" ? "text-emerald-600" : movement.type === "out" ? "text-rose-600" : "text-stone-700"}`}
+          class={`py-4 tabular-nums font-bold text-right text-[1rem] ${movement.type === "in" ? "text-emerald-600" : movement.type === "out" ? "text-rose-600" : "text-stone-700"}`}
         >
           {movement.type === "in"
             ? "+"
@@ -297,7 +305,7 @@ const fieldIds = {
               ? "-"
               : ""}{movement.qty}
         </td>
-        <td class="py-4 font-mono text-xs text-[#c48a3a]"
+        <td class="py-4 font-mono text-[0.7rem] font-bold text-stone-500"
           >{movement.refOrderNo || "-"}</td
         >
         <td class="py-4 text-stone-500">{movement.notes || "-"}</td>

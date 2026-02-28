@@ -232,194 +232,195 @@ const currentCategories = $derived(categories);
   isSubmitting={isMutating}
 >
   <div class="space-y-6 border-b border-stone-100 pb-8 mb-8">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div class="space-y-1.5">
-        <label
-          for="name"
-          class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-          >Nama Produk</label
-        >
-        <input
-          id="name"
-          name="name"
-          required
-          bind:value={newName}
-          placeholder="Cth: Roti Manis"
-          class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none"
-        />
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+      <div class="xl:col-span-8 flex flex-col gap-6 p-6 md:p-8 bg-white/50 border border-stone-100 rounded-3xl backdrop-blur-sm self-start">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-1.5">
+            <label
+              for="name"
+              class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+              >Nama Produk</label
+            >
+            <input
+              id="name"
+              name="name"
+              required
+              bind:value={newName}
+              placeholder="Cth: Roti Manis"
+              class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm shadow-sm outline-none placeholder:text-stone-300 font-medium"
+            />
+          </div>
+          <div class="space-y-1.5">
+            <label
+              for="sku"
+              class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+              >SKU (Opsional)</label
+            >
+            <input
+              id="sku"
+              name="sku"
+              placeholder="PROD-001"
+              class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-stone-50 text-sm shadow-sm outline-none placeholder:text-stone-300 font-mono text-stone-600"
+            />
+          </div>
+          <div class="space-y-1.5">
+            <label
+              for="category_id"
+              class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+              >Kategori</label
+            >
+            <select
+              id="category_id"
+              name="categoryId"
+              class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm shadow-sm font-medium appearance-none cursor-pointer outline-none"
+            >
+              <option value="" disabled selected>Pilih Kategori Dasar...</option>
+              {#each currentCategories as cat}
+                <option value={cat.id}>{cat.name}</option>
+              {/each}
+            </select>
+          </div>
+          <div class="space-y-1.5">
+            <label
+              for="description"
+              class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+              >Deskripsi</label
+            >
+            <input
+              id="description"
+              name="description"
+              placeholder="Berikan deskripsi singkat..."
+              class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm shadow-sm outline-none"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-2 border-t border-stone-100">
+          <div class="space-y-1.5">
+            <label
+              for="price"
+              class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+              >Harga Penjualan</label
+            >
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-stone-400">Rp</span>
+              <input
+                id="price"
+                name="price"
+                type="number"
+                placeholder="0"
+                required
+                class="w-full pl-10 pr-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white shadow-sm text-sm outline-none font-bold tabular-nums text-stone-800"
+              />
+            </div>
+          </div>
+          <div class="space-y-1.5">
+            <label
+              for="stock"
+              class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+              >Stok Awal</label
+            >
+            <input
+              id="stock"
+              name="stock"
+              type="number"
+              placeholder="~"
+              class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white shadow-sm text-sm outline-none font-bold tabular-nums text-center"
+            />
+          </div>
+          <div class="space-y-1.5">
+            <label
+              for="isActive"
+              class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+              >Visibilitas</label
+            >
+            <select
+              id="isActive"
+              name="isActive"
+              class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm shadow-sm font-medium appearance-none cursor-pointer outline-none"
+            >
+              <option value="true" selected>🟢 Publik</option>
+              <option value="false">🔴 Draft</option>
+            </select>
+          </div>
+        </div>
       </div>
-      <div class="space-y-1.5">
+
+      <div class="xl:col-span-4 flex flex-col gap-2 p-6 md:p-8 bg-stone-50/50 border border-stone-100 rounded-3xl self-start space-y-1 h-full">
         <label
-          for="sku"
-          class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-          >SKU (Opsional)</label
+          for="file-input"
+          class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+          >Media Produk</label
         >
-        <input
-          id="sku"
-          name="sku"
-          placeholder="PROD-001"
-          class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none"
-        />
-      </div>
-      <div class="space-y-1.5">
-        <label
-          for="category_id"
-          class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-          >Kategori</label
+        <div
+          class="flex-1 min-h-[160px] flex items-center justify-center border-2 border-dashed border-stone-200/80 bg-white shadow-sm rounded-2xl p-6 hover:bg-stone-50 hover:border-[#c48a3a]/40 transition-colors text-center cursor-pointer relative group"
+          id="upload-zone"
+          role="button"
+          tabindex="0"
+          ondragover={(e: DragEvent) => e.preventDefault()}
+          ondrop={handleDrop}
         >
-        <select
-          id="category_id"
-          name="categoryId"
-          class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm appearance-none cursor-pointer outline-none"
-        >
-          <option value="">Pilih Kategori</option>
-          {#each currentCategories as cat}
-            <option value={cat.id}>{cat.name}</option>
-          {/each}
-        </select>
-      </div>
-      <div class="space-y-1.5">
-        <label
-          for="price"
-          class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-          >Harga (Rp)</label
-        >
-        <input
-          id="price"
-          name="price"
-          type="number"
-          value="0"
-          required
-          class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none"
-        />
-      </div>
-      <div class="space-y-1.5">
-        <label
-          for="stock"
-          class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-          >Stok</label
-        >
-        <input
-          id="stock"
-          name="stock"
-          type="number"
-          placeholder="0"
-          class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none"
-        />
-      </div>
-      <div class="space-y-1.5">
-        <label
-          for="isActive"
-          class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-          >Status</label
-        >
-        <select
-          id="isActive"
-          name="isActive"
-          class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm appearance-none cursor-pointer outline-none"
-        >
-          <option value="true" selected>Aktif</option>
-          <option value="false">Draf</option>
-        </select>
+          <input
+            type="file"
+            id="file-input"
+            multiple
+            accept="image/*"
+            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            onchange={handleFileUpload}
+          />
+          <div class="flex flex-col items-center gap-3">
+            <div class="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center text-stone-400 group-hover:scale-110 group-hover:text-[#c48a3a] transition-all duration-300">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                ><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div>
+              <span class="text-sm font-bold text-stone-700 block mb-0.5"
+                >Upload Foto</span
+              >
+              <p class="text-[0.65rem] text-stone-400 font-semibold max-w-[140px] uppercase tracking-wide">
+                Tarik gambar kemari <br/> atau klik
+              </p>
+            </div>
+          </div>
+        </div>
+        {#if newImageUrls.length > 0}
+        <div class="mt-4 w-full">
+          <ImageGallery
+            urls={newImageUrls}
+            onChange={(next) => (newImageUrls = next)}
+          />
+        </div>
+        {/if}
+        <div id="upload-status" class="text-center font-semibold text-stone-500 mt-1.5 text-xs">{uploadStatus}</div>
       </div>
     </div>
-    <div class="space-y-1.5">
-      <label
-        for="description"
-        class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-        >Deskripsi</label
+    
+    <div class="flex items-center justify-end mt-6">
+      <button
+        class="flex items-center justify-center gap-2 h-[46px] px-10 rounded-xl bg-gradient-to-r from-[#c48a3a] to-[#a6722d] text-white text-sm font-bold hover:shadow-[0_4px_12px_rgba(196,138,58,0.25)] hover:-translate-y-0.5 transition-all shadow-md w-full sm:w-auto disabled:opacity-70 disabled:cursor-not-allowed"
+        type="submit"
+        disabled={isMutating}
       >
-      <textarea
-        id="description"
-        name="description"
-        rows="3"
-        placeholder="Berikan deskripsi singkat produk..."
-        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm resize-none outline-none"
-      ></textarea>
+        {#if isMutating}
+          <svg class="animate-spin h-4 w-4 mr-1 inline" viewBox="0 0 24 24"
+            ><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        {:else}
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        {/if}
+        Simpan Produk Baru
+      </button>
     </div>
-  </div>
-  <div class="field mt-4 space-y-1">
-    <label
-      for="file-input"
-      class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-      >Gambar Produk</label
-    >
-    <div
-      class="upload-zone border-2 border-dashed border-stone-200/80 rounded-2xl p-6 hover:bg-stone-50/50 hover:border-[#c48a3a]/40 transition-colors text-center cursor-pointer relative"
-      id="upload-zone"
-      role="button"
-      tabindex="0"
-      ondragover={(e: DragEvent) => e.preventDefault()}
-      ondrop={handleDrop}
-    >
-      <input
-        type="file"
-        id="file-input"
-        multiple
-        accept="image/*"
-        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-        onchange={handleFileUpload}
-      />
-      <div class="upload-placeholder flex flex-col items-center gap-2">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          class="text-stone-400"
-          ><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle
-            cx="8.5"
-            cy="8.5"
-            r="1.5"
-          ></circle><polyline points="21 15 16 10 5 21"></polyline></svg
-        >
-        <span class="text-sm font-semibold text-stone-600"
-          >Drag & drop gambar atau klik untuk upload</span
-        >
-        <p class="muted text-xs text-stone-400 font-medium">
-          Urutan gambar pertama = Foto Utama
-        </p>
-      </div>
-    </div>
-    <div class="mt-4">
-      <ImageGallery
-        urls={newImageUrls}
-        onChange={(next) => (newImageUrls = next)}
-      />
-    </div>
-    <div id="upload-status" class="muted mt-1.5 text-xs">{uploadStatus}</div>
-  </div>
-  <div class="flex items-end mt-4">
-    <button
-      class="flex items-center justify-center gap-3 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto mt-auto"
-      type="submit"
-      disabled={isMutating}
-    >
-      {#if isMutating}
-        <svg
-          class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          ><circle
-            class="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            stroke-width="4"
-          ></circle><path
-            class="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          ></path></svg
-        >
-      {/if}
-      Tambah Produk
-    </button>
   </div>
 </CrudInlineForm>
 
@@ -430,23 +431,27 @@ const currentCategories = $derived(categories);
   <AdminDataTable>
     <thead>
       <tr>
-        <th>Foto</th>
-        <th>Nama</th>
+        <th>Galeri</th>
+        <th>Informasi Produk</th>
         <th>Kategori</th>
-        <th>Harga</th>
-        <th>Stok</th>
-        <th>Status</th>
-        <th>Aksi</th>
+        <th>Harga (Rp)</th>
+        <th>Stok Fisik</th>
+        <th>Visibilitas</th>
+        <th class="text-right">Tindakan</th>
       </tr>
     </thead>
     <tbody>
       {#if currentRows.length === 0}
         <tr>
-          <td
-            colspan="7"
-            class="text-center py-12 text-stone-400 text-sm italic"
-            >Belum ada produk terdaftar.</td
-          >
+          <td colspan="7" class="py-12">
+            <div class="flex flex-col items-center justify-center text-center">
+              <div class="w-16 h-16 bg-stone-50 rounded-full flex items-center justify-center text-stone-300 mb-3 border border-stone-100">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+              </div>
+              <p class="text-sm font-bold text-stone-900 mb-1">Daftar Produk Kosong</p>
+              <p class="text-xs text-stone-500 max-w-[200px]">Belum ada produk yang dibuat. Gunakan form di atas untuk menambahkannya.</p>
+            </div>
+          </td>
         </tr>
       {/if}
       {#each currentRows as row (row.id)}
@@ -455,8 +460,8 @@ const currentCategories = $derived(categories);
           data-id={row.id}
           class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
         >
-          <td class="py-4">
-            <div data-field="images_json" data-value={row.imagesJson || "[]"}>
+          <td class="py-4 vertical-top">
+            <div data-field="images_json" data-value={row.imagesJson || "[]"} class="w-[84px] h-[84px] p-1 bg-white border border-stone-100 shadow-sm rounded-xl overflow-hidden hover:scale-105 transition-transform">
               <ImageGallery
                 urls={parseUrls(row.imagesJson || "[]")}
                 onChange={(next) => {
@@ -466,29 +471,31 @@ const currentCategories = $derived(categories);
             </div>
           </td>
           <td class="py-4">
-            <div
-              contenteditable="true"
-              data-field="name"
-              class="font-bold text-stone-900 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-transparent transition-all"
-            >
-              {row.name}
-            </div>
-            <div
-              class="text-[0.7rem] font-bold text-stone-400 uppercase tracking-widest mt-1 ml-3"
-            >
-              SKU:
-              <span
+            <div class="flex flex-col gap-1 items-start max-w-[240px]">
+              <div
                 contenteditable="true"
-                data-field="sku"
-                class="text-stone-600 ml-1 outline-none hover:bg-white focus:bg-white px-1.5 py-0.5 rounded transition-all"
-                >{row.sku || "-"}</span
+                data-field="name"
+                class="font-bold text-stone-900 text-[0.95rem] outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-transparent transition-all w-full truncate leading-tight"
+                title={row.name}
               >
+                {row.name}
+              </div>
+              <div class="flex items-center gap-1.5 ml-3">
+                 <span class="text-[0.6rem] font-bold text-stone-400 bg-stone-100 px-1.5 py-0.5 rounded uppercase tracking-wider">SKU</span>
+                 <div
+                  contenteditable="true"
+                  data-field="sku"
+                  class="font-mono text-[0.7rem] text-stone-500 bg-stone-50 border border-stone-100 outline-none hover:bg-white focus:bg-white px-2 py-0.5 rounded-md transition-all shadow-sm w-full truncate"
+                 >
+                  {row.sku || "-"}
+                 </div>
+              </div>
             </div>
           </td>
           <td class="py-4">
             <select
               data-field="categoryId"
-              class="px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-transparent text-sm cursor-pointer outline-none"
+              class="px-3 py-2 rounded-xl border border-transparent hover:border-stone-200 hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-stone-50 shadow-sm text-sm cursor-pointer outline-none font-semibold text-stone-700 w-[140px] truncate"
             >
               <option value="">Tanpa Kategori</option>
               {#each currentCategories as cat}
@@ -499,40 +506,47 @@ const currentCategories = $derived(categories);
             </select>
           </td>
           <td class="py-4">
-            <div
-              contenteditable="true"
-              data-field="price"
-              class="tabular-nums font-bold text-stone-800 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-transparent transition-all w-32 text-center"
-            >
-              {row.price}
-            </div>
+             <div class="flex items-center">
+                <span class="text-xs font-bold text-stone-400 mr-1.5 pl-3">Rp</span>
+                <div
+                  contenteditable="true"
+                  data-field="price"
+                  class="tabular-nums font-bold text-stone-800 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-transparent transition-all w-auto text-left"
+                >
+                  {row.price}
+                </div>
+             </div>
           </td>
           <td class="py-4">
-            <div
-              contenteditable="true"
-              data-field="stock"
-              class="tabular-nums font-bold text-stone-800 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-transparent transition-all w-24 text-center"
-            >
-              {row.stock}
+            <div class="flex items-center justify-center">
+              <div
+                contenteditable="true"
+                data-field="stock"
+                class="tabular-nums font-bold text-stone-700 bg-stone-50 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-stone-100 transition-all w-16 text-center shadow-inner"
+              >
+                {row.stock}
+              </div>
             </div>
           </td>
           <td class="py-4">
             <select
               data-field="isActive"
-              class="px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-transparent text-sm cursor-pointer outline-none font-medium"
+              class="px-3 py-1.5 rounded-full border border-transparent hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 bg-transparent transition-all cursor-pointer outline-none font-bold text-[0.75rem]"
             >
-              <option value="true" selected={row.isActive === 1}>Aktif</option>
-              <option value="false" selected={row.isActive === 0}>Draf</option>
+              <option value="true" selected={row.isActive === 1}>🟢 AKTIF</option>
+              <option value="false" selected={row.isActive === 0}>🔴 DRAF</option>
             </select>
           </td>
-          <td class="py-4">
-            <RowActions
-              isSaving={isMutating}
-              isDeleting={isMutating}
-              onSave={(e) =>
-                handleRowAction(row.id, "save", e.currentTarget.closest("tr")!)}
-              onDelete={() => handleRowAction(row.id, "delete", null!)}
-            />
+          <td class="py-4 pr-4">
+            <div class="flex items-center justify-end">
+             <RowActions
+                isSaving={isMutating}
+                isDeleting={isMutating}
+                onSave={(e) =>
+                  handleRowAction(row.id, "save", e.currentTarget.closest("tr")!)}
+                onDelete={() => handleRowAction(row.id, "delete", null!)}
+              />
+            </div>
           </td>
         </tr>
       {/each}
