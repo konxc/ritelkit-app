@@ -2,6 +2,7 @@ import { adminProcedure, router } from "../trpc";
 import { orders } from "../../db/schema";
 import { OrderSchema } from "../../lib/types";
 import { eq, desc, asc, like, or, inArray, sql } from "drizzle-orm";
+import { logAudit } from "../../lib/admin";
 
 import { z } from "zod";
 
@@ -90,8 +91,10 @@ export const orderRouter = router({
         .mutation(async ({ ctx, input }) => {
             const now = new Date().toISOString();
             await ctx.db.update(orders)
-                .set({ ...input.data, updatedAt: now })
+                .set({ ...(input.data as any), updatedAt: now })
                 .where(eq(orders.id, input.id));
+			
+			await logAudit(ctx.ctx, "update", "order", input.id, input.data);
             return { ok: true };
         }),
 });

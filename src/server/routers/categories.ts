@@ -33,7 +33,7 @@ export const categoryRouter = router({
         .mutation(async ({ ctx, input }) => {
             const now = new Date().toISOString();
             await ctx.db.update(categories)
-                .set({ ...input.data, updatedAt: now })
+                .set({ ...(input.data as any), updatedAt: now })
                 .where(eq(categories.id, input.id));
             return { ok: true };
         }),

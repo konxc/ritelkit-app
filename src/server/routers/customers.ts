@@ -36,10 +36,10 @@ export const customerRouter = router({
             const now = new Date().toISOString();
             await ctx.db
                 .update(customers)
-                .set({ ...input.data, updatedAt: now })
+                .set({ ...(input.data as any), updatedAt: now })
                 .where(eq(customers.id, input.id))
                 .run();
-            return { id: input.id, ...input.data };
+            return { id: input.id, ...(input.data as any) };
         }),
 
     delete: adminProcedure.input(z.string()).mutation(async ({ ctx, input }) => {

@@ -48,7 +48,7 @@ export const productRouter = router({
         .mutation(async ({ ctx, input }) => {
             const now = new Date().toISOString();
             await ctx.db.update(products)
-                .set({ ...input.data, updatedAt: now })
+                .set({ ...(input.data as any), updatedAt: now })
                 .where(eq(products.id, input.id));
             return { ok: true };
         }),
