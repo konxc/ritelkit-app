@@ -495,30 +495,78 @@ const renderIcon = (iconName: string, active: boolean) => {
         </style>
     </body>
 
+    <script is:inline>
+        // Synchronous check to prevent FOUC (Flash of Unstyled Content) before rendering
+        (function() {
+            const isCollapsed = localStorage.getItem("sidebarState") === "collapsed";
+            if (isCollapsed) {
+                document.documentElement.classList.add("sidebar-collapsed");
+                // Body might not exist yet if script is in head but since we are at bottom of body it does
+                document.body?.classList.add("sidebar-collapsed");
+            }
+        })();
+    </script>
     <script>
-        // Sidebar Toggle Logic
-        document.addEventListener("DOMContentLoaded", () => {
+        const applySidebarState = () => {
+             const isCollapsed = localStorage.getItem("sidebarState") === "collapsed";
+             if (isCollapsed) {
+                 document.body.classList.add("sidebar-collapsed");
+                 document.documentElement.classList.add("sidebar-collapsed");
+             } else {
+                 document.body.classList.remove("sidebar-collapsed");
+                 document.documentElement.classList.remove("sidebar-collapsed");
+             }
+        };
+
+        // Apply on initial load
+        document.addEventListener("DOMContentLoaded", applySidebarState);
+
+        // Apply immediately after DOM is swapped during SPA navigation to ensure state is kept right away
+        document.addEventListener("astro:after-swap", applySidebarState);
+
+        // Setup interactivity after the new page is fully loaded
+        document.addEventListener("astro:page-load", () => {
             const toggleBtn = document.getElementById("sidebar-toggle");
             const body = document.body;
+            
+            // Re-apply just in case
+            applySidebarState();
 
-            // Check localStorage for saved state
-            const isCollapsed =
-                localStorage.getItem("sidebarState") === "collapsed";
-            if (isCollapsed) {
-                body.classList.add("sidebar-collapsed");
-            } else {
-                body.classList.remove("sidebar-collapsed");
-            }
-
-            toggleBtn?.addEventListener("click", () => {
+            // Remove existing listener if any to prevent duplicate triggers (SPA safeguard)
+            const handleToggle = () => {
                 body.classList.toggle("sidebar-collapsed");
+                document.documentElement.classList.toggle("sidebar-collapsed"); // Sync with HTML tag for CSS
 
                 if (body.classList.contains("sidebar-collapsed")) {
                     localStorage.setItem("sidebarState", "collapsed");
                 } else {
                     localStorage.setItem("sidebarState", "expanded");
                 }
-            });
+            };
+            
+            // Clean up old listeners (if the DOM node was reused)
+            if (toggleBtn) {
+                // @ts-ignore
+                toggleBtn.removeEventListener("click", toggleBtn._handleToggle); 
+                toggleBtn.addEventListener("click", handleToggle);
+                // @ts-ignore
+                toggleBtn._handleToggle = handleToggle;
+            }
+
+            // Keyboard shortcut (Ctrl + \) to toggle sidebar
+            const handleKeydown = (e: KeyboardEvent) => {
+                if (e.ctrlKey && e.key === '\\') {
+                    e.preventDefault();
+                    handleToggle();
+                }
+            };
+
+            // Remove previous global keydown listener to avoid duplicates on SPA navigation
+            // @ts-ignore
+            document.removeEventListener("keydown", document._handleSidebarKeydown);
+            document.addEventListener("keydown", handleKeydown);
+            // @ts-ignore
+            document._handleSidebarKeydown = handleKeydown;
 
             // Profile Dropdown Logic
             const dropdownToggles = document.querySelectorAll('.profile-dropdown-toggle');

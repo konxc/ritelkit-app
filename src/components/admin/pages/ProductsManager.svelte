@@ -117,6 +117,7 @@ const handleDelete = async (id: string) => {
 	}
 };
 
+let isDrawerOpen = $state(false);
 let newImageUrls = $state<string[]>([]);
 let uploadStatus = $state("");
 let newName = $state("");
@@ -179,6 +180,7 @@ const productFormHandler = async (event: SubmitEvent) => {
 		form.reset();
 		newImageUrls = [];
 		newName = "";
+		isDrawerOpen = false;
 	}
 };
 
@@ -223,213 +225,249 @@ const handleRowAction = async (
 
 const currentCategories = $derived(categories);
 </script>
-<div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-<SectionHeader title="Tambah Produk" badge="E-commerce Ready" />
+<div class="flex items-center justify-between mt-2 mb-8">
+  <SectionHeader title="Daftar Produk" muted="Kelola produk, edit harga, dan perbarui stok." />
+  <button
+    class="flex items-center gap-2 px-4 py-2 bg-stone-900 border border-transparent rounded-xl text-white text-[0.85rem] font-bold shadow-sm hover:bg-stone-800 transition-all hover:shadow-md"
+    onclick={() => isDrawerOpen = true}
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+    Tambah Produk
+  </button>
+</div>
 
-<CrudInlineForm
-  id="product-form"
-  onsubmit={productFormHandler}
-  isSubmitting={isMutating}
->
-  <div class="space-y-6 border-b border-stone-100 pb-8 mb-8">
-    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-      <div class="xl:col-span-8 flex flex-col gap-6 p-6 md:p-8 bg-white/50 border border-stone-100 rounded-3xl backdrop-blur-sm self-start">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="space-y-1.5">
-            <label
-              for="name"
-              class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
-              >Nama Produk</label
-            >
-            <input
-              id="name"
-              name="name"
-              required
-              bind:value={newName}
-              placeholder="Cth: Roti Manis"
-              class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm shadow-sm outline-none placeholder:text-stone-300 font-medium"
-            />
-          </div>
-          <div class="space-y-1.5">
-            <label
-              for="sku"
-              class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
-              >SKU (Opsional)</label
-            >
-            <input
-              id="sku"
-              name="sku"
-              placeholder="PROD-001"
-              class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-stone-50 text-sm shadow-sm outline-none placeholder:text-stone-300 font-mono text-stone-600"
-            />
-          </div>
-          <div class="space-y-1.5">
-            <label
-              for="category_id"
-              class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
-              >Kategori</label
-            >
-            <select
-              id="category_id"
-              name="categoryId"
-              class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm shadow-sm font-medium appearance-none cursor-pointer outline-none"
-            >
-              <option value="" disabled selected>Pilih Kategori Dasar...</option>
-              {#each currentCategories as cat}
-                <option value={cat.id}>{cat.name}</option>
-              {/each}
-            </select>
-          </div>
-          <div class="space-y-1.5">
-            <label
-              for="description"
-              class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
-              >Deskripsi</label
-            >
-            <input
-              id="description"
-              name="description"
-              placeholder="Berikan deskripsi singkat..."
-              class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm shadow-sm outline-none"
-            />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-2 border-t border-stone-100">
-          <div class="space-y-1.5">
-            <label
-              for="price"
-              class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
-              >Harga Penjualan</label
-            >
-            <div class="relative">
-              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-stone-400">Rp</span>
-              <input
-                id="price"
-                name="price"
-                type="number"
-                placeholder="0"
-                required
-                class="w-full pl-10 pr-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white shadow-sm text-sm outline-none font-bold tabular-nums text-stone-800"
-              />
-            </div>
-          </div>
-          <div class="space-y-1.5">
-            <label
-              for="stock"
-              class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
-              >Stok Awal</label
-            >
-            <input
-              id="stock"
-              name="stock"
-              type="number"
-              placeholder="~"
-              class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white shadow-sm text-sm outline-none font-bold tabular-nums text-center"
-            />
-          </div>
-          <div class="space-y-1.5">
-            <label
-              for="isActive"
-              class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
-              >Visibilitas</label
-            >
-            <select
-              id="isActive"
-              name="isActive"
-              class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm shadow-sm font-medium appearance-none cursor-pointer outline-none"
-            >
-              <option value="true" selected>🟢 Publik</option>
-              <option value="false">🔴 Draft</option>
-            </select>
-          </div>
-        </div>
+{#if isDrawerOpen}
+<div class="fixed inset-0 z-[100] flex justify-end">
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div 
+    class="absolute inset-0 bg-stone-900/40 backdrop-blur-sm transition-opacity" 
+    transition:fade={{duration: 200}} 
+    onclick={() => isDrawerOpen = false}
+  ></div>
+  
+  <div class="relative w-full max-w-xl bg-white border-l border-stone-100 h-full shadow-2xl flex flex-col z-[101]" transition:fly={{x: 400, opacity: 1, duration: 300}}>
+    <div class="flex items-center justify-between px-6 py-5 border-b border-stone-100 bg-stone-50/50">
+      <div>
+        <h3 class="font-bold text-stone-800 text-lg">Tambah Produk</h3>
+        <p class="text-xs font-semibold text-stone-400 mt-0.5 uppercase tracking-wider">E-commerce Ready</p>
       </div>
-
-      <div class="xl:col-span-4 flex flex-col gap-2 p-6 md:p-8 bg-stone-50/50 border border-stone-100 rounded-3xl self-start space-y-1 h-full">
-        <label
-          for="file-input"
-          class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
-          >Media Produk</label
-        >
-        <div
-          class="flex-1 min-h-[160px] flex items-center justify-center border-2 border-dashed border-stone-200/80 bg-white shadow-sm rounded-2xl p-6 hover:bg-stone-50 hover:border-[#c48a3a]/40 transition-colors text-center cursor-pointer relative group"
-          id="upload-zone"
-          role="button"
-          tabindex="0"
-          ondragover={(e: DragEvent) => e.preventDefault()}
-          ondrop={handleDrop}
-        >
-          <input
-            type="file"
-            id="file-input"
-            multiple
-            accept="image/*"
-            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            onchange={handleFileUpload}
-          />
-          <div class="flex flex-col items-center gap-3">
-            <div class="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center text-stone-400 group-hover:scale-110 group-hover:text-[#c48a3a] transition-all duration-300">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                ><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            </div>
-            <div>
-              <span class="text-sm font-bold text-stone-700 block mb-0.5"
-                >Upload Foto</span
-              >
-              <p class="text-[0.65rem] text-stone-400 font-semibold max-w-[140px] uppercase tracking-wide">
-                Tarik gambar kemari <br/> atau klik
-              </p>
-            </div>
-          </div>
-        </div>
-        {#if newImageUrls.length > 0}
-        <div class="mt-4 w-full">
-          <ImageGallery
-            urls={newImageUrls}
-            onChange={(next) => (newImageUrls = next)}
-          />
-        </div>
-        {/if}
-        <div id="upload-status" class="text-center font-semibold text-stone-500 mt-1.5 text-xs">{uploadStatus}</div>
-      </div>
-    </div>
-    
-    <div class="flex items-center justify-end mt-6">
-      <button
-        class="flex items-center justify-center gap-2 h-[46px] px-10 rounded-xl bg-gradient-to-r from-[#c48a3a] to-[#a6722d] text-white text-sm font-bold hover:shadow-[0_4px_12px_rgba(196,138,58,0.25)] hover:-translate-y-0.5 transition-all shadow-md w-full sm:w-auto disabled:opacity-70 disabled:cursor-not-allowed"
-        type="submit"
-        disabled={isMutating}
-      >
-        {#if isMutating}
-          <svg class="animate-spin h-4 w-4 mr-1 inline" viewBox="0 0 24 24"
-            ><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-        {:else}
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-        {/if}
-        Simpan Produk Baru
+      <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-200 text-stone-500 transition-colors" onclick={() => isDrawerOpen = false}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
       </button>
     </div>
-  </div>
-</CrudInlineForm>
+    
+    <div class="flex-1 overflow-y-auto w-full custom-scrollbar">
+      <CrudInlineForm
+        id="product-form"
+        onsubmit={productFormHandler}
+        isSubmitting={isMutating}
+      >
+        <div class="p-6 space-y-8">
+          
+          <div class="space-y-6">
+             <h4 class="text-xs font-bold text-[#c48a3a] uppercase tracking-widest border-b border-[#c48a3a]/20 pb-2">Informasi Dasar</h4>
+             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              <div class="space-y-1.5 sm:col-span-2">
+                <label
+                  for="name"
+                  class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+                  >Nama Produk</label
+                >
+                <input
+                  id="name"
+                  name="name"
+                  required
+                  bind:value={newName}
+                  placeholder="Cth: Roti Manis"
+                  class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm shadow-sm outline-none placeholder:text-stone-300 font-medium"
+                />
+              </div>
+              <div class="space-y-1.5">
+                <label
+                  for="sku"
+                  class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+                  >SKU (Opsional)</label
+                >
+                <input
+                  id="sku"
+                  name="sku"
+                  placeholder="PROD-001"
+                  class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-stone-50 text-sm shadow-sm outline-none placeholder:text-stone-300 font-mono text-stone-600"
+                />
+              </div>
+              <div class="space-y-1.5">
+                <label
+                  for="category_id"
+                  class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+                  >Kategori</label
+                >
+                <select
+                  id="category_id"
+                  name="categoryId"
+                  class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm shadow-sm font-medium appearance-none cursor-pointer outline-none"
+                >
+                  <option value="" disabled selected>Pilih Kategori Dasar...</option>
+                  {#each currentCategories as cat}
+                    <option value={cat.id}>{cat.name}</option>
+                  {/each}
+                </select>
+              </div>
+            </div>
+            <div class="space-y-1.5">
+              <label
+                for="description"
+                class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+                >Deskripsi</label
+              >
+              <textarea
+                id="description"
+                name="description"
+                rows="3"
+                placeholder="Berikan deskripsi singkat..."
+                class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm shadow-sm outline-none resize-none"
+              ></textarea>
+            </div>
+          </div>
 
-<div class="mt-6">
-  <SectionHeader title="Daftar Produk" muted="Klik sel untuk edit" />
+          <div class="space-y-6">
+             <h4 class="text-xs font-bold text-[#c48a3a] uppercase tracking-widest border-b border-[#c48a3a]/20 pb-2">Penetapan Harga & Stok</h4>
+             <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+              <div class="space-y-1.5">
+                <label
+                  for="price"
+                  class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+                  >Harga Penjualan</label
+                >
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-stone-400">Rp</span>
+                  <input
+                    id="price"
+                    name="price"
+                    type="number"
+                    placeholder="0"
+                    required
+                    class="w-full pl-10 pr-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white shadow-sm text-sm outline-none font-bold tabular-nums text-stone-800"
+                  />
+                </div>
+              </div>
+              <div class="space-y-1.5">
+                <label
+                  for="stock"
+                  class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+                  >Stok Awal</label
+                >
+                <input
+                  id="stock"
+                  name="stock"
+                  type="number"
+                  placeholder="~"
+                  class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white shadow-sm text-sm outline-none font-bold tabular-nums text-center"
+                />
+              </div>
+              <div class="space-y-1.5">
+                <label
+                  for="isActive"
+                  class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+                  >Visibilitas</label
+                >
+                <select
+                  id="isActive"
+                  name="isActive"
+                  class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm shadow-sm font-medium appearance-none cursor-pointer outline-none"
+                >
+                  <option value="true" selected>🟢 Publik</option>
+                  <option value="false">🔴 Draft</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-6">
+            <h4 class="text-xs font-bold text-[#c48a3a] uppercase tracking-widest border-b border-[#c48a3a]/20 pb-2">Media & Visual</h4>
+            <div class="flex flex-col gap-2 p-6 bg-stone-50/50 border border-stone-100 rounded-3xl self-start space-y-1 w-full relative">
+              <label
+                for="file-input"
+                class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+                >Upload Foto Utama dan Galeri</label
+              >
+              <div
+                class="flex-1 min-h-[160px] flex items-center justify-center border-2 border-dashed border-stone-200/80 bg-white shadow-sm rounded-2xl p-6 hover:bg-stone-50 hover:border-[#c48a3a]/40 transition-colors text-center cursor-pointer relative group mt-2"
+                id="upload-zone"
+                role="button"
+                tabindex="0"
+                ondragover={(e: DragEvent) => e.preventDefault()}
+                ondrop={handleDrop}
+              >
+                <input
+                  type="file"
+                  id="file-input"
+                  multiple
+                  accept="image/*"
+                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  onchange={handleFileUpload}
+                />
+                <div class="flex flex-col items-center gap-3">
+                  <div class="w-12 h-12 bg-stone-100 rounded-full flex items-center justify-center text-stone-400 group-hover:scale-110 group-hover:text-[#c48a3a] transition-all duration-300">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      ><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  </div>
+                  <div>
+                    <span class="text-sm font-bold text-stone-700 block mb-0.5"
+                      >Tarik Foto ke Sini</span
+                    >
+                    <p class="text-[0.65rem] text-stone-400 font-semibold uppercase tracking-wide">
+                      atau klik area ini
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div id="upload-status" class="text-center font-semibold text-stone-500 mt-1.5 text-xs">{uploadStatus}</div>
+              {#if newImageUrls.length > 0}
+              <div class="mt-4 w-full">
+                <ImageGallery
+                  urls={newImageUrls}
+                  onChange={(next) => (newImageUrls = next)}
+                />
+              </div>
+              {/if}
+            </div>
+          </div>
+        </div>
+        
+        <div class="p-6 pt-4 border-t border-stone-100 bg-stone-50/30 sticky bottom-0 z-10 w-full">
+          <button
+            class="flex items-center justify-center gap-2 h-[46px] rounded-xl bg-gradient-to-r from-[#c48a3a] to-[#a6722d] text-white text-sm font-bold hover:shadow-[0_4px_12px_rgba(196,138,58,0.25)] hover:-translate-y-0.5 transition-all shadow-md w-full disabled:opacity-70 disabled:cursor-not-allowed"
+            type="submit"
+            disabled={isMutating}
+          >
+            {#if isMutating}
+              <svg class="animate-spin h-4 w-4 mr-1 inline" viewBox="0 0 24 24"
+                ><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            {:else}
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            {/if}
+            Simpan Produk Baru
+          </button>
+        </div>
+      </CrudInlineForm>
+    </div>
+  </div>
 </div>
-<div class="mt-2" role="button" tabindex="0">
-  <AdminDataTable>
-    <thead>
+{/if}
+<AdminDataTable>
+  <thead>
       <tr>
         <th>Galeri</th>
         <th>Informasi Produk</th>
@@ -552,7 +590,5 @@ const currentCategories = $derived(categories);
       {/each}
     </tbody>
   </AdminDataTable>
-</div>
-</div>
 
 <ToastNotification bind:this={toastRef} />

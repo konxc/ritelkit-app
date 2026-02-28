@@ -24,6 +24,7 @@ let newName = $state("");
 let newSlug = $state("");
 let isSubmitting = $state(false);
 let processingId = $state<string | null>(null);
+let isDrawerOpen = $state(false);
 
 const categoriesQuery = createQuery(() => ({
 	queryKey: ["categories.list"],
@@ -63,6 +64,7 @@ const categoryFormHandler = async (event: SubmitEvent) => {
 		form.reset();
 		newName = "";
 		newSlug = "";
+		isDrawerOpen = false;
 	} catch (error: unknown) {
 		const message = error instanceof Error ? error.message : "Gagal menambah kategori";
 		toastRef?.show(message, "error");
@@ -125,107 +127,138 @@ const handleRowAction = async (
 	}
 };
 </script>
-<div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-<SectionHeader title="Tambah Kategori" badge="Product Organization" />
-<CrudInlineForm
-  id="category-form"
-  onsubmit={categoryFormHandler}
-  isSubmitting={isSubmitting}
->
-<div class="space-y-6 border-b border-stone-100 pb-8 mb-8">
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-    <div class="space-y-1.5">
-      <label
-        for="name"
-        class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
-        >Nama Kategori</label
-      >
-      <input
-        name="name"
-        id="name"
-        required
-        bind:value={newName}
-        placeholder="Cth: Roti Manis"
-        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 outline-none focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm placeholder:text-stone-300 shadow-sm"
-      />
+<div class="flex items-center justify-between mt-2 mb-8">
+  <SectionHeader title="Daftar Kategori" muted="Kelola dan edit kategori produk" />
+  <button
+    class="flex items-center gap-2 px-4 py-2 bg-stone-900 border border-transparent rounded-xl text-white text-[0.85rem] font-bold shadow-sm hover:bg-stone-800 transition-all hover:shadow-md"
+    onclick={() => isDrawerOpen = true}
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+    Tambah Kategori
+  </button>
+</div>
+
+{#if isDrawerOpen}
+<div class="fixed inset-0 z-[100] flex justify-end">
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div 
+    class="absolute inset-0 bg-stone-900/40 backdrop-blur-sm transition-opacity" 
+    transition:fade={{duration: 200}} 
+    onclick={() => isDrawerOpen = false}
+  ></div>
+  
+  <div class="relative w-full max-w-md bg-white border-l border-stone-100 h-full shadow-2xl flex flex-col z-[101]" transition:fly={{x: 400, opacity: 1, duration: 300}}>
+    <div class="flex items-center justify-between px-6 py-5 border-b border-stone-100 bg-stone-50/50">
+      <div>
+        <h3 class="font-bold text-stone-800 text-lg">Tambah Kategori</h3>
+        <p class="text-xs font-semibold text-stone-400 mt-0.5 uppercase tracking-wider">Product Organization</p>
+      </div>
+      <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-200 text-stone-500 transition-colors" onclick={() => isDrawerOpen = false}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
     </div>
-    <div class="space-y-1.5">
-      <label
-        for="slug"
-        class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
-        >Slug</label
+    
+    <div class="flex-1 overflow-y-auto w-full">
+      <CrudInlineForm
+        id="category-form"
+        onsubmit={categoryFormHandler}
+        isSubmitting={isSubmitting}
       >
-      <input
-        name="slug"
-        id="slug"
-        bind:value={newSlug}
-        placeholder="roti-manis"
-        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 outline-none focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-stone-50 text-sm placeholder:text-stone-300 shadow-sm font-mono text-stone-600"
-      />
+        <div class="p-6 space-y-6">
+          <div class="space-y-1.5">
+            <label
+              for="name"
+              class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+              >Nama Kategori</label
+            >
+            <input
+              name="name"
+              id="name"
+              required
+              bind:value={newName}
+              placeholder="Cth: Roti Manis"
+              class="w-full px-4 py-3 rounded-xl border border-stone-200 outline-none focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm placeholder:text-stone-300 shadow-sm"
+            />
+          </div>
+          <div class="space-y-1.5">
+            <label
+              for="slug"
+              class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+              >URL Slug</label
+            >
+            <input
+              name="slug"
+              id="slug"
+              bind:value={newSlug}
+              placeholder="roti-manis"
+              class="w-full px-4 py-3 rounded-xl border border-stone-200 outline-none focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-stone-50 text-sm placeholder:text-stone-300 shadow-sm font-mono text-stone-600"
+            />
+          </div>
+          <div class="space-y-1.5">
+            <label
+              for="sort_order"
+              class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+              >Urutan (Prioritas)</label
+            >
+            <input
+              name="sort_order"
+              id="sort_order"
+              type="number"
+              value="0"
+              class="w-full px-4 py-3 rounded-xl border border-stone-200 outline-none focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm shadow-sm tabular-nums"
+            />
+          </div>
+          <div class="space-y-1.5">
+            <label
+              for="isActive"
+              class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
+              >Status Visibilitas</label
+            >
+            <select
+              name="isActive"
+              id="isActive"
+              class="w-full px-4 py-3 rounded-xl border border-stone-200 outline-none focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm shadow-sm cursor-pointer font-medium appearance-none"
+            >
+              <option value="true">🟢 Aktif (Publik)</option>
+              <option value="false">🔴 Draft (Tersembunyi)</option>
+            </select>
+          </div>
+        </div>
+        <div class="p-6 pt-2 border-t border-stone-100 bg-stone-50/30 mt-auto">
+          <button
+            class="flex items-center justify-center gap-2 h-[46px] rounded-xl bg-gradient-to-r from-[#c48a3a] to-[#a6722d] text-white text-sm font-bold hover:shadow-[0_4px_12px_rgba(196,138,58,0.25)] hover:-translate-y-0.5 transition-all shadow-md w-full disabled:opacity-70 disabled:cursor-not-allowed"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {#if isSubmitting}
+              <svg class="animate-spin h-4 w-4 mr-1 inline" viewBox="0 0 24 24"
+                ><circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle><path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path></svg
+              >
+            {:else}
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            {/if}
+            Simpan Kategori Baru
+          </button>
+        </div>
+      </CrudInlineForm>
     </div>
-    <div class="space-y-1.5">
-      <label
-        for="sort_order"
-        class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
-        >Urutan (Prioritas)</label
-      >
-      <input
-        name="sort_order"
-        id="sort_order"
-        type="number"
-        value="0"
-        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 outline-none focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm shadow-sm tabular-nums"
-      />
-    </div>
-    <div class="space-y-1.5">
-      <label
-        for="isActive"
-        class="block text-[0.7rem] font-bold text-stone-500 uppercase tracking-wider"
-        >Status</label
-      >
-      <select
-        name="isActive"
-        id="isActive"
-        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 outline-none focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm shadow-sm cursor-pointer font-medium appearance-none"
-      >
-        <option value="true">🟢 Aktif (Publik)</option>
-        <option value="false">🔴 Draft (Tersembunyi)</option>
-      </select>
-    </div>
-  </div>
-  <div class="flex items-center justify-end pt-2">
-    <button
-      class="flex items-center justify-center gap-2 h-[42px] px-8 rounded-xl bg-gradient-to-r from-[#c48a3a] to-[#a6722d] text-white text-sm font-bold hover:shadow-[0_4px_12px_rgba(196,138,58,0.25)] hover:-translate-y-0.5 transition-all shadow-md w-full sm:w-auto disabled:opacity-70 disabled:cursor-not-allowed"
-      type="submit"
-      disabled={isSubmitting}
-    >
-      {#if isSubmitting}
-        <svg class="animate-spin h-4 w-4 mr-1 inline" viewBox="0 0 24 24"
-          ><circle
-            class="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            stroke-width="4"
-          ></circle><path
-            class="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          ></path></svg
-        >
-      {:else}
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-      {/if}
-      Tambah Kategori Baru
-    </button>
   </div>
 </div>
-</CrudInlineForm>
+{/if}
 
-<div class="mt-8">
-  <SectionHeader title="Daftar Kategori" muted="Edit langsung di tabel" />
-  <AdminDataTable>
+<AdminDataTable>
     <thead>
       <tr>
         <th>Kategori</th>
@@ -306,7 +339,4 @@ const handleRowAction = async (
       {/each}
     </tbody>
   </AdminDataTable>
-</div>
-</div>
-
 <ToastNotification bind:this={toastRef} />

@@ -31,6 +31,7 @@ let { rows: initialRows = [] }: { rows: RuleRow[] } = $props();
 const queryClient = useQueryClient();
 let toastRef = $state<ToastNotification>();
 let isSubmitting = $state(false);
+let isDrawerOpen = $state(false);
 
 const rulesQuery = createQuery(() => ({
 	queryKey: ["shippingRules.list"],
@@ -100,6 +101,7 @@ const handleCreate = async (event: SubmitEvent) => {
 		thresholdFee = 10000;
 		zoneList = "";
 		queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
+		isDrawerOpen = false;
 	} catch (error: unknown) {
 		const message = error instanceof Error ? error.message : "Terjadi kesalahan";
 		toastRef?.show(message, "error");
@@ -200,204 +202,221 @@ const handleSimulation = async (event: SubmitEvent) => {
 	}
 };
 </script>
-<div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-<SectionHeader title="Tambah Rule" badge="Ongkir dinamis" />
-<CrudInlineForm
-  id="shipping-rule-form"
-  onsubmit={handleCreate}
-  isSubmitting={isSubmitting}
->
-  <div class="space-y-6 border-b border-stone-100 pb-8 mb-8">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Rule Identity -->
-      <div
-        class="space-y-4 border-b border-stone-100 lg:border-b-0 lg:border-r lg:pr-8 pb-6 lg:pb-0"
+<div class="flex items-center justify-between mt-2 mb-8">
+  <SectionHeader title="Daftar Aturan" muted="Kelola dan konfigurasi ongkir" />
+  <button
+    class="flex items-center gap-2 px-4 py-2 bg-stone-900 border border-transparent rounded-xl text-white text-[0.85rem] font-bold shadow-sm hover:bg-stone-800 transition-all hover:shadow-md"
+    onclick={() => isDrawerOpen = true}
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+    Tambah Rule
+  </button>
+</div>
+
+{#if isDrawerOpen}
+<div class="fixed inset-0 z-[100] flex justify-end">
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div 
+    class="absolute inset-0 bg-stone-900/40 backdrop-blur-sm transition-opacity" 
+    transition:fade={{duration: 200}} 
+    onclick={() => isDrawerOpen = false}
+  ></div>
+  
+  <div class="relative w-full max-w-lg bg-white border-l border-stone-100 h-full shadow-2xl flex flex-col z-[101]" transition:fly={{x: 400, opacity: 1, duration: 300}}>
+    <div class="flex items-center justify-between px-6 py-5 border-b border-stone-100 bg-stone-50/50">
+      <div>
+        <h3 class="font-bold text-stone-800 text-lg">Tambah Rule</h3>
+        <p class="text-xs font-semibold text-stone-400 mt-0.5 uppercase tracking-wider">Ongkir dinamis</p>
+      </div>
+      <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-200 text-stone-500 transition-colors" onclick={() => isDrawerOpen = false}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    
+    <div class="flex-1 overflow-y-auto w-full custom-scrollbar">
+      <CrudInlineForm
+        id="shipping-rule-form"
+        onsubmit={handleCreate}
+        isSubmitting={isSubmitting}
       >
-        <div class="space-y-1.5">
-          <label
-            for="name"
-            class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-            >Nama Aturan</label
-          >
-          <input
-            id="name"
-            name="name"
-            required
-            placeholder="Cth: Jabodetabek Flat"
-            class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold"
-          />
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div class="space-y-1.5">
-            <label
-              for="type"
-              class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-              >Tipe</label
-            >
-            <select
-              id="type"
-              name="type"
-              bind:value={configType}
-              class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none appearance-none cursor-pointer font-medium"
-            >
-              <option value="flat">💵 Flat Fee</option>
-              <option value="free_threshold">🛒 Free Threshold</option>
-              <option value="zone">🗺️ Zonasi</option>
-            </select>
-          </div>
-          <div class="space-y-1.5">
-            <label
-              for="priority"
-              class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-              >Prioritas</label
-            >
-            <input
-              id="priority"
-              name="priority"
-              type="number"
-              value="100"
-              class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold tabular-nums"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Config Inputs -->
-      <div class="lg:col-span-2 space-y-4">
-        <p
-          class="block text-xs font-semibold text-stone-400 uppercase tracking-widest mb-2"
-        >
-          Konfigurasi Aturan
-        </p>
-
-        {#if configType === "flat"}
-          <div id="flat-config" class="space-y-1.5">
-            <label
-              for="flat_fee"
-              class="block text-xs font-semibold text-stone-600"
-              >Flat Fee (Rp)</label
-            >
-            <input
-              id="flat_fee"
-              name="flat_fee"
-              type="number"
-              bind:value={flatFee}
-              class="w-full md:w-64 px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold tabular-nums"
-            />
-          </div>
-        {:else if configType === "free_threshold"}
-          <div
-            id="threshold-config"
-            class="grid grid-cols-1 md:grid-cols-2 gap-6"
-          >
-            <div class="space-y-1.5">
-              <label
-                for="threshold_amount"
-                class="block text-xs font-semibold text-stone-600"
-                >Min. Belanja untuk Gratis (Rp)</label
-              >
-              <input
-                id="threshold_amount"
-                name="threshold_amount"
-                type="number"
-                bind:value={thresholdAmount}
-                class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold tabular-nums"
-              />
-            </div>
-            <div class="space-y-1.5">
-              <label
-                for="threshold_fee"
-                class="block text-xs font-semibold text-stone-600"
-                >Biaya di bawah limit (Rp)</label
-              >
-              <input
-                id="threshold_fee"
-                name="threshold_fee"
-                type="number"
-                bind:value={thresholdFee}
-                class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold tabular-nums"
-              />
+        <div class="p-6 space-y-8">
+          
+          <div class="space-y-6">
+            <h4 class="text-xs font-bold text-[#c48a3a] uppercase tracking-widest border-b border-[#c48a3a]/20 pb-2">Identitas Rule</h4>
+            <div class="space-y-4">
+              <div class="space-y-1.5">
+                <label
+                  for="name"
+                  class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
+                  >Nama Aturan</label
+                >
+                <input
+                  id="name"
+                  name="name"
+                  required
+                  placeholder="Cth: Jabodetabek Flat"
+                  class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold"
+                />
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                  <label
+                    for="type"
+                    class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
+                    >Tipe</label
+                  >
+                  <select
+                    id="type"
+                    name="type"
+                    bind:value={configType}
+                    class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none appearance-none cursor-pointer font-medium"
+                  >
+                    <option value="flat">💵 Flat Fee</option>
+                    <option value="free_threshold">🛒 Free Threshold</option>
+                    <option value="zone">🗺️ Zonasi</option>
+                  </select>
+                </div>
+                <div class="space-y-1.5">
+                  <label
+                    for="priority"
+                    class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
+                    >Prioritas</label
+                  >
+                  <input
+                    id="priority"
+                    name="priority"
+                    type="number"
+                    value="100"
+                    class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold tabular-nums"
+                  />
+                </div>
+              </div>
             </div>
           </div>
-        {:else if configType === "zone"}
-          <div id="zone-config" class="space-y-1.5">
-            <label
-              for="zone_list"
-              class="block text-xs font-semibold text-stone-600"
-              >Daftar Zona (Pihak Ke-3 / Custom)</label
-            >
-            <textarea
-              id="zone_list"
-              name="zone_list"
-              rows="4"
-              bind:value={zoneList}
-              placeholder="DI Yogyakarta|Bantul|Sewon|8000\nDI Yogyakarta|Sleman||12000"
-              class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm font-mono outline-none resize-none"
-            ></textarea>
-            <p class="text-[10px] text-stone-400 italic mt-1">
-              Format: <span
-                class="bg-stone-50 px-1 py-0.5 rounded border border-stone-100"
-                >provinsi|kota|kecamatan|biaya</span
-              >, pisahkan baris baru.
-            </p>
+
+          <div class="space-y-6">
+            <h4 class="text-xs font-bold text-[#c48a3a] uppercase tracking-widest border-b border-[#c48a3a]/20 pb-2">Konfigurasi Aturan</h4>
+            <div class="space-y-4 bg-stone-50/50 p-4 border border-stone-100 rounded-2xl">
+              {#if configType === "flat"}
+                <div id="flat-config" class="space-y-1.5">
+                  <label
+                    for="flat_fee"
+                    class="block text-xs font-semibold text-stone-600"
+                    >Flat Fee (Rp)</label
+                  >
+                  <input
+                    id="flat_fee"
+                    name="flat_fee"
+                    type="number"
+                    bind:value={flatFee}
+                    class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold tabular-nums"
+                  />
+                </div>
+              {:else if configType === "free_threshold"}
+                <div
+                  id="threshold-config"
+                  class="space-y-4"
+                >
+                  <div class="space-y-1.5">
+                    <label
+                      for="threshold_amount"
+                      class="block text-xs font-semibold text-stone-600"
+                      >Min. Belanja untuk Gratis (Rp)</label
+                    >
+                    <input
+                      id="threshold_amount"
+                      name="threshold_amount"
+                      type="number"
+                      bind:value={thresholdAmount}
+                      class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold tabular-nums"
+                    />
+                  </div>
+                  <div class="space-y-1.5">
+                    <label
+                      for="threshold_fee"
+                      class="block text-xs font-semibold text-stone-600"
+                      >Biaya di bawah limit (Rp)</label
+                    >
+                    <input
+                      id="threshold_fee"
+                      name="threshold_fee"
+                      type="number"
+                      bind:value={thresholdFee}
+                      class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none font-bold tabular-nums"
+                    />
+                  </div>
+                </div>
+              {:else if configType === "zone"}
+                <div id="zone-config" class="space-y-1.5">
+                  <label
+                    for="zone_list"
+                    class="block text-xs font-semibold text-stone-600"
+                    >Daftar Zona (Pihak Ke-3 / Custom)</label
+                  >
+                  <textarea
+                    id="zone_list"
+                    name="zone_list"
+                    rows="4"
+                    bind:value={zoneList}
+                    placeholder="DI Yogyakarta|Bantul|Sewon|8000\nDI Yogyakarta|Sleman||12000"
+                    class="w-full px-4 py-3 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm font-mono outline-none resize-none"
+                  ></textarea>
+                  <p class="text-[10px] text-stone-400 italic mt-1">
+                    Format: <span
+                      class="bg-stone-50 px-1 py-0.5 rounded border border-stone-100"
+                      >provinsi|kota|kecamatan|biaya</span
+                    >, pisahkan baris baru.
+                  </p>
+                </div>
+              {/if}
+
+              <div class="pt-2">
+                <label
+                  for="config_preview"
+                  class="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1.5"
+                  >Preview JSON Konfigurasi</label
+                >
+                <textarea
+                  id="config_preview"
+                  name="config_preview"
+                  rows="2"
+                  value={configPreview}
+                  readonly
+                  class="w-full px-4 py-2.5 rounded-xl border border-stone-100 bg-stone-100 text-stone-500 text-[11px] font-mono overflow-auto resize-none outline-none cursor-default"
+                ></textarea>
+              </div>
+            </div>
+            <div class="pt-2 border-t border-stone-100">
+              <p class="text-xs text-stone-400 italic mt-4 mb-2">
+                * Rule dengan prioritas lebih tinggi (angka kecil) akan diproses lebih dulu.
+              </p>
+            </div>
           </div>
-        {/if}
-
-        <div class="pt-2">
-          <label
-            for="config_preview"
-            class="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1.5"
-            >Preview JSON Konfigurasi</label
-          >
-          <textarea
-            id="config_preview"
-            name="config_preview"
-            rows="2"
-            value={configPreview}
-            readonly
-            class="w-full px-4 py-2.5 rounded-xl border border-stone-100 bg-stone-50 text-stone-400 text-[11px] font-mono overflow-auto resize-none outline-none cursor-default"
-          ></textarea>
         </div>
-      </div>
+        
+        <div class="p-6 pt-4 border-t border-stone-100 bg-stone-50/30 sticky bottom-0 z-10 w-full mt-auto">
+          <button
+            class="flex items-center justify-center gap-2 h-[46px] rounded-xl bg-gradient-to-r from-[#c48a3a] to-[#a6722d] text-white text-sm font-bold hover:shadow-[0_4px_12px_rgba(196,138,58,0.25)] hover:-translate-y-0.5 transition-all shadow-md w-full disabled:opacity-70 disabled:cursor-not-allowed"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {#if isSubmitting}
+              <svg class="animate-spin h-4 w-4 mr-1 inline" viewBox="0 0 24 24"
+                ><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            {:else}
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            {/if}
+            Simpan Aturan
+          </button>
+        </div>
+      </CrudInlineForm>
     </div>
   </div>
-
-  <div class="flex items-center justify-between gap-4 mt-6">
-    <div class="hidden md:block">
-      <p class="text-xs text-stone-400 italic">
-        Rule dengan prioritas lebih tinggi (angka kecil) akan diproses lebih
-        dulu.
-      </p>
-    </div>
-    <button
-      class="flex items-center justify-center gap-3 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto"
-      type="submit"
-      disabled={isSubmitting}
-    >
-      {#if isSubmitting}
-        <svg
-          class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          ><circle
-            class="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            stroke-width="4"
-          ></circle><path
-            class="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          ></path></svg
-        >
-      {/if}
-      Simpan Aturan
-    </button>
-  </div>
-</CrudInlineForm>
+</div>
+{/if}
 
 <div class="mt-6">
   <SectionHeader title="Daftar Rule" muted="Klik sel untuk edit" />
@@ -603,6 +622,4 @@ const handleSimulation = async (event: SubmitEvent) => {
     {/each}
   </tbody>
 </AdminDataTable>
-</div>
-
 <ToastNotification bind:this={toastRef} />
