@@ -292,7 +292,7 @@ const handleRowAction = async (
             <div
               contenteditable="true"
               data-field="name"
-              class="outline-none px-3 py-1.5 rounded-lg hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all font-bold text-stone-900 border border-transparent"
+              class="outline-none px-3 py-1.5 rounded-lg bg-stone-100/60 hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all font-bold text-stone-900 border border-stone-200/50 hover:border-[#c48a3a]/30 inline-block min-w-[120px]"
             >
               {row.name}
             </div>
@@ -301,7 +301,7 @@ const handleRowAction = async (
             <div
               contenteditable="true"
               data-field="slug"
-              class="outline-none px-3 py-1.5 rounded-lg hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all font-mono text-[0.8rem] text-stone-500 border border-transparent"
+              class="outline-none px-3 py-1.5 rounded-lg bg-stone-100/60 hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all font-mono text-[0.8rem] text-stone-500 border border-stone-200/50 hover:border-[#c48a3a]/30 inline-block min-w-[120px]"
             >
               {row.slug || ""}
             </div>
@@ -310,7 +310,7 @@ const handleRowAction = async (
             <div
               contenteditable="true"
               data-field="sortOrder"
-              class="outline-none px-3 py-1.5 rounded-lg hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all font-bold text-stone-600 text-center border border-transparent w-16"
+              class="outline-none px-3 py-1.5 rounded-lg bg-stone-100/60 hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all font-bold text-stone-600 border border-stone-200/50 hover:border-[#c48a3a]/30 inline-block w-16 text-center tabular-nums"
             >
               {row.sortOrder}
             </div>
@@ -318,7 +318,7 @@ const handleRowAction = async (
           <td class="py-4">
             <select
               data-field="isActive"
-              class="outline-none px-3 py-1.5 rounded-lg border border-transparent hover:bg-white focus:bg-white bg-transparent transition-all cursor-pointer font-bold text-xs"
+              class="outline-none px-3 py-1.5 rounded-lg border border-stone-200/50 bg-stone-100/60 hover:bg-white hover:border-[#c48a3a]/30 focus:bg-white transition-all cursor-pointer font-bold text-[0.7rem] uppercase tracking-wider text-stone-700"
             >
               <option value="true" selected={row.isActive === 1}>🟢 AKTIF</option>
               <option value="false" selected={row.isActive === 0}>🔴 DRAFT</option>

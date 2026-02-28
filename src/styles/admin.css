@@ -64,10 +64,14 @@
 }
 
 @utility btn-ghost {
-  @apply cursor-pointer rounded-[10px] border border-[var(--admin-border)] bg-transparent px-[14px] py-2 transition-all duration-200;
+  @apply cursor-pointer inline-flex items-center justify-center rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-[0.75rem] font-bold text-stone-600 shadow-sm transition-all duration-200 whitespace-nowrap outline-none outline-offset-2 hover:-translate-y-[1px];
 
   &:hover {
-    @apply border-[var(--admin-accent)] text-[var(--admin-accent)];
+    @apply border-stone-300 bg-stone-50 text-stone-900 shadow-md;
+  }
+  
+  &:active {
+    @apply translate-y-[1px] shadow-none;
   }
 }
 

@@ -256,13 +256,13 @@ const fieldIds = {
       >
         <td class="py-4 font-bold text-stone-900 text-[0.95rem] pl-3">{product.name}</td>
         <td class="py-4">
-           <span class="font-mono text-[0.7rem] text-stone-500 bg-stone-50 border border-stone-100 px-2 py-0.5 rounded-md shadow-sm">
+           <span class="font-mono text-[0.7rem] text-stone-500 bg-stone-100/60 border border-stone-200/50 px-2 py-0.5 rounded-md shadow-sm">
              {product.sku || "N/A"}
            </span>
         </td>
         <td class="py-4 text-right">
              <div
-               class="tabular-nums font-bold text-stone-700 bg-stone-50 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-4 py-1.5 rounded-lg border border-stone-100 transition-all w-24 text-right ml-auto shadow-inner inline-block"
+               class="tabular-nums font-bold text-stone-700 bg-stone-100/60 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-4 py-1.5 rounded-lg border border-stone-200/50 transition-all w-24 text-right ml-auto shadow-inner inline-block"
              >
                {product.stock ?? 0}
              </div>

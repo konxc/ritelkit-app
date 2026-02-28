@@ -513,7 +513,7 @@ const currentCategories = $derived(categories);
               <div
                 contenteditable="true"
                 data-field="name"
-                class="font-bold text-stone-900 text-[0.95rem] outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-transparent transition-all w-full truncate leading-tight"
+                class="font-bold text-stone-900 text-[0.95rem] outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-stone-200/50 bg-stone-100/60 transition-all w-full truncate leading-tight"
                 title={row.name}
               >
                 {row.name}
@@ -523,7 +523,7 @@ const currentCategories = $derived(categories);
                  <div
                   contenteditable="true"
                   data-field="sku"
-                  class="font-mono text-[0.7rem] text-stone-500 bg-stone-50 border border-stone-100 outline-none hover:bg-white focus:bg-white px-2 py-0.5 rounded-md transition-all shadow-sm w-full truncate"
+                  class="font-mono text-[0.7rem] text-stone-500 bg-stone-100/60 border border-stone-200/50 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-2 py-0.5 rounded-md transition-all shadow-sm w-full truncate"
                  >
                   {row.sku || "-"}
                  </div>
@@ -533,7 +533,7 @@ const currentCategories = $derived(categories);
           <td class="py-4">
             <select
               data-field="categoryId"
-              class="px-3 py-2 rounded-xl border border-transparent hover:border-stone-200 hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-stone-50 shadow-sm text-sm cursor-pointer outline-none font-semibold text-stone-700 w-[140px] truncate"
+              class="px-3 py-2 rounded-xl border border-stone-200/50 hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-stone-100/60 shadow-sm text-sm cursor-pointer outline-none font-semibold text-stone-700 w-[140px] truncate"
             >
               <option value="">Tanpa Kategori</option>
               {#each currentCategories as cat}
@@ -549,7 +549,7 @@ const currentCategories = $derived(categories);
                 <div
                   contenteditable="true"
                   data-field="price"
-                  class="tabular-nums font-bold text-stone-800 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-transparent transition-all w-auto text-left"
+                  class="tabular-nums font-bold text-stone-800 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-stone-200/50 bg-stone-100/60 transition-all w-auto text-left"
                 >
                   {row.price}
                 </div>
@@ -560,7 +560,7 @@ const currentCategories = $derived(categories);
               <div
                 contenteditable="true"
                 data-field="stock"
-                class="tabular-nums font-bold text-stone-700 bg-stone-50 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-stone-100 transition-all w-16 text-center shadow-inner"
+                class="tabular-nums font-bold text-stone-700 bg-stone-100/60 outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] px-3 py-1.5 rounded-lg border border-stone-200/50 transition-all w-16 text-center shadow-inner"
               >
                 {row.stock}
               </div>
@@ -569,7 +569,7 @@ const currentCategories = $derived(categories);
           <td class="py-4">
             <select
               data-field="isActive"
-              class="px-3 py-1.5 rounded-full border border-transparent hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 bg-transparent transition-all cursor-pointer outline-none font-bold text-[0.75rem]"
+              class="px-3 py-1.5 rounded-full border border-stone-200/50 bg-stone-100/60 hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 transition-all cursor-pointer outline-none font-bold text-[0.75rem] text-stone-700 uppercase tracking-wider"
             >
               <option value="true" selected={row.isActive === 1}>🟢 AKTIF</option>
               <option value="false" selected={row.isActive === 0}>🔴 DRAF</option>
