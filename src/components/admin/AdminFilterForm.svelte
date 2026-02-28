@@ -8,6 +8,6 @@ let {
 }: { action?: string; method?: "get" | "post"; children?: Snippet } = $props();
 </script>
 
-  <form action={action} method={method}>
-    {@render children?.()}
-  </form>
+<form action={action} method={method} class="flex items-center gap-2">
+  {@render children?.()}
+</form>

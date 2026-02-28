@@ -3,12 +3,10 @@ import type { Snippet } from "svelte";
 import TableWrap from "./TableWrap.svelte";
 
 let {
-	tableClass = "table",
 	class: className = "",
 	children,
 	...rest
 }: {
-	tableClass?: string;
 	class?: string;
 	children?: Snippet;
 	[key: string]: unknown;
@@ -16,7 +14,9 @@ let {
 </script>
 
 <TableWrap class={className} {...rest}>
-  <table class={tableClass}>
+  <table class="admin-table-core w-full text-left border-collapse min-w-max">
     {@render children?.()}
   </table>
 </TableWrap>
+
+
