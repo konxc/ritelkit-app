@@ -14,36 +14,37 @@
 }
 
 @layer base {
-  * {
-    box-sizing: border-box;
-  }
+	* {
+		box-sizing: border-box;
+	}
 
-  html,
-  body {
-    height: 100%;
-  }
+	html,
+	body {
+		height: 100%;
+	}
 
-  body {
-    margin: 0;
-    font-family: "Space Grotesk", system-ui, sans-serif;
-    background: radial-gradient(
-        1100px 500px at 20% -10%,
-        rgba(196, 138, 58, 0.16),
-        transparent 60%
-      ),
-      radial-gradient(
-        1200px 600px at 110% 10%,
-        rgba(43, 185, 174, 0.12),
-        transparent 55%
-      ),
-      var(--pwa-bg);
-    color: var(--pwa-ink);
-  }
+	body {
+		margin: 0;
+		font-family: "Space Grotesk", system-ui, sans-serif;
+		background:
+			radial-gradient(
+				1100px 500px at 20% -10%,
+				rgba(196, 138, 58, 0.16),
+				transparent 60%
+			),
+			radial-gradient(
+				1200px 600px at 110% 10%,
+				rgba(43, 185, 174, 0.12),
+				transparent 55%
+			),
+			var(--pwa-bg);
+		color: var(--pwa-ink);
+	}
 
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
+	a {
+		color: inherit;
+		text-decoration: none;
+	}
 }
 
 @utility pwa-shell {
@@ -127,42 +128,42 @@
 }
 
 @keyframes pulse-soft {
-  0% {
-    transform: translateY(0);
-    box-shadow: 0 16px 36px rgba(27, 23, 18, 0.06);
-  }
-  50% {
-    transform: translateY(-2px);
-    box-shadow: 0 22px 50px rgba(27, 23, 18, 0.1);
-  }
-  100% {
-    transform: translateY(0);
-    box-shadow: 0 16px 36px rgba(27, 23, 18, 0.06);
-  }
+	0% {
+		transform: translateY(0);
+		box-shadow: 0 16px 36px rgba(27, 23, 18, 0.06);
+	}
+	50% {
+		transform: translateY(-2px);
+		box-shadow: 0 22px 50px rgba(27, 23, 18, 0.1);
+	}
+	100% {
+		transform: translateY(0);
+		box-shadow: 0 16px 36px rgba(27, 23, 18, 0.06);
+	}
 }
 
 .pwa-hero {
-  animation: pulse-soft 5s ease-in-out infinite;
+	animation: pulse-soft 5s ease-in-out infinite;
 }
 
 .research-nav {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 18px;
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+	margin-top: 18px;
 }
 
 .research-link {
-  border: 1px solid var(--pwa-border);
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 0.8rem;
-  color: var(--pwa-muted);
-  text-decoration: none;
-  background: white;
+	border: 1px solid var(--pwa-border);
+	border-radius: 999px;
+	padding: 6px 12px;
+	font-size: 0.8rem;
+	color: var(--pwa-muted);
+	text-decoration: none;
+	background: white;
 }
 
 .research-link.active {
-  color: var(--pwa-ink);
-  border-color: var(--pwa-accent);
+	color: var(--pwa-ink);
+	border-color: var(--pwa-accent);
 }

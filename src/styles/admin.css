@@ -11,20 +11,20 @@
 }
 
 @layer base {
-  * {
-    box-sizing: border-box;
-    font-family: "Work Sans", system-ui, sans-serif;
-  }
+	* {
+		box-sizing: border-box;
+		font-family: "Work Sans", system-ui, sans-serif;
+	}
 
-  body {
-    @apply m-0 bg-[var(--admin-bg)] text-[var(--admin-text)];
-  }
+	body {
+		@apply m-0 bg-[var(--admin-bg)] text-[var(--admin-text)];
+	}
 
-  input,
-  select,
-  textarea {
-    @apply w-full rounded-[10px] border border-[var(--admin-border)] p-[10px];
-  }
+	input,
+	select,
+	textarea {
+		@apply w-full rounded-[10px] border border-[var(--admin-border)] p-[10px];
+	}
 }
 
 @utility admin-shell {
@@ -141,19 +141,19 @@
 }
 
 .thumbnail-gallery[data-has="false"] {
-  @apply hidden;
+	@apply hidden;
 }
 
 .thumb-actions {
-  @apply hidden;
+	@apply hidden;
 }
 
 .thumb-item:hover .thumb-actions {
-  @apply flex;
+	@apply flex;
 }
 
 .thumb-actions button:hover {
-  @apply text-[var(--admin-accent)];
+	@apply text-[var(--admin-accent)];
 }
 
 @utility mini-textarea {
@@ -201,55 +201,55 @@
 }
 
 button.primary {
-  @apply primary-button;
+	@apply primary-button;
 }
 
 .admin-nav a {
-  @apply rounded-[10px] px-3 py-2.5 no-underline text-[var(--admin-text)];
+	@apply rounded-[10px] px-3 py-2.5 no-underline text-[var(--admin-text)];
 }
 
 .admin-nav a:hover {
-  @apply bg-[rgba(196,138,58,0.12)];
+	@apply bg-[rgba(196,138,58,0.12)];
 }
 
 .admin-nav a.active {
-  @apply bg-[rgba(196,138,58,0.18)] font-semibold;
+	@apply bg-[rgba(196,138,58,0.18)] font-semibold;
 }
 
 .dropzone.drag {
-  @apply border-[var(--admin-accent)] bg-[rgba(196,138,58,0.08)] text-[var(--admin-text)];
+	@apply border-[var(--admin-accent)] bg-[rgba(196,138,58,0.08)] text-[var(--admin-text)];
 }
 
 .thumbs-grid.dropzone[data-has="true"] {
-  @apply p-2 text-transparent;
+	@apply p-2 text-transparent;
 }
 
 .upload-zone.dragging {
-  @apply border-[var(--admin-accent)] bg-[rgba(196,138,58,0.08)];
+	@apply border-[var(--admin-accent)] bg-[rgba(196,138,58,0.08)];
 }
 
 .badge.success {
-  @apply bg-[rgba(70,160,120,0.2)];
+	@apply bg-[rgba(70,160,120,0.2)];
 }
 
 .badge.danger {
-  @apply bg-[rgba(200,70,70,0.18)];
+	@apply bg-[rgba(200,70,70,0.18)];
 }
 
 @media (max-width: 1024px) {
-  .admin-shell {
-    @apply grid-cols-1;
-  }
+	.admin-shell {
+		@apply grid-cols-1;
+	}
 
-  .admin-sidebar {
-    @apply border-r-0 border-b;
-  }
+	.admin-sidebar {
+		@apply border-r-0 border-b;
+	}
 
-  .admin-main {
-    @apply p-4;
-  }
+	.admin-main {
+		@apply p-4;
+	}
 
-  .table-wrap .table {
-    @apply min-w-[680px];
-  }
+	.table-wrap .table {
+		@apply min-w-[680px];
+	}
 }

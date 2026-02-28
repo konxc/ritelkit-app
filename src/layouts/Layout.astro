@@ -3,18 +3,19 @@ import "../styles/global.css";
 import RevealObserver from "../components/RevealObserver.svelte";
 
 interface Props {
-    title?: string;
-    description?: string;
-    hideFooter?: boolean;
+	title?: string;
+	description?: string;
+	hideFooter?: boolean;
 }
 
 const {
-    title = "Roti Sholawat - Bakery Terbaik di Bantul & Jogja",
-    description = "Menyediakan Roti Manis, Aneka Cake, dan Paket Roti 10 Rasa dengan kualitas premium. Kunjungi kami di Bantul, Yogyakarta.",
-    hideFooter = false,
+	title = "Roti Sholawat - Bakery Terbaik di Bantul & Jogja",
+	description = "Menyediakan Roti Manis, Aneka Cake, dan Paket Roti 10 Rasa dengan kualitas premium. Kunjungi kami di Bantul, Yogyakarta.",
+	hideFooter = false,
 } = Astro.props;
 
-const waLink = "https://wa.me/6281314537475?text=Halo%20Roti%20Sholawat%2C%20saya%20mau%20konsultasi%20pemesanan.";
+const waLink =
+	"https://wa.me/6281314537475?text=Halo%20Roti%20Sholawat%2C%20saya%20mau%20konsultasi%20pemesanan.";
 ---
 
 <!doctype html>

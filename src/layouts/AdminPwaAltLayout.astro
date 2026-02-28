@@ -2,15 +2,15 @@
 import "../styles/admin-pwa-alt.css";
 
 interface Props {
-  title?: string;
-  description?: string;
-  activeNav?: "home" | "ops" | "lab" | "settings";
+	title?: string;
+	description?: string;
+	activeNav?: "home" | "ops" | "lab" | "settings";
 }
 
 const {
-  title = "Admin Control",
-  description = "Mobile-first admin PWA",
-  activeNav = "lab",
+	title = "Admin Control",
+	description = "Mobile-first admin PWA",
+	activeNav = "lab",
 } = Astro.props;
 ---
 
