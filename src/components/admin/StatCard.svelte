@@ -21,7 +21,7 @@ let {
     {@html icon}
   </div>
   <p
-    class="text-[0.7rem] font-bold tracking-wider text-stone-400 uppercase mb-1"
+    class="text-sm font-semibold tracking-wide text-stone-500 uppercase mb-1"
   >
     {label}
   </p>

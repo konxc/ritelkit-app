@@ -3,6 +3,7 @@ import { actions } from "astro:actions";
 import { fade, fly } from "svelte/transition";
 import type { AuditLog } from "../../../lib/types";
 import AdminDataTable from "../AdminDataTable.svelte";
+import EmptyState from "../ui/EmptyState.svelte";
 
 let {
   rows: initialRows = [],
@@ -54,11 +55,8 @@ $effect(() => {
         <tbody>
             {#if rows.length === 0}
                 <tr>
-                    <td
-                        colspan="5"
-                        class="text-center py-12 text-stone-400 text-sm italic"
-                    >
-                        Belum ada catatan aktivitas.
+                    <td colspan="99" class="p-0 border-0">
+                        <EmptyState title="Log Kosong" description="Belum ada catatan aktivitas sistem." class="!rounded-none !bg-transparent !shadow-none !border-0 py-16" />
                     </td>
                 </tr>
             {/if}

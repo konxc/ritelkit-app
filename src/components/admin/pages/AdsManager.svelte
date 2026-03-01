@@ -31,6 +31,7 @@ type AdMutationInput = {
 	import RowActions from "../RowActions.svelte";
 	import SectionHeader from "../SectionHeader.svelte";
 	import ToastNotification from "../ToastNotification.svelte";
+	import EmptyState from "../ui/EmptyState.svelte";
 
 	let { rows: initialRows = [] }: { rows: AdRow[] } = $props();
 
@@ -291,9 +292,9 @@ type AdMutationInput = {
 	<tbody>
 		{#if rows.length === 0}
 			<tr>
-				<td colspan="6" class="text-center py-12 text-stone-400 text-sm italic"
-					>Belum ada campaign beriklan.</td
-				>
+				<td colspan="99" class="p-0 border-0">
+					<EmptyState title="Belum Ada Campaign" description="Belum ada campaign beriklan berjalan." class="!rounded-none !bg-transparent !shadow-none !border-0 py-16" />
+				</td>
 			</tr>
 		{/if}
 
