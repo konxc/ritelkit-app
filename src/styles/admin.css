@@ -234,7 +234,7 @@ button.primary {
 }
 
 .dropzone.drag {
-  @apply border-[var(--admin-accent)] bg-[#c48a3a]/08 text-[var(--admin-text)];
+  @apply border-[var(--admin-accent)] bg-[#c48a3a]/8 text-[var(--admin-text)];
 }
 
 .thumbs-grid.dropzone[data-has="true"] {
@@ -242,7 +242,7 @@ button.primary {
 }
 
 .upload-zone.dragging {
-  @apply border-[var(--admin-accent)] bg-[#c48a3a]/08;
+  @apply border-[var(--admin-accent)] bg-[#c48a3a]/8;
 }
 
 .badge.success {
