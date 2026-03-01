@@ -18,89 +18,79 @@ let deletingId = $state<string | null>(null);
 
 // Sync with initialRows from SSR
 $effect(() => {
-	rows = initialRows;
+  rows = initialRows;
 });
 
 const refreshData = async () => {
-	const { data, error } = await actions.listAdminUsers({});
-	if (!error && data) {
-		rows = data as AdminUser[];
-	}
+  const { data, error } = await actions.listAdminUsers({});
+  if (!error && data) {
+    rows = data as AdminUser[];
+  }
 };
 
 const handleCreate = async (event: SubmitEvent) => {
-	event.preventDefault();
-	const form = event.currentTarget as HTMLFormElement | null;
-	if (!form) return;
-	const formData = new FormData(form);
-	const data = {
-		email: String(formData.get("email") || ""),
-		password: String(formData.get("password") || ""),
-		role: String(formData.get("role") || "admin") as "owner" | "admin" | "editor",
-	};
+  event.preventDefault();
+  const form = event.currentTarget as HTMLFormElement | null;
+  if (!form) return;
+  const formData = new FormData(form);
+  const data = {
+    email: String(formData.get("email") || ""),
+    password: String(formData.get("password") || ""),
+    role: String(formData.get("role") || "admin") as "owner" | "admin" | "editor",
+  };
 
-	isSubmitting = true;
-	const { error } = await actions.createAdminUser(data);
-	isSubmitting = false;
+  isSubmitting = true;
+  const { error } = await actions.createAdminUser(data);
+  isSubmitting = false;
 
-	if (error) {
-		toastRef?.show(error.message, "error");
-	} else {
-		toastRef?.show("Admin ditambahkan", "success");
-		await refreshData();
-		form.reset();
-	}
+  if (error) {
+    toastRef?.show(error.message, "error");
+  } else {
+    toastRef?.show("Admin ditambahkan", "success");
+    await refreshData();
+    form.reset();
+  }
 };
 
-const handleRowAction = async (
-	id: string,
-	action: string,
-	rowEl: HTMLElement | null,
-) => {
-	if (action === "delete") {
-		if (!confirm("Hapus admin ini?")) return;
-		deletingId = id;
-		const { error } = await actions.deleteAdminUser(id);
-		deletingId = null;
-		if (error) {
-			toastRef?.show(error.message, "error");
-		} else {
-			toastRef?.show("Admin dihapus", "success");
-			await refreshData();
-		}
-		return;
-	}
+const handleRowAction = async (id: string, action: string, rowEl: HTMLElement | null) => {
+  if (action === "delete") {
+    if (!confirm("Hapus admin ini?")) return;
+    deletingId = id;
+    const { error } = await actions.deleteAdminUser(id);
+    deletingId = null;
+    if (error) {
+      toastRef?.show(error.message, "error");
+    } else {
+      toastRef?.show("Admin dihapus", "success");
+      await refreshData();
+    }
+    return;
+  }
 
-	if (action === "save" && rowEl) {
-		const role = String(
-			rowEl.querySelector("[data-field='role']")?.textContent?.trim() || "",
-		);
-		const password = String(
-			(
-				rowEl.querySelector(
-					"[data-field='password']",
-				) as HTMLInputElement | null
-			)?.value || "",
-		);
+  if (action === "save" && rowEl) {
+    const role = String(rowEl.querySelector("[data-field='role']")?.textContent?.trim() || "");
+    const password = String(
+      (rowEl.querySelector("[data-field='password']") as HTMLInputElement | null)?.value || "",
+    );
 
-		savingId = id;
-		// Standardized updateAdminUser in index.ts
-		const { error } = await actions.updateAdminUser({
-			id,
-			data: {
-				role: role as "owner" | "admin" | "editor",
-				password: password || undefined,
-			},
-		});
-		savingId = null;
+    savingId = id;
+    // Standardized updateAdminUser in index.ts
+    const { error } = await actions.updateAdminUser({
+      id,
+      data: {
+        role: role as "owner" | "admin" | "editor",
+        password: password || undefined,
+      },
+    });
+    savingId = null;
 
-		if (error) {
-			toastRef?.show(error.message, "error");
-		} else {
-			toastRef?.show("Admin diperbarui", "success");
-			await refreshData();
-		}
-	}
+    if (error) {
+      toastRef?.show(error.message, "error");
+    } else {
+      toastRef?.show("Admin diperbarui", "success");
+      await refreshData();
+    }
+  }
 };
 </script>
 <div in:fly={{ y: 20, duration: 400, delay: 100 }}>

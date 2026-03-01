@@ -10,25 +10,25 @@ import StatusBadge from "../StatusBadge.svelte";
 import ToastNotification from "../ToastNotification.svelte";
 
 export type RefundRow = {
-	id: string | number;
-	orderNo: string;
-	amount: number;
-	status: string;
-	providerStatus?: string | null;
-	providerResponseJson?: string | null;
-	reason?: string | null;
-	createdAt?: string;
-	updatedAt?: string;
+  id: string | number;
+  orderNo: string;
+  amount: number;
+  status: string;
+  providerStatus?: string | null;
+  providerResponseJson?: string | null;
+  reason?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 let {
-	rows: initialRows = [],
-	page = 1,
-	limit = 20,
+  rows: initialRows = [],
+  page = 1,
+  limit = 20,
 }: {
-	rows?: RefundRow[];
-	page?: number;
-	limit?: number;
+  rows?: RefundRow[];
+  page?: number;
+  limit?: number;
 } = $props();
 
 const offset = $derived((page - 1) * limit);
@@ -38,11 +38,12 @@ let toastRef = $state<ToastNotification>();
 let isSubmitting = $state(false);
 
 const refundsQuery = createQuery(() => ({
-	queryKey: ["refunds.list", { limit, offset }],
-	queryFn: () => trpc.refunds.list.query({ limit, offset }),
-	initialData: initialRows.length > 0 ? { rows: initialRows, total: initialRows.length } : undefined,
-	refetchOnMount: false,
-	staleTime: 1000 * 60 * 5,
+  queryKey: ["refunds.list", { limit, offset }],
+  queryFn: () => trpc.refunds.list.query({ limit, offset }),
+  initialData:
+    initialRows.length > 0 ? { rows: initialRows, total: initialRows.length } : undefined,
+  refetchOnMount: false,
+  staleTime: 1000 * 60 * 5,
 }));
 
 let currentRefunds = $derived((refundsQuery.data?.rows as RefundRow[]) || initialRows);
@@ -53,79 +54,79 @@ let savingId = $state<string | null>(null);
 let deletingId = $state<string | null>(null);
 
 const handleCreate = async (event: SubmitEvent) => {
-	event.preventDefault();
-	const form = event.currentTarget as HTMLFormElement;
-	const formData = new FormData(form);
+  event.preventDefault();
+  const form = event.currentTarget as HTMLFormElement;
+  const formData = new FormData(form);
 
-	isSubmitting = true;
-	try {
-		await trpc.refunds.create.mutate({
-			orderNo: formData.get("order_no") as string,
-			amount: Number(formData.get("amount")),
-			status: formData.get("status") as string,
-			reason: (formData.get("reason") as string) || undefined,
-		});
+  isSubmitting = true;
+  try {
+    await trpc.refunds.create.mutate({
+      orderNo: formData.get("order_no") as string,
+      amount: Number(formData.get("amount")),
+      status: formData.get("status") as string,
+      reason: (formData.get("reason") as string) || undefined,
+    });
 
-		toastRef?.show("Refund berhasil ditambah!", "success");
-		form.reset();
-		queryClient.invalidateQueries({ queryKey: ["refunds.list"] });
-	} catch (error: unknown) {
-		const message = error instanceof Error ? error.message : "Terjadi kesalahan";
-		toastRef?.show(message, "error");
-	} finally {
-		isSubmitting = false;
-	}
+    toastRef?.show("Refund berhasil ditambah!", "success");
+    form.reset();
+    queryClient.invalidateQueries({ queryKey: ["refunds.list"] });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+    toastRef?.show(message, "error");
+  } finally {
+    isSubmitting = false;
+  }
 };
 
 const handleRowAction = async (
-	id: string | number,
-	action: string,
-	rowElement: HTMLElement | null,
+  id: string | number,
+  action: string,
+  rowElement: HTMLElement | null,
 ) => {
-	const resolvedId = String(id);
-	if (action === "delete") {
-		if (confirm("Hapus refund ini?")) {
-			deletingId = resolvedId;
-			try {
-				await trpc.refunds.delete.mutate(resolvedId);
-				toastRef?.show("Refund dihapus", "success");
-				queryClient.invalidateQueries({ queryKey: ["refunds.list"] });
-			} catch (error: unknown) {
-				const message = error instanceof Error ? error.message : "Terjadi kesalahan";
-				toastRef?.show(message, "error");
-			} finally {
-				deletingId = null;
-			}
-		}
-	} else if (action === "save" && rowElement) {
-		const fields: Record<string, string> = {};
-		rowElement.querySelectorAll("[data-field]").forEach((el) => {
-			const field = el.getAttribute("data-field")!;
-			if (el instanceof HTMLSelectElement || el instanceof HTMLInputElement) {
-				fields[field] = el.value;
-			} else {
-				fields[field] = el.textContent?.trim() || "";
-			}
-		});
+  const resolvedId = String(id);
+  if (action === "delete") {
+    if (confirm("Hapus refund ini?")) {
+      deletingId = resolvedId;
+      try {
+        await trpc.refunds.delete.mutate(resolvedId);
+        toastRef?.show("Refund dihapus", "success");
+        queryClient.invalidateQueries({ queryKey: ["refunds.list"] });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+        toastRef?.show(message, "error");
+      } finally {
+        deletingId = null;
+      }
+    }
+  } else if (action === "save" && rowElement) {
+    const fields: Record<string, string> = {};
+    rowElement.querySelectorAll("[data-field]").forEach((el) => {
+      const field = el.getAttribute("data-field")!;
+      if (el instanceof HTMLSelectElement || el instanceof HTMLInputElement) {
+        fields[field] = el.value;
+      } else {
+        fields[field] = el.textContent?.trim() || "";
+      }
+    });
 
-		const data = {
-			amount: Number(fields.amount),
-			status: fields.status,
-			reason: fields.reason || undefined,
-		};
+    const data = {
+      amount: Number(fields.amount),
+      status: fields.status,
+      reason: fields.reason || undefined,
+    };
 
-		savingId = resolvedId;
-		try {
-			await trpc.refunds.update.mutate({ id: resolvedId, data });
-			toastRef?.show("Refund diperbarui", "success");
-			queryClient.invalidateQueries({ queryKey: ["refunds.list"] });
-		} catch (error: unknown) {
-			const message = error instanceof Error ? error.message : "Terjadi kesalahan";
-			toastRef?.show(message, "error");
-		} finally {
-			savingId = null;
-		}
-	}
+    savingId = resolvedId;
+    try {
+      await trpc.refunds.update.mutate({ id: resolvedId, data });
+      toastRef?.show("Refund diperbarui", "success");
+      queryClient.invalidateQueries({ queryKey: ["refunds.list"] });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+      toastRef?.show(message, "error");
+    } finally {
+      savingId = null;
+    }
+  }
 };
 </script>
 <div in:fly={{ y: 20, duration: 400, delay: 100 }}>

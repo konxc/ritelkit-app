@@ -13,40 +13,40 @@ import SectionHeader from "../SectionHeader.svelte";
 import ToastNotification from "../ToastNotification.svelte";
 
 type ProductRow = Pick<
-	Product,
-	| "id"
-	| "name"
-	| "sku"
-	| "price"
-	| "stock"
-	| "isActive"
-	| "categoryId"
-	| "slug"
-	| "description"
-	| "imagesJson"
+  Product,
+  | "id"
+  | "name"
+  | "sku"
+  | "price"
+  | "stock"
+  | "isActive"
+  | "categoryId"
+  | "slug"
+  | "description"
+  | "imagesJson"
 > & {
-	categoryName?: string | null;
+  categoryName?: string | null;
 };
 
 type CategoryOption = { id: string | number; name: string };
 type ProductMutationInput = {
-	name: string;
-	slug: string;
-	description?: string | null;
-	categoryId?: string | null;
-	price: number;
-	cost?: number | null;
-	stock?: number | null;
-	isActive: number;
-	imagesJson?: string | null;
+  name: string;
+  slug: string;
+  description?: string | null;
+  categoryId?: string | null;
+  price: number;
+  cost?: number | null;
+  stock?: number | null;
+  isActive: number;
+  imagesJson?: string | null;
 };
 
 let {
-	rows: initialRows = [],
-	categories = [],
+  rows: initialRows = [],
+  categories = [],
 }: {
-	rows?: ProductRow[];
-	categories?: CategoryOption[];
+  rows?: ProductRow[];
+  categories?: CategoryOption[];
 } = $props();
 
 const queryClient = useQueryClient();
@@ -56,65 +56,59 @@ let csrfToken = "";
 let toastRef: ToastNotification;
 
 onMount(() => {
-	csrfToken =
-		document
-			.querySelector("meta[name='csrf-token']")
-			?.getAttribute("content") || "";
+  csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content") || "";
 });
 
 const productsQuery = createQuery(() => ({
-	queryKey: ["products.list"],
-	queryFn: () => trpc.products.list.query(),
-	initialData: initialRows.length > 0 ? initialRows as any : undefined,
-	refetchOnMount: false,
-	staleTime: 1000 * 60 * 5,
+  queryKey: ["products.list"],
+  queryFn: () => trpc.products.list.query(),
+  initialData: initialRows.length > 0 ? (initialRows as any) : undefined,
+  refetchOnMount: false,
+  staleTime: 1000 * 60 * 5,
 }));
 
 let currentRows = $derived((productsQuery.data as ProductRow[]) || initialRows);
 
 const handleCreate = async (payload: ProductMutationInput) => {
-	isMutating = true;
-	try {
-		await trpc.products.create.mutate(payload);
-		queryClient.invalidateQueries({ queryKey: ["products.list"] });
-		toastRef?.show("Produk berhasil ditambahkan!", "success");
-		return true;
-	} catch (err: any) {
-		toastRef?.show(err.message || "Gagal menambah produk", "error");
-		return false;
-	} finally {
-		isMutating = false;
-	}
+  isMutating = true;
+  try {
+    await trpc.products.create.mutate(payload);
+    queryClient.invalidateQueries({ queryKey: ["products.list"] });
+    toastRef?.show("Produk berhasil ditambahkan!", "success");
+    return true;
+  } catch (err: any) {
+    toastRef?.show(err.message || "Gagal menambah produk", "error");
+    return false;
+  } finally {
+    isMutating = false;
+  }
 };
 
-const handleUpdate = async (
-	id: string,
-	data: Partial<ProductMutationInput>,
-) => {
-	isMutating = true;
-	try {
-		await trpc.products.update.mutate({ id, data });
-		queryClient.invalidateQueries({ queryKey: ["products.list"] });
-		toastRef?.show("Produk diperbarui", "success");
-	} catch (err: any) {
-		toastRef?.show(err.message || "Gagal memperbarui produk", "error");
-	} finally {
-		isMutating = false;
-	}
+const handleUpdate = async (id: string, data: Partial<ProductMutationInput>) => {
+  isMutating = true;
+  try {
+    await trpc.products.update.mutate({ id, data });
+    queryClient.invalidateQueries({ queryKey: ["products.list"] });
+    toastRef?.show("Produk diperbarui", "success");
+  } catch (err: any) {
+    toastRef?.show(err.message || "Gagal memperbarui produk", "error");
+  } finally {
+    isMutating = false;
+  }
 };
 
 const handleDelete = async (id: string) => {
-	if (!confirm("Hapus produk ini?")) return;
-	isMutating = true;
-	try {
-		await trpc.products.delete.mutate(id);
-		queryClient.invalidateQueries({ queryKey: ["products.list"] });
-		toastRef?.show("Produk dihapus", "success");
-	} catch (err: any) {
-		toastRef?.show(err.message || "Gagal menghapus produk", "error");
-	} finally {
-		isMutating = false;
-	}
+  if (!confirm("Hapus produk ini?")) return;
+  isMutating = true;
+  try {
+    await trpc.products.delete.mutate(id);
+    queryClient.invalidateQueries({ queryKey: ["products.list"] });
+    toastRef?.show("Produk dihapus", "success");
+  } catch (err: any) {
+    toastRef?.show(err.message || "Gagal menghapus produk", "error");
+  } finally {
+    isMutating = false;
+  }
 };
 
 let isDrawerOpen = $state(false);
@@ -122,105 +116,97 @@ let newImageUrls = $state<string[]>([]);
 let uploadStatus = $state("");
 let newName = $state("");
 let newSlug = $derived(
-	newName
-		.toLowerCase()
-		.trim()
-		.replace(/ /g, "-")
-		.replace(/[^\w-]+/g, ""),
+  newName
+    .toLowerCase()
+    .trim()
+    .replace(/ /g, "-")
+    .replace(/[^\w-]+/g, ""),
 );
 
 const handleFileUpload = async (event: Event) => {
-	const input = event.target as HTMLInputElement;
-	if (!input.files?.length) return;
-	try {
-		uploadStatus = "Mengupload...";
-		const urls = await uploadFiles(input.files, csrfToken);
-		newImageUrls = [...newImageUrls, ...urls];
-		uploadStatus = "";
-	} catch (err: any) {
-		toastRef?.show(err.message, "error");
-		uploadStatus = "Gagal upload";
-	}
+  const input = event.target as HTMLInputElement;
+  if (!input.files?.length) return;
+  try {
+    uploadStatus = "Mengupload...";
+    const urls = await uploadFiles(input.files, csrfToken);
+    newImageUrls = [...newImageUrls, ...urls];
+    uploadStatus = "";
+  } catch (err: any) {
+    toastRef?.show(err.message, "error");
+    uploadStatus = "Gagal upload";
+  }
 };
 
 const handleDrop = async (event: DragEvent) => {
-	event.preventDefault();
-	const files = event.dataTransfer?.files;
-	if (!files?.length) return;
-	try {
-		uploadStatus = "Mengupload...";
-		const urls = await uploadFiles(files, csrfToken);
-		newImageUrls = [...newImageUrls, ...urls];
-		uploadStatus = "";
-	} catch (err: any) {
-		toastRef?.show(err.message, "error");
-		uploadStatus = "Gagal upload";
-	}
+  event.preventDefault();
+  const files = event.dataTransfer?.files;
+  if (!files?.length) return;
+  try {
+    uploadStatus = "Mengupload...";
+    const urls = await uploadFiles(files, csrfToken);
+    newImageUrls = [...newImageUrls, ...urls];
+    uploadStatus = "";
+  } catch (err: any) {
+    toastRef?.show(err.message, "error");
+    uploadStatus = "Gagal upload";
+  }
 };
 
 const productFormHandler = async (event: SubmitEvent) => {
-	event.preventDefault();
-	const form = event.currentTarget as HTMLFormElement;
-	const formData = new FormData(form);
+  event.preventDefault();
+  const form = event.currentTarget as HTMLFormElement;
+  const formData = new FormData(form);
 
-	const payload = {
-		name: String(formData.get("name") || ""),
-		sku: String(formData.get("sku") || "") || null,
-		categoryId: String(formData.get("categoryId") || "") || null,
-		price: Number(formData.get("price") || 0),
-		stock: formData.get("stock") ? Number(formData.get("stock")) : null,
-		isActive: formData.get("isActive") === "true" ? 1 : 0,
-		description: String(formData.get("description") || "") || null,
-		imagesJson: JSON.stringify(newImageUrls),
-		slug: newSlug || `item-${Date.now()}`,
-	};
+  const payload = {
+    name: String(formData.get("name") || ""),
+    sku: String(formData.get("sku") || "") || null,
+    categoryId: String(formData.get("categoryId") || "") || null,
+    price: Number(formData.get("price") || 0),
+    stock: formData.get("stock") ? Number(formData.get("stock")) : null,
+    isActive: formData.get("isActive") === "true" ? 1 : 0,
+    description: String(formData.get("description") || "") || null,
+    imagesJson: JSON.stringify(newImageUrls),
+    slug: newSlug || `item-${Date.now()}`,
+  };
 
-	const ok = await handleCreate(payload as ProductMutationInput);
-	if (ok) {
-		form.reset();
-		newImageUrls = [];
-		newName = "";
-		isDrawerOpen = false;
-	}
+  const ok = await handleCreate(payload as ProductMutationInput);
+  if (ok) {
+    form.reset();
+    newImageUrls = [];
+    newName = "";
+    isDrawerOpen = false;
+  }
 };
 
-const handleRowAction = async (
-	id: string | number,
-	action: string,
-	rowEl: HTMLElement,
-) => {
-	const resolvedId = String(id);
+const handleRowAction = async (id: string | number, action: string, rowEl: HTMLElement) => {
+  const resolvedId = String(id);
 
-	if (action === "delete") {
-		await handleDelete(resolvedId);
-		return;
-	}
+  if (action === "delete") {
+    await handleDelete(resolvedId);
+    return;
+  }
 
-	if (action === "save") {
-		const payload: Record<string, string | number | null> = {};
-		rowEl.querySelectorAll("[data-field]").forEach((cell) => {
-			const field = cell.getAttribute("data-field");
-			if (!field) return;
-			if (
-				cell instanceof HTMLSelectElement ||
-				cell instanceof HTMLInputElement
-			) {
-				payload[field] =
-					field === "isActive" ? (cell.value === "true" ? 1 : 0) : cell.value;
-				return;
-			}
-			if (field === "images_json") {
-				payload["imagesJson"] = cell.getAttribute("data-value") || "[]";
-				return;
-			}
-			payload[field] = cell.textContent?.trim() || "";
-		});
+  if (action === "save") {
+    const payload: Record<string, string | number | null> = {};
+    rowEl.querySelectorAll("[data-field]").forEach((cell) => {
+      const field = cell.getAttribute("data-field");
+      if (!field) return;
+      if (cell instanceof HTMLSelectElement || cell instanceof HTMLInputElement) {
+        payload[field] = field === "isActive" ? (cell.value === "true" ? 1 : 0) : cell.value;
+        return;
+      }
+      if (field === "images_json") {
+        payload.imagesJson = cell.getAttribute("data-value") || "[]";
+        return;
+      }
+      payload[field] = cell.textContent?.trim() || "";
+    });
 
-		if (payload.price) payload.price = Number(payload.price);
-		if (payload.stock) payload.stock = Number(payload.stock);
+    if (payload.price) payload.price = Number(payload.price);
+    if (payload.stock) payload.stock = Number(payload.stock);
 
-		await handleUpdate(resolvedId, payload as Partial<ProductMutationInput>);
-	}
+    await handleUpdate(resolvedId, payload as Partial<ProductMutationInput>);
+  }
 };
 
 const currentCategories = $derived(categories);
@@ -252,7 +238,7 @@ const currentCategories = $derived(categories);
         <h3 class="font-bold text-stone-800 text-lg">Tambah Produk</h3>
         <p class="text-xs font-semibold text-stone-400 mt-0.5 uppercase tracking-wider">E-commerce Ready</p>
       </div>
-      <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-200 text-stone-500 transition-colors" onclick={() => isDrawerOpen = false}>
+      <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-200 text-stone-500 transition-colors" onclick={() => isDrawerOpen = false} aria-label="Tutup Panel">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
       </button>
     </div>

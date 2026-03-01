@@ -1,12 +1,12 @@
 <script lang="ts">
 let {
-	title,
-	badge,
-	muted,
+  title,
+  badge,
+  muted,
 }: {
-	title: string;
-	badge?: string;
-	muted?: string;
+  title: string;
+  badge?: string;
+  muted?: string;
 } = $props();
 </script>
 

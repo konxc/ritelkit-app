@@ -9,22 +9,22 @@ let db: LibSQLDatabase<typeof schema> | null = null;
 let initializationPromise: Promise<void> | null = null;
 
 export function getDb(ctx?: APIContext): Client {
-	if (!client) {
-		const env = getEnv(ctx);
-		client = createClient({
-			url: env.DATABASE_URL,
-			authToken: env.DATABASE_AUTH_TOKEN,
-		});
-	}
-	return client;
+  if (!client) {
+    const env = getEnv(ctx);
+    client = createClient({
+      url: env.DATABASE_URL,
+      authToken: env.DATABASE_AUTH_TOKEN,
+    });
+  }
+  return client;
 }
 
 export function getDrizzle(ctx?: APIContext): LibSQLDatabase<typeof schema> {
-	if (!db) {
-		const client = getDb(ctx);
-		db = drizzle(client, { schema });
-	}
-	return db;
+  if (!db) {
+    const client = getDb(ctx);
+    db = drizzle(client, { schema });
+  }
+  return db;
 }
 
 /**
@@ -32,25 +32,25 @@ export function getDrizzle(ctx?: APIContext): LibSQLDatabase<typeof schema> {
  * Uses a promise lock to prevent concurrent initialization.
  */
 export async function initDb(ctx?: APIContext): Promise<void> {
-	if (initializationPromise) return initializationPromise;
+  if (initializationPromise) return initializationPromise;
 
-	initializationPromise = (async () => {
-		const client = getDb(ctx);
+  initializationPromise = (async () => {
+    const client = getDb(ctx);
 
-		const schemaStatements = [
-			`CREATE TABLE IF NOT EXISTS admin_users (
+    const schemaStatements = [
+      `CREATE TABLE IF NOT EXISTS admin_users (
 				id TEXT PRIMARY KEY,
 				email TEXT NOT NULL UNIQUE,
 				password_hash TEXT NOT NULL,
 				role TEXT NOT NULL DEFAULT 'owner',
 				created_at TEXT NOT NULL
 			)`,
-			`CREATE TABLE IF NOT EXISTS login_attempts (
+      `CREATE TABLE IF NOT EXISTS login_attempts (
 				id TEXT PRIMARY KEY,
 				ip TEXT,
 				created_at INTEGER NOT NULL
 			)`,
-			`CREATE TABLE IF NOT EXISTS categories (
+      `CREATE TABLE IF NOT EXISTS categories (
 				id TEXT PRIMARY KEY,
 				name TEXT NOT NULL,
 				slug TEXT NOT NULL UNIQUE,
@@ -59,7 +59,7 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				created_at TEXT NOT NULL,
 				updated_at TEXT NOT NULL
 			)`,
-			`CREATE TABLE IF NOT EXISTS products (
+      `CREATE TABLE IF NOT EXISTS products (
 				id TEXT PRIMARY KEY,
 				sku TEXT,
 				name TEXT NOT NULL,
@@ -76,7 +76,7 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				updated_at TEXT NOT NULL,
 				FOREIGN KEY(category_id) REFERENCES categories(id)
 			)`,
-			`CREATE TABLE IF NOT EXISTS coupons (
+      `CREATE TABLE IF NOT EXISTS coupons (
 				id TEXT PRIMARY KEY,
 				code TEXT NOT NULL UNIQUE,
 				type TEXT NOT NULL,
@@ -91,7 +91,7 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				created_at TEXT NOT NULL,
 				updated_at TEXT NOT NULL
 			)`,
-			`CREATE TABLE IF NOT EXISTS customers (
+      `CREATE TABLE IF NOT EXISTS customers (
 				id TEXT PRIMARY KEY,
 				name TEXT NOT NULL,
 				email TEXT,
@@ -100,7 +100,7 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				created_at TEXT NOT NULL,
 				updated_at TEXT NOT NULL
 			)`,
-			`CREATE TABLE IF NOT EXISTS inventory_movements (
+      `CREATE TABLE IF NOT EXISTS inventory_movements (
 				id TEXT PRIMARY KEY,
 				product_id TEXT NOT NULL,
 				type TEXT NOT NULL,
@@ -110,7 +110,7 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				created_at TEXT NOT NULL,
 				FOREIGN KEY(product_id) REFERENCES products(id)
 			)`,
-			`CREATE TABLE IF NOT EXISTS shipments (
+      `CREATE TABLE IF NOT EXISTS shipments (
 				id TEXT PRIMARY KEY,
 				order_no TEXT NOT NULL,
 				status TEXT NOT NULL,
@@ -122,7 +122,7 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				created_at TEXT NOT NULL,
 				updated_at TEXT NOT NULL
 			)`,
-			`CREATE TABLE IF NOT EXISTS refunds (
+      `CREATE TABLE IF NOT EXISTS refunds (
 				id TEXT PRIMARY KEY,
 				order_no TEXT NOT NULL,
 				amount INTEGER NOT NULL,
@@ -133,7 +133,7 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				created_at TEXT NOT NULL,
 				updated_at TEXT NOT NULL
 			)`,
-			`CREATE TABLE IF NOT EXISTS ads_campaigns (
+      `CREATE TABLE IF NOT EXISTS ads_campaigns (
 				id TEXT PRIMARY KEY,
 				name TEXT NOT NULL,
 				channel TEXT NOT NULL,
@@ -146,7 +146,7 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				created_at TEXT NOT NULL,
 				updated_at TEXT NOT NULL
 			)`,
-			`CREATE TABLE IF NOT EXISTS cms_pages (
+      `CREATE TABLE IF NOT EXISTS cms_pages (
 				id TEXT PRIMARY KEY,
 				slug TEXT NOT NULL UNIQUE,
 				title TEXT NOT NULL,
@@ -155,7 +155,7 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				created_at TEXT NOT NULL,
 				updated_at TEXT NOT NULL
 			)`,
-			`CREATE TABLE IF NOT EXISTS audit_logs (
+      `CREATE TABLE IF NOT EXISTS audit_logs (
 				id TEXT PRIMARY KEY,
 				actor_email TEXT,
 				action TEXT NOT NULL,
@@ -164,7 +164,7 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				data_json TEXT,
 				created_at TEXT NOT NULL
 			)`,
-			`CREATE TABLE IF NOT EXISTS notifications (
+      `CREATE TABLE IF NOT EXISTS notifications (
 				id TEXT PRIMARY KEY,
 				channel TEXT NOT NULL,
 				recipient TEXT NOT NULL,
@@ -175,12 +175,12 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				sent_at TEXT,
 				updated_at TEXT
 			)`,
-			`CREATE TABLE IF NOT EXISTS rate_limits (
+      `CREATE TABLE IF NOT EXISTS rate_limits (
 				key TEXT PRIMARY KEY,
 				count INTEGER NOT NULL,
 				reset_at INTEGER NOT NULL
 			)`,
-			`CREATE TABLE IF NOT EXISTS coupon_usages (
+      `CREATE TABLE IF NOT EXISTS coupon_usages (
 				id TEXT PRIMARY KEY,
 				coupon_id TEXT NOT NULL,
 				order_id TEXT NOT NULL,
@@ -189,7 +189,7 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				FOREIGN KEY(coupon_id) REFERENCES coupons(id),
 				FOREIGN KEY(order_id) REFERENCES orders(id)
 			)`,
-			`CREATE TABLE IF NOT EXISTS shipping_rules (
+      `CREATE TABLE IF NOT EXISTS shipping_rules (
 				id TEXT PRIMARY KEY,
 				name TEXT NOT NULL,
 				type TEXT NOT NULL,
@@ -199,12 +199,12 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				created_at TEXT NOT NULL,
 				updated_at TEXT NOT NULL
 			)`,
-			`CREATE TABLE IF NOT EXISTS settings (
+      `CREATE TABLE IF NOT EXISTS settings (
 				key TEXT PRIMARY KEY,
 				value_json TEXT NOT NULL,
 				updated_at TEXT NOT NULL
 			)`,
-			`CREATE TABLE IF NOT EXISTS orders (
+      `CREATE TABLE IF NOT EXISTS orders (
 				id TEXT PRIMARY KEY,
 				order_no TEXT NOT NULL UNIQUE,
 				status TEXT NOT NULL,
@@ -226,7 +226,7 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				created_at TEXT NOT NULL,
 				updated_at TEXT NOT NULL
 			)`,
-			`CREATE TABLE IF NOT EXISTS invoices (
+      `CREATE TABLE IF NOT EXISTS invoices (
 				id TEXT PRIMARY KEY,
 				order_id TEXT NOT NULL,
 				invoice_no TEXT NOT NULL UNIQUE,
@@ -237,7 +237,7 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				updated_at TEXT NOT NULL,
 				FOREIGN KEY(order_id) REFERENCES orders(id)
 			)`,
-			`CREATE TABLE IF NOT EXISTS order_status_history (
+      `CREATE TABLE IF NOT EXISTS order_status_history (
 				id TEXT PRIMARY KEY,
 				order_id TEXT NOT NULL,
 				status TEXT NOT NULL,
@@ -245,7 +245,7 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				created_at TEXT NOT NULL,
 				FOREIGN KEY(order_id) REFERENCES orders(id)
 			)`,
-			`CREATE TABLE IF NOT EXISTS product_reviews (
+      `CREATE TABLE IF NOT EXISTS product_reviews (
 				id TEXT PRIMARY KEY,
 				product_id TEXT NOT NULL,
 				customer_name TEXT NOT NULL,
@@ -255,28 +255,28 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				created_at TEXT NOT NULL,
 				FOREIGN KEY(product_id) REFERENCES products(id)
 			)`,
-		];
+    ];
 
-		for (const sql of schemaStatements) {
-			await client.execute(sql);
-		}
+    for (const sql of schemaStatements) {
+      await client.execute(sql);
+    }
 
-		// Handle migrations/evolutions safely
-		const migrations = [
-			"ALTER TABLE notifications ADD COLUMN updated_at TEXT",
-			"ALTER TABLE admin_users ADD COLUMN role TEXT DEFAULT 'owner'",
-			"ALTER TABLE refunds ADD COLUMN provider_status TEXT",
-			"ALTER TABLE refunds ADD COLUMN provider_response_json TEXT",
-		];
+    // Handle migrations/evolutions safely
+    const migrations = [
+      "ALTER TABLE notifications ADD COLUMN updated_at TEXT",
+      "ALTER TABLE admin_users ADD COLUMN role TEXT DEFAULT 'owner'",
+      "ALTER TABLE refunds ADD COLUMN provider_status TEXT",
+      "ALTER TABLE refunds ADD COLUMN provider_response_json TEXT",
+    ];
 
-		for (const sql of migrations) {
-			try {
-				await client.execute(sql);
-			} catch {
-				// Column likely already exists
-			}
-		}
-	})();
+    for (const sql of migrations) {
+      try {
+        await client.execute(sql);
+      } catch {
+        // Column likely already exists
+      }
+    }
+  })();
 
-	return initializationPromise;
+  return initializationPromise;
 }

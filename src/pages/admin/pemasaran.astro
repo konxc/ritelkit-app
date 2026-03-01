@@ -13,7 +13,7 @@ import { createContext } from "../../server/context";
 await initDb(Astro);
 const admin = await requireAdmin(Astro);
 if (!admin) {
-	return Astro.redirect("/admin/login");
+  return Astro.redirect("/admin/login");
 }
 
 const tab = Astro.url.searchParams.get("tab") || "pelanggan";
@@ -26,43 +26,43 @@ let initialData: any = null;
 let totalPages = 1;
 
 if (tab === "pelanggan") {
-	const result = await Astro.callAction(actions.listCustomers, {
-		q,
-		limit,
-		offset,
-	});
-	if (result.data) {
-		initialData = result.data;
-		totalPages = Math.max(1, Math.ceil(result.data.total / limit));
-	}
+  const result = await Astro.callAction(actions.listCustomers, {
+    q,
+    limit,
+    offset,
+  });
+  if (result.data) {
+    initialData = result.data;
+    totalPages = Math.max(1, Math.ceil(result.data.total / limit));
+  }
 } else if (tab === "kupon") {
-	const data = await trpc.coupons.list();
-	if (data) {
-		initialData = data;
-	}
+  const data = await trpc.coupons.list();
+  if (data) {
+    initialData = data;
+  }
 } else if (tab === "iklan") {
-	const data = await trpc.ads.list();
-	if (data) {
-		initialData = data;
-	}
+  const data = await trpc.ads.list();
+  if (data) {
+    initialData = data;
+  }
 }
 
 const tabs = [
-	{
-		id: "pelanggan",
-		label: "Pelanggan",
-		icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-	},
-	{
-		id: "kupon",
-		label: "Kupon",
-		icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a4 4 0 0 0 4-4V8a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v8a4 4 0 0 0 4 4h12Z"/><path d="M2 12h20"/><path d="M6 12v.01"/><path d="M10 12v.01"/><path d="M14 12v.01"/><path d="M18 12v.01"/></svg>',
-	},
-	{
-		id: "iklan",
-		label: "Iklan",
-		icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="12" x="3" y="6" rx="2" ry="2"/><path d="M3 10h18"/><path d="M7 6v12"/><path d="M15 13h.01"/></svg>',
-	},
+  {
+    id: "pelanggan",
+    label: "Pelanggan",
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  },
+  {
+    id: "kupon",
+    label: "Kupon",
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a4 4 0 0 0 4-4V8a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v8a4 4 0 0 0 4 4h12Z"/><path d="M2 12h20"/><path d="M6 12v.01"/><path d="M10 12v.01"/><path d="M14 12v.01"/><path d="M18 12v.01"/></svg>',
+  },
+  {
+    id: "iklan",
+    label: "Iklan",
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="12" x="3" y="6" rx="2" ry="2"/><path d="M3 10h18"/><path d="M7 6v12"/><path d="M15 13h.01"/></svg>',
+  },
 ];
 ---
 

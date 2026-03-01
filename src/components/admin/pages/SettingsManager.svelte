@@ -16,60 +16,58 @@ let deliveryProvince = $state("DI Yogyakarta");
 let freeDeliveryThreshold = $state(0);
 
 const fetchSettings = async () => {
-	const { data, error } = await actions.getSettings({});
-	if (!error && data) {
-		const os = data.order_settings || {};
-		const ds = data.delivery_settings || {};
+  const { data, error } = await actions.getSettings({});
+  if (!error && data) {
+    const os = data.order_settings || {};
+    const ds = data.delivery_settings || {};
 
-		preorderOnly = os.preorderOnly ?? os.preorder_only ?? false;
-		leadTimeHours = os.minimumLeadTimeHours ?? os.minimum_lead_time_hours ?? 0;
-		cutoffTime = os.cutoffTime ?? os.cutoff_time ?? "";
-		sameDayEnabled = os.sameDayEnabled ?? os.same_day_enabled ?? false;
-		availableDays = (os.availableDays ?? os.available_days ?? []).join(", ");
-		deliveryProvince =
-			ds.deliveryProvince ?? ds.delivery_province ?? "DI Yogyakarta";
-		freeDeliveryThreshold =
-			ds.freeDeliveryThreshold ?? ds.free_delivery_threshold ?? 0;
-	}
+    preorderOnly = os.preorderOnly ?? os.preorder_only ?? false;
+    leadTimeHours = os.minimumLeadTimeHours ?? os.minimum_lead_time_hours ?? 0;
+    cutoffTime = os.cutoffTime ?? os.cutoff_time ?? "";
+    sameDayEnabled = os.sameDayEnabled ?? os.same_day_enabled ?? false;
+    availableDays = (os.availableDays ?? os.available_days ?? []).join(", ");
+    deliveryProvince = ds.deliveryProvince ?? ds.delivery_province ?? "DI Yogyakarta";
+    freeDeliveryThreshold = ds.freeDeliveryThreshold ?? ds.free_delivery_threshold ?? 0;
+  }
 };
 
 $effect(() => {
-	fetchSettings();
+  fetchSettings();
 });
 
 const formatDays = (value: string) =>
-	value
-		.split(/[,;]/)
-		.map((item) => item.trim())
-		.filter(Boolean);
+  value
+    .split(/[,;]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
 
 const handleSubmit = async (event: SubmitEvent) => {
-	event.preventDefault();
-	isSubmitting = true;
-	const { error } = await actions.updateSettings({
-		orderSettings: {
-			preorderOnly,
-			minimumLeadTimeHours: Number(leadTimeHours),
-			cutoffTime,
-			sameDayEnabled,
-			availableDays: formatDays(availableDays),
-		},
-		deliverySettings: {
-			deliveryProvince,
-			freeDeliveryThreshold: Number(freeDeliveryThreshold),
-		},
-	});
-	isSubmitting = false;
+  event.preventDefault();
+  isSubmitting = true;
+  const { error } = await actions.updateSettings({
+    orderSettings: {
+      preorderOnly,
+      minimumLeadTimeHours: Number(leadTimeHours),
+      cutoffTime,
+      sameDayEnabled,
+      availableDays: formatDays(availableDays),
+    },
+    deliverySettings: {
+      deliveryProvince,
+      freeDeliveryThreshold: Number(freeDeliveryThreshold),
+    },
+  });
+  isSubmitting = false;
 
-	if (error) {
-		toastRef?.show(error.message, "error");
-	} else {
-		toastRef?.show("Pengaturan berhasil disimpan!", "success");
-	}
+  if (error) {
+    toastRef?.show(error.message, "error");
+  } else {
+    toastRef?.show("Pengaturan berhasil disimpan!", "success");
+  }
 };
 
 const handleSeed = async () => {
-	toastRef?.show("Fungsi Generate Data Demo dinonaktifkan sementara.", "error");
+  toastRef?.show("Fungsi Generate Data Demo dinonaktifkan sementara.", "error");
 };
 </script>
 

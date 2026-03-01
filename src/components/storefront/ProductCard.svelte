@@ -1,11 +1,11 @@
 <script lang="ts">
 interface Product {
-	id: string;
-	name: string;
-	price: number;
-	description: string;
-	image: string;
-	stock: number;
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  image: string;
+  stock: number;
 }
 
 let { product, onAdd } = $props<{ product: Product; onAdd: () => void }>();
@@ -13,11 +13,11 @@ let { product, onAdd } = $props<{ product: Product; onAdd: () => void }>();
 let isAdded = $state(false);
 
 function handleClick() {
-	onAdd();
-	isAdded = true;
-	setTimeout(() => {
-		isAdded = false;
-	}, 600);
+  onAdd();
+  isAdded = true;
+  setTimeout(() => {
+    isAdded = false;
+  }, 600);
 }
 </script>
 

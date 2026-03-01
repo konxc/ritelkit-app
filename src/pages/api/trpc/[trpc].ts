@@ -4,10 +4,10 @@ import { appRouter } from "../../../server/router";
 import { createContext } from "../../../server/context";
 
 export const ALL = async (context: APIContext) => {
-    return fetchRequestHandler({
-        endpoint: "/api/trpc",
-        req: context.request,
-        router: appRouter,
-        createContext: () => createContext(context),
-    });
+  return fetchRequestHandler({
+    endpoint: "/api/trpc",
+    req: context.request,
+    router: appRouter,
+    createContext: () => createContext(context),
+  });
 };

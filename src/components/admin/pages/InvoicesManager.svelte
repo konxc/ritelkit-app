@@ -10,66 +10,62 @@ import StatusBadge from "../StatusBadge.svelte";
 import ToastNotification from "../ToastNotification.svelte";
 
 export type InvoiceRow = {
-	invoiceNo: string;
-	orderNo: string;
-	total: number;
-	status: string;
-	issuedAt: string | Date;
-	dueAt?: string | null;
+  id: string;
+  invoiceNo: string;
+  orderNo: string;
+  total: number;
+  status: string;
+  issuedAt: string;
+  dueAt: string | null;
 };
 
 let {
-	rows: initialRows = [],
-	page = 1,
-	limit = 20,
+  rows: initialRows = [],
+  page = 1,
+  limit = 20,
 }: {
-	rows?: InvoiceRow[];
-	page?: number;
-	limit?: number;
+  rows?: InvoiceRow[];
+  page?: number;
+  limit?: number;
 } = $props();
 
 const offset = $derived((page - 1) * limit);
 
 const invoicesQuery = createQuery(() => ({
-	queryKey: ["invoices.list", { limit, offset }],
-	queryFn: () => trpc.invoices.list.query({ limit, offset }),
-	initialData:
-		initialRows.length > 0
-			? initialRows
-			: undefined,
-	refetchOnMount: false,
-	staleTime: 1000 * 60 * 5,
+  queryKey: ["invoices.list", { limit, offset }],
+  queryFn: () => trpc.invoices.list.query({ limit, offset }),
+  initialData: initialRows.length > 0 ? initialRows : undefined,
+  refetchOnMount: false,
+  staleTime: 1000 * 60 * 5,
 }));
 
-let currentInvoices = $derived(
-	(invoicesQuery.data as InvoiceRow[]) || initialRows,
-);
+let currentInvoices = $derived((invoicesQuery.data as InvoiceRow[]) || initialRows);
 
 let isSubmitting = $state(false);
 let orderNo = $state("");
 let toastRef = $state<ToastNotification>();
 
 const badgeTone = (status: string) => {
-	if (status === "paid") return "success";
-	if (status === "void") return "danger";
-	return "default";
+  if (status === "paid") return "success";
+  if (status === "void") return "danger";
+  return "default";
 };
 
 const handleSubmit = async (event: SubmitEvent) => {
-	event.preventDefault();
-	isSubmitting = true;
-	try {
-		const { error } = await actions.createInvoice({ orderNo });
-		if (error) {
-			toastRef?.show(error.message, "error");
-		} else {
-			toastRef?.show("Invoice berhasil dibuat", "success");
-			orderNo = "";
-			invoicesQuery.refetch();
-		}
-	} finally {
-		isSubmitting = false;
-	}
+  event.preventDefault();
+  isSubmitting = true;
+  try {
+    const { error } = await actions.createInvoice({ orderNo });
+    if (error) {
+      toastRef?.show(error.message, "error");
+    } else {
+      toastRef?.show("Invoice berhasil dibuat", "success");
+      orderNo = "";
+      invoicesQuery.refetch();
+    }
+  } finally {
+    isSubmitting = false;
+  }
 };
 </script>
 <div in:fly={{ y: 20, duration: 400, delay: 100 }}>

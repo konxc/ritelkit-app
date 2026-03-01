@@ -8,15 +8,15 @@ import SectionHeader from "../SectionHeader.svelte";
 import ToastNotification from "../ToastNotification.svelte";
 
 let {
-	initialRows = [],
-	q = "",
-	page = 1,
-	limit = 30,
+  initialRows = [],
+  q = "",
+  page = 1,
+  limit = 30,
 }: {
-	initialRows?: Notification[];
-	q?: string;
-	page?: number;
-	limit?: number;
+  initialRows?: Notification[];
+  q?: string;
+  page?: number;
+  limit?: number;
 } = $props();
 
 let toastRef = $state<ToastNotification>();
@@ -28,103 +28,99 @@ let deletingId = $state<string | null>(null);
 
 // Sync with initialRows from SSR
 $effect(() => {
-	rows = initialRows;
+  rows = initialRows;
 });
 
 const refreshData = async () => {
-	const offset = (page - 1) * limit;
-	const { data, error } = await actions.listNotifications({ q, limit, offset });
-	if (!error && data) {
-		rows = data.rows as Notification[];
-	}
+  const offset = (page - 1) * limit;
+  const { data, error } = await actions.listNotifications({ q, limit, offset });
+  if (!error && data) {
+    rows = data.rows as Notification[];
+  }
 };
 
 const handleCreate = async (event: SubmitEvent) => {
-	event.preventDefault();
-	const form = event.currentTarget as HTMLFormElement | null;
-	if (!form) return;
-	const formData = new FormData(form);
+  event.preventDefault();
+  const form = event.currentTarget as HTMLFormElement | null;
+  if (!form) return;
+  const formData = new FormData(form);
 
-	const data = {
-		channel: String(formData.get("channel") || ""),
-		recipient: String(formData.get("recipient") || ""),
-		template: String(formData.get("template") || "") || undefined,
-		payloadJson: String(formData.get("payload_json") || "") || undefined,
-	};
+  const data = {
+    channel: String(formData.get("channel") || ""),
+    recipient: String(formData.get("recipient") || ""),
+    template: String(formData.get("template") || "") || undefined,
+    payloadJson: String(formData.get("payload_json") || "") || undefined,
+  };
 
-	isSubmitting = true;
-	const { error } = await actions.createNotification(data);
-	isSubmitting = false;
+  isSubmitting = true;
+  const { error } = await actions.createNotification(data);
+  isSubmitting = false;
 
-	if (error) {
-		toastRef?.show(error.message, "error");
-	} else {
-		toastRef?.show("Notifikasi disimpan", "success");
-		form.reset();
-		refreshData();
-	}
+  if (error) {
+    toastRef?.show(error.message, "error");
+  } else {
+    toastRef?.show("Notifikasi disimpan", "success");
+    form.reset();
+    refreshData();
+  }
 };
 
-const handleRowAction = async (
-	id: string,
-	action: string,
-	rowEl: HTMLElement | null,
-) => {
-	if (action === "delete") {
-		if (!confirm("Hapus notifikasi ini?")) return;
-		deletingId = id;
-		const { error } = await actions.deleteNotification(id);
-		deletingId = null;
+const handleRowAction = async (id: string, action: string, rowEl: HTMLElement | null) => {
+  if (action === "delete") {
+    if (!confirm("Hapus notifikasi ini?")) return;
+    deletingId = id;
+    const { error } = await actions.deleteNotification(id);
+    deletingId = null;
 
-		if (error) {
-			toastRef?.show(error.message, "error");
-		} else {
-			toastRef?.show("Notifikasi dihapus", "success");
-			refreshData();
-		}
-		return;
-	}
+    if (error) {
+      toastRef?.show(error.message, "error");
+    } else {
+      toastRef?.show("Notifikasi dihapus", "success");
+      refreshData();
+    }
+    return;
+  }
 
-	if (action === "send") {
-		sendingId = id;
-		const { error } = await actions.sendNotification(id);
-		sendingId = null;
+  if (action === "send") {
+    sendingId = id;
+    const { error } = await actions.sendNotification(id);
+    sendingId = null;
 
-		if (error) {
-			toastRef?.show(error.message, "error");
-		} else {
-			toastRef?.show("Notifikasi dikirim", "success");
-			refreshData();
-		}
-		return;
-	}
+    if (error) {
+      toastRef?.show(error.message, "error");
+    } else {
+      toastRef?.show("Notifikasi dikirim", "success");
+      refreshData();
+    }
+    return;
+  }
 
-	if (action === "save" && rowEl) {
-		const fields: Record<string, string> = {};
-		rowEl.querySelectorAll("[data-field]").forEach((cell) => {
-			const field = cell.getAttribute("data-field");
-			if (!field) return;
-			fields[field] = String(cell.textContent?.trim() || "");
-		});
+  if (action === "save" && rowEl) {
+    const fields: Record<string, string> = {};
+    rowEl.querySelectorAll("[data-field]").forEach((cell) => {
+      const field = cell.getAttribute("data-field");
+      if (!field) return;
+      fields[field] = String(cell.textContent?.trim() || "");
+    });
 
-		savingId = id;
-		const { error } = await actions.updateNotification({
-			id,
-			data: {
-				channel: fields.channel || "",
-				recipient: fields.recipient || "",
-				status: fields.status || "pending",
-			},
-		});
-		savingId = null;
+    savingId = id;
+    const { error } = await actions.updateNotification({
+      id,
+      data: {
+        channel: fields.channel || "",
+        recipient: fields.recipient || "",
+        status: fields.status || "pending",
+      },
+    });
+    savingId = null;
 
-		if (error) {
-			toastRef?.show(error.message, "error");
-		} else {
-			toastRef?.show("Notifikasi diperbarui", "success");
-			refreshData();
-		}
-	}
+    if (error) {
+      toastRef?.show(error.message, "error");
+    } else {
+      toastRef?.show("Notifikasi diperbarui", "success");
+      refreshData();
+    }
+  }
 };
 </script>
 

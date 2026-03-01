@@ -11,15 +11,16 @@ await initDb(Astro);
 const admin = await requireAdmin(Astro);
 const db = getDrizzle(Astro);
 
-if (!admin) {
-	const userCountResult = await db
-		.select({ count: sql<number>`count(*)` })
-		.from(adminUsers)
-		.get();
+let redirectUrl = "";
 
-	return Astro.redirect(
-		Number(userCountResult?.count || 0) === 0 ? "/admin/setup" : "/admin/login",
-	);
+if (!admin) {
+  const result = await db.select({ count: sql<number>`count(*)` }).from(adminUsers).get();
+  const userCount = Number(result?.count || 0);
+  redirectUrl = userCount === 0 ? "/admin/setup" : "/admin/login";
+}
+
+if (redirectUrl) {
+  return Astro.redirect(redirectUrl);
 }
 
 const stats = await getDashboardStats(db);

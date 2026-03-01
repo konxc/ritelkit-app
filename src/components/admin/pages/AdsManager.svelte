@@ -1,24 +1,24 @@
 <script module lang="ts">
 export type AdRow = {
-	id: string | number;
-	name: string;
-	channel: string;
-	budget: number;
-	spend: number;
-	status: string;
+  id: string | number;
+  name: string;
+  channel: string;
+  budget: number;
+  spend: number;
+  status: string;
 };
 
 type AdStatus = "draft" | "active" | "paused" | "completed";
 
 type AdMutationInput = {
-	name: string;
-	channel: string;
-	budget: number;
-	spend: number;
-	status: AdStatus;
-	startAt?: string | null;
-	endAt?: string | null;
-	notes?: string | null;
+  name: string;
+  channel: string;
+  budget: number;
+  spend: number;
+  status: AdStatus;
+  startAt?: string | null;
+  endAt?: string | null;
+  notes?: string | null;
 };
 </script>
 

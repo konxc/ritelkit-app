@@ -6,67 +6,67 @@ import StatusBadge from "../StatusBadge.svelte";
 import ToastNotification from "../ToastNotification.svelte";
 
 type InvoiceItem = {
-	name: string;
-	qty: number;
-	price: number;
-	total: number;
+  name: string;
+  qty: number;
+  price: number;
+  total: number;
 };
 type InvoiceDetail = {
-	id: string;
-	invoiceNo: string;
-	orderNo: string;
-	customerName: string;
-	customerPhone: string;
-	total: number;
-	status: string;
-	dueAt?: string | null;
-	parsedItems: InvoiceItem[];
-	shippingAddressJson?: {
-		province?: string;
-		city?: string;
-		district?: string;
-	};
+  id: string;
+  invoiceNo: string;
+  orderNo: string;
+  customerName: string;
+  customerPhone: string;
+  total: number;
+  status: string;
+  dueAt?: string | null;
+  parsedItems: InvoiceItem[];
+  shippingAddressJson?: {
+    province?: string;
+    city?: string;
+    district?: string;
+  };
 };
 
 let { invoice: initialInvoice }: { invoice: InvoiceDetail } = $props();
 
 let invoice = $state<InvoiceDetail>({} as InvoiceDetail);
 $effect(() => {
-	invoice = initialInvoice;
+  invoice = initialInvoice;
 });
 let toastRef = $state<ToastNotification>();
 let isSubmitting = $state(false);
 
 // Sync with initialInvoice from SSR
 $effect(() => {
-	invoice = initialInvoice;
+  invoice = initialInvoice;
 });
 
 const handleSubmit = async (event: SubmitEvent) => {
-	event.preventDefault();
-	const form = event.currentTarget as HTMLFormElement;
-	const formData = new FormData(form);
-	const data = {
-		status: String(formData.get("status") || ""),
-		dueAt: (String(formData.get("dueAt") || "") || null) as string | null,
-	};
+  event.preventDefault();
+  const form = event.currentTarget as HTMLFormElement;
+  const formData = new FormData(form);
+  const data = {
+    status: String(formData.get("status") || ""),
+    dueAt: (String(formData.get("dueAt") || "") || null) as string | null,
+  };
 
-	isSubmitting = true;
-	const { error } = await actions.updateInvoice({
-		id: invoice.id,
-		data,
-	});
-	isSubmitting = false;
+  isSubmitting = true;
+  const { error } = await actions.updateInvoice({
+    id: invoice.id,
+    data,
+  });
+  isSubmitting = false;
 
-	if (error) {
-		toastRef?.show(error.message, "error");
-	} else {
-		invoice = {
-			...invoice,
-			...data,
-		};
-		toastRef?.show("Invoice diperbarui", "success");
-	}
+  if (error) {
+    toastRef?.show(error.message, "error");
+  } else {
+    invoice = {
+      ...invoice,
+      ...data,
+    };
+    toastRef?.show("Invoice diperbarui", "success");
+  }
 };
 </script>
 

@@ -1,10 +1,10 @@
 <script module lang="ts">
 export type CustomerRow = {
-	id: string | number;
-	name: string;
-	phone: string;
-	email?: string | null;
-	notes?: string | null;
+  id: string | number;
+  name: string;
+  phone: string;
+  email?: string | null;
+  notes?: string | null;
 };
 </script>
 

@@ -10,26 +10,25 @@ import ToastNotification from "../ToastNotification.svelte";
 
 type OrderItem = { name: string; qty: number; price: number; total: number };
 type ShippingAddress = {
-	province?: string;
-	city?: string;
-	district?: string;
-	delivery_date?: string;
-	delivery_time?: string;
+  province?: string;
+  city?: string;
+  district?: string;
+  delivery_date?: string;
+  delivery_time?: string;
 };
 type OrderDetail = Order & {
-	parsedItems?: OrderItem[];
-	shipping_address_json?: ShippingAddress;
-	customerName: string;
-	customerPhone: string;
-	customerEmail?: string | null;
+  parsedItems?: OrderItem[];
+  shipping_address_json?: ShippingAddress;
+  customerName: string;
+  customerPhone: string;
+  customerEmail?: string | null;
 };
 
-let { order: initialOrder = {} as OrderDetail }: { order?: OrderDetail } =
-	$props();
+let { order: initialOrder = {} as OrderDetail }: { order?: OrderDetail } = $props();
 
 let order = $state<OrderDetail>({} as OrderDetail);
 $effect(() => {
-	order = initialOrder;
+  order = initialOrder;
 });
 let toastRef = $state<ToastNotification>();
 let isSubmitting = $state(false);
@@ -38,29 +37,29 @@ const queryClient = useQueryClient();
 
 // Sync with initialOrder from SSR if it changes
 $effect(() => {
-	order = initialOrder;
+  order = initialOrder;
 });
 
 const handleUpdateStatus = async (event: SubmitEvent) => {
-	event.preventDefault();
-	// The form inputs are bound to `order.status`, `order.paymentStatus`, `order.notes`
-	// so the `order` state is already updated.
-	const data = {
-		status: order.status,
-		paymentStatus: order.paymentStatus,
-		notes: order.notes,
-	};
+  event.preventDefault();
+  // The form inputs are bound to `order.status`, `order.paymentStatus`, `order.notes`
+  // so the `order` state is already updated.
+  const data = {
+    status: order.status,
+    paymentStatus: order.paymentStatus,
+    notes: order.notes,
+  };
 
-	isSubmitting = true;
-	try {
-		await trpc.orders.update.mutate({ id: order.id, data });
-		toastRef?.show("Order updated", "success");
-		queryClient.invalidateQueries({ queryKey: ["orders.list"] });
-	} catch (error: any) {
-		toastRef?.show(error.message, "error");
-	} finally {
-		isSubmitting = false;
-	}
+  isSubmitting = true;
+  try {
+    await trpc.orders.update.mutate({ id: order.id, data });
+    toastRef?.show("Order updated", "success");
+    queryClient.invalidateQueries({ queryKey: ["orders.list"] });
+  } catch (error: any) {
+    toastRef?.show(error.message, "error");
+  } finally {
+    isSubmitting = false;
+  }
 };
 </script>
 

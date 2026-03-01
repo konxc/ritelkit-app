@@ -13,27 +13,18 @@ import { inventoryRouter } from "./routers/inventory";
 import { settingsRouter } from "./routers/settings";
 
 export const appRouter = router({
-    products: productRouter,
-    categories: categoryRouter,
-    orders: orderRouter,
-    shipments: shipmentRouter,
-    invoices: invoiceRouter,
-    refunds: refundRouter,
-    shippingRules: shippingRuleRouter,
-    customers: customerRouter,
-    coupons: couponRouter,
-    ads: adsRouter,
-    inventory: inventoryRouter,
-    settings: settingsRouter,
+  products: productRouter,
+  categories: categoryRouter,
+  orders: orderRouter,
+  shipments: shipmentRouter,
+  invoices: invoiceRouter,
+  refunds: refundRouter,
+  shippingRules: shippingRuleRouter,
+  customers: customerRouter,
+  coupons: couponRouter,
+  ads: adsRouter,
+  inventory: inventoryRouter,
+  settings: settingsRouter,
 });
 
-
-
-
-
-
-
-
 export type AppRouter = typeof appRouter;
-
-

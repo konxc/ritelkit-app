@@ -1,0 +1,1073 @@
+
+> roti-sholawat@0.0.1 astro /home/dev/project/roti-sholawat
+> astro check
+
+19:51:10 [@astrojs/cloudflare] Enabling sessions with Cloudflare KV with the "SESSION" KV binding.
+19:51:10 [@astrojs/cloudflare] If you see the error "Invalid binding `SESSION`" in your build output, you need to add the binding to your wrangler config file.
+19:51:10 [content] Syncing content
+19:51:10 [content] Synced content
+19:51:10 [types] Generated 49ms
+19:51:10 [check] Getting diagnostics for Astro files in /home/dev/project/roti-sholawat...
+[96msrc/components/admin/AdminTabs.astro[0m:[93m25[0m:[93m52[0m - [91merror[0m[90m ts(2552): [0mCannot find name 'baseUrl'. Did you mean '_baseUrl'?
+
+[7m25[0m             const url = new URL(Astro.url.origin + baseUrl);
+[7m  [0m [91m                                                   ~~~~~~~[0m
+[96msrc/components/admin/AdminTabs.astro[0m:[93m12[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_baseUrl' is declared but its value is never read.
+
+[7m12[0m const _baseUrl = Astro.url.pathname;
+[7m  [0m [93m      ~~~~~~~~[0m
+
+[96msrc/components/research/VersionNav.astro[0m:[93m12[0m:[93m30[0m - [91merror[0m[90m ts(2552): [0mCannot find name 'isActive'. Did you mean '_isActive'?
+
+[7m12[0m   <a class={`research-link ${isActive("v4")}`} href="/research/v4">V4</a>
+[7m  [0m [91m                             ~~~~~~~~[0m
+[96msrc/components/research/VersionNav.astro[0m:[93m11[0m:[93m30[0m - [91merror[0m[90m ts(2552): [0mCannot find name 'isActive'. Did you mean '_isActive'?
+
+[7m11[0m   <a class={`research-link ${isActive("v3")}`} href="/research/v3">V3</a>
+[7m  [0m [91m                             ~~~~~~~~[0m
+[96msrc/components/research/VersionNav.astro[0m:[93m10[0m:[93m30[0m - [91merror[0m[90m ts(2552): [0mCannot find name 'isActive'. Did you mean '_isActive'?
+
+[7m10[0m   <a class={`research-link ${isActive("v2")}`} href="/research/v2">V2</a>
+[7m  [0m [91m                             ~~~~~~~~[0m
+[96msrc/components/research/VersionNav.astro[0m:[93m9[0m:[93m30[0m - [91merror[0m[90m ts(2552): [0mCannot find name 'isActive'. Did you mean '_isActive'?
+
+[7m9[0m   <a class={`research-link ${isActive("v1")}`} href="/research/v1">V1</a>
+[7m [0m [91m                             ~~~~~~~~[0m
+[96msrc/components/research/VersionNav.astro[0m:[93m8[0m:[93m30[0m - [91merror[0m[90m ts(2552): [0mCannot find name 'isActive'. Did you mean '_isActive'?
+
+[7m8[0m   <a class={`research-link ${isActive("v0")}`} href="/research/v0">V0</a>
+[7m [0m [91m                             ~~~~~~~~[0m
+[96msrc/components/research/VersionNav.astro[0m:[93m7[0m:[93m30[0m - [91merror[0m[90m ts(2552): [0mCannot find name 'isActive'. Did you mean '_isActive'?
+
+[7m7[0m   <a class={`research-link ${isActive("index")}`} href="/research">Overview</a>
+[7m [0m [91m                             ~~~~~~~~[0m
+[96msrc/components/research/VersionNav.astro[0m:[93m3[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_isActive' is declared but its value is never read.
+
+[7m3[0m const _isActive = (value: string) => (active === value ? "active" : "");
+[7m [0m [93m      ~~~~~~~~~[0m
+
+[96msrc/layouts/AdminLayout.astro[0m:[93m343[0m:[93m152[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'isActive'.
+
+[7m343[0m                     class={`flex flex-col items-center justify-center w-[60px] sm:w-[68px] h-14 rounded-2xl no-underline transition-all duration-300 ${isActive("/admin/settings") ? "text-white bg-white/10" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+[7m   [0m [91m                                                                                                                                                       ~~~~~~~~[0m
+[96msrc/layouts/AdminLayout.astro[0m:[93m315[0m:[93m152[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'isActive'.
+
+[7m315[0m                     class={`flex flex-col items-center justify-center w-[60px] sm:w-[68px] h-14 rounded-2xl no-underline transition-all duration-300 ${isActive("/admin/katalog") ? "text-white bg-white/10" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+[7m   [0m [91m                                                                                                                                                       ~~~~~~~~[0m
+[96msrc/layouts/AdminLayout.astro[0m:[93m288[0m:[93m152[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'isActive'.
+
+[7m288[0m                     class={`flex flex-col items-center justify-center w-[60px] sm:w-[68px] h-14 rounded-2xl no-underline transition-all duration-300 ${isActive("/admin/pesanan") ? "text-white bg-white/10" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+[7m   [0m [91m                                                                                                                                                       ~~~~~~~~[0m
+[96msrc/layouts/AdminLayout.astro[0m:[93m263[0m:[93m152[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'isActive'.
+
+[7m263[0m                     class={`flex flex-col items-center justify-center w-[60px] sm:w-[68px] h-14 rounded-2xl no-underline transition-all duration-300 ${isActive("/admin/overview") ? "text-white bg-white/10" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+[7m   [0m [91m                                                                                                                                                       ~~~~~~~~[0m
+[96msrc/layouts/AdminLayout.astro[0m:[93m134[0m:[93m64[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'renderIcon'.
+
+[7m134[0m                                                 <div set:html={renderIcon(link.icon, active)} class="shrink-0" />
+[7m   [0m [91m                                                               ~~~~~~~~~~[0m
+[96msrc/layouts/AdminLayout.astro[0m:[93m127[0m:[93m56[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'isActive'.
+
+[7m127[0m                                         const active = isActive(link.path);
+[7m   [0m [91m                                                       ~~~~~~~~[0m
+[96msrc/layouts/AdminLayout.astro[0m:[93m126[0m:[93m55[0m - [91merror[0m[90m ts(7006): [0mParameter 'link' implicitly has an 'any' type.
+
+[7m126[0m                                     {group.items.map((link) => {
+[7m   [0m [91m                                                      ~~~~[0m
+[96msrc/layouts/AdminLayout.astro[0m:[93m117[0m:[93m47[0m - [91merror[0m[90m ts(7006): [0mParameter 'index' implicitly has an 'any' type.
+
+[7m117[0m                         navGroups.map((group, index) => (
+[7m   [0m [91m                                              ~~~~~[0m
+[96msrc/layouts/AdminLayout.astro[0m:[93m117[0m:[93m40[0m - [91merror[0m[90m ts(7006): [0mParameter 'group' implicitly has an 'any' type.
+
+[7m117[0m                         navGroups.map((group, index) => (
+[7m   [0m [91m                                       ~~~~~[0m
+[96msrc/layouts/AdminLayout.astro[0m:[93m117[0m:[93m25[0m - [91merror[0m[90m ts(2552): [0mCannot find name 'navGroups'. Did you mean '_navGroups'?
+
+[7m117[0m                         navGroups.map((group, index) => (
+[7m   [0m [91m                        ~~~~~~~~~[0m
+[96msrc/layouts/AdminLayout.astro[0m:[93m83[0m:[93m10[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'ClientRouter'.
+
+[7m83[0m         <ClientRouter />
+[7m  [0m [91m         ~~~~~~~~~~~~[0m
+[96msrc/layouts/AdminLayout.astro[0m:[93m78[0m:[93m42[0m - [91merror[0m[90m ts(2552): [0mCannot find name 'csrfToken'. Did you mean '_csrfToken'?
+
+[7m78[0m         <meta name="csrf-token" content={csrfToken} />
+[7m  [0m [91m                                         ~~~~~~~~~[0m
+[96msrc/layouts/AdminLayout.astro[0m:[93m64[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_renderIcon' is declared but its value is never read.
+
+[7m64[0m const _renderIcon = (iconName: string, active: boolean) => {
+[7m  [0m [93m      ~~~~~~~~~~~[0m
+[96msrc/layouts/AdminLayout.astro[0m:[93m37[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_navGroups' is declared but its value is never read.
+
+[7m37[0m const _navGroups = [
+[7m  [0m [93m      ~~~~~~~~~~[0m
+[96msrc/layouts/AdminLayout.astro[0m:[93m15[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_isActive' is declared but its value is never read.
+
+[7m15[0m const _isActive = (path: string) => {
+[7m  [0m [93m      ~~~~~~~~~[0m
+[96msrc/layouts/AdminLayout.astro[0m:[93m8[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_csrfToken' is declared but its value is never read.
+
+[7m8[0m const _csrfToken = ensureCsrfToken(Astro);
+[7m [0m [93m      ~~~~~~~~~~[0m
+
+[96msrc/layouts/AdminPwaLayout.astro[0m:[93m30[0m:[93m38[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'csrfToken'.
+
+[7m30[0m     <meta name="csrf-token" content={csrfToken} />
+[7m  [0m [91m                                     ~~~~~~~~~[0m
+[96msrc/layouts/AdminPwaLayout.astro[0m:[93m17[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_csrfToken' is declared but its value is never read.
+
+[7m17[0m const _csrfToken = ensureCsrfToken(Astro);
+[7m  [0m [93m      ~~~~~~~~~~[0m
+
+[96msrc/layouts/Layout.astro[0m:[93m268[0m:[93m10[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'RevealObserver'.
+
+[7m268[0m         <RevealObserver />
+[7m   [0m [91m         ~~~~~~~~~~~~~~[0m
+[96msrc/layouts/Layout.astro[0m:[93m131[0m:[93m31[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'waLink'.
+
+[7m131[0m                         href={waLink}
+[7m   [0m [91m                              ~~~~~~[0m
+[96msrc/layouts/Layout.astro[0m:[93m16[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_waLink' is declared but its value is never read.
+
+[7m16[0m const _waLink =
+[7m  [0m [93m      ~~~~~~~[0m
+
+[96msrc/pages/about.astro[0m:[93m508[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'Layout'.
+
+[7m508[0m </Layout>
+[7m   [0m [91m  ~~~~~~[0m
+[96msrc/pages/about.astro[0m:[93m471[0m:[93m35[0m - [91merror[0m[90m ts(7006): [0mParameter 'faq' implicitly has an 'any' type.
+
+[7m471[0m                         faqs.map((faq) => (
+[7m   [0m [91m                                  ~~~[0m
+[96msrc/pages/about.astro[0m:[93m471[0m:[93m25[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'faqs'.
+
+[7m471[0m                         faqs.map((faq) => (
+[7m   [0m [91m                        ~~~~[0m
+[96msrc/pages/about.astro[0m:[93m447[0m:[93m39[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'waLink'.
+
+[7m447[0m                                 href={waLink}
+[7m   [0m [91m                                      ~~~~~~[0m
+[96msrc/pages/about.astro[0m:[93m29[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'Layout'.
+
+[7m29[0m <Layout
+[7m  [0m [91m ~~~~~~[0m
+[96msrc/pages/about.astro[0m:[93m5[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_faqs' is declared but its value is never read.
+
+[7m5[0m const _faqs = [
+[7m [0m [93m      ~~~~~[0m
+[96msrc/pages/about.astro[0m:[93m2[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_waLink' is declared but its value is never read.
+
+[7m2[0m const _waLink =
+[7m [0m [93m      ~~~~~~~[0m
+
+[96msrc/pages/index.astro[0m:[93m1128[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'HeroInteractions'.
+
+[7m1128[0m <HeroInteractions />
+[7m    [0m [91m ~~~~~~~~~~~~~~~~[0m
+[96msrc/pages/index.astro[0m:[93m1126[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'Layout'.
+
+[7m1126[0m </Layout>
+[7m    [0m [91m  ~~~~~~[0m
+[96msrc/pages/index.astro[0m:[93m1109[0m:[93m19[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'waLink'.
+
+[7m1109[0m             href={waLink}
+[7m    [0m [91m                  ~~~~~~[0m
+[96msrc/pages/index.astro[0m:[93m1096[0m:[93m31[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'waLink'.
+
+[7m1096[0m                         href={waLink}
+[7m    [0m [91m                              ~~~~~~[0m
+[96msrc/pages/index.astro[0m:[93m891[0m:[93m108[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'galleryRatioClasses'.
+
+[7m891[0m                                 class={`gallery-item break-inside-avoid mb-4 ${galleryRatioClasses[index % galleryRatioClasses.length]} ${index % 3 === 0 ? "lift" : ""}`}
+[7m   [0m [91m                                                                                                           ~~~~~~~~~~~~~~~~~~~[0m
+[96msrc/pages/index.astro[0m:[93m891[0m:[93m80[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'galleryRatioClasses'.
+
+[7m891[0m                                 class={`gallery-item break-inside-avoid mb-4 ${galleryRatioClasses[index % galleryRatioClasses.length]} ${index % 3 === 0 ? "lift" : ""}`}
+[7m   [0m [91m                                                                               ~~~~~~~~~~~~~~~~~~~[0m
+[96msrc/pages/index.astro[0m:[93m889[0m:[93m49[0m - [91merror[0m[90m ts(7006): [0mParameter 'index' implicitly has an 'any' type.
+
+[7m889[0m                         galleryImages.map((img, index) => (
+[7m   [0m [91m                                                ~~~~~[0m
+[96msrc/pages/index.astro[0m:[93m889[0m:[93m44[0m - [91merror[0m[90m ts(7006): [0mParameter 'img' implicitly has an 'any' type.
+
+[7m889[0m                         galleryImages.map((img, index) => (
+[7m   [0m [91m                                           ~~~[0m
+[96msrc/pages/index.astro[0m:[93m889[0m:[93m25[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'galleryImages'.
+
+[7m889[0m                         galleryImages.map((img, index) => (
+[7m   [0m [91m                        ~~~~~~~~~~~~~[0m
+[96msrc/pages/index.astro[0m:[93m628[0m:[93m43[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'waLink'.
+
+[7m628[0m                                     href={waLink}
+[7m   [0m [91m                                          ~~~~~~[0m
+[96msrc/pages/index.astro[0m:[93m421[0m:[93m52[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'waLink'.
+
+[7m421[0m                     <a class="btn btn-ghost" href={waLink} target="_blank"
+[7m   [0m [91m                                                   ~~~~~~[0m
+[96msrc/pages/index.astro[0m:[93m377[0m:[93m31[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'waLink'.
+
+[7m377[0m                         href={waLink}
+[7m   [0m [91m                              ~~~~~~[0m
+[96msrc/pages/index.astro[0m:[93m356[0m:[93m31[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'waLink'.
+
+[7m356[0m                         href={waLink}
+[7m   [0m [91m                              ~~~~~~[0m
+[96msrc/pages/index.astro[0m:[93m111[0m:[93m56[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'waLink'.
+
+[7m111[0m                         <a class="btn btn-ghost" href={waLink} target="_blank"
+[7m   [0m [91m                                                       ~~~~~~[0m
+[96msrc/pages/index.astro[0m:[93m29[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'Layout'.
+
+[7m29[0m <Layout
+[7m  [0m [91m ~~~~~~[0m
+[96msrc/pages/index.astro[0m:[93m25[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_waLink' is declared but its value is never read.
+
+[7m25[0m const _waLink =
+[7m  [0m [93m      ~~~~~~~[0m
+[96msrc/pages/index.astro[0m:[93m16[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_galleryRatioClasses' is declared but its value is never read.
+
+[7m16[0m const _galleryRatioClasses = [
+[7m  [0m [93m      ~~~~~~~~~~~~~~~~~~~~[0m
+[96msrc/pages/index.astro[0m:[93m2[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_galleryImages' is declared but its value is never read.
+
+[7m2[0m const _galleryImages = [
+[7m [0m [93m      ~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/order.astro[0m:[93m47[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AppLayout'.
+
+[7m47[0m </AppLayout>
+[7m  [0m [91m  ~~~~~~~~~[0m
+[96msrc/pages/order.astro[0m:[93m46[0m:[93m40[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'env'.
+
+[7m46[0m     <OrderApp products={products} env={env} client:load />
+[7m  [0m [91m                                       ~~~[0m
+[96msrc/pages/order.astro[0m:[93m46[0m:[93m25[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'products'.
+
+[7m46[0m     <OrderApp products={products} env={env} client:load />
+[7m  [0m [91m                        ~~~~~~~~[0m
+[96msrc/pages/order.astro[0m:[93m46[0m:[93m6[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'OrderApp'.
+
+[7m46[0m     <OrderApp products={products} env={env} client:load />
+[7m  [0m [91m     ~~~~~~~~[0m
+[96msrc/pages/order.astro[0m:[93m42[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AppLayout'.
+
+[7m42[0m <AppLayout
+[7m  [0m [91m ~~~~~~~~~[0m
+[96msrc/pages/order.astro[0m:[93m39[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_env' is declared but its value is never read.
+
+[7m39[0m const _env = getEnv(Astro);
+[7m  [0m [93m      ~~~~[0m
+[96msrc/pages/order.astro[0m:[93m21[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_products' is declared but its value is never read.
+
+[7m21[0m const _products = rows.map((row) => {
+[7m  [0m [93m      ~~~~~~~~~[0m
+
+[96msrc/pages/premium.astro[0m:[93m243[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'Layout'.
+
+[7m243[0m </Layout>
+[7m   [0m [91m  ~~~~~~[0m
+[96msrc/pages/premium.astro[0m:[93m236[0m:[93m31[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'waPrimary'.
+
+[7m236[0m                         href={waPrimary}
+[7m   [0m [91m                              ~~~~~~~~~[0m
+[96msrc/pages/premium.astro[0m:[93m231[0m:[93m31[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'gofoodLink'.
+
+[7m231[0m                         href={gofoodLink}
+[7m   [0m [91m                              ~~~~~~~~~~[0m
+[96msrc/pages/premium.astro[0m:[93m202[0m:[93m35[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'waSecondary'.
+
+[7m202[0m                             href={waSecondary}
+[7m   [0m [91m                                  ~~~~~~~~~~~[0m
+[96msrc/pages/premium.astro[0m:[93m197[0m:[93m35[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'gofoodLink'.
+
+[7m197[0m                             href={gofoodLink}
+[7m   [0m [91m                                  ~~~~~~~~~~[0m
+[96msrc/pages/premium.astro[0m:[93m174[0m:[93m31[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'gofoodLink'.
+
+[7m174[0m                         href={gofoodLink}
+[7m   [0m [91m                              ~~~~~~~~~~[0m
+[96msrc/pages/premium.astro[0m:[93m65[0m:[93m35[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'tiktokLink'.
+
+[7m65[0m                             href={tiktokLink}
+[7m  [0m [91m                                  ~~~~~~~~~~[0m
+[96msrc/pages/premium.astro[0m:[93m59[0m:[93m35[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'igLink'.
+
+[7m59[0m                             href={igLink}
+[7m  [0m [91m                                  ~~~~~~[0m
+[96msrc/pages/premium.astro[0m:[93m53[0m:[93m35[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'waPrimary'.
+
+[7m53[0m                             href={waPrimary}
+[7m  [0m [91m                                  ~~~~~~~~~[0m
+[96msrc/pages/premium.astro[0m:[93m48[0m:[93m35[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'gofoodLink'.
+
+[7m48[0m                             href={gofoodLink}
+[7m  [0m [91m                                  ~~~~~~~~~~[0m
+[96msrc/pages/premium.astro[0m:[93m12[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'Layout'.
+
+[7m12[0m <Layout
+[7m  [0m [91m ~~~~~~[0m
+[96msrc/pages/premium.astro[0m:[93m9[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_tiktokLink' is declared but its value is never read.
+
+[7m9[0m const _tiktokLink = "https://www.tiktok.com/@rotisholawat/video/7330461279418584326";
+[7m [0m [93m      ~~~~~~~~~~~[0m
+[96msrc/pages/premium.astro[0m:[93m8[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_igLink' is declared but its value is never read.
+
+[7m8[0m const _igLink = "https://www.instagram.com/rotisholawat/";
+[7m [0m [93m      ~~~~~~~[0m
+[96msrc/pages/premium.astro[0m:[93m6[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_waSecondary' is declared but its value is never read.
+
+[7m6[0m const _waSecondary =
+[7m [0m [93m      ~~~~~~~~~~~~[0m
+[96msrc/pages/premium.astro[0m:[93m4[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_waPrimary' is declared but its value is never read.
+
+[7m4[0m const _waPrimary =
+[7m [0m [93m      ~~~~~~~~~~[0m
+[96msrc/pages/premium.astro[0m:[93m2[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_gofoodLink' is declared but its value is never read.
+
+[7m2[0m const _gofoodLink =
+[7m [0m [93m      ~~~~~~~~~~~[0m
+
+[96msrc/pages/products.astro[0m:[93m162[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'Layout'.
+
+[7m162[0m </Layout>
+[7m   [0m [91m  ~~~~~~[0m
+[96msrc/pages/products.astro[0m:[93m65[0m:[93m25[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'products'.
+
+[7m65[0m                         products.rows.map((product: any) => {
+[7m  [0m [91m                        ~~~~~~~~[0m
+[96msrc/pages/products.astro[0m:[93m11[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'Layout'.
+
+[7m11[0m <Layout
+[7m  [0m [91m ~~~~~~[0m
+[96msrc/pages/products.astro[0m:[93m6[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_products' is declared but its value is never read.
+
+[7m6[0m const _products = await db.execute(
+[7m [0m [93m      ~~~~~~~~~[0m
+
+[96msrc/pages/admin/design-system.astro[0m:[93m1089[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m1089[0m </AdminLayout>
+[7m    [0m [91m  ~~~~~~~~~~~[0m
+[96msrc/pages/admin/design-system.astro[0m:[93m20[0m:[93m21[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'title'.
+
+[7m20[0m <AdminLayout title={title}>
+[7m  [0m [91m                    ~~~~~[0m
+[96msrc/pages/admin/design-system.astro[0m:[93m20[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m20[0m <AdminLayout title={title}>
+[7m  [0m [91m ~~~~~~~~~~~[0m
+[96msrc/pages/admin/design-system.astro[0m:[93m17[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_title' is declared but its value is never read.
+
+[7m17[0m const _title = "Design System";
+[7m  [0m [93m      ~~~~~~[0m
+
+[96msrc/pages/admin/katalog.astro[0m:[93m295[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m295[0m </AdminLayout>
+[7m   [0m [91m  ~~~~~~~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m294[0m:[93m4[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'KatalogTabContent'.
+
+[7m294[0m  </KatalogTabContent>
+[7m   [0m [91m   ~~~~~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m287[0m:[93m14[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'totalPages'.
+
+[7m287[0m       page < totalPages
+[7m   [0m [91m             ~~~~~~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m280[0m:[93m18[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'totalPages'.
+
+[7m280[0m      totalPages={totalPages}
+[7m   [0m [91m                 ~~~~~~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m277[0m:[93m6[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'PaginationNav'.
+
+[7m277[0m     <PaginationNav
+[7m   [0m [91m     ~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m274[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'KatalogTabContent'.
+
+[7m274[0m  <KatalogTabContent {tab} {q} {page} {limit} {initialData} client:load>
+[7m   [0m [91m  ~~~~~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m269[0m:[93m7[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminToolbar'.
+
+[7m269[0m     </AdminToolbar>
+[7m   [0m [91m      ~~~~~~~~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m268[0m:[93m8[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminFilterForm'.
+
+[7m268[0m      </AdminFilterForm>
+[7m   [0m [91m       ~~~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m183[0m:[93m7[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminFilterForm'.
+
+[7m183[0m      <AdminFilterForm>
+[7m   [0m [91m      ~~~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m182[0m:[93m6[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminToolbar'.
+
+[7m182[0m     <AdminToolbar title="Inventory Stok">
+[7m   [0m [91m     ~~~~~~~~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m174[0m:[93m7[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminToolbar'.
+
+[7m174[0m     </AdminToolbar>
+[7m   [0m [91m      ~~~~~~~~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m173[0m:[93m8[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminFilterForm'.
+
+[7m173[0m      </AdminFilterForm>
+[7m   [0m [91m       ~~~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m140[0m:[93m7[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminFilterForm'.
+
+[7m140[0m      <AdminFilterForm>
+[7m   [0m [91m      ~~~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m139[0m:[93m6[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminToolbar'.
+
+[7m139[0m     <AdminToolbar title="Katalog Produk">
+[7m   [0m [91m     ~~~~~~~~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m131[0m:[93m7[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminToolbar'.
+
+[7m131[0m     </AdminToolbar>
+[7m   [0m [91m      ~~~~~~~~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m127[0m:[93m6[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminToolbar'.
+
+[7m127[0m     <AdminToolbar title="Manajemen Kategori">
+[7m   [0m [91m     ~~~~~~~~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m121[0m:[93m20[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'tabs'.
+
+[7m121[0m   <AdminTabs tabs={tabs} activeTab={tab} />
+[7m   [0m [91m                   ~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m121[0m:[93m4[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminTabs'.
+
+[7m121[0m   <AdminTabs tabs={tabs} activeTab={tab} />
+[7m   [0m [91m   ~~~~~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m119[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m119[0m <AdminLayout title="Katalog">
+[7m   [0m [91m ~~~~~~~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m100[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_tabs' is declared but its value is never read.
+
+[7m100[0m const _tabs = [
+[7m   [0m [93m      ~~~~~[0m
+[96msrc/pages/admin/katalog.astro[0m:[93m18[0m:[93m5[0m - [93mwarning[0m[90m ts(6133): [0m'_totalPages' is declared but its value is never read.
+
+[7m18[0m let _totalPages = 1;
+[7m  [0m [93m    ~~~~~~~~~~~[0m
+
+[96msrc/pages/admin/login.astro[0m:[93m89[0m:[93m31[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'env'.
+
+[7m89[0m                 Token setup: {env.SETUP_TOKEN ? "tersedia" : "belum diset"}.
+[7m  [0m [91m                              ~~~[0m
+[96msrc/pages/admin/login.astro[0m:[93m68[0m:[93m63[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'csrfToken'.
+
+[7m68[0m                 <input type="hidden" name="csrf_token" value={csrfToken} />
+[7m  [0m [91m                                                              ~~~~~~~~~[0m
+[96msrc/pages/admin/login.astro[0m:[93m63[0m:[93m88[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'error'.
+
+[7m63[0m                          error === "csrf" ? "Sesi form kadaluarsa, refresh halaman." : error}
+[7m  [0m [91m                                                                                       ~~~~~[0m
+[96msrc/pages/admin/login.astro[0m:[93m63[0m:[93m26[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'error'.
+
+[7m63[0m                          error === "csrf" ? "Sesi form kadaluarsa, refresh halaman." : error}
+[7m  [0m [91m                         ~~~~~[0m
+[96msrc/pages/admin/login.astro[0m:[93m62[0m:[93m26[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'error'.
+
+[7m62[0m                          error === "rate" ? "Terlalu banyak percobaan, coba lagi nanti." :
+[7m  [0m [91m                         ~~~~~[0m
+[96msrc/pages/admin/login.astro[0m:[93m61[0m:[93m26[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'error'.
+
+[7m61[0m                         {error === "invalid" ? "Email atau password salah." :
+[7m  [0m [91m                         ~~~~~[0m
+[96msrc/pages/admin/login.astro[0m:[93m59[0m:[93m17[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'error'.
+
+[7m59[0m                 error && (
+[7m  [0m [91m                ~~~~~[0m
+[96msrc/pages/admin/login.astro[0m:[93m52[0m:[93m17[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'info'.
+
+[7m52[0m                 info === "exists" && (
+[7m  [0m [91m                ~~~~[0m
+[96msrc/pages/admin/login.astro[0m:[93m45[0m:[93m17[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'success'.
+
+[7m45[0m                 success === "1" && (
+[7m  [0m [91m                ~~~~~~~[0m
+[96msrc/pages/admin/login.astro[0m:[93m29[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_success' is declared but its value is never read.
+
+[7m29[0m const _success = Astro.url.searchParams.get("success");
+[7m  [0m [93m      ~~~~~~~~[0m
+[96msrc/pages/admin/login.astro[0m:[93m28[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_error' is declared but its value is never read.
+
+[7m28[0m const _error = call?.error?.message || Astro.url.searchParams.get("error");
+[7m  [0m [93m      ~~~~~~[0m
+[96msrc/pages/admin/login.astro[0m:[93m27[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_info' is declared but its value is never read.
+
+[7m27[0m const _info = Astro.url.searchParams.get("info");
+[7m  [0m [93m      ~~~~~[0m
+[96msrc/pages/admin/login.astro[0m:[93m26[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_csrfToken' is declared but its value is never read.
+
+[7m26[0m const _csrfToken = ensureCsrfToken(Astro);
+[7m  [0m [93m      ~~~~~~~~~~[0m
+[96msrc/pages/admin/login.astro[0m:[93m25[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_env' is declared but its value is never read.
+
+[7m25[0m const _env = getEnv(Astro);
+[7m  [0m [93m      ~~~~[0m
+
+[96msrc/pages/admin/overview.astro[0m:[93m26[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m26[0m </AdminLayout>
+[7m  [0m [91m  ~~~~~~~~~~~[0m
+[96msrc/pages/admin/overview.astro[0m:[93m25[0m:[93m27[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'recentOrders'.
+
+[7m25[0m     <OverviewApp {stats} {recentOrders} client:load />
+[7m  [0m [91m                          ~~~~~~~~~~~~[0m
+[96msrc/pages/admin/overview.astro[0m:[93m25[0m:[93m19[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'stats'.
+
+[7m25[0m     <OverviewApp {stats} {recentOrders} client:load />
+[7m  [0m [91m                  ~~~~~[0m
+[96msrc/pages/admin/overview.astro[0m:[93m25[0m:[93m6[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'OverviewApp'.
+
+[7m25[0m     <OverviewApp {stats} {recentOrders} client:load />
+[7m  [0m [91m     ~~~~~~~~~~~[0m
+[96msrc/pages/admin/overview.astro[0m:[93m24[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m24[0m <AdminLayout title="Overview">
+[7m  [0m [91m ~~~~~~~~~~~[0m
+[96msrc/pages/admin/overview.astro[0m:[93m21[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_recentOrders' is declared but its value is never read.
+
+[7m21[0m const _recentOrders = await getRecentOrders(db, 5);
+[7m  [0m [93m      ~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/overview.astro[0m:[93m20[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_stats' is declared but its value is never read.
+
+[7m20[0m const _stats = await getDashboardStats(db);
+[7m  [0m [93m      ~~~~~~[0m
+[96msrc/pages/admin/overview.astro[0m:[93m13[0m:[93m9[0m - [93mwarning[0m[90m ts(6133): [0m'userCountResult' is declared but its value is never read.
+
+[7m13[0m   const userCountResult = await db.select({ count: sql<number>`count(*)` }).from(adminUsers).get();
+[7m  [0m [93m        ~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/admin/pemasaran.astro[0m:[93m97[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m97[0m </AdminLayout>
+[7m  [0m [91m  ~~~~~~~~~~~[0m
+[96msrc/pages/admin/pemasaran.astro[0m:[93m90[0m:[93m28[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'totalPages'.
+
+[7m90[0m                     page < totalPages
+[7m  [0m [91m                           ~~~~~~~~~~[0m
+[96msrc/pages/admin/pemasaran.astro[0m:[93m83[0m:[93m29[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'totalPages'.
+
+[7m83[0m                 totalPages={totalPages}
+[7m  [0m [91m                            ~~~~~~~~~~[0m
+[96msrc/pages/admin/pemasaran.astro[0m:[93m81[0m:[93m14[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'PaginationNav'.
+
+[7m81[0m             <PaginationNav
+[7m  [0m [91m             ~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/pemasaran.astro[0m:[93m75[0m:[93m10[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'initialData'.
+
+[7m75[0m         {initialData}
+[7m  [0m [91m         ~~~~~~~~~~~[0m
+[96msrc/pages/admin/pemasaran.astro[0m:[93m70[0m:[93m6[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'PemasaranTabContent'.
+
+[7m70[0m     <PemasaranTabContent
+[7m  [0m [91m     ~~~~~~~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/pemasaran.astro[0m:[93m67[0m:[93m26[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'tabs'.
+
+[7m67[0m         <AdminTabs tabs={tabs} activeTab={tab} />
+[7m  [0m [91m                         ~~~~[0m
+[96msrc/pages/admin/pemasaran.astro[0m:[93m67[0m:[93m10[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminTabs'.
+
+[7m67[0m         <AdminTabs tabs={tabs} activeTab={tab} />
+[7m  [0m [91m         ~~~~~~~~~[0m
+[96msrc/pages/admin/pemasaran.astro[0m:[93m65[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m65[0m <AdminLayout title="Pemasaran">
+[7m  [0m [91m ~~~~~~~~~~~[0m
+[96msrc/pages/admin/pemasaran.astro[0m:[93m46[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_tabs' is declared but its value is never read.
+
+[7m46[0m const _tabs = [
+[7m  [0m [93m      ~~~~~[0m
+[96msrc/pages/admin/pemasaran.astro[0m:[93m22[0m:[93m5[0m - [93mwarning[0m[90m ts(6133): [0m'_totalPages' is declared but its value is never read.
+
+[7m22[0m let _totalPages = 1;
+[7m  [0m [93m    ~~~~~~~~~~~[0m
+[96msrc/pages/admin/pemasaran.astro[0m:[93m21[0m:[93m5[0m - [93mwarning[0m[90m ts(6133): [0m'_initialData' is declared but its value is never read.
+
+[7m21[0m let _initialData: any = null;
+[7m  [0m [93m    ~~~~~~~~~~~~[0m
+
+[96msrc/pages/admin/pesanan.astro[0m:[93m114[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m114[0m </AdminLayout>
+[7m   [0m [91m  ~~~~~~~~~~~[0m
+[96msrc/pages/admin/pesanan.astro[0m:[93m110[0m:[93m26[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'totalPages'.
+
+[7m110[0m         nextHref={page < totalPages
+[7m   [0m [91m                         ~~~~~~~~~~[0m
+[96msrc/pages/admin/pesanan.astro[0m:[93m106[0m:[93m21[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'totalPages'.
+
+[7m106[0m         totalPages={totalPages}
+[7m   [0m [91m                    ~~~~~~~~~~[0m
+[96msrc/pages/admin/pesanan.astro[0m:[93m104[0m:[93m6[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'PaginationNav'.
+
+[7m104[0m     <PaginationNav
+[7m   [0m [91m     ~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/pesanan.astro[0m:[93m100[0m:[93m10[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'initialData'.
+
+[7m100[0m         {initialData}
+[7m   [0m [91m         ~~~~~~~~~~~[0m
+[96msrc/pages/admin/pesanan.astro[0m:[93m95[0m:[93m6[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'PesananTabContent'.
+
+[7m95[0m     <PesananTabContent
+[7m  [0m [91m     ~~~~~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/pesanan.astro[0m:[93m92[0m:[93m26[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'tabs'.
+
+[7m92[0m         <AdminTabs tabs={tabs} activeTab={tab} />
+[7m  [0m [91m                         ~~~~[0m
+[96msrc/pages/admin/pesanan.astro[0m:[93m92[0m:[93m10[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminTabs'.
+
+[7m92[0m         <AdminTabs tabs={tabs} activeTab={tab} />
+[7m  [0m [91m         ~~~~~~~~~[0m
+[96msrc/pages/admin/pesanan.astro[0m:[93m90[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m90[0m <AdminLayout title="Pesanan">
+[7m  [0m [91m ~~~~~~~~~~~[0m
+[96msrc/pages/admin/pesanan.astro[0m:[93m61[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_tabs' is declared but its value is never read.
+
+[7m61[0m const _tabs = [
+[7m  [0m [93m      ~~~~~[0m
+[96msrc/pages/admin/pesanan.astro[0m:[93m21[0m:[93m5[0m - [93mwarning[0m[90m ts(6133): [0m'_totalPages' is declared but its value is never read.
+
+[7m21[0m let _totalPages = 1;
+[7m  [0m [93m    ~~~~~~~~~~~[0m
+[96msrc/pages/admin/pesanan.astro[0m:[93m20[0m:[93m5[0m - [93mwarning[0m[90m ts(6133): [0m'_initialData' is declared but its value is never read.
+
+[7m20[0m let _initialData: any = null;
+[7m  [0m [93m    ~~~~~~~~~~~~[0m
+
+[96msrc/pages/admin/profile.astro[0m:[93m142[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m142[0m </AdminLayout>
+[7m   [0m [91m  ~~~~~~~~~~~[0m
+[96msrc/pages/admin/profile.astro[0m:[93m115[0m:[93m25[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'actions'.
+
+[7m115[0m                 action={actions.adminLogout}
+[7m   [0m [91m                        ~~~~~~~[0m
+[96msrc/pages/admin/profile.astro[0m:[93m19[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m19[0m <AdminLayout title="Profil Admin">
+[7m  [0m [91m ~~~~~~~~~~~[0m
+
+[96msrc/pages/admin/reports.astro[0m:[93m17[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m17[0m </AdminLayout>
+[7m  [0m [91m  ~~~~~~~~~~~[0m
+[96msrc/pages/admin/reports.astro[0m:[93m16[0m:[93m18[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'reportData'.
+
+[7m16[0m     <ReportsApp {reportData} client:load />
+[7m  [0m [91m                 ~~~~~~~~~~[0m
+[96msrc/pages/admin/reports.astro[0m:[93m16[0m:[93m6[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'ReportsApp'.
+
+[7m16[0m     <ReportsApp {reportData} client:load />
+[7m  [0m [91m     ~~~~~~~~~~[0m
+[96msrc/pages/admin/reports.astro[0m:[93m15[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m15[0m <AdminLayout title="Laporan">
+[7m  [0m [91m ~~~~~~~~~~~[0m
+[96msrc/pages/admin/reports.astro[0m:[93m12[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_reportData' is declared but its value is never read.
+
+[7m12[0m const _reportData = await getReportData(db);
+[7m  [0m [93m      ~~~~~~~~~~~[0m
+
+[96msrc/pages/admin/settings.astro[0m:[93m14[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m14[0m </AdminLayout>
+[7m  [0m [91m  ~~~~~~~~~~~[0m
+[96msrc/pages/admin/settings.astro[0m:[93m13[0m:[93m4[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'SettingsPageContent'.
+
+[7m13[0m   <SettingsPageContent client:load />
+[7m  [0m [91m   ~~~~~~~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/settings.astro[0m:[93m12[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m12[0m <AdminLayout title="Pengaturan">
+[7m  [0m [91m ~~~~~~~~~~~[0m
+
+[96msrc/pages/admin/setup.astro[0m:[93m79[0m:[93m35[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'env'.
+
+[7m79[0m                 SETUP_TOKEN env: {env.SETUP_TOKEN ? "tersedia" : "belum diset"}.
+[7m  [0m [91m                                  ~~~[0m
+[96msrc/pages/admin/setup.astro[0m:[93m50[0m:[93m63[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'csrfToken'.
+
+[7m50[0m                 <input type="hidden" name="csrf_token" value={csrfToken} />
+[7m  [0m [91m                                                              ~~~~~~~~~[0m
+[96msrc/pages/admin/setup.astro[0m:[93m44[0m:[93m14[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'error'.
+
+[7m44[0m             {error === "missing" && (
+[7m  [0m [91m             ~~~~~[0m
+[96msrc/pages/admin/setup.astro[0m:[93m39[0m:[93m14[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'error'.
+
+[7m39[0m             {error === "invalid" && (
+[7m  [0m [91m             ~~~~~[0m
+[96msrc/pages/admin/setup.astro[0m:[93m34[0m:[93m14[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'error'.
+
+[7m34[0m             {error === "csrf" && (
+[7m  [0m [91m             ~~~~~[0m
+[96msrc/pages/admin/setup.astro[0m:[93m31[0m:[93m14[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'error'.
+
+[7m31[0m             {error === "token" && (
+[7m  [0m [91m             ~~~~~[0m
+[96msrc/pages/admin/setup.astro[0m:[93m16[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_error' is declared but its value is never read.
+
+[7m16[0m const _error = Astro.url.searchParams.get("error");
+[7m  [0m [93m      ~~~~~~[0m
+[96msrc/pages/admin/setup.astro[0m:[93m15[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_csrfToken' is declared but its value is never read.
+
+[7m15[0m const _csrfToken = ensureCsrfToken(Astro);
+[7m  [0m [93m      ~~~~~~~~~~[0m
+[96msrc/pages/admin/setup.astro[0m:[93m7[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_env' is declared but its value is never read.
+
+[7m7[0m const _env = getEnv(Astro);
+[7m [0m [93m      ~~~~[0m
+
+[96msrc/pages/admin/simulasi.astro[0m:[93m30[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m30[0m </AdminLayout>
+[7m  [0m [91m  ~~~~~~~~~~~[0m
+[96msrc/pages/admin/simulasi.astro[0m:[93m28[0m:[93m47[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'initialDataFromServer'.
+
+[7m28[0m     <SimulasiManager client:load initialData={initialDataFromServer} />
+[7m  [0m [91m                                              ~~~~~~~~~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/simulasi.astro[0m:[93m28[0m:[93m6[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'SimulasiManager'.
+
+[7m28[0m     <SimulasiManager client:load initialData={initialDataFromServer} />
+[7m  [0m [91m     ~~~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/simulasi.astro[0m:[93m15[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m15[0m <AdminLayout title="Simulasi Arsitektur">
+[7m  [0m [91m ~~~~~~~~~~~[0m
+[96msrc/pages/admin/simulasi.astro[0m:[93m8[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_initialDataFromServer' is declared but its value is never read.
+
+[7m8[0m const _initialDataFromServer = [
+[7m [0m [93m      ~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[96msrc/pages/admin/sistem.astro[0m:[93m90[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m90[0m </AdminLayout>
+[7m  [0m [91m  ~~~~~~~~~~~[0m
+[96msrc/pages/admin/sistem.astro[0m:[93m86[0m:[93m26[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'totalPages'.
+
+[7m86[0m         nextHref={page < totalPages
+[7m  [0m [91m                         ~~~~~~~~~~[0m
+[96msrc/pages/admin/sistem.astro[0m:[93m82[0m:[93m21[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'totalPages'.
+
+[7m82[0m         totalPages={totalPages}
+[7m  [0m [91m                    ~~~~~~~~~~[0m
+[96msrc/pages/admin/sistem.astro[0m:[93m80[0m:[93m6[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'PaginationNav'.
+
+[7m80[0m     <PaginationNav
+[7m  [0m [91m     ~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/sistem.astro[0m:[93m78[0m:[93m54[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'initialRows'.
+
+[7m78[0m     <SistemTabContent {tab} {q} {page} {limit} rows={initialRows} client:load />
+[7m  [0m [91m                                                     ~~~~~~~~~~~[0m
+[96msrc/pages/admin/sistem.astro[0m:[93m78[0m:[93m6[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'SistemTabContent'.
+
+[7m78[0m     <SistemTabContent {tab} {q} {page} {limit} rows={initialRows} client:load />
+[7m  [0m [91m     ~~~~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/sistem.astro[0m:[93m75[0m:[93m26[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'tabs'.
+
+[7m75[0m         <AdminTabs tabs={tabs} activeTab={tab} />
+[7m  [0m [91m                         ~~~~[0m
+[96msrc/pages/admin/sistem.astro[0m:[93m75[0m:[93m10[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminTabs'.
+
+[7m75[0m         <AdminTabs tabs={tabs} activeTab={tab} />
+[7m  [0m [91m         ~~~~~~~~~[0m
+[96msrc/pages/admin/sistem.astro[0m:[93m73[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m73[0m <AdminLayout title="Sistem">
+[7m  [0m [91m ~~~~~~~~~~~[0m
+[96msrc/pages/admin/sistem.astro[0m:[93m49[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_tabs' is declared but its value is never read.
+
+[7m49[0m const _tabs = [
+[7m  [0m [93m      ~~~~~[0m
+[96msrc/pages/admin/sistem.astro[0m:[93m17[0m:[93m5[0m - [93mwarning[0m[90m ts(6133): [0m'_totalPages' is declared but its value is never read.
+
+[7m17[0m let _totalPages = 1;
+[7m  [0m [93m    ~~~~~~~~~~~[0m
+[96msrc/pages/admin/sistem.astro[0m:[93m16[0m:[93m5[0m - [93mwarning[0m[90m ts(6133): [0m'_initialRows' is declared but its value is never read.
+
+[7m16[0m let _initialRows: any[] = [];
+[7m  [0m [93m    ~~~~~~~~~~~~[0m
+
+[96msrc/pages/admin/customers/[id].astro[0m:[93m86[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m86[0m </AdminLayout>
+[7m  [0m [91m  ~~~~~~~~~~~[0m
+[96msrc/pages/admin/customers/[id].astro[0m:[93m85[0m:[93m7[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminDataTable'.
+
+[7m85[0m     </AdminDataTable>
+[7m  [0m [91m      ~~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/customers/[id].astro[0m:[93m72[0m:[93m26[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'StatusBadge'.
+
+[7m72[0m                         <StatusBadge
+[7m  [0m [91m                         ~~~~~~~~~~~[0m
+[96msrc/pages/admin/customers/[id].astro[0m:[93m66[0m:[93m26[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'StatusBadge'.
+
+[7m66[0m                         <StatusBadge
+[7m  [0m [91m                         ~~~~~~~~~~~[0m
+[96msrc/pages/admin/customers/[id].astro[0m:[93m59[0m:[93m34[0m - [91merror[0m[90m ts(7006): [0mParameter 'order' implicitly has an 'any' type.
+
+[7m59[0m             {ordersRes.rows.map((order) => (
+[7m  [0m [91m                                 ~~~~~[0m
+[96msrc/pages/admin/customers/[id].astro[0m:[93m59[0m:[93m14[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'ordersRes'.
+
+[7m59[0m             {ordersRes.rows.map((order) => (
+[7m  [0m [91m             ~~~~~~~~~[0m
+[96msrc/pages/admin/customers/[id].astro[0m:[93m48[0m:[93m6[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminDataTable'.
+
+[7m48[0m     <AdminDataTable>
+[7m  [0m [91m     ~~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/customers/[id].astro[0m:[93m46[0m:[93m10[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'SectionHeader'.
+
+[7m46[0m         <SectionHeader title="Riwayat Order" muted="Berdasarkan telepon/email" />
+[7m  [0m [91m         ~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/customers/[id].astro[0m:[93m43[0m:[93m7[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'PanelCard'.
+
+[7m43[0m     </PanelCard>
+[7m  [0m [91m      ~~~~~~~~~[0m
+[96msrc/pages/admin/customers/[id].astro[0m:[93m39[0m:[93m6[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'PanelCard'.
+
+[7m39[0m     <PanelCard>
+[7m  [0m [91m     ~~~~~~~~~[0m
+[96msrc/pages/admin/customers/[id].astro[0m:[93m38[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m38[0m <AdminLayout title="Detail Pelanggan">
+[7m  [0m [91m ~~~~~~~~~~~[0m
+[96msrc/pages/admin/customers/[id].astro[0m:[93m29[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_ordersRes' is declared but its value is never read.
+
+[7m29[0m const _ordersRes = await db.execute({
+[7m  [0m [93m      ~~~~~~~~~~[0m
+
+[96msrc/pages/admin/invoices/[invoice_no].astro[0m:[93m44[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m44[0m </AdminLayout>
+[7m  [0m [91m  ~~~~~~~~~~~[0m
+[96msrc/pages/admin/invoices/[invoice_no].astro[0m:[93m43[0m:[93m6[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'InvoiceDetailPageContent'.
+
+[7m43[0m     <InvoiceDetailPageContent invoice={invoice} client:load />
+[7m  [0m [91m     ~~~~~~~~~~~~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/invoices/[invoice_no].astro[0m:[93m42[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m42[0m <AdminLayout title={`Invoice ${invoice.invoice_no}`}>
+[7m  [0m [91m ~~~~~~~~~~~[0m
+
+[96msrc/pages/admin/orders/[order_no].astro[0m:[93m43[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m43[0m </AdminLayout>
+[7m  [0m [91m  ~~~~~~~~~~~[0m
+[96msrc/pages/admin/orders/[order_no].astro[0m:[93m42[0m:[93m6[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'OrderDetailPageContent'.
+
+[7m42[0m     <OrderDetailPageContent order={order} client:load />
+[7m  [0m [91m     ~~~~~~~~~~~~~~~~~~~~~~[0m
+[96msrc/pages/admin/orders/[order_no].astro[0m:[93m41[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminLayout'.
+
+[7m41[0m <AdminLayout title={`Order ${order.order_no}`}>
+[7m  [0m [91m ~~~~~~~~~~~[0m
+
+[96msrc/pages/content/[slug].astro[0m:[93m26[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'Layout'.
+
+[7m26[0m </Layout>
+[7m  [0m [91m  ~~~~~~[0m
+[96msrc/pages/content/[slug].astro[0m:[93m23[0m:[93m52[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'content'.
+
+[7m23[0m             <article class="cms-content" set:html={content} />
+[7m  [0m [91m                                                   ~~~~~~~[0m
+[96msrc/pages/content/[slug].astro[0m:[93m19[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'Layout'.
+
+[7m19[0m <Layout title={page.title} description={page.title}>
+[7m  [0m [91m ~~~~~~[0m
+[96msrc/pages/content/[slug].astro[0m:[93m16[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_content' is declared but its value is never read.
+
+[7m16[0m const _content = renderMarkdown(String(page.content_md || ""));
+[7m  [0m [93m      ~~~~~~~~[0m
+
+[96msrc/pages/invoice/[invoice_no].astro[0m:[93m79[0m:[93m21[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'items'.
+
+[7m79[0m                     items.map((item: any) => (
+[7m  [0m [91m                    ~~~~~[0m
+[96msrc/pages/invoice/[invoice_no].astro[0m:[93m65[0m:[93m48[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'address'.
+
+[7m65[0m             <div class="muted text-[#6b625a]">{address.street || ""}</div>
+[7m  [0m [91m                                               ~~~~~~~[0m
+[96msrc/pages/invoice/[invoice_no].astro[0m:[93m64[0m:[93m57[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'address'.
+
+[7m64[0m             <div>{address.province} - {address.city} - {address.district}</div>
+[7m  [0m [91m                                                        ~~~~~~~[0m
+[96msrc/pages/invoice/[invoice_no].astro[0m:[93m64[0m:[93m40[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'address'.
+
+[7m64[0m             <div>{address.province} - {address.city} - {address.district}</div>
+[7m  [0m [91m                                       ~~~~~~~[0m
+[96msrc/pages/invoice/[invoice_no].astro[0m:[93m64[0m:[93m19[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'address'.
+
+[7m64[0m             <div>{address.province} - {address.city} - {address.district}</div>
+[7m  [0m [91m                  ~~~~~~~[0m
+[96msrc/pages/invoice/[invoice_no].astro[0m:[93m31[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_address' is declared but its value is never read.
+
+[7m31[0m const _address = JSON.parse(String(invoice.shipping_address_json || "{}"));
+[7m  [0m [93m      ~~~~~~~~[0m
+[96msrc/pages/invoice/[invoice_no].astro[0m:[93m30[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_items' is declared but its value is never read.
+
+[7m30[0m const _items = JSON.parse(String(invoice.items_json || "[]"));
+[7m  [0m [93m      ~~~~~~[0m
+
+[96msrc/pages/order/pending.astro[0m:[93m13[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'Layout'.
+
+[7m13[0m </Layout>
+[7m  [0m [91m  ~~~~~~[0m
+[96msrc/pages/order/pending.astro[0m:[93m9[0m:[93m44[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'orderNo'.
+
+[7m9[0m             {orderNo && <p>Order: <strong>{orderNo}</strong></p>}
+[7m [0m [91m                                           ~~~~~~~[0m
+[96msrc/pages/order/pending.astro[0m:[93m9[0m:[93m14[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'orderNo'.
+
+[7m9[0m             {orderNo && <p>Order: <strong>{orderNo}</strong></p>}
+[7m [0m [91m             ~~~~~~~[0m
+[96msrc/pages/order/pending.astro[0m:[93m4[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'Layout'.
+
+[7m4[0m <Layout title="Pembayaran Pending">
+[7m [0m [91m ~~~~~~[0m
+[96msrc/pages/order/pending.astro[0m:[93m2[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_orderNo' is declared but its value is never read.
+
+[7m2[0m const _orderNo = Astro.url.searchParams.get("order") || "";
+[7m [0m [93m      ~~~~~~~~[0m
+
+[96msrc/pages/order/status.astro[0m:[93m11[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'Layout'.
+
+[7m11[0m </Layout>
+[7m  [0m [91m  ~~~~~~[0m
+[96msrc/pages/order/status.astro[0m:[93m8[0m:[93m14[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'OrderStatusForm'.
+
+[7m8[0m             <OrderStatusForm />
+[7m [0m [91m             ~~~~~~~~~~~~~~~[0m
+[96msrc/pages/order/status.astro[0m:[93m4[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'Layout'.
+
+[7m4[0m <Layout title="Cek Status Order">
+[7m [0m [91m ~~~~~~[0m
+
+[96msrc/pages/order/success.astro[0m:[93m13[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'Layout'.
+
+[7m13[0m </Layout>
+[7m  [0m [91m  ~~~~~~[0m
+[96msrc/pages/order/success.astro[0m:[93m9[0m:[93m44[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'orderNo'.
+
+[7m9[0m             {orderNo && <p>Order: <strong>{orderNo}</strong></p>}
+[7m [0m [91m                                           ~~~~~~~[0m
+[96msrc/pages/order/success.astro[0m:[93m9[0m:[93m14[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'orderNo'.
+
+[7m9[0m             {orderNo && <p>Order: <strong>{orderNo}</strong></p>}
+[7m [0m [91m             ~~~~~~~[0m
+[96msrc/pages/order/success.astro[0m:[93m4[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'Layout'.
+
+[7m4[0m <Layout title="Pembayaran Berhasil">
+[7m [0m [91m ~~~~~~[0m
+[96msrc/pages/order/success.astro[0m:[93m2[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_orderNo' is declared but its value is never read.
+
+[7m2[0m const _orderNo = Astro.url.searchParams.get("order") || "";
+[7m [0m [93m      ~~~~~~~~[0m
+
+[96msrc/pages/research/index.astro[0m:[93m23[0m:[93m8[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'VersionNav'.
+
+[7m23[0m       <VersionNav active="index" />
+[7m  [0m [91m       ~~~~~~~~~~[0m
+
+[96msrc/pages/research/v0.astro[0m:[93m20[0m:[93m10[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'VersionNav'.
+
+[7m20[0m         <VersionNav active="v0" />
+[7m  [0m [91m         ~~~~~~~~~~[0m
+
+[96msrc/pages/research/v1.astro[0m:[93m97[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminPwaLayout'.
+
+[7m97[0m </AdminPwaLayout>
+[7m  [0m [91m  ~~~~~~~~~~~~~~[0m
+[96msrc/pages/research/v1.astro[0m:[93m65[0m:[93m21[0m - [91merror[0m[90m ts(7006): [0mParameter 'lane' implicitly has an 'any' type.
+
+[7m65[0m         {lanes.map((lane) => (
+[7m  [0m [91m                    ~~~~[0m
+[96msrc/pages/research/v1.astro[0m:[93m65[0m:[93m10[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'lanes'.
+
+[7m65[0m         {lanes.map((lane) => (
+[7m  [0m [91m         ~~~~~[0m
+[96msrc/pages/research/v1.astro[0m:[93m46[0m:[93m26[0m - [91merror[0m[90m ts(7006): [0mParameter 'item' implicitly has an 'any' type.
+
+[7m46[0m         {highlights.map((item) => (
+[7m  [0m [91m                         ~~~~[0m
+[96msrc/pages/research/v1.astro[0m:[93m46[0m:[93m10[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'highlights'.
+
+[7m46[0m         {highlights.map((item) => (
+[7m  [0m [91m         ~~~~~~~~~~[0m
+[96msrc/pages/research/v1.astro[0m:[93m30[0m:[93m4[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'VersionNav'.
+
+[7m30[0m   <VersionNav active="v1" />
+[7m  [0m [91m   ~~~~~~~~~~[0m
+[96msrc/pages/research/v1.astro[0m:[93m25[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminPwaLayout'.
+
+[7m25[0m <AdminPwaLayout
+[7m  [0m [91m ~~~~~~~~~~~~~~[0m
+[96msrc/pages/research/v1.astro[0m:[93m9[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_lanes' is declared but its value is never read.
+
+[7m9[0m const _lanes = [
+[7m [0m [93m      ~~~~~~[0m
+[96msrc/pages/research/v1.astro[0m:[93m2[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_highlights' is declared but its value is never read.
+
+[7m2[0m const _highlights = [
+[7m [0m [93m      ~~~~~~~~~~~[0m
+
+[96msrc/pages/research/v2.astro[0m:[93m75[0m:[93m3[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminPwaAltLayout'.
+
+[7m75[0m </AdminPwaAltLayout>
+[7m  [0m [91m  ~~~~~~~~~~~~~~~~~[0m
+[96msrc/pages/research/v2.astro[0m:[93m66[0m:[93m21[0m - [91merror[0m[90m ts(7006): [0mParameter 'lane' implicitly has an 'any' type.
+
+[7m66[0m         {lanes.map((lane) => (
+[7m  [0m [91m                    ~~~~[0m
+[96msrc/pages/research/v2.astro[0m:[93m66[0m:[93m10[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'lanes'.
+
+[7m66[0m         {lanes.map((lane) => (
+[7m  [0m [91m         ~~~~~[0m
+[96msrc/pages/research/v2.astro[0m:[93m48[0m:[93m19[0m - [91merror[0m[90m ts(7006): [0mParameter 'item' implicitly has an 'any' type.
+
+[7m48[0m       {stats.map((item) => (
+[7m  [0m [91m                  ~~~~[0m
+[96msrc/pages/research/v2.astro[0m:[93m48[0m:[93m8[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'stats'.
+
+[7m48[0m       {stats.map((item) => (
+[7m  [0m [91m       ~~~~~[0m
+[96msrc/pages/research/v2.astro[0m:[93m30[0m:[93m4[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'VersionNav'.
+
+[7m30[0m   <VersionNav active="v2" />
+[7m  [0m [91m   ~~~~~~~~~~[0m
+[96msrc/pages/research/v2.astro[0m:[93m25[0m:[93m2[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'AdminPwaAltLayout'.
+
+[7m25[0m <AdminPwaAltLayout
+[7m  [0m [91m ~~~~~~~~~~~~~~~~~[0m
+[96msrc/pages/research/v2.astro[0m:[93m17[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_stats' is declared but its value is never read.
+
+[7m17[0m const _stats = [
+[7m  [0m [93m      ~~~~~~[0m
+[96msrc/pages/research/v2.astro[0m:[93m2[0m:[93m7[0m - [93mwarning[0m[90m ts(6133): [0m'_lanes' is declared but its value is never read.
+
+[7m2[0m const _lanes = [
+[7m [0m [93m      ~~~~~~[0m
+
+[96msrc/pages/research/v3.astro[0m:[93m31[0m:[93m12[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'VersionNav'.
+
+[7m31[0m           <VersionNav active="v3" />
+[7m  [0m [91m           ~~~~~~~~~~[0m
+
+[96msrc/pages/research/v4.astro[0m:[93m134[0m:[93m26[0m - [91merror[0m[90m ts(2304): [0mCannot find name 'VersionNav'.
+
+[7m134[0m                         <VersionNav active="v4" />
+[7m   [0m [91m                         ~~~~~~~~~~[0m
+
+[96msrc/server/routers/settings.ts[0m:[93m71[0m:[93m44[0m - [93mwarning[0m[90m ts(6133): [0m'ctx' is declared but its value is never read.
+
+[7m71[0m   seedData: adminProcedure.mutation(async ({ ctx }) => {
+[7m  [0m [93m                                           ~~~~~~~[0m
+
+Result (141 files): 
+- 198 errors
+- 0 warnings
+- 57 hints
+
+ ELIFECYCLE  Command failed with exit code 1.

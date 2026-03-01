@@ -1,12 +1,12 @@
 <script module lang="ts">
-  export type ShipmentRow = {
-    id: string | number;
-    orderNo: string;
-    status: string;
-    carrier?: string | null;
-    trackingNo?: string | null;
-    notes?: string | null;
-  };
+export type ShipmentRow = {
+  id: string | number;
+  orderNo: string;
+  status: string;
+  carrier?: string | null;
+  trackingNo?: string | null;
+  notes?: string | null;
+};
 </script>
 
 <script lang="ts">
@@ -94,13 +94,13 @@
   };
 
   const handleRowAction = (
-    id: string,
+    id: string | number,
     action: string,
     rowElement: HTMLElement | null,
   ) => {
     if (action === "delete") {
       if (confirm("Hapus pengiriman ini?")) {
-        shipDeleteMutation.mutate(id);
+        shipDeleteMutation.mutate(String(id));
       }
     } else if (action === "save" && rowElement) {
       const data: any = {};
@@ -111,7 +111,7 @@
           data[el.getAttribute("data-field")!] = el.textContent?.trim();
         }
       });
-      shipUpdateMutation.mutate({ id, data: data as any });
+      shipUpdateMutation.mutate({ id: String(id), data: data as any });
     }
   };
 

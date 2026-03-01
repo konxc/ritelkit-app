@@ -3,18 +3,18 @@ import { fade, fly } from "svelte/transition";
 import StatCard from "../StatCard.svelte";
 
 let {
-	stats,
-	recentOrders = [],
+  stats,
+  recentOrders = [],
 }: {
-	stats: {
-		ordersToday: number;
-		revenueToday: number;
-		activeCoupons: number;
-		activeProducts: number;
-		pendingShipments: number;
-		pendingRefunds: number;
-	};
-	recentOrders?: any[];
+  stats: {
+    ordersToday: number;
+    revenueToday: number;
+    activeCoupons: number;
+    activeProducts: number;
+    pendingShipments: number;
+    pendingRefunds: number;
+  };
+  recentOrders?: any[];
 } = $props();
 
 const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;

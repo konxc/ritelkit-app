@@ -13,27 +13,19 @@
 }
 
 @layer base {
-	* {
-		box-sizing: border-box;
-	}
+  * {
+    box-sizing: border-box;
+  }
 
-	body {
-		margin: 0;
-		font-family: "Manrope", system-ui, sans-serif;
-		color: var(--alt-ink);
-		background:
-			radial-gradient(
-				800px 400px at -10% 10%,
-				rgba(31, 140, 122, 0.15),
-				transparent 60%
-			),
-			radial-gradient(
-				800px 500px at 110% -10%,
-				rgba(179, 106, 43, 0.15),
-				transparent 55%
-			),
-			var(--alt-bg);
-	}
+  body {
+    margin: 0;
+    font-family: "Manrope", system-ui, sans-serif;
+    color: var(--alt-ink);
+    background:
+      radial-gradient(800px 400px at -10% 10%, rgba(31, 140, 122, 0.15), transparent 60%),
+      radial-gradient(800px 500px at 110% -10%, rgba(179, 106, 43, 0.15), transparent 55%),
+      var(--alt-bg);
+  }
 }
 
 @utility alt-shell {
@@ -110,23 +102,23 @@
 }
 
 .research-nav {
-	display: flex;
-	gap: 10px;
-	flex-wrap: wrap;
-	margin-top: 18px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
 }
 
 .research-link {
-	border: 1px solid var(--alt-border);
-	border-radius: 999px;
-	padding: 6px 12px;
-	font-size: 0.8rem;
-	color: var(--alt-muted);
-	text-decoration: none;
-	background: white;
+  border: 1px solid var(--alt-border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  color: var(--alt-muted);
+  text-decoration: none;
+  background: white;
 }
 
 .research-link.active {
-	color: var(--alt-ink);
-	border-color: var(--alt-accent);
+  color: var(--alt-ink);
+  border-color: var(--alt-accent);
 }

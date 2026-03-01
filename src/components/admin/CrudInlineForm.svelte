@@ -2,19 +2,19 @@
 import type { Snippet } from "svelte";
 
 export type $$Events = {
-	submit: SubmitEvent;
+  submit: SubmitEvent;
 };
 
 let {
-	className = "",
-	isSubmitting = false,
-	children,
-	...rest
+  className = "",
+  isSubmitting = false,
+  children,
+  ...rest
 }: {
-	className?: string;
-	isSubmitting?: boolean;
-	children?: Snippet;
-	[key: string]: unknown;
+  className?: string;
+  isSubmitting?: boolean;
+  children?: Snippet;
+  [key: string]: unknown;
 } = $props();
 </script>
 

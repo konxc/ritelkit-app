@@ -3,15 +3,15 @@ import "../styles/admin-pwa.css";
 import { ensureCsrfToken } from "../lib/auth";
 
 interface Props {
-	title?: string;
-	description?: string;
-	activeNav?: "home" | "insights" | "research" | "settings";
+  title?: string;
+  description?: string;
+  activeNav?: "home" | "insights" | "research" | "settings";
 }
 
 const {
-	title = "Admin Workspace",
-	description = "Admin dashboard PWA",
-	activeNav = "research",
+  title = "Admin Workspace",
+  description = "Admin dashboard PWA",
+  activeNav = "research",
 } = Astro.props;
 
 const csrfToken = ensureCsrfToken(Astro);

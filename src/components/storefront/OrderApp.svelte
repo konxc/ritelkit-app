@@ -4,16 +4,16 @@ import CartDrawer from "./CartDrawer.svelte";
 import ProductCard from "./ProductCard.svelte";
 
 interface Product {
-	id: string;
-	name: string;
-	price: number;
-	description: string;
-	image: string;
-	stock: number;
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  image: string;
+  stock: number;
 }
 
 interface CartItem extends Product {
-	qty: number;
+  qty: number;
 }
 
 let { products = [], env } = $props<{ products: Product[]; env: any }>();
@@ -25,58 +25,53 @@ let isCartOpen = $state(false);
 
 // Derived
 let filteredProducts = $derived(
-	products.filter(
-		(p: Product) =>
-			p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-			p.description.toLowerCase().includes(searchQuery.toLowerCase()),
-	),
+  products.filter(
+    (p: Product) =>
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.description.toLowerCase().includes(searchQuery.toLowerCase()),
+  ),
 );
 
-let totalQty = $derived(
-	Array.from(cart.values()).reduce((sum, item) => sum + item.qty, 0),
-);
+let totalQty = $derived(Array.from(cart.values()).reduce((sum, item) => sum + item.qty, 0));
 
 let totalPrice = $derived(
-	Array.from(cart.values()).reduce(
-		(sum, item) => sum + item.price * item.qty,
-		0,
-	),
+  Array.from(cart.values()).reduce((sum, item) => sum + item.price * item.qty, 0),
 );
 
 // Actions
 function addToCart(product: Product) {
-	if (cart.has(product.id)) {
-		const item = cart.get(product.id)!;
-		cart.set(product.id, { ...item, qty: item.qty + 1 });
-	} else {
-		cart.set(product.id, { ...product, qty: 1 });
-	}
+  if (cart.has(product.id)) {
+    const item = cart.get(product.id)!;
+    cart.set(product.id, { ...item, qty: item.qty + 1 });
+  } else {
+    cart.set(product.id, { ...product, qty: 1 });
+  }
 }
 
 function updateQty(id: string, delta: number) {
-	if (!cart.has(id)) return;
-	const item = cart.get(id)!;
-	const newQty = item.qty + delta;
-	if (newQty <= 0) {
-		cart.delete(id);
-	} else {
-		cart.set(id, { ...item, qty: newQty });
-	}
+  if (!cart.has(id)) return;
+  const item = cart.get(id)!;
+  const newQty = item.qty + delta;
+  if (newQty <= 0) {
+    cart.delete(id);
+  } else {
+    cart.set(id, { ...item, qty: newQty });
+  }
 }
 
 // Sync search with URL
 onMount(() => {
-	const params = new URLSearchParams(window.location.search);
-	if (params.has("q")) {
-		searchQuery = params.get("q")!;
-	}
+  const params = new URLSearchParams(window.location.search);
+  if (params.has("q")) {
+    searchQuery = params.get("q")!;
+  }
 });
 
 $effect(() => {
-	const url = new URL(window.location.href);
-	if (searchQuery) url.searchParams.set("q", searchQuery);
-	else url.searchParams.delete("q");
-	window.history.replaceState({}, "", url);
+  const url = new URL(window.location.href);
+  if (searchQuery) url.searchParams.set("q", searchQuery);
+  else url.searchParams.delete("q");
+  window.history.replaceState({}, "", url);
 });
 </script>
 

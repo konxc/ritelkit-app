@@ -2,9 +2,9 @@
 import type { Snippet } from "svelte";
 
 let {
-	title,
-	className = "",
-	children,
+  title,
+  className = "",
+  children,
 }: { title?: string; className?: string; children?: Snippet } = $props();
 </script>
 

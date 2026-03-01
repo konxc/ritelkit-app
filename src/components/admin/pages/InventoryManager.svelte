@@ -8,37 +8,37 @@ import SectionHeader from "../SectionHeader.svelte";
 import ToastNotification from "../ToastNotification.svelte";
 
 type InventoryProductRow = {
-	id: string;
-	sku?: string | null;
-	name: string;
-	stock?: number | null;
-	price?: number | null;
+  id: string;
+  sku?: string | null;
+  name: string;
+  stock?: number | null;
+  price?: number | null;
 };
 
 type InventoryMovement = {
-	id: string;
-	productId: string;
-	type: string;
-	qty: number;
-	notes: string | null;
-	refOrderNo: string | null;
-	createdAt: string;
-	product_name: string | null;
+  id: string;
+  productId: string;
+  type: string;
+  qty: number;
+  notes: string | null;
+  refOrderNo: string | null;
+  createdAt: string;
+  product_name: string | null;
 };
 
 type MovementInput = {
-	productId: string;
-	type: "in" | "out" | "adjustment";
-	qty: number;
-	notes?: string;
+  productId: string;
+  type: "in" | "out" | "adjustment";
+  qty: number;
+  notes?: string;
 };
 
 let {
-	products: initialProducts = [],
-	movements: initialMovements = [],
+  products: initialProducts = [],
+  movements: initialMovements = [],
 }: {
-	products?: InventoryProductRow[];
-	movements?: InventoryMovement[];
+  products?: InventoryProductRow[];
+  movements?: InventoryMovement[];
 } = $props();
 
 const queryClient = useQueryClient();
@@ -47,57 +47,57 @@ let isSubmitting = $state(false);
 let isDrawerOpen = $state(false);
 
 const productsQuery = createQuery(() => ({
-	queryKey: ["inventory.products.list"],
-	queryFn: () => trpc.inventory.listProducts.query(),
-	initialData: initialProducts.length > 0 ? initialProducts : undefined,
-	refetchOnMount: false,
-	staleTime: 1000 * 60 * 5,
+  queryKey: ["inventory.products.list"],
+  queryFn: () => trpc.inventory.listProducts.query(),
+  initialData: initialProducts.length > 0 ? initialProducts : undefined,
+  refetchOnMount: false,
+  staleTime: 1000 * 60 * 5,
 }));
 
 const movementsQuery = createQuery(() => ({
-	queryKey: ["inventory.movements.list"],
-	queryFn: () => trpc.inventory.listMovements.query(),
-	initialData: initialMovements.length > 0 ? initialMovements : undefined,
-	refetchOnMount: false,
-	staleTime: 1000 * 60 * 5,
+  queryKey: ["inventory.movements.list"],
+  queryFn: () => trpc.inventory.listMovements.query(),
+  initialData: initialMovements.length > 0 ? initialMovements : undefined,
+  refetchOnMount: false,
+  staleTime: 1000 * 60 * 5,
 }));
 
 let currentProducts = $derived((productsQuery.data as InventoryProductRow[]) || initialProducts);
 let currentMovements = $derived((movementsQuery.data as InventoryMovement[]) || initialMovements);
 
 const handleCreate = async (event: SubmitEvent) => {
-	event.preventDefault();
-	const form = event.currentTarget as HTMLFormElement;
-	const data = new FormData(form);
+  event.preventDefault();
+  const form = event.currentTarget as HTMLFormElement;
+  const data = new FormData(form);
 
-	isSubmitting = true;
-	try {
-		await trpc.inventory.createMovement.mutate({
-			productId: data.get("product_id") as string,
-			type: String(data.get("type") || "in") as MovementInput["type"],
-			qty: Number(data.get("qty")),
-			notes: (data.get("notes") as string) || undefined,
-		});
-		
-		queryClient.invalidateQueries({ queryKey: ["inventory.products.list"] });
-		queryClient.invalidateQueries({ queryKey: ["inventory.movements.list"] });
-		
-		toastRef?.show("Stok berhasil diperbarui!", "success");
-		form.reset();
-		isDrawerOpen = false;
-	} catch (error: unknown) {
-		const message = error instanceof Error ? error.message : "Terjadi kesalahan";
-		toastRef?.show(message, "error");
-	} finally {
-		isSubmitting = false;
-	}
+  isSubmitting = true;
+  try {
+    await trpc.inventory.createMovement.mutate({
+      productId: data.get("product_id") as string,
+      type: String(data.get("type") || "in") as MovementInput["type"],
+      qty: Number(data.get("qty")),
+      notes: (data.get("notes") as string) || undefined,
+    });
+
+    queryClient.invalidateQueries({ queryKey: ["inventory.products.list"] });
+    queryClient.invalidateQueries({ queryKey: ["inventory.movements.list"] });
+
+    toastRef?.show("Stok berhasil diperbarui!", "success");
+    form.reset();
+    isDrawerOpen = false;
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+    toastRef?.show(message, "error");
+  } finally {
+    isSubmitting = false;
+  }
 };
 
 const fieldIds = {
-	product: "inventory-product",
-	type: "inventory-type",
-	qty: "inventory-qty",
-	notes: "inventory-notes",
+  product: "inventory-product",
+  type: "inventory-type",
+  qty: "inventory-qty",
+  notes: "inventory-notes",
 };
 </script>
 <div class="flex items-center justify-between mt-2 mb-8">
@@ -127,7 +127,7 @@ const fieldIds = {
         <h3 class="font-bold text-stone-800 text-lg">Tambah Mutasi Stok</h3>
         <p class="text-xs font-semibold text-stone-400 mt-0.5 uppercase tracking-wider">Restock & Penyesuaian</p>
       </div>
-      <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-200 text-stone-500 transition-colors" onclick={() => isDrawerOpen = false}>
+      <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-200 text-stone-500 transition-colors" onclick={() => isDrawerOpen = false} aria-label="Tutup Panel">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
       </button>
     </div>
@@ -308,7 +308,7 @@ const fieldIds = {
         class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0 text-sm"
       >
         <td class="py-4 font-bold text-stone-800"
-          >{movement.productName || "-"}</td
+          >{movement.product_name || "-"}</td
         >
         <td class="py-4">
           <span

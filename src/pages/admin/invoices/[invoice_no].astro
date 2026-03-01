@@ -7,33 +7,33 @@ import { getDb, initDb } from "../../../lib/db";
 await initDb(Astro);
 const admin = await requireAdmin(Astro);
 if (!admin) {
-	return Astro.redirect("/admin/login");
+  return Astro.redirect("/admin/login");
 }
 const invoiceNo = Astro.params.invoice_no;
 const db = getDb(Astro);
 const result = await db.execute({
-	sql: `SELECT i.*, o.order_no, o.customer_name, o.customer_phone, o.items_json, o.shipping_address_json
+  sql: `SELECT i.*, o.order_no, o.customer_name, o.customer_phone, o.items_json, o.shipping_address_json
           FROM invoices i JOIN orders o ON o.id = i.order_id
           WHERE i.invoice_no = ?`,
-	args: [invoiceNo ?? ""],
+  args: [invoiceNo ?? ""],
 });
 const invoice = result.rows[0] as unknown as
-	| {
-			id: string;
-			invoice_no: string;
-			status: string;
-			due_at?: string | null;
-			total: number;
-			order_no: string;
-			customer_name: string;
-			customer_phone: string;
-			items_json: string;
-			shipping_address_json: string;
-			parsedItems?: unknown[];
-	  }
-	| undefined;
+  | {
+      id: string;
+      invoice_no: string;
+      status: string;
+      due_at?: string | null;
+      total: number;
+      order_no: string;
+      customer_name: string;
+      customer_phone: string;
+      items_json: string;
+      shipping_address_json: string;
+      parsedItems?: unknown[];
+    }
+  | undefined;
 if (!invoice) {
-	return Astro.redirect("/admin/invoices");
+  return Astro.redirect("/admin/invoices");
 }
 const items = JSON.parse(String(invoice.items_json || "[]"));
 const address = JSON.parse(String(invoice.shipping_address_json || "{}"));

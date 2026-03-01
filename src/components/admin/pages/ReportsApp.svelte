@@ -5,25 +5,25 @@ import SectionHeader from "../SectionHeader.svelte";
 import StatCard from "../StatCard.svelte";
 
 let {
-	reportData,
+  reportData,
 }: {
-	reportData: {
-		thirtyDays: {
-			totalOrders: number;
-			paidOrders: number;
-			revenue: number;
-			discountTotal: number;
-			cogs: number;
-			refundTotal: number;
-			grossProfit: number;
-		};
-		topProducts: any[];
-		analytics: {
-			ltv: number;
-			roas: string;
-			cohorts: any[];
-		};
-	};
+  reportData: {
+    thirtyDays: {
+      totalOrders: number;
+      paidOrders: number;
+      revenue: number;
+      discountTotal: number;
+      cogs: number;
+      refundTotal: number;
+      grossProfit: number;
+    };
+    topProducts: any[];
+    analytics: {
+      ltv: number;
+      roas: string;
+      cohorts: any[];
+    };
+  };
 } = $props();
 
 const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;

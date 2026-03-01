@@ -1,144 +1,118 @@
 <script lang="ts">
-  import AdminDataTable from "../AdminDataTable.svelte";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
-  import RowActions from "../RowActions.svelte";
-  import SectionHeader from "../SectionHeader.svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import { trpc } from "../../../lib/trpc";
-  import {
-    fade,
-    fly,
-  } from "svelte/transition";
-  import {
-    createQuery,
-    createMutation,
-    useQueryClient,
-  } from "@tanstack/svelte-query";
+import AdminDataTable from "../AdminDataTable.svelte";
+import CrudInlineForm from "../CrudInlineForm.svelte";
+import RowActions from "../RowActions.svelte";
+import SectionHeader from "../SectionHeader.svelte";
+import ToastNotification from "../ToastNotification.svelte";
+import { trpc } from "../../../lib/trpc";
+import { fade, fly } from "svelte/transition";
+import { createQuery, createMutation, useQueryClient } from "@tanstack/svelte-query";
 
-  import type { Coupon } from "../../../lib/types";
+import type { Coupon } from "../../../lib/types";
 
-  let { rows: initialRows = [] }: { rows: Coupon[] } = $props();
+let { rows: initialRows = [] }: { rows: Coupon[] } = $props();
 
-  const queryClient = useQueryClient();
-  let toastRef = $state<ToastNotification>();
+const queryClient = useQueryClient();
+let toastRef = $state<ToastNotification>();
 
-  const couponsQuery = createQuery(() => ({
-    queryKey: ["coupons"],
-    queryFn: () => trpc.coupons.list.query(),
-    initialData: initialRows.length > 0 ? initialRows : undefined,
-  }));
+const couponsQuery = createQuery(() => ({
+  queryKey: ["coupons"],
+  queryFn: () => trpc.coupons.list.query(),
+  initialData: initialRows.length > 0 ? initialRows : undefined,
+}));
 
-  const createCouponMutation = createMutation(() => ({
-    mutationFn: (data: any) => trpc.coupons.create.mutate(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["coupons"] });
-      toastRef?.show("Kupon berhasil ditambahkan!", "success");
-    },
-    onError: (err: unknown) => {
-      const message = err instanceof Error ? err.message : "Gagal menambah kupon";
-      toastRef?.show(message, "error");
-    },
-  }));
+const createCouponMutation = createMutation(() => ({
+  mutationFn: (data: any) => trpc.coupons.create.mutate(data),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["coupons"] });
+    toastRef?.show("Kupon berhasil ditambahkan!", "success");
+  },
+  onError: (err: unknown) => {
+    const message = err instanceof Error ? err.message : "Gagal menambah kupon";
+    toastRef?.show(message, "error");
+  },
+}));
 
-  const updateCouponMutation = createMutation(() => ({
-    mutationFn: (payload: { id: string; data: any }) =>
-      trpc.coupons.update.mutate(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["coupons"] });
-      toastRef?.show("Kupon diperbarui", "success");
-    },
-    onError: (err: unknown) => {
-      const message = err instanceof Error ? err.message : "Gagal memperbarui kupon";
-      toastRef?.show(message, "error");
-    },
-  }));
+const updateCouponMutation = createMutation(() => ({
+  mutationFn: (payload: { id: string; data: any }) => trpc.coupons.update.mutate(payload),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["coupons"] });
+    toastRef?.show("Kupon diperbarui", "success");
+  },
+  onError: (err: unknown) => {
+    const message = err instanceof Error ? err.message : "Gagal memperbarui kupon";
+    toastRef?.show(message, "error");
+  },
+}));
 
-  const deleteCouponMutation = createMutation(() => ({
-    mutationFn: (id: string) => trpc.coupons.delete.mutate(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["coupons"] });
-      toastRef?.show("Kupon dihapus", "success");
-    },
-    onError: (err: unknown) => {
-      const message = err instanceof Error ? err.message : "Gagal menghapus kupon";
-      toastRef?.show(message, "error");
-    },
-  }));
+const deleteCouponMutation = createMutation(() => ({
+  mutationFn: (id: string) => trpc.coupons.delete.mutate(id),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["coupons"] });
+    toastRef?.show("Kupon dihapus", "success");
+  },
+  onError: (err: unknown) => {
+    const message = err instanceof Error ? err.message : "Gagal menghapus kupon";
+    toastRef?.show(message, "error");
+  },
+}));
 
-  const handleCreate = async (event: SubmitEvent) => {
-    event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement;
-    const data = new FormData(form);
+const handleCreate = async (event: SubmitEvent) => {
+  event.preventDefault();
+  const form = event.currentTarget as HTMLFormElement;
+  const data = new FormData(form);
 
-    createCouponMutation.mutate({
-      code: data.get("code") as string,
-      type: data.get("type") as string,
-      value: Number(data.get("value")),
-      minOrder: data.get("min_order") ? Number(data.get("min_order")) : null,
-      maxDiscount: data.get("max_discount")
-        ? Number(data.get("max_discount"))
-        : null,
-      startAt: (data.get("start_at") as string) || null,
-      endAt: (data.get("end_at") as string) || null,
-      usageLimit: data.get("usage_limit")
-        ? Number(data.get("usage_limit"))
-        : null,
-      perUserLimit: data.get("per_user_limit")
-        ? Number(data.get("per_user_limit"))
-        : 1,
-      isActive: data.get("is_active") === "true" ? 1 : 0,
-    });
-    form.reset();
-  };
+  createCouponMutation.mutate({
+    code: data.get("code") as string,
+    type: data.get("type") as string,
+    value: Number(data.get("value")),
+    minOrder: data.get("min_order") ? Number(data.get("min_order")) : null,
+    maxDiscount: data.get("max_discount") ? Number(data.get("max_discount")) : null,
+    startAt: (data.get("start_at") as string) || null,
+    endAt: (data.get("end_at") as string) || null,
+    usageLimit: data.get("usage_limit") ? Number(data.get("usage_limit")) : null,
+    perUserLimit: data.get("per_user_limit") ? Number(data.get("per_user_limit")) : 1,
+    isActive: data.get("is_active") === "true" ? 1 : 0,
+  });
+  form.reset();
+};
 
-  const handleRowAction = (
-    id: string,
-    action: string,
-    rowElement: HTMLElement | null,
-  ) => {
-    if (action === "delete") {
-      if (confirm("Hapus kupon ini?")) {
-        deleteCouponMutation.mutate(id);
-      }
-    } else if (action === "save" && rowElement) {
-      const fields: Record<string, string> = {};
-      rowElement.querySelectorAll("[data-field]").forEach((el) => {
-        const field = el.getAttribute("data-field")!;
-        if (el instanceof HTMLSelectElement || el instanceof HTMLInputElement) {
-          fields[field] = el.value;
-        } else {
-          fields[field] = el.textContent?.trim();
-        }
-      });
-
-      const data = {
-        code: fields.code,
-        type: fields.type,
-        value: Number(fields.value),
-        minOrder:
-          fields.min_order === "∞" || !fields.min_order
-            ? null
-            : Number(fields.min_order),
-        maxDiscount:
-          fields.max_discount === "∞" || !fields.max_discount
-            ? null
-            : Number(fields.max_discount),
-        startAt:
-          fields.start_at === "-" || !fields.start_at ? null : fields.start_at,
-        endAt: fields.end_at === "-" || !fields.end_at ? null : fields.end_at,
-        usageLimit:
-          fields.usage_limit === "∞" || !fields.usage_limit
-            ? null
-            : Number(fields.usage_limit),
-        perUserLimit: fields.per_user_limit ? Number(fields.per_user_limit) : 1,
-        isActive: fields.is_active === "true" ? 1 : 0,
-      };
-
-      updateCouponMutation.mutate({ id, data });
+const handleRowAction = (id: string, action: string, rowElement: HTMLElement | null) => {
+  if (action === "delete") {
+    if (confirm("Hapus kupon ini?")) {
+      deleteCouponMutation.mutate(id);
     }
-  };
+  } else if (action === "save" && rowElement) {
+    const fields: Record<string, string> = {};
+    rowElement.querySelectorAll("[data-field]").forEach((el) => {
+      const field = el.getAttribute("data-field")!;
+      if (el instanceof HTMLSelectElement || el instanceof HTMLInputElement) {
+        fields[field] = el.value;
+      } else {
+        fields[field] = el.textContent?.trim();
+      }
+    });
 
-  let currentCoupons = $derived((couponsQuery.data as Coupon[]) || initialRows);
+    const data = {
+      code: fields.code,
+      type: fields.type,
+      value: Number(fields.value),
+      minOrder: fields.min_order === "∞" || !fields.min_order ? null : Number(fields.min_order),
+      maxDiscount:
+        fields.max_discount === "∞" || !fields.max_discount ? null : Number(fields.max_discount),
+      startAt: fields.start_at === "-" || !fields.start_at ? null : fields.start_at,
+      endAt: fields.end_at === "-" || !fields.end_at ? null : fields.end_at,
+      usageLimit:
+        fields.usage_limit === "∞" || !fields.usage_limit ? null : Number(fields.usage_limit),
+      perUserLimit: fields.per_user_limit ? Number(fields.per_user_limit) : 1,
+      isActive: fields.is_active === "true" ? 1 : 0,
+    };
+
+    updateCouponMutation.mutate({ id, data });
+  }
+};
+
+let currentCoupons = $derived((couponsQuery.data as Coupon[]) || initialRows);
 </script>
 <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
 <SectionHeader title="Tambah Kupon" muted="Promo & diskon" />

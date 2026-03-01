@@ -3,13 +3,13 @@ import type { Snippet } from "svelte";
 import TableWrap from "./TableWrap.svelte";
 
 let {
-	class: className = "",
-	children,
-	...rest
+  class: className = "",
+  children,
+  ...rest
 }: {
-	class?: string;
-	children?: Snippet;
-	[key: string]: unknown;
+  class?: string;
+  children?: Snippet;
+  [key: string]: unknown;
 } = $props();
 </script>
 

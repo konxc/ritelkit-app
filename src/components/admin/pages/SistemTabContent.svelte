@@ -6,17 +6,17 @@ import NotificationsManager from "./NotificationsManager.svelte";
 import QueryProvider from "../QueryProvider.svelte";
 
 let {
-	tab,
-	q = "",
-	page = 1,
-	limit = 30,
-	rows = [],
+  tab,
+  q = "",
+  page = 1,
+  limit = 30,
+  rows = [],
 }: {
-	tab: string;
-	q?: string;
-	page?: number;
-	limit?: number;
-	rows?: any[];
+  tab: string;
+  q?: string;
+  page?: number;
+  limit?: number;
+  rows?: any[];
 } = $props();
 </script>
 

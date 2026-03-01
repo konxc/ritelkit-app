@@ -2,9 +2,9 @@
 import type { Snippet } from "svelte";
 
 let {
-	action,
-	method = "get",
-	children,
+  action,
+  method = "get",
+  children,
 }: { action?: string; method?: "get" | "post"; children?: Snippet } = $props();
 </script>
 

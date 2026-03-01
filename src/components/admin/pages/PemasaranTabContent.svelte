@@ -5,17 +5,17 @@ import CustomersManager from "./CustomersManager.svelte";
 import QueryProvider from "../QueryProvider.svelte";
 
 let {
-	tab,
-	q = "",
-	page = 1,
-	limit = 20,
-	initialData,
+  tab,
+  q = "",
+  page = 1,
+  limit = 20,
+  initialData,
 }: {
-	tab: string;
-	q?: string;
-	page?: number;
-	limit?: number;
-	initialData?: any;
+  tab: string;
+  q?: string;
+  page?: number;
+  limit?: number;
+  initialData?: any;
 } = $props();
 </script>
 

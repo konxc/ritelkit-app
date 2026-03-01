@@ -7,17 +7,17 @@ import ShippingManager from "./ShippingManager.svelte";
 import QueryProvider from "../QueryProvider.svelte";
 
 let {
-	tab,
-	q = "",
-	page = 1,
-	limit = 20,
-	initialData = null,
+  tab,
+  q = "",
+  page = 1,
+  limit = 20,
+  initialData = null,
 }: {
-	tab: string;
-	q?: string;
-	page?: number;
-	limit?: number;
-	initialData?: any;
+  tab: string;
+  q?: string;
+  page?: number;
+  limit?: number;
+  initialData?: any;
 } = $props();
 </script>
 

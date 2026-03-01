@@ -8,34 +8,34 @@ import { getEnv } from "../lib/env";
 
 const db = getDrizzle(Astro);
 const rows = await db
-	.select({
-		id: productsTable.id,
-		name: productsTable.name,
-		price: productsTable.price,
-		imagesJson: productsTable.imagesJson,
-		description: productsTable.description,
-		stock: productsTable.stock,
-	})
-	.from(productsTable)
-	.where(eq(productsTable.isActive, 1))
-	.orderBy(desc(productsTable.createdAt));
+  .select({
+    id: productsTable.id,
+    name: productsTable.name,
+    price: productsTable.price,
+    imagesJson: productsTable.imagesJson,
+    description: productsTable.description,
+    stock: productsTable.stock,
+  })
+  .from(productsTable)
+  .where(eq(productsTable.isActive, 1))
+  .orderBy(desc(productsTable.createdAt));
 
 const products = rows.map((row) => {
-	let image = "";
-	try {
-		const urls = JSON.parse(String(row.imagesJson || "[]"));
-		image = Array.isArray(urls) ? urls[0] : "";
-	} catch {
-		image = "";
-	}
-	return {
-		id: row.id,
-		name: row.name,
-		price: row.price,
-		description: row.description || "",
-		image,
-		stock: row.stock ?? 0,
-	};
+  let image = "";
+  try {
+    const urls = JSON.parse(String(row.imagesJson || "[]"));
+    image = Array.isArray(urls) ? urls[0] : "";
+  } catch {
+    image = "";
+  }
+  return {
+    id: row.id,
+    name: row.name,
+    price: row.price,
+    description: row.description || "",
+    image,
+    stock: row.stock ?? 0,
+  };
 });
 
 const env = getEnv(Astro);

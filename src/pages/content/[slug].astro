@@ -7,12 +7,12 @@ await initDb(Astro);
 const db = getDb(Astro);
 const slug = Astro.params.slug || "";
 const pageRes = await db.execute({
-	sql: "SELECT title, content_md FROM cms_pages WHERE slug = ? AND is_active = 1",
-	args: [slug],
+  sql: "SELECT title, content_md FROM cms_pages WHERE slug = ? AND is_active = 1",
+  args: [slug],
 });
 const page = pageRes.rows[0] as any;
 if (!page) {
-	return Astro.redirect("/");
+  return Astro.redirect("/");
 }
 const content = renderMarkdown(String(page.content_md || ""));
 ---

@@ -9,81 +9,73 @@ import StatusBadge from "../StatusBadge.svelte";
 
 // Use a subset of Order for the table display
 type OrderTableRow = Pick<
-	Order,
-	| "id"
-	| "orderNo"
-	| "customerName"
-	| "total"
-	| "status"
-	| "paymentStatus"
-	| "createdAt"
+  Order,
+  "id" | "orderNo" | "customerName" | "total" | "status" | "paymentStatus" | "createdAt"
 >;
 
 let {
-	rows: initialRows = [],
-	total: initialTotal = 0,
-	q = "",
-	page = 1,
-	limit = 20,
+  rows: initialRows = [],
+  total: initialTotal = 0,
+  q = "",
+  page = 1,
+  limit = 20,
 }: {
-	rows?: OrderTableRow[];
-	total?: number;
-	q?: string;
-	page?: number;
-	limit?: number;
+  rows?: OrderTableRow[];
+  total?: number;
+  q?: string;
+  page?: number;
+  limit?: number;
 } = $props();
 
 const offset = $derived((page - 1) * limit);
 
 const ordersQuery = createQuery(() => ({
-	queryKey: ["orders.list", { q, limit, offset }],
-	queryFn: () => trpc.orders.list.query({ q, limit, offset }),
-	initialData:
-		initialRows.length > 0
-			? {
-					rows: initialRows,
-					total: initialTotal || initialRows.length,
-					totalPages: Math.ceil((initialTotal || initialRows.length) / limit),
-			  }
-			: undefined,
-	refetchOnMount: false,
-	staleTime: 1000 * 60 * 5,
+  queryKey: ["orders.list", { q, limit, offset }],
+  queryFn: () => trpc.orders.list.query({ q, limit, offset }),
+  initialData:
+    initialRows.length > 0
+      ? {
+          rows: initialRows,
+          total: initialTotal || initialRows.length,
+          totalPages: Math.ceil((initialTotal || initialRows.length) / limit),
+        }
+      : undefined,
+  refetchOnMount: false,
+  staleTime: 1000 * 60 * 5,
 }));
 
-let currentRows = $derived(
-	(ordersQuery.data?.rows as OrderTableRow[]) || initialRows,
-);
+let currentRows = $derived((ordersQuery.data?.rows as OrderTableRow[]) || initialRows);
 
 const getStatusType = (status: string) => {
-	if (!status) return "default";
-	switch (status.toLowerCase()) {
-		case "completed":
-			return "success";
-		case "processing":
-		case "shipped":
-			return "warning";
-		case "pending":
-			return "default";
-		case "cancelled":
-			return "danger";
-		default:
-			return "default";
-	}
+  if (!status) return "default";
+  switch (status.toLowerCase()) {
+    case "completed":
+      return "success";
+    case "processing":
+    case "shipped":
+      return "warning";
+    case "pending":
+      return "default";
+    case "cancelled":
+      return "danger";
+    default:
+      return "default";
+  }
 };
 
 const getPaymentStatusType = (status: string) => {
-	if (!status) return "default";
-	switch (status.toLowerCase()) {
-		case "paid":
-			return "success";
-		case "pending":
-			return "warning";
-		case "failed":
-		case "expired":
-			return "danger";
-		default:
-			return "default";
-	}
+  if (!status) return "default";
+  switch (status.toLowerCase()) {
+    case "paid":
+      return "success";
+    case "pending":
+      return "warning";
+    case "failed":
+    case "expired":
+      return "danger";
+    default:
+      return "default";
+  }
 };
 </script>
 

@@ -1,14 +1,14 @@
 <script lang="ts">
 let {
-	page,
-	totalPages,
-	prevHref,
-	nextHref,
+  page,
+  totalPages,
+  prevHref,
+  nextHref,
 }: {
-	page: number;
-	totalPages: number;
-	prevHref?: string;
-	nextHref?: string;
+  page: number;
+  totalPages: number;
+  prevHref?: string;
+  nextHref?: string;
 } = $props();
 </script>
 

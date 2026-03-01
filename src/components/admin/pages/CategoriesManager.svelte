@@ -10,10 +10,10 @@ import SectionHeader from "../SectionHeader.svelte";
 import ToastNotification from "../ToastNotification.svelte";
 
 type CategoryMutationInput = {
-	name: string;
-	slug: string;
-	isActive: number;
-	sortOrder?: number;
+  name: string;
+  slug: string;
+  isActive: number;
+  sortOrder?: number;
 };
 
 let { rows: initialRows = [] }: { rows?: Category[] } = $props();
@@ -27,104 +27,100 @@ let processingId = $state<string | null>(null);
 let isDrawerOpen = $state(false);
 
 const categoriesQuery = createQuery(() => ({
-	queryKey: ["categories.list"],
-	queryFn: () => trpc.categories.list.query(),
-	initialData: initialRows.length > 0 ? initialRows : undefined,
-	refetchOnMount: false,
-	staleTime: 1000 * 60 * 5,
+  queryKey: ["categories.list"],
+  queryFn: () => trpc.categories.list.query(),
+  initialData: initialRows.length > 0 ? initialRows : undefined,
+  refetchOnMount: false,
+  staleTime: 1000 * 60 * 5,
 }));
 
 let categories = $derived((categoriesQuery.data as Category[]) || initialRows);
 
 $effect(() => {
-	if (newName) {
-		newSlug = newName
-			.toLowerCase()
-			.replace(/ /g, "-")
-			.replace(/[^\w-]+/g, "");
-	}
+  if (newName) {
+    newSlug = newName
+      .toLowerCase()
+      .replace(/ /g, "-")
+      .replace(/[^\w-]+/g, "");
+  }
 });
 
 const categoryFormHandler = async (event: SubmitEvent) => {
-	event.preventDefault();
-	const form = event.currentTarget as HTMLFormElement;
-	const formData = new FormData(form);
-	const payload: CategoryMutationInput = {
-		name: formData.get("name") as string,
-		slug: formData.get("slug") as string,
-		sortOrder: Number(formData.get("sort_order") || 0),
-		isActive: formData.get("isActive") === "true" ? 1 : 0,
-	};
+  event.preventDefault();
+  const form = event.currentTarget as HTMLFormElement;
+  const formData = new FormData(form);
+  const payload: CategoryMutationInput = {
+    name: formData.get("name") as string,
+    slug: formData.get("slug") as string,
+    sortOrder: Number(formData.get("sort_order") || 0),
+    isActive: formData.get("isActive") === "true" ? 1 : 0,
+  };
 
-	isSubmitting = true;
-	try {
-		await trpc.categories.create.mutate(payload);
-		queryClient.invalidateQueries({ queryKey: ["categories.list"] });
-		toastRef?.show("Kategori ditambahkan", "success");
-		form.reset();
-		newName = "";
-		newSlug = "";
-		isDrawerOpen = false;
-	} catch (error: unknown) {
-		const message = error instanceof Error ? error.message : "Gagal menambah kategori";
-		toastRef?.show(message, "error");
-	} finally {
-		isSubmitting = false;
-	}
+  isSubmitting = true;
+  try {
+    await trpc.categories.create.mutate(payload);
+    queryClient.invalidateQueries({ queryKey: ["categories.list"] });
+    toastRef?.show("Kategori ditambahkan", "success");
+    form.reset();
+    newName = "";
+    newSlug = "";
+    isDrawerOpen = false;
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Gagal menambah kategori";
+    toastRef?.show(message, "error");
+  } finally {
+    isSubmitting = false;
+  }
 };
 
-const handleRowAction = async (
-	id: string,
-	action: "save" | "delete",
-	rowEl: HTMLElement,
-) => {
-	if (action === "delete") {
-		if (!confirm("Hapus kategori ini?")) return;
-		processingId = id;
-		try {
-			await trpc.categories.delete.mutate(id);
-			queryClient.invalidateQueries({ queryKey: ["categories.list"] });
-			toastRef?.show("Kategori dihapus", "success");
-		} catch (error: unknown) {
-			const message = error instanceof Error ? error.message : "Gagal menghapus kategori";
-			toastRef?.show(message, "error");
-		} finally {
-			processingId = null;
-		}
-		return;
-	}
+const handleRowAction = async (id: string, action: "save" | "delete", rowEl: HTMLElement) => {
+  if (action === "delete") {
+    if (!confirm("Hapus kategori ini?")) return;
+    processingId = id;
+    try {
+      await trpc.categories.delete.mutate(id);
+      queryClient.invalidateQueries({ queryKey: ["categories.list"] });
+      toastRef?.show("Kategori dihapus", "success");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Gagal menghapus kategori";
+      toastRef?.show(message, "error");
+    } finally {
+      processingId = null;
+    }
+    return;
+  }
 
-	if (action === "save") {
-		const payload: Record<string, string | number> = {};
-		rowEl.querySelectorAll("[data-field]").forEach((cell) => {
-			const field = cell.getAttribute("data-field");
-			if (!field) return;
-			if (cell instanceof HTMLSelectElement) {
-				payload[field] = cell.value === "true" ? 1 : 0;
-			} else if (cell instanceof HTMLInputElement) {
-				payload[field] = cell.value;
-			} else {
-				payload[field] = cell.textContent?.trim() || "";
-			}
-		});
+  if (action === "save") {
+    const payload: Record<string, string | number> = {};
+    rowEl.querySelectorAll("[data-field]").forEach((cell) => {
+      const field = cell.getAttribute("data-field");
+      if (!field) return;
+      if (cell instanceof HTMLSelectElement) {
+        payload[field] = cell.value === "true" ? 1 : 0;
+      } else if (cell instanceof HTMLInputElement) {
+        payload[field] = cell.value;
+      } else {
+        payload[field] = cell.textContent?.trim() || "";
+      }
+    });
 
-		if (payload.sortOrder) payload.sortOrder = Number(payload.sortOrder);
+    if (payload.sortOrder) payload.sortOrder = Number(payload.sortOrder);
 
-		processingId = id;
-		try {
-			await trpc.categories.update.mutate({
-				id,
-				data: payload as Partial<CategoryMutationInput>,
-			});
-			queryClient.invalidateQueries({ queryKey: ["categories.list"] });
-			toastRef?.show("Kategori diperbarui", "success");
-		} catch (error: unknown) {
-			const message = error instanceof Error ? error.message : "Gagal memperbarui kategori";
-			toastRef?.show(message, "error");
-		} finally {
-			processingId = null;
-		}
-	}
+    processingId = id;
+    try {
+      await trpc.categories.update.mutate({
+        id,
+        data: payload as Partial<CategoryMutationInput>,
+      });
+      queryClient.invalidateQueries({ queryKey: ["categories.list"] });
+      toastRef?.show("Kategori diperbarui", "success");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Gagal memperbarui kategori";
+      toastRef?.show(message, "error");
+    } finally {
+      processingId = null;
+    }
+  }
 };
 </script>
 <div class="flex items-center justify-between mt-2 mb-8">
@@ -154,7 +150,7 @@ const handleRowAction = async (
         <h3 class="font-bold text-stone-800 text-lg">Tambah Kategori</h3>
         <p class="text-xs font-semibold text-stone-400 mt-0.5 uppercase tracking-wider">Product Organization</p>
       </div>
-      <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-200 text-stone-500 transition-colors" onclick={() => isDrawerOpen = false}>
+      <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-200 text-stone-500 transition-colors" onclick={() => isDrawerOpen = false} aria-label="Tutup Panel">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
       </button>
     </div>

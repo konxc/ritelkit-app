@@ -11,20 +11,20 @@
 }
 
 @layer base {
-	* {
-		box-sizing: border-box;
-		font-family: "Work Sans", system-ui, sans-serif;
-	}
+  * {
+    box-sizing: border-box;
+    font-family: "Work Sans", system-ui, sans-serif;
+  }
 
-	body {
-		@apply m-0 bg-[var(--admin-bg)] text-[var(--admin-text)];
-	}
+  body {
+    @apply m-0 bg-[var(--admin-bg)] text-[var(--admin-text)];
+  }
 
-	input,
-	select,
-	textarea {
-		@apply w-full rounded-[10px] border border-[var(--admin-border)] p-[10px];
-	}
+  input,
+  select,
+  textarea {
+    @apply w-full rounded-[10px] border border-[var(--admin-border)] p-[10px];
+  }
 }
 
 @utility admin-shell {
@@ -69,27 +69,28 @@
   &:hover {
     @apply border-stone-300 bg-stone-50 text-stone-900 shadow-md;
   }
-  
+
   &:active {
     @apply translate-y-[1px] shadow-none;
   }
 }
 
 @utility grid-2 {
-  @apply grid-cols-[repeat(auto-fit,minmax(220px,1fr))];
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
 @utility card {
   @apply rounded-[14px] border border-[var(--admin-border)] bg-[var(--admin-bg)] p-4;
 }
 
-@utility table {
+.admin-table {
   @apply w-full border-collapse min-w-max text-left;
 
   & th {
     @apply px-5 py-4 text-[0.7rem] font-black tracking-wider text-stone-400 uppercase border-b-2 border-stone-100 bg-stone-50/50 whitespace-nowrap;
   }
-  
+
   & td {
     @apply px-5 py-4 text-[0.85rem] font-medium text-stone-700 border-b border-stone-100 align-middle;
   }
@@ -111,7 +112,7 @@
   }
 }
 
-@utility table-wrap {
+.admin-table-wrap {
   @apply w-full overflow-x-auto rounded-[14px] border border-[var(--admin-border)] bg-white;
 
   & .table {
@@ -135,8 +136,9 @@
   @apply flex flex-wrap gap-2;
 }
 
-@utility dropzone {
-  @apply min-h-[54px] rounded-[10px] border border-dashed border-[var(--admin-border)] p-2.5 text-[0.85rem] text-[var(--admin-muted)];
+@utility drop-zone {
+  min-height: 54px;
+  @apply rounded-[10px] border border-dashed border-[var(--admin-border)] p-2.5 text-[0.85rem] text-stone-400;
 }
 
 @utility thumb-item {
@@ -148,7 +150,7 @@
 }
 
 @utility thumb-actions {
-  @apply absolute inset-x-0 bottom-0 flex justify-between gap-1 bg-[rgba(0,0,0,0.45)] px-1 py-[2px];
+  @apply absolute inset-x-0 bottom-0 flex justify-between gap-1 bg-black/45 px-1 py-[2px];
 
   & button {
     @apply cursor-pointer border-none bg-transparent text-[0.7rem] text-white;
@@ -156,19 +158,19 @@
 }
 
 .thumbnail-gallery[data-has="false"] {
-	@apply hidden;
+  @apply hidden;
 }
 
 .thumb-actions {
-	@apply hidden;
+  @apply hidden;
 }
 
 .thumb-item:hover .thumb-actions {
-	@apply flex;
+  @apply flex;
 }
 
 .thumb-actions button:hover {
-	@apply text-[var(--admin-accent)];
+  @apply text-[var(--admin-accent)];
 }
 
 @utility mini-textarea {
@@ -192,7 +194,7 @@
 }
 
 @utility badge {
-  @apply inline-flex items-center rounded-full bg-[rgba(196,138,58,0.15)] px-2.5 py-1 text-[0.75rem] font-semibold text-[var(--admin-text)];
+  @apply inline-flex items-center rounded-full bg-[#c48a3a]/15 px-2.5 py-1 text-[0.75rem] font-semibold text-[var(--admin-text)];
 }
 
 @utility muted {
@@ -216,55 +218,55 @@
 }
 
 button.primary {
-	@apply primary-button;
+  @apply primary-button;
 }
 
 .admin-nav a {
-	@apply rounded-[10px] px-3 py-2.5 no-underline text-[var(--admin-text)];
+  @apply rounded-[10px] px-3 py-2.5 no-underline text-[var(--admin-text)];
 }
 
 .admin-nav a:hover {
-	@apply bg-[rgba(196,138,58,0.12)];
+  @apply bg-[#c48a3a]/12;
 }
 
 .admin-nav a.active {
-	@apply bg-[rgba(196,138,58,0.18)] font-semibold;
+  @apply bg-[#c48a3a]/18 font-semibold;
 }
 
 .dropzone.drag {
-	@apply border-[var(--admin-accent)] bg-[rgba(196,138,58,0.08)] text-[var(--admin-text)];
+  @apply border-[var(--admin-accent)] bg-[#c48a3a]/08 text-[var(--admin-text)];
 }
 
 .thumbs-grid.dropzone[data-has="true"] {
-	@apply p-2 text-transparent;
+  @apply p-2 text-transparent;
 }
 
 .upload-zone.dragging {
-	@apply border-[var(--admin-accent)] bg-[rgba(196,138,58,0.08)];
+  @apply border-[var(--admin-accent)] bg-[#c48a3a]/08;
 }
 
 .badge.success {
-	@apply bg-[rgba(70,160,120,0.2)];
+  @apply bg-emerald-600/20;
 }
 
 .badge.danger {
-	@apply bg-[rgba(200,70,70,0.18)];
+  @apply bg-rose-600/18;
 }
 
 @media (max-width: 1024px) {
-	.admin-shell {
-		@apply grid-cols-1;
-	}
+  .admin-shell {
+    @apply grid-cols-1;
+  }
 
-	.admin-sidebar {
-		@apply border-r-0 border-b;
-	}
+  .admin-sidebar {
+    @apply border-r-0 border-b;
+  }
 
-	.admin-main {
-		@apply p-4;
-	}
+  .admin-main {
+    @apply p-4;
+  }
 
-	.table-wrap .table {
-		@apply min-w-[680px];
-	}
+  .table-wrap .table {
+    @apply min-w-[680px];
+  }
 }

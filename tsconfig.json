@@ -1,8 +1,8 @@
 {
-	"compilerOptions": {
-		"types": ["astro/client", "./worker-configuration.d.ts", "node"]
-	},
-	"extends": "astro/tsconfigs/strict",
-	"include": [".astro/types.d.ts", "**/*"],
-	"exclude": ["dist"]
+  "compilerOptions": {
+    "types": ["astro/client", "./worker-configuration.d.ts", "node"]
+  },
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": ["dist"]
 }

@@ -8,7 +8,7 @@ import { getReportData } from "../../lib/reports";
 await initDb(Astro);
 const admin = await requireAdmin(Astro);
 if (!admin) {
-	return Astro.redirect("/admin/login");
+  return Astro.redirect("/admin/login");
 }
 const db = getDrizzle(Astro);
 const reportData = await getReportData(db);

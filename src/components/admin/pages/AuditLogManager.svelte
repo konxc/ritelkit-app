@@ -5,38 +5,38 @@ import type { AuditLog } from "../../../lib/types";
 import AdminDataTable from "../AdminDataTable.svelte";
 
 let {
-	rows: initialRows = [],
-	q = "",
-	page = 1,
-	limit = 30,
+  rows: initialRows = [],
+  q = "",
+  page = 1,
+  limit = 30,
 }: {
-	rows?: AuditLog[];
-	q?: string;
-	page?: number;
-	limit?: number;
+  rows?: AuditLog[];
+  q?: string;
+  page?: number;
+  limit?: number;
 } = $props();
 
 let rows = $state<AuditLog[]>([]);
 $effect(() => {
-	rows = initialRows;
+  rows = initialRows;
 });
 const offset = $derived((page - 1) * limit);
 
 // Sync with initialRows from SSR
 $effect(() => {
-	rows = initialRows;
+  rows = initialRows;
 });
 
 const refreshData = async () => {
-	const { data, error } = await actions.listAuditLogs({ q, limit, offset });
-	if (!error && data) {
-		rows = data.rows as AuditLog[];
-	}
+  const { data, error } = await actions.listAuditLogs({ q, limit, offset });
+  if (!error && data) {
+    rows = data.rows as AuditLog[];
+  }
 };
 
 // Re-fetch when props change (search/pagination)
 $effect(() => {
-	refreshData();
+  refreshData();
 });
 </script>
 

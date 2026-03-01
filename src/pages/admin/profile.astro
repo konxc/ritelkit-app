@@ -8,15 +8,12 @@ await initDb(Astro);
 const db = getDb(Astro);
 const admin = await requireAdmin(Astro);
 if (!admin) {
-	const adminCountResult = await db.execute(
-		"SELECT COUNT(*) as count FROM admin_users",
-	);
-	const shouldRedirectToSetup =
-		Number(adminCountResult.rows[0]?.count || 0) === 0;
-	if (shouldRedirectToSetup) {
-		return Astro.redirect("/admin/setup");
-	}
-	return Astro.redirect("/admin/login");
+  const adminCountResult = await db.execute("SELECT COUNT(*) as count FROM admin_users");
+  const shouldRedirectToSetup = Number(adminCountResult.rows[0]?.count || 0) === 0;
+  if (shouldRedirectToSetup) {
+    return Astro.redirect("/admin/setup");
+  }
+  return Astro.redirect("/admin/login");
 }
 ensureCsrfToken(Astro);
 ---

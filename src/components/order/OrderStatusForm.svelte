@@ -2,14 +2,14 @@
 import { actions } from "astro:actions";
 
 type OrderStatusPayload = {
-	status: string;
-	paymentStatus: string;
+  status: string;
+  paymentStatus: string;
 };
 
 let {
-	onSuccess,
+  onSuccess,
 }: {
-	onSuccess?: (payload: OrderStatusPayload) => void;
+  onSuccess?: (payload: OrderStatusPayload) => void;
 } = $props();
 
 let orderNo = $state("");
@@ -18,24 +18,24 @@ let statusMessage = $state("");
 let isLoading = $state(false);
 
 const handleCheck = async (e: SubmitEvent) => {
-	e.preventDefault();
-	isLoading = true;
-	statusMessage = "";
+  e.preventDefault();
+  isLoading = true;
+  statusMessage = "";
 
-	const { data, error } = await actions.checkOrderStatus({ orderNo, phone });
+  const { data, error } = await actions.checkOrderStatus({ orderNo, phone });
 
-	if (error) {
-		statusMessage = error.message;
-		isLoading = false;
-		return;
-	}
+  if (error) {
+    statusMessage = error.message;
+    isLoading = false;
+    return;
+  }
 
-	if (data) {
-		statusMessage = `Status: ${data.status} | Pembayaran: ${data.paymentStatus}`;
-		onSuccess?.(data);
-	}
+  if (data) {
+    statusMessage = `Status: ${data.status} | Pembayaran: ${data.paymentStatus}`;
+    onSuccess?.(data);
+  }
 
-	isLoading = false;
+  isLoading = false;
 };
 </script>
 
