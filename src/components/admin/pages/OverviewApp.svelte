@@ -20,6 +20,7 @@ let {
 const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
 </script>
 
+<div class="w-full h-full">
 <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
 <div
     class="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4"
@@ -297,4 +298,6 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
         </div>
     </div>
 </div>
+</div>
+
 </div>

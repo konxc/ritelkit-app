@@ -137,6 +137,7 @@ type AdMutationInput = {
 		}
 	};
 </script>
+<div class="w-full h-full">
 <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
 <SectionHeader title="Buat Campaign" badge="Ads" />
 <CrudInlineForm id="ads-form" onsubmit={handleCreate} {isSubmitting}>
@@ -354,3 +355,5 @@ type AdMutationInput = {
 </div>
 
 <ToastNotification bind:this={toastRef} />
+
+</div>

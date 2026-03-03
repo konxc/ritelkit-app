@@ -29,6 +29,7 @@ let {
 const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
 </script>
 
+<div class="w-full h-full">
 <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
     <div class="mb-4">
         <SectionHeader title="Ringkasan 30 Hari" badge="Keuangan" />
@@ -175,4 +176,6 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
             {/if}
         </tbody>
     </AdminDataTable>
+</div>
+
 </div>

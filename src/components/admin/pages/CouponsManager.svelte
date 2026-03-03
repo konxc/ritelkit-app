@@ -114,6 +114,7 @@ const handleRowAction = (id: string, action: string, rowElement: HTMLElement | n
 
 let currentCoupons = $derived((couponsQuery.data as Coupon[]) || initialRows);
 </script>
+<div class="w-full h-full">
 <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
 <SectionHeader title="Tambah Kupon" muted="Promo & diskon" />
 <CrudInlineForm
@@ -425,3 +426,5 @@ let currentCoupons = $derived((couponsQuery.data as Coupon[]) || initialRows);
 </div>
 
 <ToastNotification bind:this={toastRef} />
+
+</div>

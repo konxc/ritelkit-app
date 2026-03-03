@@ -137,6 +137,7 @@ export type CmsPageRow = {
   };
 </script>
 
+<div class="w-full h-full">
 <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
 <SectionHeader title="Buat Halaman" badge="Brand Awareness" />
 <CrudInlineForm id="cms-form" onsubmit={handleSubmit} {isSubmitting}>
@@ -281,3 +282,5 @@ export type CmsPageRow = {
 </div>
 
 <ToastNotification bind:this={toastRef} />
+
+</div>

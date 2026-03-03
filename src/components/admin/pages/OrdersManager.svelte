@@ -79,6 +79,7 @@ const getPaymentStatusType = (status: string) => {
 };
 </script>
 
+<div class="w-full h-full">
 <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
     <AdminDataTable>
         <thead>
@@ -149,4 +150,6 @@ const getPaymentStatusType = (status: string) => {
             {/each}
         </tbody>
     </AdminDataTable>
+</div>
+
 </div>

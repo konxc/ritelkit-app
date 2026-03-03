@@ -93,6 +93,7 @@ const handleRowAction = async (id: string, action: string, rowEl: HTMLElement | 
   }
 };
 </script>
+<div class="w-full h-full">
 <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
 <SectionHeader title="Tambah Admin" badge="Role" />
 <CrudInlineForm
@@ -171,3 +172,5 @@ const handleRowAction = async (id: string, action: string, rowEl: HTMLElement | 
 </div>
 
 <ToastNotification bind:this={toastRef} />
+
+</div>

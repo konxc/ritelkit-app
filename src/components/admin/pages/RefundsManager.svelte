@@ -129,6 +129,7 @@ const handleRowAction = async (
   }
 };
 </script>
+<div class="w-full h-full">
 <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
 <SectionHeader title="Buat Refund" />
 <CrudInlineForm
@@ -301,3 +302,5 @@ const handleRowAction = async (
 
 <ToastNotification bind:this={toastRef} />
 
+
+</div>

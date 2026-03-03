@@ -118,6 +118,7 @@ export type ShipmentRow = {
   let currentShipments = $derived((shipmentsQuery.data as ShipmentRow[]) || initialShipments);
   let pendingOrders = $derived(ordersFulfillmentQuery.data || []);
 </script>
+<div class="w-full h-full">
 <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
 <SectionHeader title="Buat Pengiriman" badge="Tracking" />
 <CrudInlineForm
@@ -337,3 +338,5 @@ export type ShipmentRow = {
 </div>
 
 <ToastNotification bind:this={toastRef} />
+
+</div>

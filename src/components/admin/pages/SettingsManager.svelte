@@ -71,6 +71,7 @@ const handleSeed = async () => {
 };
 </script>
 
+<div class="w-full h-full">
 <div in:fly={{ y: 20, duration: 400, delay: 100 }} class="space-y-8">
   <div>
     <h1
@@ -382,3 +383,5 @@ const handleSeed = async () => {
 </div>
 
 <ToastNotification bind:this={toastRef} />
+
+</div>

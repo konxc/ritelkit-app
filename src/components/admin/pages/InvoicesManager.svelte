@@ -68,6 +68,7 @@ const handleSubmit = async (event: SubmitEvent) => {
   }
 };
 </script>
+<div class="w-full h-full">
 <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
 <SectionHeader title="Buat Invoice" badge="Manual" />
 <CrudInlineForm
@@ -174,3 +175,5 @@ const handleSubmit = async (event: SubmitEvent) => {
 </div>
 
 <ToastNotification bind:this={toastRef} />
+
+</div>

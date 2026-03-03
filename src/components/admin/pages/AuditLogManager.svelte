@@ -41,6 +41,7 @@ $effect(() => {
 });
 </script>
 
+<div class="w-full h-full">
 <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
     <AdminDataTable>
         <thead>
@@ -90,4 +91,6 @@ $effect(() => {
             {/each}
         </tbody>
     </AdminDataTable>
+</div>
+
 </div>
