@@ -624,17 +624,17 @@ export async function seedAdminData(db: Client, options: SeedOptions) {
   await ensureAds(db, now);
   await ensureCmsPages(db, now);
   await ensureShippingRules(db, now);
+  
+  // Orders now handle their own RELATIONAL history, movements, invoices, and shipments
   await ensureOrders(db, couponMap, productMap, customerMap);
+  
   const orderMap = await buildOrderMap(db);
-  await ensureShipments(db, orderMap, now);
-  await ensureRefunds(db, orderMap);
-  await ensureInvoices(db, orderMap);
-  await ensureOrderStatusHistory(db, orderMap);
-  await ensureInventoryMovements(db, productMap, orderMap);
+  await ensureRefunds(db, orderMap); // Still handles specific refund fixture
   await ensureCouponUsages(db, now, orderMap, couponMap);
   await ensureNotifications(db, now, orderMap);
   await ensureAuditLogs(db, now, options.adminEmail, orderMap, productMap);
 }
+
 
 
 async function ensureAdminUsers(db: Client, now: string) {
@@ -877,28 +877,26 @@ async function ensureOrders(
   productMap: Record<string, { id: string; price: number; slug: string; name: string }>,
   customerMap: Record<string, string>,
 ) {
-  const count = await db.execute("SELECT COUNT(*) as count FROM orders");
-  if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 5) return; // Already seeded enough
+  const countRes = await db.execute("SELECT COUNT(*) as count FROM orders");
+  if (Number((countRes.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
 
   // 1. Insert fixed fixtures
   for (const fixture of orderFixtures) {
-    await insertOrderFixture(db, fixture, couponMap, productMap, customerMap);
+    await insertOrderFullRelational(db, fixture, couponMap, productMap, customerMap);
   }
 
-  // 2. Generate random historical orders for dashboard charts (~50 orders)
+  // 2. Generate random historical orders for dashboard charts (~40 more orders)
   const productSlugs = Object.keys(productMap);
   const statuses = ["pending", "processing", "shipped", "delivered", "completed", "cancelled"];
-  const paymentStatuses = ["unpaid", "paid", "paid", "paid", "failed"]; // Bias towards paid
-  const customers = sampleCustomers;
+  const paymentStatuses = ["unpaid", "paid", "paid", "paid", "failed"];
   const cities = ["Jakarta", "Surabaya", "Solo", "Bandung", "Semarang", "Yogya"];
 
-  for (let i = 0; i < 50; i++) {
-    const daysAgo = Math.floor(Math.random() * 90); // 0-90 days ago
-    const customer = customers[Math.floor(Math.random() * customers.length)];
+  for (let i = 0; i < 40; i++) {
+    const daysAgo = Math.floor(Math.random() * 90);
+    const customer = sampleCustomers[Math.floor(Math.random() * sampleCustomers.length)];
     const city = cities[Math.floor(Math.random() * cities.length)];
     const status = statuses[Math.floor(Math.random() * statuses.length)];
-    const pStatus =
-      status === "cancelled" ? "unpaid" : paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)];
+    const pStatus = status === "cancelled" ? "unpaid" : paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)];
 
     const randomItems = [];
     const itemNum = Math.floor(Math.random() * 3) + 1;
@@ -911,32 +909,31 @@ async function ensureOrders(
 
     const fixture: OrderFixture = {
       orderNo: `RS-RAND-${1000 + i}`,
-      status: status,
+      status,
       paymentStatus: pStatus,
       customerPhone: customer.phone,
       customerName: customer.name,
       customerEmail: customer.email,
-      couponCode: Math.random() > 0.7 ? "HEMAT10" : null,
+      couponCode: Math.random() > 0.8 ? "HEMAT10" : null,
       deliveryFee: city === "Yogya" ? 0 : 15000 + Math.floor(Math.random() * 20000),
-      notes: "Auto-generated for demo",
+      notes: "Auto-generated historical data",
       shipping: {
         province: city === "Yogya" ? "DI Yogyakarta" : "Luar DIY",
-        city: city,
+        city,
         district: "Kecamatan",
         street: `Jl. Demangan Baru No. ${i + 1}`,
       },
       items: randomItems,
       createdOffset: daysAgo,
-      promo: { channel: "demo-auto" },
+      promo: { channel: Math.random() > 0.5 ? "google-ads" : "organic" },
       payment: {},
     };
 
-    await insertOrderFixture(db, fixture, couponMap, productMap, customerMap);
+    await insertOrderFullRelational(db, fixture, couponMap, productMap, customerMap);
   }
 }
 
-
-async function insertOrderFixture(
+async function insertOrderFullRelational(
   db: Client,
   fixture: OrderFixture,
   couponMap: Record<string, { id: string; type: string; value: number; max_discount: number | null }>,
@@ -947,90 +944,95 @@ async function insertOrderFixture(
     .map((item) => {
       const product = productMap[item.slug];
       if (!product) return null;
-      return { product_id: product.id, qty: item.qty, price: product.price };
+      return { product_id: product.id, qty: item.qty, price: product.price, name: product.name };
     })
-    .filter((item): item is { product_id: string; qty: number; price: number } => Boolean(item));
+    .filter((item): item is { product_id: string; qty: number; price: number; name: string } => Boolean(item));
+
   if (items.length === 0) return;
+
   const subtotal = items.reduce((sum, item) => sum + item.price * item.qty, 0);
   let discountTotal = 0;
   let couponCode = fixture.couponCode;
 
   if (couponCode && couponMap[couponCode]) {
     const coupon = couponMap[couponCode];
-    if (coupon.type === "percent") {
-      const maxDisc = coupon.max_discount ?? Number.MAX_SAFE_INTEGER;
-      discountTotal = Math.min(Math.round((subtotal * coupon.value) / 100), maxDisc);
-    } else {
-      discountTotal = coupon.value;
-    }
+    discountTotal = coupon.type === "percent" 
+      ? Math.min(Math.round((subtotal * coupon.value) / 100), coupon.max_discount ?? subtotal)
+      : coupon.value;
   } else {
     couponCode = null;
   }
+
   const total = subtotal - discountTotal + fixture.deliveryFee;
-  const shippingPayload = {
-    province: fixture.shipping.province,
-    city: fixture.shipping.city,
-    district: fixture.shipping.district,
-    street: fixture.shipping.street,
-  };
   const createdAt = isoDaysAgo(fixture.createdOffset);
+  const orderId = crypto.randomUUID();
   const customerId = customerMap[fixture.customerPhone] || null;
 
+  // 1. Insert Order
   await db.execute({
     sql: `INSERT INTO orders (id, order_no, status, payment_status, customer_id, customer_name, customer_email, customer_phone, shipping_address_json, items_json, subtotal, discount_total, delivery_fee, total, coupon_code, promo_json, notes, midtrans_token, midtrans_order_id, created_at, updated_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
-      crypto.randomUUID(),
-      fixture.orderNo,
-      fixture.status,
-      fixture.paymentStatus,
-      customerId,
-      fixture.customerName,
-      fixture.customerEmail,
-      fixture.customerPhone,
-      JSON.stringify(shippingPayload),
-      JSON.stringify(items),
-      subtotal,
-      discountTotal,
-      fixture.deliveryFee,
-      total,
-      couponCode,
-      JSON.stringify(fixture.promo || {}),
-      fixture.notes,
-      fixture.payment?.midtransToken || null,
-      fixture.payment?.midtransOrderId || null,
-      createdAt,
-      createdAt,
+      orderId, fixture.orderNo, fixture.status, fixture.paymentStatus, customerId, 
+      fixture.customerName, fixture.customerEmail, fixture.customerPhone,
+      JSON.stringify(fixture.shipping), JSON.stringify(items), subtotal, discountTotal,
+      fixture.deliveryFee, total, couponCode, JSON.stringify(fixture.promo || {}),
+      fixture.notes, fixture.payment?.midtransToken || null, fixture.payment?.midtransOrderId || null,
+      createdAt, createdAt
     ],
   });
-}
 
-async function ensureShipments(db: Client, orderMap: Record<string, { id: string; orderNo: string }>, now: string) {
-  const count = await db.execute("SELECT COUNT(*) as count FROM shipments");
-  if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
-  for (const fixture of shipmentFixtures) {
-    const order = orderMap[fixture.orderNo];
-    if (!order) continue;
-    const shippedAt = fixture.shippedOffset !== null ? isoDaysAgo(fixture.shippedOffset) : null;
-    const deliveredAt = fixture.deliveredOffset !== null ? isoDaysAgo(fixture.deliveredOffset) : null;
+  // 2. Insert Status History Sequence
+  const sequence = ["pending", "processing", "shipped", "delivered", "completed"];
+  const currentIdx = sequence.indexOf(fixture.status);
+  const historyLimit = currentIdx === -1 ? 1 : currentIdx + 1;
+  const baseDate = new Date(createdAt).getTime();
+
+  for (let i = 0; i < historyLimit; i++) {
+    const status = fixture.status === "cancelled" && i === 1 ? "cancelled" : sequence[i] || fixture.status;
+    await db.execute({
+      sql: `INSERT INTO order_status_history (id, order_id, status, notes, created_at) VALUES (?, ?, ?, ?, ?)`,
+      args: [crypto.randomUUID(), orderId, status, `Seeded status: ${status}`, new Date(baseDate + i * 3600000).toISOString()],
+    });
+    if (fixture.status === "cancelled" && i === 1) break;
+  }
+
+  // 3. Insert Inventory Movements (Out)
+  for (const item of items) {
+    await db.execute({
+      sql: `INSERT INTO inventory_movements (id, product_id, type, qty, notes, order_id, ref_order_no, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [crypto.randomUUID(), item.product_id, "out", item.qty, `Order ${fixture.orderNo}`, orderId, fixture.orderNo, createdAt],
+    });
+  }
+
+  // 4. Insert Shipment if relevant
+  if (["shipped", "delivered", "completed"].includes(fixture.status)) {
+    const isDelivered = ["delivered", "completed"].includes(fixture.status);
     await db.execute({
       sql: `INSERT INTO shipments (id, order_id, order_no, status, carrier, tracking_no, shipped_at, delivered_at, notes, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
-        crypto.randomUUID(),
-        order.id,
-        fixture.orderNo,
-        fixture.status,
-        fixture.carrier,
-        fixture.trackingNo,
-        shippedAt,
-        deliveredAt,
-        fixture.notes,
-        shippedAt || now,
-        shippedAt || now,
+        crypto.randomUUID(), orderId, fixture.orderNo, isDelivered ? "delivered" : "shipped",
+        "J&T Express", `JT-${fixture.orderNo}`, createdAt, isDelivered ? createdAt : null,
+        "Auto-seeded shipment", createdAt, createdAt
       ],
     });
   }
+
+  // 5. Insert Invoice if paid
+  if (fixture.paymentStatus === "paid" || fixture.status === "completed") {
+    await db.execute({
+      sql: `INSERT INTO invoices (id, order_id, invoice_no, status, issued_at, due_at, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [crypto.randomUUID(), orderId, `INV-${fixture.orderNo}`, "paid", createdAt, createdAt, createdAt, createdAt],
+    });
+  }
+}
+
+
+async function ensureShipments(db: Client) {
+  // Logic now handled in insertOrderFullRelational to ensure 100% linkage
 }
 
 async function ensureRefunds(db: Client, orderMap: Record<string, { id: string; orderNo: string }>) {
@@ -1059,80 +1061,19 @@ async function ensureRefunds(db: Client, orderMap: Record<string, { id: string; 
 }
 
 
-async function ensureInvoices(db: Client, orderMap: Record<string, { id: string; orderNo: string }>) {
-  const count = await db.execute("SELECT COUNT(*) as count FROM invoices");
-  if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
-  for (const fixture of invoiceFixtures) {
-    const order = orderMap[fixture.orderNo];
-    if (!order) continue;
-    const issuedAt = isoDaysAgo(fixture.issuedOffset);
-    const dueAt = isoDaysAgo(fixture.dueOffset);
-    await db.execute({
-      sql: `INSERT INTO invoices (id, order_id, invoice_no, status, issued_at, due_at, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      args: [crypto.randomUUID(), order.id, fixture.invoiceNo, fixture.status, issuedAt, dueAt, issuedAt, issuedAt],
-    });
-  }
+async function ensureInvoices(db: Client) {
+  // Logic now handled in insertOrderFullRelational
 }
 
 
-async function ensureOrderStatusHistory(
-  db: Client,
-  orderMap: Record<string, { id: string; orderNo: string; createdAt: string }>,
-) {
-  const count = await db.execute("SELECT COUNT(*) as count FROM order_status_history");
-  if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
-  const statusSequences: Record<string, string[]> = {
-    "RS-20260226-001": ["pending", "processing"],
-    "RS-20260225-002": ["pending", "processing", "shipped", "delivered"],
-    "RS-20260224-003": ["pending"],
-    "RS-20260220-004": ["pending", "cancelled"],
-  };
-  for (const [orderNo, statuses] of Object.entries(statusSequences)) {
-    const order = orderMap[orderNo];
-    if (!order) continue;
-    const baseTime = new Date(order.createdAt).getTime();
-    for (let index = 0; index < statuses.length; index += 1) {
-      const status = statuses[index];
-      const timestamp = new Date(baseTime + index * 15 * 60 * 1000).toISOString();
-      await db.execute({
-        sql: `INSERT INTO order_status_history (id, order_id, status, notes, created_at)
-              VALUES (?, ?, ?, ?, ?)`,
-        args: [crypto.randomUUID(), order.id, status, `Status ${status}`, timestamp],
-      });
-    }
-  }
+async function ensureOrderStatusHistory(db: Client) {
+  // Logic now handled in insertOrderFullRelational
 }
 
-async function ensureInventoryMovements(
-  db: Client,
-  productMap: Record<string, { id: string }>,
-  orderMap: Record<string, { id: string }>,
-) {
-  const count = await db.execute("SELECT COUNT(*) as count FROM inventory_movements");
-  if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
-  for (const fixture of inventoryFixtures) {
-    const product = productMap[fixture.productSlug];
-    if (!product) continue;
-    const order = fixture.refOrder ? orderMap[fixture.refOrder] : null;
-
-    const createdAt = isoDaysAgo(fixture.daysAgo);
-    await db.execute({
-      sql: `INSERT INTO inventory_movements (id, product_id, type, qty, notes, order_id, ref_order_no, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      args: [
-        crypto.randomUUID(),
-        product.id,
-        fixture.type,
-        fixture.qty,
-        fixture.notes,
-        order?.id ?? null,
-        fixture.refOrder ?? null,
-        createdAt,
-      ],
-    });
-  }
+async function ensureInventoryMovements(db: Client) {
+  // Logic now handled in insertOrderFullRelational
 }
+
 
 
 async function ensureNotifications(
