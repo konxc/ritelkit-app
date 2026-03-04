@@ -28,8 +28,8 @@ export async function POST(ctx: APIContext) {
   const now = nowIso();
   const id = crypto.randomUUID();
   await db.execute({
-    sql: "INSERT INTO refunds (id, order_no, amount, reason, status, provider_status, provider_response_json, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-    args: [id, orderNo, amount, reason || null, status, null, null, now, now],
+    sql: "INSERT INTO refunds (id, order_id, order_no, amount, reason, status, provider_status, provider_response_json, created_at, updated_at) VALUES (?, (SELECT id FROM orders WHERE order_no = ?), ?, ?, ?, ?, ?, ?, ?, ?)",
+    args: [id, orderNo, orderNo, amount, reason || null, status, null, null, now, now],
   });
   if (status === "approved") {
     await db.execute({
@@ -44,9 +44,7 @@ export async function POST(ctx: APIContext) {
     const midtransOrderId = String(orderRow?.midtrans_order_id || "");
     if (midtransOrderId) {
       const env = getEnv(ctx);
-      const base = isProduction(ctx)
-        ? "https://api.midtrans.com"
-        : "https://api.sandbox.midtrans.com";
+      const base = isProduction(ctx) ? "https://api.midtrans.com" : "https://api.sandbox.midtrans.com";
       const auth = btoa(`${env.MIDTRANS_SERVER_KEY}:`);
       try {
         const res = await fetch(`${base}/v2/${midtransOrderId}/refund`, {

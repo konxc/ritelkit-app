@@ -30,21 +30,11 @@ export async function POST(ctx: APIContext) {
   const db = getDb(ctx);
   const id = crypto.randomUUID();
   await db.execute({
-    sql: `INSERT INTO shipments (id, order_no, status, carrier, tracking_no, shipped_at, delivered_at, notes, created_at, updated_at)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    args: [
-      id,
-      orderNo,
-      status,
-      carrier || null,
-      trackingNo || null,
-      shippedAt,
-      deliveredAt,
-      notes || null,
-      now,
-      now,
-    ],
+    sql: `INSERT INTO shipments (id, order_id, order_no, status, carrier, tracking_no, shipped_at, delivered_at, notes, created_at, updated_at)
+              VALUES (?, (SELECT id FROM orders WHERE order_no = ?), ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    args: [id, orderNo, orderNo, status, carrier || null, trackingNo || null, shippedAt, deliveredAt, notes || null, now, now],
   });
+
   const orderStatus =
     status === "delivered"
       ? "delivered"

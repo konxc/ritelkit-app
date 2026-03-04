@@ -67,6 +67,7 @@ export const orders = sqliteTable("orders", {
   orderNo: text("order_no").notNull().unique(),
   status: text("status").notNull(),
   paymentStatus: text("payment_status").notNull(),
+  customerId: text("customer_id").references(() => customers.id),
   customerName: text("customer_name").notNull(),
   customerEmail: text("customer_email"),
   customerPhone: text("customer_phone").notNull(),
@@ -85,6 +86,7 @@ export const orders = sqliteTable("orders", {
   updatedAt: text("updated_at").notNull(),
 });
 
+
 export const inventoryMovements = sqliteTable("inventory_movements", {
   id: text("id").primaryKey(),
   productId: text("product_id")
@@ -93,12 +95,17 @@ export const inventoryMovements = sqliteTable("inventory_movements", {
   type: text("type").notNull(),
   qty: integer("qty").notNull(),
   notes: text("notes"),
+  orderId: text("order_id").references(() => orders.id),
   refOrderNo: text("ref_order_no"),
   createdAt: text("created_at").notNull(),
 });
 
+
 export const shipments = sqliteTable("shipments", {
   id: text("id").primaryKey(),
+  orderId: text("order_id")
+    .notNull()
+    .references(() => orders.id),
   orderNo: text("order_no").notNull(),
   status: text("status").notNull(),
   carrier: text("carrier"),
@@ -110,8 +117,12 @@ export const shipments = sqliteTable("shipments", {
   updatedAt: text("updated_at").notNull(),
 });
 
+
 export const refunds = sqliteTable("refunds", {
   id: text("id").primaryKey(),
+  orderId: text("order_id")
+    .notNull()
+    .references(() => orders.id),
   orderNo: text("order_no").notNull(),
   amount: integer("amount").notNull(),
   reason: text("reason"),
@@ -121,6 +132,7 @@ export const refunds = sqliteTable("refunds", {
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
+
 
 export const adsCampaigns = sqliteTable("ads_campaigns", {
   id: text("id").primaryKey(),
@@ -252,12 +264,34 @@ export const categoriesRelations = relations(categories, ({ many }) => ({
   products: many(products),
 }));
 
-export const ordersRelations = relations(orders, ({ many }) => ({
+export const ordersRelations = relations(orders, ({ one, many }) => ({
+  customer: one(customers, {
+    fields: [orders.customerId],
+    references: [customers.id],
+  }),
   statusHistory: many(orderStatusHistory),
   invoices: many(invoices),
   couponUsages: many(couponUsages),
+  shipments: many(shipments),
+  refunds: many(refunds),
+  movements: many(inventoryMovements),
+}));
+
+export const shipmentsRelations = relations(shipments, ({ one }) => ({
+  order: one(orders, {
+    fields: [shipments.orderId],
+    references: [orders.id],
+  }),
+}));
+
+export const refundsRelations = relations(refunds, ({ one }) => ({
+  order: one(orders, {
+    fields: [refunds.orderId],
+    references: [orders.id],
+  }),
 }));
 
 export const couponsRelations = relations(coupons, ({ many }) => ({
   usages: many(couponUsages),
 }));
+

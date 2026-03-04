@@ -1,210 +1,143 @@
 <script lang="ts">
-import { trpc } from "../../../lib/trpc";
-import { useQueryClient } from "@tanstack/svelte-query";
-import type { Order } from "../../../lib/types";
-import CrudInlineForm from "../CrudInlineForm.svelte";
-import PanelCard from "../PanelCard.svelte";
-import SectionHeader from "../SectionHeader.svelte";
-import StatusBadge from "../StatusBadge.svelte";
-import ToastNotification from "../ToastNotification.svelte";
+  import { trpc } from "../../../lib/trpc";
+  import { useQueryClient } from "@tanstack/svelte-query";
+  import type { Order } from "../../../lib/types";
+  import CrudInlineForm from "../CrudInlineForm.svelte";
+  import PanelCard from "../PanelCard.svelte";
+  import SectionHeader from "../SectionHeader.svelte";
+  import Badge from "../ui/Badge.svelte";
+  import ToastNotification from "../ToastNotification.svelte";
+  import Table from "../ui/Table.svelte";
+  import TableRow from "../ui/TableRow.svelte";
+  import TableCell from "../ui/TableCell.svelte";
+  import Button from "../ui/Button.svelte";
+  import SelectInput from "../ui/forms/SelectInput.svelte";
+  import TextInput from "../ui/forms/TextInput.svelte";
 
-type OrderItem = { name: string; qty: number; price: number; total: number };
-type ShippingAddress = {
-  province?: string;
-  city?: string;
-  district?: string;
-  delivery_date?: string;
-  delivery_time?: string;
-};
-type OrderDetail = Order & {
-  parsedItems?: OrderItem[];
-  shipping_address_json?: ShippingAddress;
-  customerName: string;
-  customerPhone: string;
-  customerEmail?: string | null;
-};
-
-let { order: initialOrder = {} as OrderDetail }: { order?: OrderDetail } = $props();
-
-let order = $state<OrderDetail>({} as OrderDetail);
-$effect(() => {
-  order = initialOrder;
-});
-let toastRef = $state<ToastNotification>();
-let isSubmitting = $state(false);
-
-const queryClient = useQueryClient();
-
-// Sync with initialOrder from SSR if it changes
-$effect(() => {
-  order = initialOrder;
-});
-
-const handleUpdateStatus = async (event: SubmitEvent) => {
-  event.preventDefault();
-  // The form inputs are bound to `order.status`, `order.paymentStatus`, `order.notes`
-  // so the `order` state is already updated.
-  const data = {
-    status: order.status,
-    paymentStatus: order.paymentStatus,
-    notes: order.notes,
+  type OrderItem = { name: string; qty: number; price: number; total: number };
+  type ShippingAddress = {
+    province?: string;
+    city?: string;
+    district?: string;
+    delivery_date?: string;
+    delivery_time?: string;
+  };
+  type OrderDetail = Order & {
+    parsedItems?: OrderItem[];
+    shippingAddressJson?: ShippingAddress; // Consistent with Drizzle
   };
 
-  isSubmitting = true;
-  try {
-    await trpc.orders.update.mutate({ id: order.id, data });
-    toastRef?.show("Order updated", "success");
-    queryClient.invalidateQueries({ queryKey: ["orders.list"] });
-  } catch (error: any) {
-    toastRef?.show(error.message, "error");
-  } finally {
-    isSubmitting = false;
-  }
-};
+  let { order: initialOrder }: { order: OrderDetail } = $props();
+
+  let order = $state<OrderDetail>({ ...initialOrder });
+
+  $effect(() => {
+    Object.assign(order, initialOrder);
+  });
+
+  let toastRef = $state<ToastNotification>();
+  let isSubmitting = $state(false);
+
+  const queryClient = useQueryClient();
+
+  // Sync with initialOrder from SSR if it changes
+  $effect(() => {
+    order = initialOrder;
+  });
+
+  const handleUpdateStatus = async (event: SubmitEvent) => {
+    event.preventDefault();
+    // The form inputs are bound to `order.status`, `order.paymentStatus`, `order.notes`
+    // so the `order` state is already updated.
+    const data = {
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      notes: order.notes,
+    };
+
+    isSubmitting = true;
+    try {
+      await trpc.orders.update.mutate({ id: order.id, data });
+      toastRef?.show("Order updated", "success");
+      queryClient.invalidateQueries({ queryKey: ["orders.list"] });
+    } catch (error: any) {
+      toastRef?.show(error.message, "error");
+    } finally {
+      isSubmitting = false;
+    }
+  };
 </script>
 
-  <div class="overflow-x-auto">
-    <table class="w-full text-left border-collapse">
-      <thead>
-        <tr class="bg-stone-50/50">
-          <th
-            class="px-6 py-3 text-[10px] font-bold text-stone-400 uppercase tracking-widest"
-            >Produk</th
-          >
-          <th
-            class="px-6 py-3 text-[10px] font-bold text-stone-400 uppercase tracking-widest text-center"
-            >Qty</th
-          >
-          <th
-            class="px-6 py-3 text-[10px] font-bold text-stone-400 uppercase tracking-widest text-right"
-            >Harga</th
-          >
-          <th
-            class="px-6 py-3 text-[10px] font-bold text-stone-400 uppercase tracking-widest text-right"
-            >Total</th
-          >
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-stone-100">
-        {#each order.parsedItems || [] as item (item.name)}
-          <tr class="group hover:bg-stone-50/30 transition-colors">
-            <td class="px-6 py-4 text-sm font-bold text-stone-900"
-              >{item.name}</td
-            >
-            <td class="px-6 py-4 text-sm text-stone-600 font-mono text-center"
-              >{item.qty}</td
-            >
-            <td class="px-6 py-4 text-sm text-stone-500 tabular-nums text-right"
-              >Rp {Number(item.price).toLocaleString("id-ID")}</td
-            >
-            <td
-              class="px-6 py-4 text-sm font-bold text-stone-800 tabular-nums text-right"
-              >Rp {Number(item.total).toLocaleString("id-ID")}</td
-            >
-          </tr>
-        {/each}
-      </tbody>
-    </table>
-  </div>
+<div>
+  <Table headers={["Produk", "Qty", "Harga", "Total"]}>
+    {#each order.parsedItems || [] as item, i (item.name + i)}
+      <TableRow class="group transition-colors hover:bg-stone-50/30">
+        <TableCell class="py-4 text-sm font-bold text-stone-900">{item.name}</TableCell>
+        <TableCell class="py-4 text-center font-mono text-sm text-stone-600">{item.qty}</TableCell>
+        <TableCell class="py-4 text-right text-sm text-stone-500 tabular-nums"
+          >Rp {Number(item.price).toLocaleString("id-ID")}</TableCell
+        >
+        <TableCell class="py-4 text-right text-sm font-bold text-stone-800 tabular-nums"
+          >Rp {Number(item.total).toLocaleString("id-ID")}</TableCell
+        >
+      </TableRow>
+    {/each}
+  </Table>
+</div>
 
-<SectionHeader
-  title="Kelola Pesanan"
-  muted="Perbarui status dan catatan internal"
-/>
-<CrudInlineForm
-  id="order-status-form"
-  data-order={order.orderNo}
-  onsubmit={handleUpdateStatus}
-  isSubmitting={isSubmitting}
->
+<SectionHeader title="Kelola Pesanan" muted="Perbarui status dan catatan internal" />
+<CrudInlineForm id="order-status-form" data-order={order.orderNo} onsubmit={handleUpdateStatus} {isSubmitting}>
   <input type="hidden" name="order_id" value={order.id} />
-  <div
-    class="flex flex-col md:flex-row flex-wrap gap-4 xl:gap-6 items-end pb-8 mb-8 w-full border-b border-stone-100"
-  >
-    <div class="space-y-1.5 w-full md:w-48 shrink-0">
-      <label
-        for="status"
-        class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-        >Status Order</label
-      >
-      <select
+  <div class="mb-8 flex w-full flex-col flex-wrap items-end gap-4 border-b border-stone-100 pb-8 md:flex-row xl:gap-6">
+    <div class="w-full shrink-0 md:w-48">
+      <SelectInput
         id="status"
         name="status"
-        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none appearance-none cursor-pointer font-bold"
-      >
-        <option value="pending" selected={order.status === "pending"}
-          >Pending</option
-        >
-        <option value="processing" selected={order.status === "processing"}
-          >Processing</option
-        >
-        <option value="completed" selected={order.status === "completed"}
-          >Completed</option
-        >
-        <option value="cancelled" selected={order.status === "cancelled"}
-          >Cancelled</option
-        >
-      </select>
-    </div>
-    <div class="space-y-1.5 w-full md:w-48 shrink-0">
-      <label
-        for="paymentStatus"
-        class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-        >Pembayaran</label
-      >
-      <select
-        id="paymentStatus"
-        name="paymentStatus"
-        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none appearance-none cursor-pointer font-bold"
-      >
-        <option value="unpaid" selected={order.paymentStatus === "unpaid"}>
-          >Unpaid</option
-        >
-        <option value="paid" selected={order.paymentStatus === "paid"}>
-          >Paid</option
-        >
-        <option value="failed" selected={order.paymentStatus === "failed"}>
-          >Failed</option
-        >
-        <option value="refunded" selected={order.paymentStatus === "refunded"}>
-          >Refunded</option
-        >
-      </select>
-    </div>
-
-    <div class="space-y-1.5 w-full md:flex-1">
-      <label
-        for="notes"
-        class="block text-xs font-semibold text-stone-500 uppercase tracking-wider"
-        >Catatan Internal</label
-      >
-      <input
-        id="notes"
-        name="notes"
-        placeholder="Tambahkan catatan untuk tim..."
-        value={order.notes || ""}
-        class="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a] transition-all bg-white text-sm outline-none"
+        label="Status Order"
+        bind:value={order.status}
+        options={[
+          { value: "pending", label: "Pending" },
+          { value: "processing", label: "Processing" },
+          { value: "shipped", label: "Shipped" },
+          { value: "delivered", label: "Delivered" },
+          { value: "completed", label: "Completed" },
+          { value: "cancelled", label: "Cancelled" },
+        ]}
       />
     </div>
-    <button
-      class="flex items-center justify-center gap-3 h-[42px] px-8 rounded-xl bg-stone-900 border border-transparent text-white text-sm font-semibold hover:bg-stone-800 transition-colors shrink-0 disabled:opacity-70 disabled:cursor-not-allowed w-full md:w-auto"
-      type="submit"
-      disabled={isSubmitting}
-    >
+    <div class="w-full shrink-0 md:w-48">
+      <SelectInput
+        id="paymentStatus"
+        name="paymentStatus"
+        label="Pembayaran"
+        bind:value={order.paymentStatus}
+        options={[
+          { value: "unpaid", label: "Unpaid" },
+          { value: "paid", label: "Paid" },
+          { value: "failed", label: "Failed" },
+          { value: "refunded", label: "Refunded" },
+        ]}
+      />
+    </div>
+
+    <div class="w-full md:flex-1">
+      <TextInput
+        id="notes"
+        name="notes"
+        label="Catatan Internal"
+        placeholder="Tambahkan catatan untuk tim..."
+        bind:value={order.notes}
+      />
+    </div>
+
+    <Button type="submit" variant="primary" class="h-[42px] w-full px-8 md:w-auto" disabled={isSubmitting}>
       {#if isSubmitting}
         <svg
-          class="animate-spin -ml-1 mr-1 h-4 w-4 text-white inline-block"
+          class="mr-1 -ml-1 inline-block h-4 w-4 animate-spin text-white"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
-          ><circle
-            class="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            stroke-width="4"
-          ></circle><path
+          ><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path
             class="opacity-75"
             fill="currentColor"
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
@@ -212,7 +145,7 @@ const handleUpdateStatus = async (event: SubmitEvent) => {
         >
       {/if}
       Simpan Perubahan
-    </button>
+    </Button>
   </div>
 </CrudInlineForm>
 

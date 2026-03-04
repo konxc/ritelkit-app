@@ -1,5 +1,5 @@
 import { ActionError, defineAction } from "astro:actions";
-import { z } from "astro:schema";
+import { z } from "zod";
 import type { APIContext } from "astro";
 import { asc, desc, eq, like, or, sql } from "drizzle-orm";
 import {
@@ -74,9 +74,7 @@ export const server = {
         args: [input.orderNo],
       });
 
-      const row = result.rows[0] as
-        | { status?: string; payment_status?: string; customer_phone?: string }
-        | undefined;
+      const row = result.rows[0] as { status?: string; payment_status?: string; customer_phone?: string } | undefined;
 
       if (!row) {
         throw new Error("Order tidak ditemukan");
@@ -296,10 +294,7 @@ export const server = {
       await initDb(apiCtx);
       const db = getDrizzle(apiCtx);
 
-      const rows = await db
-        .select()
-        .from(categories)
-        .orderBy(asc(categories.sortOrder), asc(categories.name));
+      const rows = await db.select().from(categories).orderBy(asc(categories.sortOrder), asc(categories.name));
 
       return rows;
     },
@@ -457,6 +452,12 @@ export const server = {
       await db.transaction(async (tx) => {
         const id = crypto.randomUUID();
 
+        let orderId = input.orderId;
+        if (!orderId && input.refOrderNo) {
+          const order = await tx.select().from(orders).where(eq(orders.orderNo, input.refOrderNo)).get();
+          if (order) orderId = order.id;
+        }
+
         // 1. Insert movement record
         await tx.insert(inventoryMovements).values({
           id,
@@ -464,9 +465,11 @@ export const server = {
           type: input.type,
           qty: input.qty,
           notes: input.notes,
+          orderId: orderId ?? null,
           refOrderNo: input.refOrderNo,
           createdAt: now,
         });
+
 
         // 2. Update product stock
         const product = await tx
@@ -488,10 +491,7 @@ export const server = {
         else if (input.type === "out") newStock -= input.qty;
         else if (input.type === "adjustment") newStock = input.qty;
 
-        await tx
-          .update(products)
-          .set({ stock: newStock, updatedAt: now })
-          .where(eq(products.id, input.productId));
+        await tx.update(products).set({ stock: newStock, updatedAt: now }).where(eq(products.id, input.productId));
       });
 
       return { success: true };
@@ -514,9 +514,7 @@ export const server = {
       const db = getDrizzle(apiCtx);
       const { q, limit, offset } = input;
 
-      const where = q
-        ? or(like(invoices.invoiceNo, `%${q}%`), like(orders.orderNo, `%${q}%`))
-        : undefined;
+      const where = q ? or(like(invoices.invoiceNo, `%${q}%`), like(orders.orderNo, `%${q}%`)) : undefined;
 
       const rows = await db
         .select({
@@ -637,9 +635,7 @@ export const server = {
       const db = getDrizzle(apiCtx);
       const { q, limit, offset } = input;
 
-      const where = q
-        ? or(like(shipments.orderNo, `%${q}%`), like(shipments.trackingNo, `%${q}%`))
-        : undefined;
+      const where = q ? or(like(shipments.orderNo, `%${q}%`), like(shipments.trackingNo, `%${q}%`)) : undefined;
 
       const rows = await db
         .select()
@@ -663,6 +659,8 @@ export const server = {
       id: true,
       createdAt: true,
       updatedAt: true,
+    }).extend({
+      orderId: z.string().uuid().optional(),
     }),
     handler: async (input, ctx) => {
       const apiCtx = ctx as unknown as APIContext;
@@ -673,10 +671,18 @@ export const server = {
       const db = getDrizzle(apiCtx);
       const now = new Date().toISOString();
 
+      let orderId = input.orderId;
+      if (!orderId) {
+        const order = await db.select().from(orders).where(eq(orders.orderNo, input.orderNo)).get();
+        if (!order) throw new Error("Order tidak ditemukan");
+        orderId = order.id;
+      }
+
       const id = crypto.randomUUID();
       await db.insert(shipments).values({
         id,
         ...input,
+        orderId: orderId!,
         createdAt: now,
         updatedAt: now,
       });
@@ -686,6 +692,7 @@ export const server = {
       return { success: true, id };
     },
   }),
+
 
   updateShipment: defineAction({
     input: z.object({
@@ -866,9 +873,7 @@ export const server = {
       const db = getDrizzle(apiCtx);
       const { q, limit, offset } = input;
 
-      const where = q
-        ? or(like(refunds.orderNo, `%${q}%`), like(refunds.reason, `%${q}%`))
-        : undefined;
+      const where = q ? or(like(refunds.orderNo, `%${q}%`), like(refunds.reason, `%${q}%`)) : undefined;
 
       const rows = await db
         .select()
@@ -878,7 +883,10 @@ export const server = {
         .limit(limit)
         .offset(offset);
 
-      const totalRes = await db.select({ count: sql<number>`count(*)` }).from(refunds).where(where);
+      const totalRes = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(refunds)
+        .where(where);
 
       return { rows, total: totalRes[0]?.count || 0 };
     },
@@ -889,6 +897,8 @@ export const server = {
       id: true,
       createdAt: true,
       updatedAt: true,
+    }).extend({
+      orderId: z.string().uuid().optional(),
     }),
     handler: async (input, ctx) => {
       const apiCtx = ctx as unknown as APIContext;
@@ -899,10 +909,18 @@ export const server = {
       const db = getDrizzle(apiCtx);
       const now = new Date().toISOString();
 
+      let orderId = input.orderId;
+      if (!orderId) {
+        const order = await db.select().from(orders).where(eq(orders.orderNo, input.orderNo)).get();
+        if (!order) throw new Error("Order tidak ditemukan");
+        orderId = order.id;
+      }
+
       const id = crypto.randomUUID();
       await db.insert(refunds).values({
         id,
         ...input,
+        orderId: orderId!,
         createdAt: now,
         updatedAt: now,
       });
@@ -912,6 +930,7 @@ export const server = {
       return { success: true, id };
     },
   }),
+
 
   updateRefund: defineAction({
     input: z.object({
@@ -974,11 +993,7 @@ export const server = {
       const db = getDrizzle(apiCtx);
       const { q, limit, offset } = input;
       const where = q
-        ? or(
-            like(customers.name, `%${q}%`),
-            like(customers.phone, `%${q}%`),
-            like(customers.email, `%${q}%`),
-          )
+        ? or(like(customers.name, `%${q}%`), like(customers.phone, `%${q}%`), like(customers.email, `%${q}%`))
         : undefined;
 
       const rows = await db
@@ -1077,9 +1092,7 @@ export const server = {
       await initDb(apiCtx);
       const db = getDrizzle(apiCtx);
       const { q, limit, offset } = input;
-      const where = q
-        ? or(like(notifications.recipient, `%${q}%`), like(notifications.template, `%${q}%`))
-        : undefined;
+      const where = q ? or(like(notifications.recipient, `%${q}%`), like(notifications.template, `%${q}%`)) : undefined;
 
       const rows = await db
         .select()
@@ -1377,9 +1390,7 @@ export const server = {
       await initDb(apiCtx);
       const db = getDrizzle(apiCtx);
       const { q, limit, offset } = input;
-      const where = q
-        ? or(like(cmsPages.title, `%${q}%`), like(cmsPages.slug, `%${q}%`))
-        : undefined;
+      const where = q ? or(like(cmsPages.title, `%${q}%`), like(cmsPages.slug, `%${q}%`)) : undefined;
 
       const rows = await db
         .select()

@@ -1,4 +1,28 @@
-import { z } from "astro:schema";
+import { z } from "zod";
+
+const JsonArraySchema = z.preprocess((val) => {
+  if (typeof val === "string") {
+    try {
+      return JSON.parse(val);
+    } catch {
+      return [];
+    }
+  }
+  return val || [];
+}, z.array(z.any()));
+
+const JsonObjectSchema = z.preprocess((val) => {
+  if (typeof val === "string") {
+    try {
+      return JSON.parse(val);
+    } catch {
+      return {};
+    }
+  }
+  return val || {};
+}, z.record(z.string(), z.any()));
+
+
 
 // Base common fields
 export const BaseEntitySchema = z.object({
@@ -39,7 +63,11 @@ export const ProductSchema = BaseEntitySchema.extend({
   isActive: z.union([z.boolean(), z.number()]).transform((v) => (typeof v === "boolean" ? (v ? 1 : 0) : v)),
   imagesJson: z.string().optional().nullable(),
   metadataJson: z.string().optional().nullable(),
+  // Helper derived fields for UI
+  images: JsonArraySchema.optional(),
+  metadata: JsonObjectSchema.optional(),
 });
+
 
 export type Product = z.infer<typeof ProductSchema>;
 
@@ -57,12 +85,19 @@ export const OrderSchema = BaseEntitySchema.extend({
   discountTotal: z.number().int(),
   deliveryFee: z.number().int(),
   total: z.number().int(),
+  customerId: z.string().uuid().optional().nullable(),
   couponCode: z.string().optional().nullable(),
   promoJson: z.string().optional().nullable(),
   notes: z.string().optional().nullable(),
   midtransToken: z.string().optional().nullable(),
   midtransOrderId: z.string().optional().nullable(),
+
+  // Derived
+  items: JsonArraySchema.optional(),
+  shippingAddress: JsonObjectSchema.optional(),
+  promo: JsonObjectSchema.optional(),
 });
+
 
 export type Order = z.infer<typeof OrderSchema>;
 
@@ -128,8 +163,10 @@ export const InventoryMovementSchema = z.object({
   type: z.enum(["in", "out", "adjustment"]),
   qty: z.number(),
   notes: z.string().optional().nullable(),
+  orderId: z.string().uuid().optional().nullable(),
   refOrderNo: z.string().optional().nullable(),
   createdAt: z.string(),
+
 });
 
 export type InventoryMovement = z.infer<typeof InventoryMovementSchema>;
@@ -139,8 +176,10 @@ export const ShipmentStatusSchema = z.enum(["packing", "shipped", "delivered", "
 export type ShipmentStatus = z.infer<typeof ShipmentStatusSchema>;
 
 export const ShipmentSchema = BaseEntitySchema.extend({
+  orderId: z.string().uuid(),
   orderNo: z.string(),
   status: ShipmentStatusSchema,
+
   carrier: z.string().optional().nullable(),
   trackingNo: z.string().optional().nullable(),
   shippedAt: z.string().optional().nullable(),
@@ -205,8 +244,10 @@ export type Invoice = z.infer<typeof InvoiceSchema>;
 
 // Refund
 export const RefundSchema = BaseEntitySchema.extend({
+  orderId: z.string().uuid(),
   orderNo: z.string(),
   amount: z.number().int(),
+
   reason: z.string().optional().nullable(),
   status: z.string(),
   providerStatus: z.string().optional().nullable(),

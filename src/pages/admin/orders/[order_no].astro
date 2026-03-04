@@ -2,7 +2,9 @@
 import OrderDetailPageContent from "../../../components/admin/pages/OrderDetailPageContent.svelte";
 import AdminLayout from "../../../layouts/AdminLayout.astro";
 import { requireAdmin } from "../../../lib/auth";
-import { getDb, initDb } from "../../../lib/db";
+import { getDrizzle, initDb } from "../../../lib/db";
+import { orders } from "../../../db/schema";
+import { eq } from "drizzle-orm";
 
 await initDb(Astro);
 const admin = await requireAdmin(Astro);
@@ -10,36 +12,44 @@ if (!admin) {
   return Astro.redirect("/admin/login");
 }
 const orderNo = Astro.params.order_no;
-const db = getDb(Astro);
-const result = await db.execute({
-  sql: "SELECT * FROM orders WHERE order_no = ?",
-  args: [orderNo ?? ""],
+const db = getDrizzle(Astro);
+const order = await db.query.orders.findFirst({
+  where: eq(orders.orderNo, orderNo ?? ""),
 });
-const order = result.rows[0] as unknown as
-  | {
-      id: string;
-      order_no: string;
-      status: string;
-      payment_status: string;
-      customer_name: string;
-      customer_phone: string;
-      customer_email?: string | null;
-      shipping_address_json: string;
-      items_json: string;
-      total: number;
-      notes?: string | null;
-      parsedItems?: unknown[];
-    }
-  | undefined;
+
 if (!order) {
   return Astro.redirect("/admin/orders");
 }
-const items = JSON.parse(String(order.items_json || "[]"));
-const address = JSON.parse(String(order.shipping_address_json || "{}"));
-order.parsedItems = items;
-order.shipping_address_json = address;
+
+// Map and parse JSON fields for the Svelte component
+const rawItems = JSON.parse(String(order.itemsJson || "[]")) as any[];
+const productIds = rawItems.map(i => i.product_id).filter(Boolean);
+
+// Fetch product names to enrich the items
+const productsData = productIds.length > 0 
+  ? await db.query.products.findMany({
+      where: (products, { inArray }) => inArray(products.id, productIds),
+      columns: { id: true, name: true }
+    })
+  : [];
+
+const productMap = Object.fromEntries(productsData.map(p => [p.id, p.name]));
+
+const parsedItems = rawItems.map(item => ({
+  ...item,
+  name: item.name || productMap[item.product_id] || "Produk dihapus",
+  total: item.qty * item.price
+}));
+
+const parsedOrder = {
+  ...order,
+  parsedItems,
+  shippingAddress: JSON.parse(String(order.shippingAddressJson || "{}")),
+};
 ---
 
-<AdminLayout title={`Order ${order.order_no}`}>
-    <OrderDetailPageContent order={order} client:load />
+<AdminLayout title={`Order ${order.orderNo}`}>
+  <OrderDetailPageContent order={parsedOrder as any} client:load />
 </AdminLayout>
+
+

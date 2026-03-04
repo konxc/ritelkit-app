@@ -106,12 +106,16 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				type TEXT NOT NULL,
 				qty INTEGER NOT NULL,
 				notes TEXT,
+				order_id TEXT,
 				ref_order_no TEXT,
 				created_at TEXT NOT NULL,
-				FOREIGN KEY(product_id) REFERENCES products(id)
+				FOREIGN KEY(product_id) REFERENCES products(id),
+				FOREIGN KEY(order_id) REFERENCES orders(id)
 			)`,
+
       `CREATE TABLE IF NOT EXISTS shipments (
 				id TEXT PRIMARY KEY,
+				order_id TEXT NOT NULL,
 				order_no TEXT NOT NULL,
 				status TEXT NOT NULL,
 				carrier TEXT,
@@ -120,10 +124,12 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				delivered_at TEXT,
 				notes TEXT,
 				created_at TEXT NOT NULL,
-				updated_at TEXT NOT NULL
+				updated_at TEXT NOT NULL,
+				FOREIGN KEY(order_id) REFERENCES orders(id)
 			)`,
       `CREATE TABLE IF NOT EXISTS refunds (
 				id TEXT PRIMARY KEY,
+				order_id TEXT NOT NULL,
 				order_no TEXT NOT NULL,
 				amount INTEGER NOT NULL,
 				reason TEXT,
@@ -131,8 +137,10 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				provider_status TEXT,
 				provider_response_json TEXT,
 				created_at TEXT NOT NULL,
-				updated_at TEXT NOT NULL
+				updated_at TEXT NOT NULL,
+				FOREIGN KEY(order_id) REFERENCES orders(id)
 			)`,
+
       `CREATE TABLE IF NOT EXISTS ads_campaigns (
 				id TEXT PRIMARY KEY,
 				name TEXT NOT NULL,
@@ -209,6 +217,7 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				order_no TEXT NOT NULL UNIQUE,
 				status TEXT NOT NULL,
 				payment_status TEXT NOT NULL,
+				customer_id TEXT,
 				customer_name TEXT NOT NULL,
 				customer_email TEXT,
 				customer_phone TEXT NOT NULL,
@@ -224,8 +233,10 @@ export async function initDb(ctx?: APIContext): Promise<void> {
 				midtrans_token TEXT,
 				midtrans_order_id TEXT,
 				created_at TEXT NOT NULL,
-				updated_at TEXT NOT NULL
+				updated_at TEXT NOT NULL,
+				FOREIGN KEY(customer_id) REFERENCES customers(id)
 			)`,
+
       `CREATE TABLE IF NOT EXISTS invoices (
 				id TEXT PRIMARY KEY,
 				order_id TEXT NOT NULL,
@@ -267,7 +278,12 @@ export async function initDb(ctx?: APIContext): Promise<void> {
       "ALTER TABLE admin_users ADD COLUMN role TEXT DEFAULT 'owner'",
       "ALTER TABLE refunds ADD COLUMN provider_status TEXT",
       "ALTER TABLE refunds ADD COLUMN provider_response_json TEXT",
+      "ALTER TABLE orders ADD COLUMN customer_id TEXT",
+      "ALTER TABLE shipments ADD COLUMN order_id TEXT",
+      "ALTER TABLE refunds ADD COLUMN order_id TEXT",
+      "ALTER TABLE inventory_movements ADD COLUMN order_id TEXT",
     ];
+
 
     for (const sql of migrations) {
       try {
