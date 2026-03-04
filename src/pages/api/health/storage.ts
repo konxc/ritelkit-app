@@ -10,12 +10,7 @@ export async function POST(ctx: APIContext) {
   const content = "health-check";
 
   if (env.UPLOAD_DRIVER === "r2" || isCloudflare(ctx)) {
-    if (
-      !env.R2_ACCOUNT_ID ||
-      !env.R2_ACCESS_KEY_ID ||
-      !env.R2_SECRET_ACCESS_KEY ||
-      !env.R2_BUCKET
-    ) {
+    if (!env.R2_ACCOUNT_ID || !env.R2_ACCESS_KEY_ID || !env.R2_SECRET_ACCESS_KEY || !env.R2_BUCKET) {
       return new Response("R2 env belum lengkap", { status: 500 });
     }
     const client = new S3Client({

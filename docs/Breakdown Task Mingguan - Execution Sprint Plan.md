@@ -10,10 +10,10 @@ Menerjemahkan Timeline Tahunan menjadi eksekusi mingguan yang terukur, fokus, da
 
 Prinsip sprint:
 
-* 1 minggu = 1 fokus utama
-* Target jelas
-* Output terukur
-* Evaluasi setiap akhir minggu
+- 1 minggu = 1 fokus utama
+- Target jelas
+- Output terukur
+- Evaluasi setiap akhir minggu
 
 ---
 
@@ -33,10 +33,10 @@ Setiap minggu dibagi menjadi 5 fokus kerja:
 
 ## SENIN – STRATEGIC ALIGNMENT
 
-* Review penjualan minggu lalu
-* Review KPI (engagement, reseller, repeat order)
-* Tentukan target angka minggu ini
-* Brief tim (30–60 menit maksimal)
+- Review penjualan minggu lalu
+- Review KPI (engagement, reseller, repeat order)
+- Tentukan target angka minggu ini
+- Brief tim (30–60 menit maksimal)
 
 Output:
 ✔ Target omzet mingguan
@@ -49,10 +49,10 @@ Output:
 
 Fokus:
 
-* Follow up reseller
-* Prospect reseller baru (min 5 kontak)
-* Tawarkan paket event ke 3 komunitas
-* Monitor stok & produksi
+- Follow up reseller
+- Prospect reseller baru (min 5 kontak)
+- Tawarkan paket event ke 3 komunitas
+- Monitor stok & produksi
 
 Output:
 ✔ Tambahan minimal 1 reseller potensial
@@ -64,15 +64,15 @@ Output:
 
 Fokus:
 
-* Upload 1 konten edukasi
-* Upload 1 konten testimoni
-* Story behind the scene
-* Optimasi Google Maps (balas review)
+- Upload 1 konten edukasi
+- Upload 1 konten testimoni
+- Story behind the scene
+- Optimasi Google Maps (balas review)
 
 Jika ads aktif:
 
-* Cek performa
-* Optimasi targeting
+- Cek performa
+- Optimasi targeting
 
 Output:
 ✔ 2–3 konten publish
@@ -84,10 +84,10 @@ Output:
 
 Fokus:
 
-* Follow up pelanggan besar H+1
-* Broadcast WA (jika jadwal)
-* Minta 5 review Google
-* Update database member
+- Follow up pelanggan besar H+1
+- Broadcast WA (jika jadwal)
+- Minta 5 review Google
+- Update database member
 
 Output:
 ✔ Tambahan 5–10 kontak database
@@ -99,9 +99,9 @@ Output:
 
 Fokus:
 
-* Kunjungan 1 komunitas/masjid/sekolah
-* Follow up EO/Wedding organizer
-* Diskusi kolaborasi UMKM
+- Kunjungan 1 komunitas/masjid/sekolah
+- Follow up EO/Wedding organizer
+- Diskusi kolaborasi UMKM
 
 Output:
 ✔ 1 peluang kolaborasi konkret
@@ -112,9 +112,9 @@ Output:
 
 Fokus:
 
-* Promo terbatas akhir pekan
-* Upselling paket hero
-* Dokumentasi aktivitas outlet
+- Promo terbatas akhir pekan
+- Upselling paket hero
+- Dokumentasi aktivitas outlet
 
 Output:
 ✔ Lonjakan transaksi harian
@@ -125,10 +125,10 @@ Output:
 
 Fokus:
 
-* Rekap omzet mingguan
-* Evaluasi konten performa terbaik
-* Identifikasi hambatan
-* Tentukan 1 perbaikan minggu depan
+- Rekap omzet mingguan
+- Evaluasi konten performa terbaik
+- Identifikasi hambatan
+- Tentukan 1 perbaikan minggu depan
 
 Output:
 ✔ Laporan singkat 1 halaman
@@ -138,11 +138,11 @@ Output:
 
 # TARGET ANGKA MINIMAL PER MINGGU
 
-* 10–20 leads baru
-* 1 reseller baru (rata-rata)
-* 5 review Google
-* 2–3 konten berkualitas
-* 1 aktivasi komunitas kecil
+- 10–20 leads baru
+- 1 reseller baru (rata-rata)
+- 5 review Google
+- 2–3 konten berkualitas
+- 1 aktivasi komunitas kecil
 
 ---
 

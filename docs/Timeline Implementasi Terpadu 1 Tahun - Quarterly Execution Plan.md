@@ -10,10 +10,10 @@ Menerjemahkan Master Control Dashboard menjadi timeline eksekusi nyata selama 12
 
 Fokus utama:
 
-* Eksekusi bertahap
-* Prioritas jelas
-* Tidak tumpang tindih
-* Setiap kuartal memiliki target output konkret
+- Eksekusi bertahap
+- Prioritas jelas
+- Tidak tumpang tindih
+- Setiap kuartal memiliki target output konkret
 
 ---
 
@@ -32,32 +32,32 @@ TAHAP 4 – Konsolidasi & Kesiapan Scale (Q4)
 
 ### Fokus Utama:
 
-* Standarisasi sistem internal
-* Penguatan brand dasar
-* Stabilitas operasional
+- Standarisasi sistem internal
+- Penguatan brand dasar
+- Stabilitas operasional
 
 ### Eksekusi Detail:
 
 Bulan 1:
 
-* Finalisasi seluruh SOP produksi & pelayanan
-* Setup database pelanggan
-* Optimasi Google Maps & foto profesional
-* Riset dan finalisasi produk hero
+- Finalisasi seluruh SOP produksi & pelayanan
+- Setup database pelanggan
+- Optimasi Google Maps & foto profesional
+- Riset dan finalisasi produk hero
 
 Bulan 2:
 
-* Launch membership “Sahabat Sholawat”
-* Soft launching produk hero
-* Mulai konten harian konsisten
-* Rekrut 10 reseller awal
+- Launch membership “Sahabat Sholawat”
+- Soft launching produk hero
+- Mulai konten harian konsisten
+- Rekrut 10 reseller awal
 
 Bulan 3:
 
-* Aktivasi 2–4 event komunitas
-* Mulai Meta Ads skala kecil (testing)
-* Evaluasi margin produk hero
-* Kumpulkan minimal 50 review Google baru
+- Aktivasi 2–4 event komunitas
+- Mulai Meta Ads skala kecil (testing)
+- Evaluasi margin produk hero
+- Kumpulkan minimal 50 review Google baru
 
 ### Target Output Q1:
 
@@ -73,31 +73,31 @@ Bulan 3:
 
 ### Fokus Utama:
 
-* Meningkatkan visibilitas
-* Memperluas distribusi
-* Menguatkan digital presence
+- Meningkatkan visibilitas
+- Memperluas distribusi
+- Menguatkan digital presence
 
 ### Eksekusi Detail:
 
 Bulan 4:
 
-* Intensif konten edukatif & storytelling
-* Launch campaign komunitas besar
-* Tambah 15 reseller baru
-* Kerjasama 2 EO lokal
+- Intensif konten edukatif & storytelling
+- Launch campaign komunitas besar
+- Tambah 15 reseller baru
+- Kerjasama 2 EO lokal
 
 Bulan 5:
 
-* Ads konsisten dengan optimasi targeting
-* Aktivasi CSR “Roti untuk Kebaikan”
-* Seasonal product pertama
-* Program ambassador komunitas dimulai
+- Ads konsisten dengan optimasi targeting
+- Aktivasi CSR “Roti untuk Kebaikan”
+- Seasonal product pertama
+- Program ambassador komunitas dimulai
 
 Bulan 6:
 
-* Evaluasi performa reseller
-* Tambah titik distribusi baru (jika siap)
-* Target total 150+ review Google
+- Evaluasi performa reseller
+- Tambah titik distribusi baru (jika siap)
+- Target total 150+ review Google
 
 ### Target Output Q2:
 
@@ -113,29 +113,29 @@ Bulan 6:
 
 ### Fokus Utama:
 
-* Optimasi margin
-* Penguatan positioning
-* Skala komunitas lebih luas
+- Optimasi margin
+- Penguatan positioning
+- Skala komunitas lebih luas
 
 ### Eksekusi Detail:
 
 Bulan 7:
 
-* Audit harga & margin
-* Perbaikan packaging premium
-* Campaign testimoni masif
+- Audit harga & margin
+- Perbaikan packaging premium
+- Campaign testimoni masif
 
 Bulan 8:
 
-* Event besar komunitas
-* Seasonal edition kedua
-* Tambah ambassador aktif menjadi 20 orang
+- Event besar komunitas
+- Seasonal edition kedua
+- Tambah ambassador aktif menjadi 20 orang
 
 Bulan 9:
 
-* Evaluasi repeat order (target ≥40%)
-* Perkuat reseller terbaik
-* Persiapan dokumen franchise awal
+- Evaluasi repeat order (target ≥40%)
+- Perkuat reseller terbaik
+- Persiapan dokumen franchise awal
 
 ### Target Output Q3:
 
@@ -151,29 +151,29 @@ Bulan 9:
 
 ### Fokus Utama:
 
-* Penguatan sistem
-* Uji kesiapan ekspansi
-* Maksimalkan momentum akhir tahun
+- Penguatan sistem
+- Uji kesiapan ekspansi
+- Maksimalkan momentum akhir tahun
 
 ### Eksekusi Detail:
 
 Bulan 10:
 
-* Audit internal menyeluruh
-* Uji cabang tambahan (jika siap)
-* Optimasi sistem kontrol kualitas
+- Audit internal menyeluruh
+- Uji cabang tambahan (jika siap)
+- Optimasi sistem kontrol kualitas
 
 Bulan 11:
 
-* Kampanye besar akhir tahun
-* Maksimalkan event sekolah & komunitas
-* Review seluruh KPI tahunan
+- Kampanye besar akhir tahun
+- Maksimalkan event sekolah & komunitas
+- Review seluruh KPI tahunan
 
 Bulan 12:
 
-* Finalisasi franchise kit
-* Penyusunan strategi tahun berikutnya
-* Penetapan target ekspansi regional
+- Finalisasi franchise kit
+- Penyusunan strategi tahun berikutnya
+- Penetapan target ekspansi regional
 
 ### Target Output Q4:
 
@@ -185,11 +185,11 @@ Bulan 12:
 
 # INDIKATOR KEBERHASILAN TAHUNAN
 
-* Pertumbuhan omzet konsisten per kuartal
-* Repeat order ≥40%
-* 300+ review Google
-* 50 reseller aktif
-* 10.000+ audience digital lokal
+- Pertumbuhan omzet konsisten per kuartal
+- Repeat order ≥40%
+- 300+ review Google
+- 50 reseller aktif
+- 10.000+ audience digital lokal
 
 ---
 

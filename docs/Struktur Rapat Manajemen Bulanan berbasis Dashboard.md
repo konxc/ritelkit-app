@@ -22,9 +22,9 @@ Peserta: Business Lead, Marketing Lead, Operational Lead, Community Lead, Financ
 
 ## 1. OPENING & ALIGNMENT (15 MENIT)
 
-* Review target tahunan
-* Review target kuartal berjalan
-* Tegaskan fokus utama bulan ini
+- Review target tahunan
+- Review target kuartal berjalan
+- Tegaskan fokus utama bulan ini
 
 Output:
 ✔ Semua peserta memahami konteks besar
@@ -37,34 +37,34 @@ Gunakan data aktual, bukan opini.
 
 ### A. Market & Distribution KPI
 
-* Jumlah reseller aktif
-* Titik distribusi
-* Kontribusi channel komunitas
+- Jumlah reseller aktif
+- Titik distribusi
+- Kontribusi channel komunitas
 
 ### B. Digital KPI
 
-* Reach & engagement
-* Konten performa terbaik
-* Leads masuk
-* Review Google baru
+- Reach & engagement
+- Konten performa terbaik
+- Leads masuk
+- Review Google baru
 
 ### C. Product KPI
 
-* Kontribusi produk hero
-* Margin rata-rata
-* Produk slow moving
+- Kontribusi produk hero
+- Margin rata-rata
+- Produk slow moving
 
 ### D. Loyalty KPI
 
-* Repeat order rate
-* Jumlah member aktif
-* Average order value
+- Repeat order rate
+- Jumlah member aktif
+- Average order value
 
 ### E. Finance KPI
 
-* Omzet bulanan
-* Margin bersih
-* Cashflow stabilitas
+- Omzet bulanan
+- Margin bersih
+- Cashflow stabilitas
 
 Output:
 ✔ Identifikasi 3 kekuatan utama bulan ini
@@ -76,9 +76,9 @@ Output:
 
 Untuk setiap masalah utama:
 
-* Apa penyebab sebenarnya?
-* Apakah sistem, eksekusi, atau SDM?
-* Apakah ini tren 1 bulan atau pola 3 bulan?
+- Apa penyebab sebenarnya?
+- Apakah sistem, eksekusi, atau SDM?
+- Apakah ini tren 1 bulan atau pola 3 bulan?
 
 Gunakan pendekatan objektif dan terukur.
 
@@ -94,10 +94,10 @@ Tentukan maksimal 5 prioritas bulan berikutnya.
 
 Contoh keputusan:
 
-* Fokus scale reseller
-* Perbaikan packaging
-* Optimasi ads
-* Penyesuaian harga
+- Fokus scale reseller
+- Perbaikan packaging
+- Optimasi ads
+- Penyesuaian harga
 
 Prinsip:
 Sedikit keputusan, tapi dieksekusi penuh.
@@ -111,9 +111,9 @@ Output:
 
 ## 5. RESOURCE & BUDGET REVIEW (20 MENIT)
 
-* Apakah anggaran cukup?
-* Apakah perlu alokasi ulang?
-* Apakah butuh tambahan SDM?
+- Apakah anggaran cukup?
+- Apakah perlu alokasi ulang?
+- Apakah butuh tambahan SDM?
 
 Output:
 ✔ Keputusan finansial terkontrol
@@ -122,9 +122,9 @@ Output:
 
 ## 6. ALIGNMENT & COMMITMENT (15 MENIT)
 
-* Ringkasan keputusan
-* Konfirmasi komitmen setiap lead
-* Penetapan tanggal review tengah bulan
+- Ringkasan keputusan
+- Konfirmasi komitmen setiap lead
+- Penetapan tanggal review tengah bulan
 
 Output:
 ✔ Semua memahami peran masing-masing
@@ -159,11 +159,11 @@ Jika rapat hanya diskusi panjang tanpa keputusan, sistem mulai melemah.
 
 Minggu ke-2 setiap bulan:
 
-* Mini review 60 menit (progress check)
+- Mini review 60 menit (progress check)
 
 Akhir kuartal:
 
-* Rapat evaluasi strategis lebih mendalam (3–4 jam)
+- Rapat evaluasi strategis lebih mendalam (3–4 jam)
 
 ---
 

@@ -36,23 +36,23 @@ Semua pilar harus bergerak sinkron.
 
 Target Awareness:
 
-* Top of mind bakery komunitas di DIY
-* 300+ review Google dengan rating ≥4.5
+- Top of mind bakery komunitas di DIY
+- 300+ review Google dengan rating ≥4.5
 
 Target Distribusi:
 
-* 3–5 titik distribusi aktif
-* 50 reseller aktif
+- 3–5 titik distribusi aktif
+- 50 reseller aktif
 
 Target Digital:
 
-* 10.000+ followers organik lokal
-* 5% engagement rate rata-rata
+- 10.000+ followers organik lokal
+- 5% engagement rate rata-rata
 
 Target Finansial:
 
-* Pertumbuhan omzet 15–20% per kuartal
-* Repeat order minimal 40%
+- Pertumbuhan omzet 15–20% per kuartal
+- Repeat order minimal 40%
 
 ---
 
@@ -62,11 +62,11 @@ Target Finansial:
 
 Fokus:
 
-* Finalisasi SOP
-* Launch loyalty system
-* Setup database WA
-* Optimasi Google Maps
-* Soft launching produk hero
+- Finalisasi SOP
+- Launch loyalty system
+- Setup database WA
+- Optimasi Google Maps
+- Soft launching produk hero
 
 Output:
 Sistem dasar stabil.
@@ -77,10 +77,10 @@ Sistem dasar stabil.
 
 Fokus:
 
-* Intensif konten harian
-* Meta Ads lokal konsisten
-* Aktivasi komunitas minimal 4 event/bulan
-* Rekrut reseller aktif
+- Intensif konten harian
+- Meta Ads lokal konsisten
+- Aktivasi komunitas minimal 4 event/bulan
+- Rekrut reseller aktif
 
 Output:
 Lonjakan visibilitas & leads.
@@ -91,10 +91,10 @@ Lonjakan visibilitas & leads.
 
 Fokus:
 
-* Tambah titik distribusi
-* Launch seasonal product
-* Perkuat ambassador komunitas
-* Evaluasi margin & harga
+- Tambah titik distribusi
+- Launch seasonal product
+- Perkuat ambassador komunitas
+- Evaluasi margin & harga
 
 Output:
 Pertumbuhan omzet & brand authority.
@@ -105,10 +105,10 @@ Pertumbuhan omzet & brand authority.
 
 Fokus:
 
-* Audit sistem
-* Uji cabang tambahan (jika siap)
-* Siapkan dokumen franchise
-* Maksimalkan momentum akhir tahun
+- Audit sistem
+- Uji cabang tambahan (jika siap)
+- Siapkan dokumen franchise
+- Maksimalkan momentum akhir tahun
 
 Output:
 Siap ekspansi terkontrol.
@@ -119,31 +119,31 @@ Siap ekspansi terkontrol.
 
 ## 1. Market KPI
 
-* Jumlah titik distribusi
-* Jumlah reseller aktif
+- Jumlah titik distribusi
+- Jumlah reseller aktif
 
 ## 2. Digital KPI
 
-* Reach bulanan
-* Engagement rate
-* Leads masuk
-* Review Google baru
+- Reach bulanan
+- Engagement rate
+- Leads masuk
+- Review Google baru
 
 ## 3. Product KPI
 
-* Kontribusi produk hero (%)
-* Margin rata-rata
+- Kontribusi produk hero (%)
+- Margin rata-rata
 
 ## 4. Loyalty KPI
 
-* Repeat order rate
-* Jumlah member aktif
-* Average order value
+- Repeat order rate
+- Jumlah member aktif
+- Average order value
 
 ## 5. Community KPI
 
-* Jumlah event
-* Penjualan dari channel komunitas
+- Jumlah event
+- Penjualan dari channel komunitas
 
 ---
 
@@ -151,20 +151,20 @@ Siap ekspansi terkontrol.
 
 Mingguan:
 
-* Evaluasi penjualan
-* Evaluasi konten & engagement
+- Evaluasi penjualan
+- Evaluasi konten & engagement
 
 Bulanan:
 
-* Review KPI lengkap
-* Optimasi promosi
-* Audit reseller aktif
+- Review KPI lengkap
+- Optimasi promosi
+- Audit reseller aktif
 
 Kuartalan:
 
-* Evaluasi strategi besar
-* Penyesuaian target
-* Penguatan tim
+- Evaluasi strategi besar
+- Penyesuaian target
+- Penguatan tim
 
 ---
 
@@ -172,23 +172,23 @@ Kuartalan:
 
 Business Lead:
 
-* Kontrol arah & keputusan strategis
+- Kontrol arah & keputusan strategis
 
 Marketing Lead:
 
-* Digital, konten, ads, branding
+- Digital, konten, ads, branding
 
 Operational Lead:
 
-* Produksi, kualitas, SOP
+- Produksi, kualitas, SOP
 
 Community Lead:
 
-* Partnership & event
+- Partnership & event
 
 Finance Control:
 
-* Margin, BEP, cashflow
+- Margin, BEP, cashflow
 
 Semua laporan bermuara ke dashboard pusat.
 
@@ -198,10 +198,10 @@ Semua laporan bermuara ke dashboard pusat.
 
 Tanda bahaya jika terjadi:
 
-* Engagement turun 30%
-* Repeat order <30%
-* Margin bersih <15%
-* Reseller aktif turun drastis
+- Engagement turun 30%
+- Repeat order <30%
+- Margin bersih <15%
+- Reseller aktif turun drastis
 
 Jika muncul, lakukan evaluasi cepat maksimal 14 hari.
 

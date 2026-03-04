@@ -1,8 +1,11 @@
 User:
+
 ```
 brief apalagi selanjutnya yang bisa kita buat ? saya ingin anda menjadi role konsultan bisnis sekaligus memiliki pemahaman agensi digital untuk skalabilitas bisnis yang baik supaya lebih bisa dikenal luas untuk area yogyakarta
 ```
+
 ChatGPT:
+
 ```
 Langkah berikutnya bukan sekadar membuat promosi, tetapi membangun mesin pertumbuhan terstruktur yang menghubungkan sistem bisnis dengan akselerasi digital khusus wilayah Yogyakarta.
 
@@ -181,11 +184,15 @@ Jika Anda ingin, saya bisa langsung menyusun salah satu dokumen berikut secara s
 Tentukan satu dulu yang ingin diperdalam.
 Kita bangun dengan struktur yang benar, bukan hanya semangat ekspansi.
 ```
+
 User:
+
 ```
 mari kita kunci
 ```
+
 ChatGPT:
+
 ```
 Baik. Kita kunci dengan sadar dan strategis.
 

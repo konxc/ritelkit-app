@@ -14,18 +14,18 @@ Roti Sholawat adalah usaha bakery berbasis nilai spiritual dan komunitas yang be
 
 Secara umum:
 
-* Brand memiliki *emotional anchor* yang kuat.
-* Harga berada di segmen menengah-terjangkau.
-* Produk cukup variatif (roti manis, bolu, snack box).
-* Sudah memiliki legalitas P-IRT.
-* Distribusi tersebar di DIY dan sebagian Jawa Tengah.
+- Brand memiliki _emotional anchor_ yang kuat.
+- Harga berada di segmen menengah-terjangkau.
+- Produk cukup variatif (roti manis, bolu, snack box).
+- Sudah memiliki legalitas P-IRT.
+- Distribusi tersebar di DIY dan sebagian Jawa Tengah.
 
 Namun:
 
-* Sistem brand management belum sepenuhnya terstandarisasi.
-* Struktur organisasi dan kontrol kualitas perlu penguatan.
-* Diferensiasi produk masih bisa diperdalam.
-* Potensi scale-up belum dioptimalkan secara sistematis.
+- Sistem brand management belum sepenuhnya terstandarisasi.
+- Struktur organisasi dan kontrol kualitas perlu penguatan.
+- Diferensiasi produk masih bisa diperdalam.
+- Potensi scale-up belum dioptimalkan secara sistematis.
 
 Brief ini merumuskan arah penguatan bisnis dalam 6 dimensi: **Pasar, Produk, Operasional, Keuangan, Branding, dan Ekspansi Strategis.**
 
@@ -37,10 +37,10 @@ Brief ini merumuskan arah penguatan bisnis dalam 6 dimensi: **Pasar, Produk, Ope
 
 **Nilai Inti:**
 
-* Silaturahmi
-* Keberkahan
-* Kebersamaan
-* Harga terjangkau
+- Silaturahmi
+- Keberkahan
+- Kebersamaan
+- Harga terjangkau
 
 **Emotional Positioning:**
 Brand roti untuk momen kebersamaan keluarga, pengajian, hajatan, dan komunitas.
@@ -63,9 +63,9 @@ Produk bakery dengan harga ekonomis dan jaringan distribusi luas.
 
 ### Insight Pasar
 
-* Sensitif terhadap harga
-* Loyal terhadap brand bernuansa religius
-* Memilih berdasarkan rasa + rekomendasi sosial
+- Sensitif terhadap harga
+- Loyal terhadap brand bernuansa religius
+- Memilih berdasarkan rasa + rekomendasi sosial
 
 ---
 
@@ -75,22 +75,22 @@ Produk bakery dengan harga ekonomis dan jaringan distribusi luas.
 
 Kategori utama:
 
-* Roti manis isi
-* Bolu & cake
-* Snack box
-* Produk musiman
+- Roti manis isi
+- Bolu & cake
+- Snack box
+- Produk musiman
 
 ### Kekuatan:
 
-* Variasi cukup banyak
-* Harga kompetitif
-* Cocok untuk pembelian kolektif
+- Variasi cukup banyak
+- Harga kompetitif
+- Cocok untuk pembelian kolektif
 
 ### Tantangan:
 
-* Kurang produk signature yang ikonik
-* Kurang diferensiasi rasa premium
-* Potensi standar kualitas antar outlet belum seragam
+- Kurang produk signature yang ikonik
+- Kurang diferensiasi rasa premium
+- Potensi standar kualitas antar outlet belum seragam
 
 ---
 
@@ -100,20 +100,20 @@ Kategori utama:
 
 Contoh:
 
-* “Roti Sholawat Premium Kurma Series”
-* “Paket Silaturahmi Eksklusif”
+- “Roti Sholawat Premium Kurma Series”
+- “Paket Silaturahmi Eksklusif”
 
 ### 2. Klasifikasi Produk 3 Tier:
 
-* Basic (mass market)
-* Value (mid segment)
-* Premium (gift & corporate)
+- Basic (mass market)
+- Value (mid segment)
+- Premium (gift & corporate)
 
 ### 3. Produk Musiman:
 
-* Ramadan series
-* Idul Adha edition
-* Paket Maulid
+- Ramadan series
+- Idul Adha edition
+- Paket Maulid
 
 ---
 
@@ -121,15 +121,15 @@ Contoh:
 
 ## 4.1 Model Distribusi Saat Ini
 
-* Outlet langsung
-* Reseller
-* Pesanan partai besar
+- Outlet langsung
+- Reseller
+- Pesanan partai besar
 
 ### Risiko:
 
-* Kontrol kualitas antar titik distribusi
-* Standar pelayanan tidak seragam
-* Ketergantungan pada sistem manual
+- Kontrol kualitas antar titik distribusi
+- Standar pelayanan tidak seragam
+- Ketergantungan pada sistem manual
 
 ---
 
@@ -137,26 +137,26 @@ Contoh:
 
 ### A. Standarisasi SOP
 
-* SOP Produksi
-* SOP Quality Control
-* SOP Display Outlet
-* SOP Layanan Pelanggan
+- SOP Produksi
+- SOP Quality Control
+- SOP Display Outlet
+- SOP Layanan Pelanggan
 
 ### B. Centralized Production + Distributed Sales
 
 Jika memungkinkan:
 
-* Produksi terpusat
-* Distribusi harian ke outlet
-* Kontrol rasa & konsistensi
+- Produksi terpusat
+- Distribusi harian ke outlet
+- Kontrol rasa & konsistensi
 
 ### C. Sistem Kontrol Stok Digital
 
 Minimal:
 
-* Tracking penjualan harian
-* Margin per produk
-* Produk fast-moving & slow-moving
+- Tracking penjualan harian
+- Margin per produk
+- Produk fast-moving & slow-moving
 
 ---
 
@@ -179,24 +179,24 @@ Untuk naik kelas regional, perlu sistem komando yang jelas.
 
 ## 6.1 Struktur Biaya
 
-* Bahan baku (tepung, gula, margarin)
-* Tenaga kerja
-* Sewa outlet
-* Distribusi
-* Overhead
+- Bahan baku (tepung, gula, margarin)
+- Tenaga kerja
+- Sewa outlet
+- Distribusi
+- Overhead
 
 ## 6.2 Margin Ideal Bakery
 
 Rata-rata industri:
 
-* Margin kotor 40–60%
-* Margin bersih 10–20%
+- Margin kotor 40–60%
+- Margin bersih 10–20%
 
 Perlu dihitung:
 
-* Margin per SKU
-* Produk paling menguntungkan
-* Produk volume tinggi tapi margin tipis
+- Margin per SKU
+- Produk paling menguntungkan
+- Produk volume tinggi tapi margin tipis
 
 ---
 
@@ -206,27 +206,27 @@ Perlu dihitung:
 
 Perlu konsistensi:
 
-* Logo
-* Warna dominan
-* Desain kemasan
-* Desain outlet
+- Logo
+- Warna dominan
+- Desain kemasan
+- Desain outlet
 
 ## 7.2 Digital Presence
 
 Prioritas:
 
-* Instagram aktif
-* Google Maps optimal
-* WhatsApp Business terstruktur
+- Instagram aktif
+- Google Maps optimal
+- WhatsApp Business terstruktur
 
 ## 7.3 Storytelling
 
 Narasi kuat:
 
-* Brand berbasis nilai
-* Usaha lokal
-* Memberdayakan masyarakat
-* Simbol kebersamaan
+- Brand berbasis nilai
+- Usaha lokal
+- Memberdayakan masyarakat
+- Simbol kebersamaan
 
 Brand seperti ini sangat kuat jika dikelola dengan storytelling emosional.
 
@@ -236,22 +236,22 @@ Brand seperti ini sangat kuat jika dikelola dengan storytelling emosional.
 
 ## Tahun 1 – Konsolidasi
 
-* Standarisasi SOP
-* Perbaikan kualitas rasa
-* Perapihan sistem keuangan
-* Digitalisasi dasar
+- Standarisasi SOP
+- Perbaikan kualitas rasa
+- Perapihan sistem keuangan
+- Digitalisasi dasar
 
 ## Tahun 2 – Ekspansi Terukur
 
-* Penambahan outlet baru
-* Penguatan reseller
-* Produk premium launching
+- Penambahan outlet baru
+- Penguatan reseller
+- Produk premium launching
 
 ## Tahun 3 – Regional Brand
 
-* Franchise model
-* Distribusi antar kota
-* Kerjasama instansi besar
+- Franchise model
+- Distribusi antar kota
+- Kerjasama instansi besar
 
 ---
 
@@ -264,9 +264,9 @@ Brand seperti ini sangat kuat jika dikelola dengan storytelling emosional.
 
 Solusi:
 
-* Diferensiasi produk
-* Penguatan sistem internal
-* Diversifikasi segmen
+- Diferensiasi produk
+- Penguatan sistem internal
+- Diversifikasi segmen
 
 ---
 
@@ -281,14 +281,14 @@ Tahap 3: Terskalakan & Terwaralaba
 # PENUTUP STRATEGIS
 
 Roti Sholawat memiliki fondasi emosional yang kuat.
-Yang dibutuhkan bukan sekadar ekspansi — tetapi *peningkatan sistem*.
+Yang dibutuhkan bukan sekadar ekspansi — tetapi _peningkatan sistem_.
 
 Jika sistem diperkuat:
 
-* Brand akan tahan krisis.
-* Outlet bisa tumbuh lebih cepat.
-* Tim bekerja lebih terarah.
-* Keuntungan menjadi terukur, bukan hanya terasa ramai.
+- Brand akan tahan krisis.
+- Outlet bisa tumbuh lebih cepat.
+- Tim bekerja lebih terarah.
+- Keuntungan menjadi terukur, bukan hanya terasa ramai.
 
 ---
 

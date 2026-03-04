@@ -24,6 +24,7 @@ Roti Sholawat is a traditional bakery with premium quality, operating since 2016
 ## Documentation
 
 Detailed business and execution documents can be found in the `docs/` folder:
+
 - [Briefing Roadmap](./docs/Briefing%20Roadmap.md)
 - [Execution Sprint Plan](./docs/Breakdown%20Task%20Mingguan%20-%20Execution%20Sprint%20Plan.md)
 - [Strategic Business Brief](./docs/Strategic%20Business%20Brief:%20Penguatan%20Sistem%20&%20Model%20Bisnis%20Roti%20Sholawat.md)
@@ -32,13 +33,13 @@ Detailed business and execution documents can be found in the `docs/` folder:
 
 All commands are run from the root of the project:
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `bun install`             | Installs dependencies                            |
-| `bun run dev`             | Starts local dev server at `localhost:4321`      |
-| `bun run build`           | Build your production site to `./dist/`          |
-| `bun run preview`         | Preview your build locally                       |
-| `pnpm run smoke:api`      | Smoke-check endpoint kritikal (butuh server aktif) |
+| Command              | Action                                             |
+| :------------------- | :------------------------------------------------- |
+| `bun install`        | Installs dependencies                              |
+| `bun run dev`        | Starts local dev server at `localhost:4321`        |
+| `bun run build`      | Build your production site to `./dist/`            |
+| `bun run preview`    | Preview your build locally                         |
+| `pnpm run smoke:api` | Smoke-check endpoint kritikal (butuh server aktif) |
 
 ## Tech Stack
 
@@ -50,11 +51,13 @@ All commands are run from the root of the project:
 ## Environment Setup
 
 Copy `.env.example` into one of:
+
 1. `.env.local` for local development
 2. `.env.development` for shared dev
 3. `.env.production` for production deploy
 
 Required variables:
+
 - `PUBLIC_SITE_URL`
 - `PUBLIC_WHATSAPP_NUMBER`
 - `PUBLIC_MIDTRANS_CLIENT_KEY`
@@ -93,18 +96,23 @@ Required variables:
 ## Docker
 
 Build and run (Node adapter):
+
 1. `docker build -t roti-sholawat .`
 2. `docker run -p 4321:4321 --env-file .env.production roti-sholawat`
 
 Or using compose:
+
 1. `docker compose up --build`
 
 Compose profiles:
+
 - `roti-sholawat` (local sqlite)
 - `roti-sholawat-turso` (Turso + R2)
 
 Docker env template:
+
 - `.env.docker` for local compose
 
 Dev override (hot reload):
+
 - `docker compose -f docker-compose.yml -f docker-compose.override.yml up --build`
