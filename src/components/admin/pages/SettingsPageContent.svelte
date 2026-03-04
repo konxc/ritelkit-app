@@ -1,5 +1,5 @@
 <script lang="ts">
-import SettingsManager from "./SettingsManager.svelte";
+  import SettingsManager from "./SettingsManager.svelte";
 </script>
 
 <SettingsManager />

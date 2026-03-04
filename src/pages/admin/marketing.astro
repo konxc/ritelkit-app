@@ -66,36 +66,21 @@ const tabs = [
 ];
 ---
 
-<AdminLayout title="Pemasaran">
-    <div slot="header-tabs">
-        <AdminTabs tabs={tabs} activeTab={tab} />
-    </div>
+<AdminLayout title="Marketing">
+  <div slot="header-tabs">
+    <AdminTabs tabs={tabs} activeTab={tab} />
+  </div>
 
-    <PemasaranTabContent
-        {tab}
-        {q}
-        {page}
-        {limit}
-        {initialData}
-        client:load
-    />
+  <PemasaranTabContent {tab} {q} {page} {limit} {initialData} client:load />
 
-    {
-        tab === "pelanggan" && (
-            <PaginationNav
-                page={page}
-                totalPages={totalPages}
-                prevHref={
-                    page > 1
-                        ? `?tab=pelanggan&q=${encodeURIComponent(q)}&page=${page - 1}`
-                        : undefined
-                }
-                nextHref={
-                    page < totalPages
-                        ? `?tab=pelanggan&q=${encodeURIComponent(q)}&page=${page + 1}`
-                        : undefined
-                }
-            />
-        )
-    }
+  {
+    tab === "pelanggan" && (
+      <PaginationNav
+        page={page}
+        totalPages={totalPages}
+        prevHref={page > 1 ? `?tab=pelanggan&q=${encodeURIComponent(q)}&page=${page - 1}` : undefined}
+        nextHref={page < totalPages ? `?tab=pelanggan&q=${encodeURIComponent(q)}&page=${page + 1}` : undefined}
+      />
+    )
+  }
 </AdminLayout>

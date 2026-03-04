@@ -1,96 +1,83 @@
 <script lang="ts">
-import { actions } from "astro:actions";
-import { fade, fly } from "svelte/transition";
-import type { AuditLog } from "../../../lib/types";
-import AdminDataTable from "../AdminDataTable.svelte";
-import EmptyState from "../ui/EmptyState.svelte";
+  import { actions } from "astro:actions";
+  import { fade, fly } from "svelte/transition";
+  import type { AuditLog } from "../../../lib/types";
+  import EmptyState from "../ui/EmptyState.svelte";
+  import Table from "../ui/Table.svelte";
+  import TableRow from "../ui/TableRow.svelte";
+  import TableCell from "../ui/TableCell.svelte";
 
-let {
-  rows: initialRows = [],
-  q = "",
-  page = 1,
-  limit = 30,
-}: {
-  rows?: AuditLog[];
-  q?: string;
-  page?: number;
-  limit?: number;
-} = $props();
+  let {
+    rows: initialRows = [],
+    q = "",
+    page = 1,
+    limit = 30,
+  }: {
+    rows?: AuditLog[];
+    q?: string;
+    page?: number;
+    limit?: number;
+  } = $props();
 
-let rows = $state<AuditLog[]>([]);
-$effect(() => {
-  rows = initialRows;
-});
-const offset = $derived((page - 1) * limit);
+  let rows = $state<AuditLog[]>([]);
+  $effect(() => {
+    rows = initialRows;
+  });
+  const offset = $derived((page - 1) * limit);
 
-// Sync with initialRows from SSR
-$effect(() => {
-  rows = initialRows;
-});
+  // Sync with initialRows from SSR
+  $effect(() => {
+    rows = initialRows;
+  });
 
-const refreshData = async () => {
-  const { data, error } = await actions.listAuditLogs({ q, limit, offset });
-  if (!error && data) {
-    rows = data.rows as AuditLog[];
-  }
-};
+  const refreshData = async () => {
+    const { data, error } = await actions.listAuditLogs({
+      q,
+      limit,
+      offset,
+    });
+    if (!error && data) {
+      rows = data.rows as AuditLog[];
+    }
+  };
 
-// Re-fetch when props change (search/pagination)
-$effect(() => {
-  refreshData();
-});
+  // Re-fetch when props change (search/pagination)
+  $effect(() => {
+    refreshData();
+  });
 </script>
 
-<div class="w-full h-full">
-<div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-    <AdminDataTable>
-        <thead>
-            <tr>
-                <th>Aktor</th>
-                <th>Aksi</th>
-                <th>Entity</th>
-                <th>ID</th>
-                <th>Waktu</th>
-            </tr>
-        </thead>
-        <tbody>
-            {#if rows.length === 0}
-                <tr>
-                    <td colspan="99" class="p-0 border-0">
-                        <EmptyState title="Log Kosong" description="Belum ada catatan aktivitas sistem." class="!rounded-none !bg-transparent !shadow-none !border-0 py-16" />
-                    </td>
-                </tr>
-            {/if}
-            {#each rows as r (r.id)}
-                <tr
-                    transition:fade={{ duration: 200 }}
-                    class="group hover:bg-stone-50/50 transition-colors border-b border-stone-100 last:border-0"
-                >
-                    <td class="py-4 font-bold text-stone-900"
-                        >{r.actorEmail || "-"}</td
-                    >
-                    <td class="py-4">
-                        <span
-                            class="px-2 py-1 rounded-md bg-stone-100 text-stone-600 text-xs font-bold uppercase tracking-wider"
-                        >
-                            {r.action}
-                        </span>
-                    </td>
-                    <td class="py-4 text-stone-600 font-medium"
-                        >{r.entityType || "-"}</td
-                    >
-                    <td class="py-4 font-mono text-xs text-stone-400"
-                        >{r.entityId || "-"}</td
-                    >
-                    <td class="py-4 text-stone-500 font-medium">
-                        {String(r.createdAt || "")
-                            .replace("T", " ")
-                            .split(".")[0]}
-                    </td>
-                </tr>
-            {/each}
-        </tbody>
-    </AdminDataTable>
-</div>
-
+<div class="h-full w-full">
+  <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
+    <Table headers={["Aktor", "Aksi", "Entity", "ID", "Waktu"]}>
+      {#if rows.length === 0}
+        <TableRow>
+          <TableCell colspan={5} class="border-0 p-0">
+            <EmptyState
+              title="Log Kosong"
+              description="Belum ada catatan aktivitas sistem."
+              class="!rounded-none !border-0 !bg-transparent py-16 !shadow-none"
+            />
+          </TableCell>
+        </TableRow>
+      {/if}
+      {#each rows as r (r.id)}
+        <TableRow class="group border-b border-stone-100 transition-colors last:border-0 hover:bg-stone-50/50">
+          <TableCell class="py-4 font-bold text-stone-900">{r.actorEmail || "-"}</TableCell>
+          <TableCell class="py-4">
+            <span class="rounded-md bg-stone-100 px-2 py-1 text-xs font-bold tracking-wider text-stone-600 uppercase">
+              {r.action}
+            </span>
+          </TableCell>
+          <TableCell class="py-4 font-medium text-stone-600">{r.entityType || "-"}</TableCell>
+          <TableCell class="py-4 font-mono text-xs text-stone-400">{r.entityId || "-"}</TableCell>
+          <TableCell class="py-4 font-medium text-stone-500">
+            {String(r.createdAt || "")
+              .replace("T", " ")
+              .split(".")[0]}
+          </TableCell>
+        </TableRow>
+      {/each}
+    </Table>
+  </div>
 </div>

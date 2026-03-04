@@ -1,12 +1,6 @@
 import type { APIContext } from "astro";
 import { logAudit } from "../../../lib/admin";
-import {
-  hashPassword,
-  normalizeEmail,
-  requireAdmin,
-  sanitizeText,
-  verifyCsrf,
-} from "../../../lib/auth";
+import { hashPassword, normalizeEmail, requireAdmin, sanitizeText, verifyCsrf } from "../../../lib/auth";
 import { getDb, initDb } from "../../../lib/db";
 import { nowIso } from "../../../lib/utils";
 

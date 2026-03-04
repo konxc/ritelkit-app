@@ -26,7 +26,11 @@
 
 .v4-body {
   margin: 0;
-  font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  font-family:
+    "Plus Jakarta Sans",
+    system-ui,
+    -apple-system,
+    sans-serif;
   color: var(--v4-ink);
   background-color: var(--v4-bg);
   background-image:

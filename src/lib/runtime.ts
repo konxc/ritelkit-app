@@ -5,11 +5,7 @@ export function isCloudflare(ctx?: APIContext) {
 }
 
 export function isNodeLike() {
-  return (
-    typeof process !== "undefined" &&
-    !!process.versions &&
-    (process.versions.node || process.versions.bun)
-  );
+  return typeof process !== "undefined" && !!process.versions && (process.versions.node || process.versions.bun);
 }
 
 export function runtimeName(ctx?: APIContext) {

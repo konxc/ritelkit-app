@@ -30,17 +30,7 @@ export async function PUT(ctx: APIContext) {
     sql: `UPDATE shipments SET order_no = ?, status = ?, carrier = ?, tracking_no = ?, notes = ?, 
               shipped_at = COALESCE(shipped_at, ?), delivered_at = COALESCE(delivered_at, ?), updated_at = ?
               WHERE id = ?`,
-    args: [
-      orderNo,
-      status,
-      carrier || null,
-      trackingNo || null,
-      notes || null,
-      shippedAt,
-      deliveredAt,
-      now,
-      id,
-    ],
+    args: [orderNo, status, carrier || null, trackingNo || null, notes || null, shippedAt, deliveredAt, now, id],
   });
   const orderStatus =
     status === "delivered"

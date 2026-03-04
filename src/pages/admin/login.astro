@@ -31,63 +31,48 @@ const success = Astro.url.searchParams.get("success");
 
 <!doctype html>
 <html lang="id">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width" />
-        <title>Login Admin</title>
-    </head>
-    <body class="m-0 bg-[#f6f4ef] font-['Outfit',sans-serif]">
-        <div
-            class="mx-auto mt-[8vh] max-w-[420px] rounded-2xl bg-white p-8 shadow-[0_20px_40px_rgba(0,0,0,0.08)]"
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Login Admin</title>
+  </head>
+  <body class="m-0 bg-[#f6f4ef] font-['Outfit',sans-serif]">
+    <div class="mx-auto mt-[8vh] max-w-[420px] rounded-2xl bg-white p-8 shadow-[0_20px_40px_rgba(0,0,0,0.08)]">
+      <h1>Login Admin</h1>
+      {success === "1" && <p class="mt-4 text-[0.9rem] text-[#6b625a]">Admin berhasil dibuat. Silakan login.</p>}
+      {info === "exists" && <p class="mt-4 text-[0.9rem] text-[#6b625a]">Admin sudah tersedia. Silakan login.</p>}
+      {
+        error && (
+          <p class="mt-4 text-[0.9rem] font-medium text-red-600">
+            {error === "invalid"
+              ? "Email atau password salah."
+              : error === "rate"
+                ? "Terlalu banyak percobaan, coba lagi nanti."
+                : error === "csrf"
+                  ? "Sesi form kadaluarsa, refresh halaman."
+                  : error}
+          </p>
+        )
+      }
+      <form method="post" action={actions.adminLogin}>
+        <input type="hidden" name="csrf_token" value={csrfToken} />
+        <label>Email</label>
+        <input class="my-2 mb-4 w-full rounded-[10px] border border-[#e6dfd3] p-3" name="email" type="email" required />
+        <label>Password</label>
+        <input
+          class="my-2 mb-4 w-full rounded-[10px] border border-[#e6dfd3] p-3"
+          name="password"
+          type="password"
+          required
+        />
+        <button
+          class="w-full cursor-pointer rounded-[10px] border-none bg-[#c48a3a] p-3 font-semibold text-white"
+          type="submit">Masuk</button
         >
-            <h1>Login Admin</h1>
-            {
-                success === "1" && (
-                    <p class="mt-4 text-[0.9rem] text-[#6b625a]">
-                        Admin berhasil dibuat. Silakan login.
-                    </p>
-                )
-            }
-            {
-                info === "exists" && (
-                    <p class="mt-4 text-[0.9rem] text-[#6b625a]">
-                        Admin sudah tersedia. Silakan login.
-                    </p>
-                )
-            }
-            {
-                error && (
-                    <p class="mt-4 text-[0.9rem] text-red-600 font-medium">
-                        {error === "invalid" ? "Email atau password salah." : 
-                         error === "rate" ? "Terlalu banyak percobaan, coba lagi nanti." :
-                         error === "csrf" ? "Sesi form kadaluarsa, refresh halaman." : error}
-                    </p>
-                )
-            }
-            <form method="post" action={actions.adminLogin}>
-                <input type="hidden" name="csrf_token" value={csrfToken} />
-                <label>Email</label>
-                <input
-                    class="my-2 mb-4 w-full rounded-[10px] border border-[#e6dfd3] p-3"
-                    name="email"
-                    type="email"
-                    required
-                />
-                <label>Password</label>
-                <input
-                    class="my-2 mb-4 w-full rounded-[10px] border border-[#e6dfd3] p-3"
-                    name="password"
-                    type="password"
-                    required
-                />
-                <button
-                    class="w-full cursor-pointer rounded-[10px] border-none bg-[#c48a3a] p-3 font-semibold text-white"
-                    type="submit">Masuk</button
-                >
-            </form>
-            <div class="mt-4 text-[0.9rem] text-[#6b625a]">
-                Token setup: {env.SETUP_TOKEN ? "tersedia" : "belum diset"}.
-            </div>
-        </div>
-    </body>
+      </form>
+      <div class="mt-4 text-[0.9rem] text-[#6b625a]">
+        Token setup: {env.SETUP_TOKEN ? "tersedia" : "belum diset"}.
+      </div>
+    </div>
+  </body>
 </html>

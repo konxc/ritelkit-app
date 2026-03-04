@@ -41,9 +41,6 @@ const products = rows.map((row) => {
 const env = getEnv(Astro);
 ---
 
-<AppLayout
-    title="Order Roti Sholawat"
-    description="Pesan online Roti Sholawat cepat dan mudah"
->
-    <OrderApp products={products} env={env} client:load />
+<AppLayout title="Order Roti Sholawat" description="Pesan online Roti Sholawat cepat dan mudah">
+  <OrderApp products={products} env={env} client:load />
 </AppLayout>

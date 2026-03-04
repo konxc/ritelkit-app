@@ -4,13 +4,7 @@ import { getAdminSession } from "./auth";
 import { getDrizzle } from "./db";
 import { nowIso } from "./utils";
 
-export async function logAudit(
-  ctx: APIContext,
-  action: string,
-  entityType: string,
-  entityId?: string,
-  data?: unknown,
-) {
+export async function logAudit(ctx: APIContext, action: string, entityType: string, entityId?: string, data?: unknown) {
   const db = getDrizzle(ctx);
   const session = await getAdminSession(ctx);
   await db.insert(auditLogs).values({

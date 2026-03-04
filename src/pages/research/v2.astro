@@ -25,11 +25,7 @@ const stats = [
 ];
 ---
 
-<AdminPwaAltLayout
-  title="Research V2"
-  description="Editorial + operations lab"
-  activeNav="lab"
->
+<AdminPwaAltLayout title="Research V2" description="Editorial + operations lab" activeNav="lab">
   <VersionNav active="v2" />
 
   <section class="alt-section">
@@ -48,13 +44,17 @@ const stats = [
 
   <section class="alt-section">
     <div class="alt-grid-2">
-      {stats.map((item) => (
-        <div class="alt-stat">
-          <span class="alt-subtitle" style="text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.7rem;">{item.label}</span>
-          <strong style="font-size: 1.35rem;">{item.value}</strong>
-          <span class="alt-subtitle">{item.note}</span>
-        </div>
-      ))}
+      {
+        stats.map((item) => (
+          <div class="alt-stat">
+            <span class="alt-subtitle" style="text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.7rem;">
+              {item.label}
+            </span>
+            <strong style="font-size: 1.35rem;">{item.value}</strong>
+            <span class="alt-subtitle">{item.note}</span>
+          </div>
+        ))
+      }
     </div>
   </section>
 
@@ -66,12 +66,16 @@ const stats = [
         <p class="alt-subtitle">Tiga fokus utama untuk keputusan minggu ini.</p>
       </div>
       <div class="alt-grid">
-        {lanes.map((lane) => (
-          <article class="alt-stat">
-            <strong style="font-size: 1.05rem;">{lane.title}</strong>
-            <p class="alt-subtitle" style="margin: 6px 0 0;">{lane.body}</p>
-          </article>
-        ))}
+        {
+          lanes.map((lane) => (
+            <article class="alt-stat">
+              <strong style="font-size: 1.05rem;">{lane.title}</strong>
+              <p class="alt-subtitle" style="margin: 6px 0 0;">
+                {lane.body}
+              </p>
+            </article>
+          ))
+        }
       </div>
     </div>
   </section>

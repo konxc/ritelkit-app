@@ -76,12 +76,7 @@ export async function calculateShipping(
   return { fee: 0, rule: "default" };
 }
 
-export async function applyCoupon(
-  ctx: APIContext,
-  code: string | null,
-  subtotal: number,
-  customerPhone?: string,
-) {
+export async function applyCoupon(ctx: APIContext, code: string | null, subtotal: number, customerPhone?: string) {
   if (!code) return { discount: 0, freeShipping: false, coupon: null };
   const db = getDb(ctx);
   const result = await db.execute({

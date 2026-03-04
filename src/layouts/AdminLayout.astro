@@ -24,18 +24,18 @@ const navGroups = [
   {
     title: "Manajemen",
     items: [
-      { name: "Katalog", path: "/admin/katalog", icon: "katalog" },
-      { name: "Pesanan", path: "/admin/pesanan", icon: "pesanan" },
-      { name: "Pemasaran", path: "/admin/pemasaran", icon: "pemasaran" },
-      { name: "Sistem", path: "/admin/sistem", icon: "sistem" },
+      { name: "Catalog", path: "/admin/catalog", icon: "katalog" },
+      { name: "Orders", path: "/admin/orders", icon: "pesanan" },
+      { name: "Marketing", path: "/admin/marketing", icon: "pemasaran" },
+      { name: "System", path: "/admin/system", icon: "sistem" },
     ],
   },
   {
     title: "Lainnya",
     items: [
-      { name: "Profil", path: "/admin/profile", icon: "pemasaran" },
+      { name: "Profil", path: "/admin/profile", icon: "user" },
       { name: "Setup", path: "/admin/settings", icon: "settings" },
-      { name: "UI System", path: "/admin/design-system", icon: "sistem" },
+      { name: "UI System", path: "/admin/design-system", icon: "layout" },
     ],
   },
 ];
@@ -48,119 +48,109 @@ import MobileHeader from "../components/admin/ui/layout/MobileHeader.svelte";
 
 <!doctype html>
 <html lang="id">
-    <head>
-        <meta charset="UTF-8" />
-        <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-        />
-        <title>{title} - Roti Sholawat Admin</title>
-        <meta name="csrf-token" content={csrfToken} />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap"
-            rel="stylesheet"
-        />
-        <ClientRouter />
-    </head>
-    <body
-        class="m-0 font-['Plus_Jakarta_Sans',sans-serif] text-stone-900 bg-[#fdfcf9] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSI+PGVsbGlwc2UgY3g9IjEyIiBjeT0iMTIiIHJ4PSI0IiByeT0iNCIgZmlsbD0icmdiYSgxOTYsMTM4LDU4LDAuMDUpIi8+PC9zdmc+')] bg-repeat bg-fixed antialiased overflow-hidden"
-    >
-        <div class="flex flex-col lg:flex-row h-[100dvh] w-full relative">
-            <!-- Sidebar (Desktop Modular Component) -->
-            <MainSidebar {navGroups} {currentPath} client:load />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>{title} - Roti Sholawat Admin</title>
+    <meta name="csrf-token" content={csrfToken} />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <ClientRouter />
+  </head>
+  <body
+    class="m-0 overflow-hidden bg-[#fdfcf9] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSI+PGVsbGlwc2UgY3g9IjEyIiBjeT0iMTIiIHJ4PSI0IiByeT0iNCIgZmlsbD0icmdiYSgxOTYsMTM4LDU4LDAuMDUpIi8+PC9zdmc+')] bg-fixed bg-repeat font-['Plus_Jakarta_Sans',sans-serif] text-stone-900 antialiased"
+  >
+    <div class="relative flex h-[100dvh] w-full flex-col lg:flex-row">
+      <!-- Sidebar (Desktop Modular Component) -->
+      <MainSidebar {navGroups} {currentPath} client:load />
 
-            <div
-                class="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative"
-            >
-                <!-- Mobile Header (Modular Component) -->
-                <MobileHeader {title} client:load />
+      <div class="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden">
+        <!-- Mobile Header (Modular Component) -->
+        <MobileHeader {title} client:load />
 
-                <!-- Desktop Header -->
-                <header
-                    class="hidden lg:flex h-[80px] shrink-0 items-center justify-between px-8 md:px-10 border-b border-stone-200/50 bg-white/50 backdrop-blur-xl z-30 sticky top-0"
-                >
-                    <div class="flex items-center gap-8 flex-1">
-                        <h1
-                            class="font-['Syne',sans-serif] text-[1.4rem] font-bold text-stone-800 m-0 tracking-tight shrink-0"
-                        >
-                            {title}
-                        </h1>
-                        <div class="flex-1 flex justify-center">
-                            <slot name="header-tabs" />
-                        </div>
-                    </div>
-
-                    <!-- Profile Dropdown (Modular Component) -->
-                    <ProfileDropdown logoutAction={String(actions.adminLogout)} client:load />
-                </header>
-
-                <!-- Mobile Sub-Header for Tabs -->
-                {Astro.slots.has("header-tabs") && (
-                    <div class="lg:hidden h-14 shrink-0 bg-white border-b border-stone-200/50 flex items-center px-5 overflow-x-auto custom-scrollbar no-scrollbar scroll-smooth">
-                        <slot name="header-tabs" />
-                    </div>
-                )}
-
-
-                <main
-                    class="flex-1 overflow-y-auto w-full px-4 pb-4 sm:px-5 sm:pb-5 md:px-6 md:pb-6 lg:px-6 lg:pb-[100px] xl:pb-8 scroll-smooth custom-scrollbar relative z-10"
-                >
-
-
-                    <div
-                        class="bg-transparent lg:bg-white lg:border lg:border-stone-200/60 lg:shadow-[0_8px_30px_rgba(0,0,0,0.04)] lg:rounded-[1.5rem] mt-4 sm:mt-5 md:mt-6 lg:mt-6 p-0 lg:p-6"
-                    >
-                        <slot />
-                    </div>
-                </main>
+        <!-- Desktop Header -->
+        <header
+          class="sticky top-0 z-30 hidden h-[80px] shrink-0 items-center justify-between border-b border-stone-200/50 bg-white/50 px-8 backdrop-blur-xl md:px-10 lg:flex"
+        >
+          <div class="flex flex-1 items-center gap-8">
+            <h1 class="m-0 shrink-0 font-['Syne',sans-serif] text-[1.4rem] font-bold tracking-tight text-stone-800">
+              {title}
+            </h1>
+            <div class="flex flex-1 justify-center">
+              <slot name="header-tabs" />
             </div>
+          </div>
 
-            <!-- Mobile Navbar Dock (Modular Component) -->
-            <MobileNavbar {currentPath} client:load />
-        </div>
+          <!-- Profile Dropdown (Modular Component) -->
+          <ProfileDropdown logoutAction={String(actions.adminLogout)} client:load />
+        </header>
 
-        <style is:global>
-            /* Custom Scrollbar for normal layout */
-            .custom-scrollbar::-webkit-scrollbar {
-                width: 6px;
-                height: 6px;
-            }
-            .custom-scrollbar::-webkit-scrollbar-track {
-                background: transparent;
-            }
-            .custom-scrollbar::-webkit-scrollbar-thumb {
-                background: rgba(196, 138, 58, 0.2);
-                border-radius: 10px;
-            }
-            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                background: rgba(196, 138, 58, 0.4);
-            }
+        <!-- Mobile Sub-Header for Tabs -->
+        {
+          Astro.slots.has("header-tabs") && (
+            <div class="custom-scrollbar no-scrollbar flex h-14 shrink-0 items-center overflow-x-auto scroll-smooth border-b border-stone-200/50 bg-white px-5 lg:hidden">
+              <slot name="header-tabs" />
+            </div>
+          )
+        }
 
-            @keyframes fadeInUp {
-                from {
-                    opacity: 0;
-                    transform: translateY(12px);
-                }
-                to {
-                    opacity: 1;
-                    transform: none;
-                }
-            }
-            .animate-fade-in-up {
-                animation: fadeInUp 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
-            }
-        </style>
-        <div class="relative z-[100]"><slot name="modals" /></div>
-    </body>
+        <main
+          class="custom-scrollbar relative w-full flex-1 overflow-y-auto scroll-smooth px-4 pb-24 sm:px-5 md:px-6 lg:px-6 lg:pb-[100px] xl:pb-8"
+        >
+          <div
+            class="mt-4 bg-transparent p-0 sm:mt-5 md:mt-6 lg:mt-6 lg:rounded-[1.5rem] lg:border lg:border-stone-200/60 lg:bg-white lg:p-6 lg:shadow-[0_8px_30px_rgba(0,0,0,0.04)]"
+          >
+            <slot />
+          </div>
+        </main>
+      </div>
 
-    <script is:inline>
-        // Synchronous check to prevent FOUC (Flash of Unstyled Content) before rendering
-        (function() {
-            const isCollapsed = localStorage.getItem("sidebarState") === "collapsed";
-            if (isCollapsed) {
-                document.documentElement.classList.add("sidebar-collapsed");
-                document.body?.classList.add("sidebar-collapsed");
-            }
-        })();
-    </script>
+      <!-- Mobile Navbar Dock (Modular Component) -->
+      <MobileNavbar {currentPath} client:load />
+    </div>
+
+    <style is:global>
+      /* Custom Scrollbar for normal layout */
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(196, 138, 58, 0.2);
+        border-radius: 10px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(196, 138, 58, 0.4);
+      }
+
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .animate-fade-in-up {
+        animation: fadeInUp 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+      }
+    </style>
+    <div class="relative z-[100]"><slot name="modals" /></div>
+  </body><script is:inline>
+    // Synchronous check to prevent FOUC (Flash of Unstyled Content) before rendering
+    (function () {
+      const isCollapsed = localStorage.getItem("sidebarState") === "collapsed";
+      if (isCollapsed) {
+        document.documentElement.classList.add("sidebar-collapsed");
+        document.body?.classList.add("sidebar-collapsed");
+      }
+    })();
+  </script>
 </html>

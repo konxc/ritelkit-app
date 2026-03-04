@@ -7,21 +7,14 @@ interface Props {
   activeNav?: "home" | "ops" | "lab" | "settings";
 }
 
-const {
-  title = "Admin Control",
-  description = "Mobile-first admin PWA",
-  activeNav = "lab",
-} = Astro.props;
+const { title = "Admin Control", description = "Mobile-first admin PWA", activeNav = "lab" } = Astro.props;
 ---
 
 <!doctype html>
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#f2efe9" />
     <meta name="description" content={description} />
     <link rel="icon" type="image/png" href="/favicon.png" />
@@ -46,28 +39,16 @@ const {
 
       <nav class="alt-nav">
         <div class="alt-nav-card">
-          <a
-            href="/admin/overview"
-            class={`alt-nav-item ${activeNav === "home" ? "alt-nav-item-active" : ""}`}
-          >
+          <a href="/admin/overview" class={`alt-nav-item ${activeNav === "home" ? "alt-nav-item-active" : ""}`}>
             <span>Home</span>
           </a>
-          <a
-            href="/admin/orders"
-            class={`alt-nav-item ${activeNav === "ops" ? "alt-nav-item-active" : ""}`}
-          >
+          <a href="/admin/orders" class={`alt-nav-item ${activeNav === "ops" ? "alt-nav-item-active" : ""}`}>
             <span>Ops</span>
           </a>
-          <a
-            href="/admin/lab"
-            class={`alt-nav-item ${activeNav === "lab" ? "alt-nav-item-active" : ""}`}
-          >
+          <a href="/admin/lab" class={`alt-nav-item ${activeNav === "lab" ? "alt-nav-item-active" : ""}`}>
             <span>Lab</span>
           </a>
-          <a
-            href="/admin/settings"
-            class={`alt-nav-item ${activeNav === "settings" ? "alt-nav-item-active" : ""}`}
-          >
+          <a href="/admin/settings" class={`alt-nav-item ${activeNav === "settings" ? "alt-nav-item-active" : ""}`}>
             <span>Settings</span>
           </a>
         </div>

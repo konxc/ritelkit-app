@@ -74,21 +74,17 @@ const tabs = [
 ];
 ---
 
-<AdminLayout title="Sistem">
-    <div slot="header-tabs">
-        <AdminTabs tabs={tabs} activeTab={tab} />
-    </div>
+<AdminLayout title="System">
+  <div slot="header-tabs">
+    <AdminTabs tabs={tabs} activeTab={tab} />
+  </div>
 
-    <SistemTabContent {tab} {q} {page} {limit} rows={initialRows} client:load />
+  <SistemTabContent {tab} {q} {page} {limit} rows={initialRows} client:load />
 
-    <PaginationNav
-        page={page}
-        totalPages={totalPages}
-        prevHref={page > 1
-            ? `?tab=${tab}&q=${encodeURIComponent(q)}&page=${page - 1}`
-            : undefined}
-        nextHref={page < totalPages
-            ? `?tab=${tab}&q=${encodeURIComponent(q)}&page=${page + 1}`
-            : undefined}
-    />
+  <PaginationNav
+    page={page}
+    totalPages={totalPages}
+    prevHref={page > 1 ? `?tab=${tab}&q=${encodeURIComponent(q)}&page=${page - 1}` : undefined}
+    nextHref={page < totalPages ? `?tab=${tab}&q=${encodeURIComponent(q)}&page=${page + 1}` : undefined}
+  />
 </AdminLayout>

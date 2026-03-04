@@ -23,8 +23,7 @@
     color: var(--alt-ink);
     background:
       radial-gradient(800px 400px at -10% 10%, rgba(31, 140, 122, 0.15), transparent 60%),
-      radial-gradient(800px 500px at 110% -10%, rgba(179, 106, 43, 0.15), transparent 55%),
-      var(--alt-bg);
+      radial-gradient(800px 500px at 110% -10%, rgba(179, 106, 43, 0.15), transparent 55%), var(--alt-bg);
   }
 }
 
@@ -41,7 +40,7 @@
 }
 
 @utility alt-frame {
-  @apply mx-auto flex min-h-screen w-full max-w-[900px] flex-col gap-6 px-4 pb-[96px] pt-6;
+  @apply mx-auto flex min-h-screen w-full max-w-[900px] flex-col gap-6 px-4 pt-6 pb-[96px];
 }
 
 @utility alt-title {
@@ -62,7 +61,7 @@
 }
 
 @utility alt-pill {
-  @apply inline-flex items-center gap-2 rounded-full border border-[var(--alt-border)] bg-white px-3 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.2em] text-[var(--alt-muted)];
+  @apply inline-flex items-center gap-2 rounded-full border border-[var(--alt-border)] bg-white px-3 py-1.5 text-[0.7rem] font-bold tracking-[0.2em] text-[var(--alt-muted)] uppercase;
 }
 
 @utility alt-grid {
@@ -86,7 +85,7 @@
 }
 
 @utility alt-nav {
-  @apply fixed bottom-0 left-0 right-0 z-50 mx-auto w-full max-w-[900px] px-4 pb-5;
+  @apply fixed right-0 bottom-0 left-0 z-50 mx-auto w-full max-w-[900px] px-4 pb-5;
 }
 
 @utility alt-nav-card {

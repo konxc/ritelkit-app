@@ -28,8 +28,7 @@
     font-family: "Space Grotesk", system-ui, sans-serif;
     background:
       radial-gradient(1100px 500px at 20% -10%, rgba(196, 138, 58, 0.16), transparent 60%),
-      radial-gradient(1200px 600px at 110% 10%, rgba(43, 185, 174, 0.12), transparent 55%),
-      var(--pwa-bg);
+      radial-gradient(1200px 600px at 110% 10%, rgba(43, 185, 174, 0.12), transparent 55%), var(--pwa-bg);
     color: var(--pwa-ink);
   }
 
@@ -44,11 +43,11 @@
 }
 
 @utility pwa-frame {
-  @apply mx-auto flex min-h-screen w-full max-w-[900px] flex-col pb-[92px] pt-16;
+  @apply mx-auto flex min-h-screen w-full max-w-[900px] flex-col pt-16 pb-[92px];
 }
 
 @utility pwa-topbar {
-  @apply fixed left-0 right-0 top-0 z-40 mx-auto w-full max-w-[900px] px-4 pt-4;
+  @apply fixed top-0 right-0 left-0 z-40 mx-auto w-full max-w-[900px] px-4 pt-4;
 }
 
 @utility pwa-topbar-card {
@@ -56,7 +55,7 @@
 }
 
 @utility pwa-chip {
-  @apply inline-flex items-center gap-2 rounded-full border border-[var(--pwa-border)] bg-white px-3 py-1.5 text-[0.75rem] font-semibold uppercase tracking-[0.18em] text-[var(--pwa-muted)];
+  @apply inline-flex items-center gap-2 rounded-full border border-[var(--pwa-border)] bg-white px-3 py-1.5 text-[0.75rem] font-semibold tracking-[0.18em] text-[var(--pwa-muted)] uppercase;
 }
 
 @utility pwa-title {
@@ -92,7 +91,7 @@
 }
 
 @utility pwa-nav {
-  @apply fixed bottom-0 left-0 right-0 z-50 mx-auto w-full max-w-[900px] px-4 pb-5;
+  @apply fixed right-0 bottom-0 left-0 z-50 mx-auto w-full max-w-[900px] px-4 pb-5;
 }
 
 @utility pwa-nav-card {
@@ -112,7 +111,7 @@
 }
 
 @utility pwa-metric-title {
-  @apply text-[0.75rem] uppercase tracking-[0.2em] text-[var(--pwa-muted)];
+  @apply text-[0.75rem] tracking-[0.2em] text-[var(--pwa-muted)] uppercase;
 }
 
 @utility pwa-metric-value {

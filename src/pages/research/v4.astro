@@ -8,15 +8,11 @@ await initDb(Astro);
 const db = getDb(Astro);
 
 // Fetch stats for realistic feel
-const ordersToday = await db.execute(
-  "SELECT COUNT(*) as count FROM orders WHERE date(created_at) = date('now')",
-);
+const ordersToday = await db.execute("SELECT COUNT(*) as count FROM orders WHERE date(created_at) = date('now')");
 const revenueToday = await db.execute(
   "SELECT COALESCE(SUM(total),0) as total FROM orders WHERE date(created_at) = date('now')",
 );
-const activeProducts = await db.execute(
-  "SELECT COUNT(*) as count FROM products WHERE is_active = 1",
-);
+const activeProducts = await db.execute("SELECT COUNT(*) as count FROM products WHERE is_active = 1");
 const pendingShipments = await db.execute(
   "SELECT COUNT(*) as count FROM shipments WHERE status IN ('packing','shipped')",
 );
@@ -82,206 +78,164 @@ const sideNav = [
 
 <!doctype html>
 <html lang="id">
-    <head>
-        <meta charset="UTF-8" />
-        <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-        />
-        <title>Enterprise V4 - Admin Dashboard</title>
-    </head>
-    <body class="v4-body">
-        <div class="v4-shell">
-            <!-- Sidebar (Desktop) -->
-            <aside class="v4-sidebar">
-                <div class="v4-sidebar-brand v4-brand">
-                    SHOLAWAT<span>.ENT</span>
-                </div>
-                <nav class="v4-sidebar-nav">
-                    {
-                        sideNav.map((item) => (
-                            <a
-                                href={item.link}
-                                class={`v4-side-link ${item.active ? "active" : ""}`}
-                            >
-                                <span class="text-xl">{item.icon}</span>
-                                <span>{item.label}</span>
-                            </a>
-                        ))
-                    }
-                </nav>
-            </aside>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Enterprise V4 - Admin Dashboard</title>
+  </head>
+  <body class="v4-body">
+    <div class="v4-shell">
+      <!-- Sidebar (Desktop) -->
+      <aside class="v4-sidebar">
+        <div class="v4-sidebar-brand v4-brand">
+          SHOLAWAT<span>.ENT</span>
+        </div>
+        <nav class="v4-sidebar-nav">
+          {
+            sideNav.map((item) => (
+              <a href={item.link} class={`v4-side-link ${item.active ? "active" : ""}`}>
+                <span class="text-xl">{item.icon}</span>
+                <span>{item.label}</span>
+              </a>
+            ))
+          }
+        </nav>
+      </aside>
 
-            <!-- Header (Mobile) -->
-            <header class="v4-header">
-                <a href="/admin" class="v4-brand">
-                    SHOLAWAT<span>.ENT</span>
-                </a>
-                <div
-                    class="w-10 h-10 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center text-xs font-bold text-stone-600"
-                >
-                    AD
-                </div>
-            </header>
+      <!-- Header (Mobile) -->
+      <header class="v4-header">
+        <a href="/admin" class="v4-brand">
+          SHOLAWAT<span>.ENT</span>
+        </a>
+        <div
+          class="flex h-10 w-10 items-center justify-center rounded-full border border-stone-200 bg-stone-100 text-xs font-bold text-stone-600"
+        >
+          AD
+        </div>
+      </header>
 
-            <!-- Main Content Area -->
-            <main class="v4-main">
-                <div class="v4-page-header v4-reveal">
-                    <h1 class="v4-title">Operational Hub</h1>
-                    <p class="v4-subtitle">
-                        Selamat datang di Sholawat Enterprise Dashboard
-                    </p>
-                    <div class="mt-6">
-                        <VersionNav active="v4" />
-                    </div>
-                </div>
-
-                <!-- Bento Grid -->
-                <div class="v4-bento-grid">
-                    <!-- Stats Section -->
-                    {
-                        stats.map((stat, idx) => (
-                            <div
-                                class={`v4-card v4-stat-card v4-reveal v4-delay-${(idx % 3) + 1}`}
-                            >
-                                <div class="v4-stat-icon">{stat.icon}</div>
-                                <div>
-                                    <div class="v4-stat-label">
-                                        {stat.label}
-                                    </div>
-                                    <div class="v4-stat-value">
-                                        {stat.value}
-                                    </div>
-                                </div>
-                            </div>
-                        ))
-                    }
-
-                    <!-- AI Insights Banner -->
-                    <div
-                        class="v4-card col-span-2 v4-premium-banner v4-reveal v4-delay-1"
-                    >
-                        <div class="v4-banner-content">
-                            <h3 class="text-xl font-bold mb-2">
-                                Cerdas Bersama AI
-                            </h3>
-                            <p
-                                class="text-white/70 text-sm leading-relaxed max-w-xs"
-                            >
-                                Optimasi stok hari ini dengan prediksi demand
-                                akhir pekan menggunakan algoritma Sholawat
-                                Predictive Hub.
-                            </p>
-                            <button class="v4-btn-white"
-                                >Pelajari Analisis</button
-                            >
-                        </div>
-                    </div>
-
-                    <!-- Quick Access List -->
-                    <div
-                        class="v4-card col-span-2 row-span-2 v4-reveal v4-delay-2"
-                    >
-                        <h2 class="v4-section-title">Akses Cepat</h2>
-                        <div class="v4-action-list">
-                            {
-                                menuItems.map((item) => (
-                                    <a href={item.link} class="v4-action-item">
-                                        <div class="v4-action-icon">
-                                            {item.icon}
-                                        </div>
-                                        <div class="v4-action-text">
-                                            <h4 class="v4-action-title">
-                                                {item.title}
-                                            </h4>
-                                            <p class="v4-action-desc">
-                                                {item.desc}
-                                            </p>
-                                        </div>
-                                        <div class="text-stone-300">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="20"
-                                                height="20"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                stroke-width="2.5"
-                                                stroke-linecap="round"
-                                                stroke-linejoin="round"
-                                            >
-                                                <path d="m9 18 6-6-6-6" />
-                                            </svg>
-                                        </div>
-                                    </a>
-                                ))
-                            }
-                        </div>
-                    </div>
-
-                    <!-- Secondary Stat / Info -->
-                    <div class="v4-card col-span-2 v4-reveal v4-delay-3">
-                        <h2 class="v4-section-title">Kesehatan Sistem</h2>
-                        <div class="flex items-center gap-4">
-                            <div class="flex-1">
-                                <div
-                                    class="h-2 bg-stone-100 rounded-full overflow-hidden"
-                                >
-                                    <div
-                                        class="h-full bg-[#10b981]"
-                                        style="width: 98%"
-                                    >
-                                    </div>
-                                </div>
-                                <div
-                                    class="flex justify-between mt-2 text-[10px] font-bold text-stone-400 uppercase tracking-wider"
-                                >
-                                    <span>Uptime</span>
-                                    <span>98.4%</span>
-                                </div>
-                            </div>
-                            <div
-                                class="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center text-green-600 text-lg"
-                            >
-                                🛡️
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
-
-            <!-- Bottom Dock (Mobile) -->
-            <nav class="v4-nav-dock">
-                <a href="/admin" class="v4-nav-link active">
-                    <span class="text-xl">🏠</span>
-                    <span class="v4-nav-label">Home</span>
-                </a>
-                <a href="/admin/orders" class="v4-nav-link">
-                    <span class="text-xl">🧾</span>
-                    <span class="v4-nav-label">Order</span>
-                </a>
-                <a href="/admin/products" class="v4-nav-link">
-                    <span class="text-xl">🥐</span>
-                    <span class="v4-nav-label">Produk</span>
-                </a>
-                <a href="/admin/settings" class="v4-nav-link">
-                    <span class="text-xl">⚙️</span>
-                    <span class="v4-nav-label">Setup</span>
-                </a>
-            </nav>
+      <!-- Main Content Area -->
+      <main class="v4-main">
+        <div class="v4-page-header v4-reveal">
+          <h1 class="v4-title">Operational Hub</h1>
+          <p class="v4-subtitle">Selamat datang di Sholawat Enterprise Dashboard</p>
+          <div class="mt-6">
+            <VersionNav active="v4" />
+          </div>
         </div>
 
-        <style is:global>
-            /* Extra utilities for Astro */
-            .syne {
-                font-family: "Syne", sans-serif;
-            }
+        <!-- Bento Grid -->
+        <div class="v4-bento-grid">
+          <!-- Stats Section -->
+          {
+            stats.map((stat, idx) => (
+              <div class={`v4-card v4-stat-card v4-reveal v4-delay-${(idx % 3) + 1}`}>
+                <div class="v4-stat-icon">{stat.icon}</div>
+                <div>
+                  <div class="v4-stat-label">{stat.label}</div>
+                  <div class="v4-stat-value">{stat.value}</div>
+                </div>
+              </div>
+            ))
+          }
 
-            @media (max-width: 768px) {
-                body {
-                    overscroll-behavior-y: contain;
-                }
-            }
-        </style>
-    </body>
+          <!-- AI Insights Banner -->
+          <div class="v4-card v4-premium-banner v4-reveal v4-delay-1 col-span-2">
+            <div class="v4-banner-content">
+              <h3 class="mb-2 text-xl font-bold">Cerdas Bersama AI</h3>
+              <p class="max-w-xs text-sm leading-relaxed text-white/70">
+                Optimasi stok hari ini dengan prediksi demand akhir pekan menggunakan algoritma Sholawat Predictive Hub.
+              </p>
+              <button class="v4-btn-white">Pelajari Analisis</button>
+            </div>
+          </div>
+
+          <!-- Quick Access List -->
+          <div class="v4-card v4-reveal v4-delay-2 col-span-2 row-span-2">
+            <h2 class="v4-section-title">Akses Cepat</h2>
+            <div class="v4-action-list">
+              {
+                menuItems.map((item) => (
+                  <a href={item.link} class="v4-action-item">
+                    <div class="v4-action-icon">{item.icon}</div>
+                    <div class="v4-action-text">
+                      <h4 class="v4-action-title">{item.title}</h4>
+                      <p class="v4-action-desc">{item.desc}</p>
+                    </div>
+                    <div class="text-stone-300">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="m9 18 6-6-6-6" />
+                      </svg>
+                    </div>
+                  </a>
+                ))
+              }
+            </div>
+          </div>
+
+          <!-- Secondary Stat / Info -->
+          <div class="v4-card v4-reveal v4-delay-3 col-span-2">
+            <h2 class="v4-section-title">Kesehatan Sistem</h2>
+            <div class="flex items-center gap-4">
+              <div class="flex-1">
+                <div class="h-2 overflow-hidden rounded-full bg-stone-100">
+                  <div class="h-full bg-[#10b981]" style="width: 98%"></div>
+                </div>
+                <div class="mt-2 flex justify-between text-[10px] font-bold tracking-wider text-stone-400 uppercase">
+                  <span>Uptime</span>
+                  <span>98.4%</span>
+                </div>
+              </div>
+              <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 text-lg text-green-600">
+                🛡️
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Bottom Dock (Mobile) -->
+      <nav class="v4-nav-dock">
+        <a href="/admin" class="v4-nav-link active">
+          <span class="text-xl">🏠</span>
+          <span class="v4-nav-label">Home</span>
+        </a>
+        <a href="/admin/orders" class="v4-nav-link">
+          <span class="text-xl">🧾</span>
+          <span class="v4-nav-label">Order</span>
+        </a>
+        <a href="/admin/products" class="v4-nav-link">
+          <span class="text-xl">🥐</span>
+          <span class="v4-nav-label">Produk</span>
+        </a>
+        <a href="/admin/settings" class="v4-nav-link">
+          <span class="text-xl">⚙️</span>
+          <span class="v4-nav-label">Setup</span>
+        </a>
+      </nav>
+    </div>
+
+    <style is:global>
+      /* Extra utilities for Astro */
+      .syne {
+        font-family: "Syne", sans-serif;
+      }
+
+      @media (max-width: 768px) {
+        body {
+          overscroll-behavior-y: contain;
+        }
+      }
+    </style>
+  </body>
 </html>

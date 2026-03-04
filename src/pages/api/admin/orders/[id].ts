@@ -40,12 +40,7 @@ export async function PUT(ctx: APIContext) {
   if (!current?.status || !current?.payment_status) {
     return new Response("Order tidak ditemukan", { status: 404 });
   }
-  const validation = validateOrderUpdate(
-    current.status,
-    status,
-    current.payment_status,
-    paymentStatus,
-  );
+  const validation = validateOrderUpdate(current.status, status, current.payment_status, paymentStatus);
   if (!validation.ok) {
     return new Response(validation.message || "Transisi tidak valid", {
       status: 400,
@@ -57,13 +52,7 @@ export async function PUT(ctx: APIContext) {
   });
   await db.execute({
     sql: "INSERT INTO order_status_history (id, order_id, status, notes, created_at) VALUES (?, ?, ?, ?, ?)",
-    args: [
-      crypto.randomUUID(),
-      id,
-      status,
-      sanitizeText(String(body.notes || "")) || null,
-      nowIso(),
-    ],
+    args: [crypto.randomUUID(), id, status, sanitizeText(String(body.notes || "")) || null, nowIso()],
   });
   return json({ ok: true });
 }

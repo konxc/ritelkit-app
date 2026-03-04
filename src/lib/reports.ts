@@ -88,9 +88,7 @@ export async function getReportData(db: Db) {
     .where(and(eq(refunds.status, "approved"), gte(refunds.createdAt, thirtyDaysAgoStr)));
 
   // Products for cost calculation
-  const productsRes = await db
-    .select({ id: products.id, cost: products.cost, name: products.name })
-    .from(products);
+  const productsRes = await db.select({ id: products.id, cost: products.cost, name: products.name }).from(products);
 
   const productCost: Record<string, { cost: number; name: string }> = {};
   for (const row of productsRes) {
@@ -129,10 +127,7 @@ export async function getReportData(db: Db) {
     }
   }
 
-  const refundTotal = refundsRes.reduce(
-    (sum: number, row: any) => sum + Number(row.amount || 0),
-    0,
-  );
+  const refundTotal = refundsRes.reduce((sum: number, row: any) => sum + Number(row.amount || 0), 0);
   const grossProfit = revenue - cogs - refundTotal;
 
   // LTV (90 days)

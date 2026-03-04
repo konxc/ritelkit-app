@@ -8,11 +8,7 @@ interface Props {
   activeNav?: "home" | "insights" | "research" | "settings";
 }
 
-const {
-  title = "Admin Workspace",
-  description = "Admin dashboard PWA",
-  activeNav = "research",
-} = Astro.props;
+const { title = "Admin Workspace", description = "Admin dashboard PWA", activeNav = "research" } = Astro.props;
 
 const csrfToken = ensureCsrfToken(Astro);
 ---
@@ -21,10 +17,7 @@ const csrfToken = ensureCsrfToken(Astro);
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#f4f1ed" />
     <meta name="description" content={description} />
     <meta name="csrf-token" content={csrfToken} />
@@ -53,28 +46,16 @@ const csrfToken = ensureCsrfToken(Astro);
 
       <nav class="pwa-nav">
         <div class="pwa-nav-card">
-          <a
-            href="/admin/overview"
-            class={`pwa-nav-item ${activeNav === "home" ? "pwa-nav-item-active" : ""}`}
-          >
+          <a href="/admin/overview" class={`pwa-nav-item ${activeNav === "home" ? "pwa-nav-item-active" : ""}`}>
             <span>Home</span>
           </a>
-          <a
-            href="/admin/reports"
-            class={`pwa-nav-item ${activeNav === "insights" ? "pwa-nav-item-active" : ""}`}
-          >
+          <a href="/admin/reports" class={`pwa-nav-item ${activeNav === "insights" ? "pwa-nav-item-active" : ""}`}>
             <span>Insights</span>
           </a>
-          <a
-            href="/admin/research"
-            class={`pwa-nav-item ${activeNav === "research" ? "pwa-nav-item-active" : ""}`}
-          >
+          <a href="/admin/research" class={`pwa-nav-item ${activeNav === "research" ? "pwa-nav-item-active" : ""}`}>
             <span>Research</span>
           </a>
-          <a
-            href="/admin/settings"
-            class={`pwa-nav-item ${activeNav === "settings" ? "pwa-nav-item-active" : ""}`}
-          >
+          <a href="/admin/settings" class={`pwa-nav-item ${activeNav === "settings" ? "pwa-nav-item-active" : ""}`}>
             <span>Settings</span>
           </a>
         </div>

@@ -25,11 +25,7 @@ const lanes = [
 ];
 ---
 
-<AdminPwaLayout
-  title="Research V1"
-  description="Premium warm PWA dashboard"
-  activeNav="research"
->
+<AdminPwaLayout title="Research V1" description="Premium warm PWA dashboard" activeNav="research">
   <VersionNav active="v1" />
 
   <section class="pwa-section pwa-hero">
@@ -37,22 +33,22 @@ const lanes = [
       <div class="pwa-card">
         <div class="pwa-chip">Insight Focus</div>
         <h2 class="pwa-title" style="margin: 12px 0 6px;">Pola Order Pagi</h2>
-        <p class="pwa-subtitle">
-          Mayoritas order premium masuk jam 06.00-08.00. Siapkan batch lebih awal.
-        </p>
+        <p class="pwa-subtitle">Mayoritas order premium masuk jam 06.00-08.00. Siapkan batch lebih awal.</p>
         <div class="pwa-grid-2" style="margin-top: 16px;">
           <button class="pwa-cta" type="button">Buat Rencana</button>
           <button class="pwa-ghost" type="button">Lihat Detail</button>
         </div>
       </div>
       <div class="pwa-grid-2">
-        {highlights.map((item) => (
-          <div class="pwa-metric">
-            <span class="pwa-metric-title">{item.title}</span>
-            <span class="pwa-metric-value">{item.value}</span>
-            <span class="pwa-subtitle">{item.note}</span>
-          </div>
-        ))}
+        {
+          highlights.map((item) => (
+            <div class="pwa-metric">
+              <span class="pwa-metric-title">{item.title}</span>
+              <span class="pwa-metric-value">{item.value}</span>
+              <span class="pwa-subtitle">{item.note}</span>
+            </div>
+          ))
+        }
       </div>
     </div>
   </section>
@@ -65,12 +61,16 @@ const lanes = [
         <p class="pwa-subtitle">Tiga fokus utama untuk keputusan minggu ini.</p>
       </div>
       <div class="pwa-grid">
-        {lanes.map((lane) => (
-          <article class="pwa-card">
-            <h4 style="margin: 0 0 6px; font-size: 1.05rem;">{lane.title}</h4>
-            <p class="pwa-subtitle" style="margin: 0;">{lane.body}</p>
-          </article>
-        ))}
+        {
+          lanes.map((lane) => (
+            <article class="pwa-card">
+              <h4 style="margin: 0 0 6px; font-size: 1.05rem;">{lane.title}</h4>
+              <p class="pwa-subtitle" style="margin: 0;">
+                {lane.body}
+              </p>
+            </article>
+          ))
+        }
       </div>
     </div>
   </section>
@@ -84,8 +84,7 @@ const lanes = [
         <textarea
           rows="4"
           placeholder="Tulis insight singkat"
-          style="width: 100%; border-radius: 14px; border: 1px solid var(--pwa-border); padding: 12px;"
-        ></textarea>
+          style="width: 100%; border-radius: 14px; border: 1px solid var(--pwa-border); padding: 12px;"></textarea>
       </div>
       <div class="pwa-card">
         <div class="pwa-chip">Next Moves</div>
