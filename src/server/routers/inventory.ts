@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { router, adminProcedure } from "../trpc";
 import { inventoryMovements, products } from "../../db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, or, like } from "drizzle-orm";
 
 export const inventoryRouter = router({
   listMovements: adminProcedure.query(async ({ ctx }) => {
@@ -23,9 +23,23 @@ export const inventoryRouter = router({
       .all();
   }),
 
-  listProducts: adminProcedure.query(async ({ ctx }) => {
-    return ctx.db.select().from(products).all();
-  }),
+  listProducts: adminProcedure
+    .input(z.object({ q: z.string().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      const { q } = input || {};
+      let query = ctx.db.select().from(products);
+      
+      if (q) {
+        query = (query as any).where(
+          or(
+            like(products.name, `%${q}%`),
+            like(products.sku, `%${q}%`)
+          )
+        );
+      }
+      
+      return query.all();
+    }),
 
   createMovement: adminProcedure
     .input(
@@ -52,11 +66,7 @@ export const inventoryRouter = router({
           .run();
 
         // 2. Update product stock
-        const product = await tx
-          .select()
-          .from(products)
-          .where(eq(products.id, input.productId))
-          .get();
+        const product = await tx.select().from(products).where(eq(products.id, input.productId)).get();
         if (!product) throw new Error("Produk tidak ditemukan");
 
         let newStock = product.stock || 0;

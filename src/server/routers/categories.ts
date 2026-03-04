@@ -6,10 +6,7 @@ import { z } from "zod";
 
 export const categoryRouter = router({
   list: adminProcedure.query(async ({ ctx }) => {
-    return await ctx.db
-      .select()
-      .from(categories)
-      .orderBy(asc(categories.sortOrder), asc(categories.name));
+    return await ctx.db.select().from(categories).orderBy(asc(categories.sortOrder), asc(categories.name));
   }),
 
   create: adminProcedure

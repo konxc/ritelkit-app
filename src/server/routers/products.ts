@@ -1,30 +1,71 @@
 import { adminProcedure, router } from "../trpc";
 import { products, categories } from "../../db/schema";
 import { ProductSchema } from "../../lib/types";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, or, like } from "drizzle-orm";
 import { z } from "zod";
 
 export const productRouter = router({
-  list: adminProcedure.query(async ({ ctx }) => {
-    return await ctx.db
-      .select({
-        id: products.id,
-        sku: products.sku,
-        name: products.name,
-        slug: products.slug,
-        description: products.description,
-        categoryId: products.categoryId,
-        categoryName: categories.name,
-        price: products.price,
-        cost: products.cost,
-        stock: products.stock,
-        isActive: products.isActive,
-        imagesJson: products.imagesJson,
-      })
-      .from(products)
-      .leftJoin(categories, eq(products.categoryId, categories.id))
-      .orderBy(desc(products.createdAt));
-  }),
+  list: adminProcedure
+    .input(
+      z.object({
+        q: z.string().optional(),
+        categoryId: z.string().optional(),
+        status: z.string().optional(),
+        page: z.number().optional().default(1),
+        limit: z.number().optional().default(50),
+      }).optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      const { q, categoryId, status, page = 1, limit = 50 } = input || {};
+      const offset = (page - 1) * limit;
+
+      let whereClause: any = undefined;
+      const conditions = [];
+
+      if (q) {
+        conditions.push(
+          or(
+            like(products.name, `%${q}%`),
+            like(products.sku, `%${q}%`),
+            like(products.description, `%${q}%`),
+          ),
+        );
+      }
+
+      if (categoryId) {
+        conditions.push(eq(products.categoryId, categoryId));
+      }
+
+      if (status) {
+        conditions.push(eq(products.isActive, status === "active" ? 1 : 0));
+      }
+
+      if (conditions.length > 0) {
+        whereClause = and(...conditions);
+      }
+
+      return await ctx.db
+        .select({
+          id: products.id,
+          sku: products.sku,
+          name: products.name,
+          slug: products.slug,
+          description: products.description,
+          categoryId: products.categoryId,
+          categoryName: categories.name,
+          price: products.price,
+          cost: products.cost,
+          stock: products.stock,
+          isActive: products.isActive,
+          imagesJson: products.imagesJson,
+        })
+        .from(products)
+        .leftJoin(categories, eq(products.categoryId, categories.id))
+        .where(whereClause)
+        .orderBy(desc(products.createdAt))
+        .limit(limit)
+        .offset(offset);
+    }),
 
   create: adminProcedure
     .input(ProductSchema.omit({ id: true, createdAt: true, updatedAt: true }))
