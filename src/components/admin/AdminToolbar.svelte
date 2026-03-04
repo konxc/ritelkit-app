@@ -25,6 +25,14 @@
     }
     // Set checked to true to allow rendering
     hasChecked = true;
+
+    // Listen to external toggle events
+    const handleRemoteToggle = () => toggle();
+    window.addEventListener("toggle-admin-toolbar", handleRemoteToggle);
+
+    return () => {
+      window.removeEventListener("toggle-admin-toolbar", handleRemoteToggle);
+    };
   });
 
   function toggle() {
@@ -35,12 +43,11 @@
 </script>
 
 <div
-  class="z-20 mb-6 flex flex-col justify-between gap-5 rounded-[2rem] border border-stone-200/60 bg-white/95 p-4 shadow-[0_8px_30px_rgba(0,0,0,0.03)] backdrop-blur-md transition-all duration-300 md:flex-row md:items-center lg:p-6 {className} {!isVisible &&
-  hasChecked
-    ? 'pb-4'
-    : ''}"
+  class="z-20 -mx-4 -mt-4 mb-6 flex-col justify-between gap-0 border-b border-stone-200/80 bg-white/98 px-5 py-3 shadow-sm backdrop-blur-md transition-all duration-300 sm:mx-0 sm:mt-0 sm:rounded-[2rem] sm:border sm:bg-white/95 sm:p-4 md:flex-row md:items-center md:gap-5 {className} {isVisible
+    ? 'flex sm:border-stone-200/60 sm:shadow-[0_8px_30px_rgba(0,0,0,0.03)]'
+    : 'hidden sm:border-transparent sm:bg-transparent sm:shadow-none'}"
 >
-  <div class="flex items-center justify-between gap-2.5">
+  <div class="hidden items-center justify-between gap-2.5 md:flex">
     <div class="flex items-center gap-2.5">
       <div class="h-6 w-1.5 rounded-full bg-[#c48a3a]"></div>
       <h3 class="text-[1.05rem] font-extrabold tracking-tight text-stone-800">{title}</h3>
@@ -50,7 +57,7 @@
     <button
       type="button"
       onclick={toggle}
-      class="flex h-8 w-8 items-center justify-center rounded-full bg-stone-50 text-stone-400 transition-all hover:bg-stone-100 hover:text-stone-600 active:scale-90"
+      class="hidden h-8 w-8 items-center justify-center rounded-full bg-stone-50 text-stone-400 transition-all hover:bg-stone-100 hover:text-stone-600 active:scale-90 lg:flex"
       title={isVisible ? "Sembunyikan Filter" : "Tampilkan Filter"}
     >
       <svg
@@ -80,4 +87,36 @@
     <!-- Placeholder or hidden to avoid layout shift -->
     <div class="h-0 md:h-10"></div>
   {/if}
+</div>
+
+<!-- Mobile Float Filter Toggle (Placed above main FAB) -->
+<div class="pointer-events-auto fixed right-5 bottom-[172px] z-[45] lg:hidden">
+  <button
+    type="button"
+    onclick={toggle}
+    class="flex h-14 w-14 flex-col items-center justify-center rounded-2xl border border-stone-200 bg-white shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition-all active:scale-95"
+    title={isVisible ? "Sembunyikan Filter" : "Tampilkan Filter"}
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="text-stone-400 transition-transform duration-300 {isVisible ? 'rotate-180 text-[#c48a3a]' : ''}"
+    >
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+    </svg>
+    <span
+      class="mt-[1px] text-[0.55rem] font-bold tracking-widest uppercase {isVisible
+        ? 'text-[#c48a3a]'
+        : 'text-stone-400'}"
+    >
+      Filter
+    </span>
+  </button>
 </div>

@@ -183,7 +183,7 @@ const tabs = [
   {
     tab === "kategori" && (
       <>
-        <AdminToolbar title="Data Kategori" class="sticky top-2 md:top-4 z-20" client:load>
+        <AdminToolbar title="Data Kategori" class="sticky top-0 z-20 sm:top-2 md:top-4 lg:hidden" client:load>
           <CatalogHeaderFilters 
             tab="kategori" 
             q={q} 
@@ -197,7 +197,7 @@ const tabs = [
   {
     tab === "produk" && (
       <>
-        <AdminToolbar title="Filter Produk" class="sticky top-2 md:top-4 z-20" client:load>
+        <AdminToolbar title="Filter Produk" class="sticky top-0 z-20 sm:top-2 md:top-4 lg:hidden" client:load>
           <CatalogHeaderFilters 
             tab="produk" 
             q={q} 
@@ -206,30 +206,6 @@ const tabs = [
             categoryOptions={categoryOptions} 
             client:load 
           />
-          
-          <div class="mx-1 hidden h-10 w-px bg-stone-200/80 md:block" />
-          
-          <Button variant="simple" size="sm" href="/api/admin/export?entity=products">
-            <svg
-              slot="children"
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <>
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </>
-            </svg>
-            Export
-          </Button>
         </AdminToolbar>
       </>
     )
@@ -238,7 +214,7 @@ const tabs = [
   {
     tab === "inventory" && (
       <>
-        <AdminToolbar title="Data Inventory" class="sticky top-2 md:top-4 z-20" client:load>
+        <AdminToolbar title="Data Inventory" class="sticky top-0 z-20 sm:top-2 md:top-4 lg:hidden" client:load>
           <CatalogHeaderFilters 
             tab="inventory" 
             q={q} 
@@ -246,53 +222,6 @@ const tabs = [
             categoryOptions={categoryOptions} 
             client:load 
           />
-
-          <div class="mx-1 hidden h-10 w-px bg-stone-200/80 md:block" />
-
-          <Button variant="simple" size="sm" href="/api/admin/export?entity=products">
-            <svg
-              slot="children"
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <>
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </>
-            </svg>
-            Export
-          </Button>
-
-          <Button variant="simple" size="sm" href="/api/admin/export?entity=inventory">
-            <svg
-              slot="children"
-              xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <>
-                <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-                <path d="M10.4 12.6a2 2 0 1 1 3 3L8 21l-4 1 1-4Z" />
-                <path d="M18 18l-1.5 -1.5" />
-                <path d="M15 2H6a2 2 0 0 0 -2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2V7z" />
-              </>
-            </svg>
-            Log
-          </Button>
         </AdminToolbar>
       </>
     )

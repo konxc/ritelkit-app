@@ -31,6 +31,10 @@
   {:else if tab === "produk"}
     <ProductsManager rows={initialData.products} categories={initialData.categories} />
   {:else if tab === "inventory"}
-    <InventoryManager products={initialData.inventoryProducts} movements={initialData.inventoryMovements} />
+    <InventoryManager
+      products={initialData.inventoryProducts}
+      movements={initialData.inventoryMovements}
+      categories={initialData.categories}
+    />
   {/if}
 </QueryProvider>

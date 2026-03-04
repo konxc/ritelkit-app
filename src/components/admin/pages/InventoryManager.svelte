@@ -1,156 +1,159 @@
 <script lang="ts">
-import { onMount } from "svelte";
-import { trpc } from "../../../lib/trpc";
-import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-import CrudInlineForm from "../CrudInlineForm.svelte";
-import SectionHeader from "../SectionHeader.svelte";
-import ToastNotification from "../ToastNotification.svelte";
-import Table from "../ui/Table.svelte";
-import TableRow from "../ui/TableRow.svelte";
-import TableCell from "../ui/TableCell.svelte";
-import Button from "../ui/Button.svelte";
-import TextInput from "../ui/forms/TextInput.svelte";
-import SelectInput from "../ui/forms/SelectInput.svelte";
-import Textarea from "../ui/forms/Textarea.svelte";
-import { fly } from "svelte/transition";
-import Fab from "../ui/Fab.svelte";
-import Badge from "../ui/Badge.svelte";
-import Drawer from "../ui/overlay/Drawer.svelte";
+  import { onMount } from "svelte";
+  import { trpc } from "../../../lib/trpc";
+  import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+  import CrudInlineForm from "../CrudInlineForm.svelte";
+  import SectionHeader from "../SectionHeader.svelte";
+  import ToastNotification from "../ToastNotification.svelte";
+  import Table from "../ui/Table.svelte";
+  import TableRow from "../ui/TableRow.svelte";
+  import TableCell from "../ui/TableCell.svelte";
+  import Button from "../ui/Button.svelte";
+  import TextInput from "../ui/forms/TextInput.svelte";
+  import SelectInput from "../ui/forms/SelectInput.svelte";
+  import Textarea from "../ui/forms/Textarea.svelte";
+  import { fly } from "svelte/transition";
+  import Fab from "../ui/Fab.svelte";
+  import Badge from "../ui/Badge.svelte";
+  import Drawer from "../ui/overlay/Drawer.svelte";
+  import CatalogHeaderFilters from "../CatalogHeaderFilters.svelte";
 
-type InventoryProductRow = {
-  id: string;
-  sku?: string | null;
-  name: string;
-  stock?: number | null;
-  price?: number | null;
-};
+  type InventoryProductRow = {
+    id: string;
+    sku?: string | null;
+    name: string;
+    stock?: number | null;
+    price?: number | null;
+  };
 
-type InventoryMovement = {
-  id: string;
-  productId: string;
-  type: string;
-  qty: number;
-  notes: string | null;
-  refOrderNo: string | null;
-  createdAt: string;
-  product_name: string | null;
-};
+  type InventoryMovement = {
+    id: string;
+    productId: string;
+    type: string;
+    qty: number;
+    notes: string | null;
+    refOrderNo: string | null;
+    createdAt: string;
+    product_name: string | null;
+  };
 
-type MovementInput = {
-  productId: string;
-  type: "in" | "out" | "adjustment";
-  qty: number;
-  notes?: string;
-};
+  type MovementInput = {
+    productId: string;
+    type: "in" | "out" | "adjustment";
+    qty: number;
+    notes?: string;
+  };
 
-let {
-  products: initialProducts = [],
-  movements: initialMovements = [],
-}: {
-  products?: InventoryProductRow[];
-  movements?: InventoryMovement[];
-} = $props();
+  let {
+    products: initialProducts = [],
+    movements: initialMovements = [],
+    categories = [],
+  }: {
+    products?: InventoryProductRow[];
+    movements?: InventoryMovement[];
+    categories?: { id: string | number; name: string }[];
+  } = $props();
 
-const queryClient = useQueryClient();
-let toastRef = $state<ToastNotification>();
-let isSubmitting = $state(false);
-let isDrawerOpen = $state(false);
-let activeSubTab = $state("stok");
+  const queryClient = useQueryClient();
+  let toastRef = $state<ToastNotification>();
+  let isSubmitting = $state(false);
+  let isDrawerOpen = $state(false);
+  let activeSubTab = $state("stok");
 
-// Reactive filters from URL
-let q = $state("");
+  // Reactive filters from URL
+  let q = $state("");
 
-function syncFiltersFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-  q = params.get("q") || "";
-}
-
-onMount(() => {
-  const params = new URLSearchParams(window.location.search);
-  const sub = params.get("subtab");
-  if (sub === "stok" || sub === "log") {
-    activeSubTab = sub;
-  }
-  syncFiltersFromUrl();
-  window.addEventListener("popstate", syncFiltersFromUrl);
-  return () => window.removeEventListener("popstate", syncFiltersFromUrl);
-});
-
-const productsQuery = createQuery(() => ({
-  queryKey: ["inventory.products.list", { q }],
-  queryFn: () => trpc.inventory.listProducts.query({ q }),
-  initialData: q === "" ? initialProducts : undefined,
-  placeholderData: (prev) => prev,
-}));
-
-const movementsQuery = createQuery(() => ({
-  queryKey: ["inventory.movements.list"],
-  queryFn: () => trpc.inventory.listMovements.query(),
-  initialData: initialMovements.length > 0 ? initialMovements : undefined,
-  refetchOnMount: false,
-  staleTime: 1000 * 60 * 5,
-}));
-
-let currentProducts = $derived((productsQuery.data as InventoryProductRow[]) || []);
-let currentMovements = $derived((movementsQuery.data as InventoryMovement[]) || []);
-
-const handleCreate = async (event: SubmitEvent) => {
-  event.preventDefault();
-  const form = event.currentTarget as HTMLFormElement;
-  const data = new FormData(form);
-
-  isSubmitting = true;
-  try {
-    await trpc.inventory.createMovement.mutate({
-      productId: data.get("product_id") as string,
-      type: String(data.get("type") || "in") as MovementInput["type"],
-      qty: Number(data.get("qty")),
-      notes: (data.get("notes") as string) || undefined,
-    });
-
-    queryClient.invalidateQueries({ queryKey: ["inventory.products.list"] });
-    queryClient.invalidateQueries({ queryKey: ["inventory.movements.list"] });
-
-    toastRef?.show("Stok berhasil diperbarui!", "success");
-    form.reset();
-    isDrawerOpen = false;
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Terjadi kesalahan";
-    toastRef?.show(message, "error");
-  } finally {
-    isSubmitting = false;
-  }
-};
-
-const handleUpdateStock = async (id: string, newStockRaw: string) => {
-  const qty = Number(newStockRaw.trim());
-  if (Number.isNaN(qty)) {
-    toastRef?.show("Stok harus angka", "error");
-    return;
+  function syncFiltersFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    q = params.get("q") || "";
   }
 
-  try {
-    await trpc.inventory.createMovement.mutate({
-      productId: id,
-      type: "adjustment",
-      qty: qty,
-      notes: "Penyesuaian stok manual via tabel",
-    });
+  onMount(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sub = params.get("subtab");
+    if (sub === "stok" || sub === "log") {
+      activeSubTab = sub;
+    }
+    syncFiltersFromUrl();
+    window.addEventListener("popstate", syncFiltersFromUrl);
+    return () => window.removeEventListener("popstate", syncFiltersFromUrl);
+  });
 
-    queryClient.invalidateQueries({ queryKey: ["inventory.products.list"] });
-    queryClient.invalidateQueries({ queryKey: ["inventory.movements.list"] });
-    toastRef?.show("Stok berhasil di-update", "success");
-  } catch (error: unknown) {
-    toastRef?.show("Gagal update stok", "error");
-  }
-};
+  const productsQuery = createQuery(() => ({
+    queryKey: ["inventory.products.list", { q }],
+    queryFn: () => trpc.inventory.listProducts.query({ q }),
+    initialData: q === "" ? initialProducts : undefined,
+    placeholderData: (prev) => prev,
+  }));
 
-const fieldIds = {
-  product: "inventory-product",
-  type: "inventory-type",
-  qty: "inventory-qty",
-  notes: "inventory-notes",
-};
+  const movementsQuery = createQuery(() => ({
+    queryKey: ["inventory.movements.list"],
+    queryFn: () => trpc.inventory.listMovements.query(),
+    initialData: initialMovements.length > 0 ? initialMovements : undefined,
+    refetchOnMount: false,
+    staleTime: 1000 * 60 * 5,
+  }));
+
+  let currentProducts = $derived((productsQuery.data as InventoryProductRow[]) || []);
+  let currentMovements = $derived((movementsQuery.data as InventoryMovement[]) || []);
+
+  const handleCreate = async (event: SubmitEvent) => {
+    event.preventDefault();
+    const form = event.currentTarget as HTMLFormElement;
+    const data = new FormData(form);
+
+    isSubmitting = true;
+    try {
+      await trpc.inventory.createMovement.mutate({
+        productId: data.get("product_id") as string,
+        type: String(data.get("type") || "in") as MovementInput["type"],
+        qty: Number(data.get("qty")),
+        notes: (data.get("notes") as string) || undefined,
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["inventory.products.list"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory.movements.list"] });
+
+      toastRef?.show("Stok berhasil diperbarui!", "success");
+      form.reset();
+      isDrawerOpen = false;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+      toastRef?.show(message, "error");
+    } finally {
+      isSubmitting = false;
+    }
+  };
+
+  const handleUpdateStock = async (id: string, newStockRaw: string) => {
+    const qty = Number(newStockRaw.trim());
+    if (Number.isNaN(qty)) {
+      toastRef?.show("Stok harus angka", "error");
+      return;
+    }
+
+    try {
+      await trpc.inventory.createMovement.mutate({
+        productId: id,
+        type: "adjustment",
+        qty: qty,
+        notes: "Penyesuaian stok manual via tabel",
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["inventory.products.list"] });
+      queryClient.invalidateQueries({ queryKey: ["inventory.movements.list"] });
+      toastRef?.show("Stok berhasil di-update", "success");
+    } catch (error: unknown) {
+      toastRef?.show("Gagal update stok", "error");
+    }
+  };
+
+  const fieldIds = {
+    product: "inventory-product",
+    type: "inventory-type",
+    qty: "inventory-qty",
+    notes: "inventory-notes",
+  };
 </script>
 
 <div class="mt-2 mb-6 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
@@ -209,8 +212,39 @@ const fieldIds = {
       </button>
     </div>
   </div>
-  <div class="hidden lg:block">
-    <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex h-auto items-center gap-2.5 py-3">
+  <div class="hidden lg:flex lg:items-center lg:gap-3">
+    <div class="mr-2">
+      <CatalogHeaderFilters tab="inventory" categoryOptions={categories} />
+    </div>
+
+    <div class="h-10 w-px self-center bg-stone-200/80" />
+
+    <Button
+      variant="outline"
+      href={`/api/admin/export?entity=${activeSubTab === "log" ? "inventory" : "products"}`}
+      class="flex items-center justify-center border-stone-200 text-stone-600 hover:bg-stone-50"
+    >
+      <svg
+        slot="children"
+        xmlns="http://www.w3.org/2000/svg"
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="mr-1.5"
+      >
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
+      </svg>
+      <span class="font-bold">Export</span>
+    </Button>
+
+    <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2.5">
       <div
         class="flex h-5 w-5 items-center justify-center rounded-lg bg-white/20 transition-transform group-hover:rotate-90"
       >

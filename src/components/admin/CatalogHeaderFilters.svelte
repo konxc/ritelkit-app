@@ -136,33 +136,28 @@
   </div>
 
   <!-- Desktop Filters Panel -->
-  <div class="hidden items-center gap-3 rounded-2xl border border-stone-100 bg-stone-50/40 p-1.5 lg:flex">
+  <div class="hidden items-center gap-3 lg:flex">
     <div class="w-44">
       <SelectInput
         name="category"
         bind:value={localCategoryId}
         onchange={onFilterChange}
         options={catOptions}
-        class="!border-none !bg-transparent !shadow-none"
+        class="bg-stone-50/50 hover:bg-white"
       />
     </div>
 
     {#if tab === "produk"}
-      <div class="h-6 w-px bg-stone-200" />
       <div class="w-36">
         <SelectInput
           name="status"
           bind:value={localStatus}
           onchange={onFilterChange}
           options={statusOptions}
-          class="!border-none !bg-transparent !shadow-none"
+          class="bg-stone-50/50 hover:bg-white"
         />
       </div>
     {/if}
-
-    <div class="flex h-9 items-center justify-center px-4">
-      <div class="h-2 w-2 animate-pulse rounded-full bg-[#c48a3a]/40"></div>
-    </div>
   </div>
 
   <!-- Drawer for Mobile Filtering -->

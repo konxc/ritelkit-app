@@ -31,7 +31,7 @@
   }: Props = $props();
 
   const baseSelectClasses =
-    "w-full px-4 py-3 rounded-xl border bg-white focus:outline-none focus:ring-[3px] transition-all duration-300 text-stone-900 appearance-none cursor-pointer shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:border-stone-300 focus:shadow-md";
+    "w-full px-4 py-2.5 text-[0.85rem] lg:text-sm rounded-2xl border bg-white focus:outline-none focus:ring-[3px] transition-all duration-300 text-stone-800 font-semibold appearance-none cursor-pointer shadow-sm hover:border-stone-300 focus:shadow-md";
 
   let selectClasses = $derived(
     [

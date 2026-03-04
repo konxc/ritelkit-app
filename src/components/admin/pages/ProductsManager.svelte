@@ -18,6 +18,7 @@
   import TextInput from "../ui/forms/TextInput.svelte";
   import SelectInput from "../ui/forms/SelectInput.svelte";
   import Textarea from "../ui/forms/Textarea.svelte";
+  import CatalogHeaderFilters from "../CatalogHeaderFilters.svelte";
 
   type ProductRow = Pick<
     Product,
@@ -237,10 +238,41 @@
   const handleDragOver = (e: DragEvent) => e.preventDefault();
 </script>
 
-<div class="mt-2 mb-8 flex items-center justify-between">
+<div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
   <SectionHeader title="Daftar Produk" muted="Kelola produk, edit harga, dan perbarui stok." />
-  <div class="hidden lg:block">
-    <Button variant="primary" onclick={() => (isDrawerOpen = true)}>
+  <div class="hidden lg:flex lg:items-center lg:gap-3">
+    <div class="mr-2">
+      <CatalogHeaderFilters tab="produk" categoryOptions={currentCategories} />
+    </div>
+
+    <div class="h-10 w-px bg-stone-200/80" />
+
+    <Button
+      variant="outline"
+      href="/api/admin/export?entity=products"
+      class="border-stone-200 text-stone-600 hover:bg-stone-50"
+    >
+      <svg
+        slot="children"
+        xmlns="http://www.w3.org/2000/svg"
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="mr-1.5 inline-block"
+      >
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
+      </svg>
+      <span class="font-bold">Export</span>
+    </Button>
+
+    <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
       <div class="flex items-center gap-2">
         <svg
           xmlns="http://www.w3.org/2000/svg"

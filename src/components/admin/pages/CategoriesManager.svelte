@@ -12,6 +12,7 @@
   import Button from "../ui/Button.svelte";
   import TextInput from "../ui/forms/TextInput.svelte";
   import SelectInput from "../ui/forms/SelectInput.svelte";
+  import CatalogHeaderFilters from "../CatalogHeaderFilters.svelte";
   import Fab from "../ui/Fab.svelte";
 
   type CategoryMutationInput = {
@@ -134,7 +135,10 @@
 
 <div class="mt-2 mb-8 flex items-center justify-between">
   <SectionHeader title="Daftar Kategori" muted="Kelola dan edit kategori produk" />
-  <div class="hidden lg:block">
+  <div class="hidden lg:flex lg:items-center lg:gap-3">
+    <div class="mr-2">
+      <CatalogHeaderFilters tab="kategori" />
+    </div>
     <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
       <div
         class="flex h-5 w-5 items-center justify-center rounded-full bg-white/20 transition-transform group-hover:rotate-90"

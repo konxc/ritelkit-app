@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "astro:schema";
 
 const JsonArraySchema = z.preprocess((val) => {
   if (typeof val === "string") {

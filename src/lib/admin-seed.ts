@@ -1031,7 +1031,7 @@ async function insertOrderFullRelational(
 }
 
 
-async function ensureShipments(db: Client) {
+async function ensureShipments() {
   // Logic now handled in insertOrderFullRelational to ensure 100% linkage
 }
 
@@ -1061,16 +1061,16 @@ async function ensureRefunds(db: Client, orderMap: Record<string, { id: string; 
 }
 
 
-async function ensureInvoices(db: Client) {
+async function ensureInvoices() {
   // Logic now handled in insertOrderFullRelational
 }
 
 
-async function ensureOrderStatusHistory(db: Client) {
+async function ensureOrderStatusHistory() {
   // Logic now handled in insertOrderFullRelational
 }
 
-async function ensureInventoryMovements(db: Client) {
+async function ensureInventoryMovements() {
   // Logic now handled in insertOrderFullRelational
 }
 

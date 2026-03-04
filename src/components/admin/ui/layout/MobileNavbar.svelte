@@ -21,13 +21,13 @@
 </script>
 
 <nav
-  class="fixed bottom-3 left-1/2 z-50 flex w-max -translate-x-1/2 items-center gap-1.5 rounded-3xl border border-white/10 bg-stone-900/95 p-2 shadow-[0_20px_40px_rgba(0,0,0,0.25)] backdrop-blur-xl lg:hidden"
+  class="fixed bottom-3 left-1/2 z-50 flex w-[calc(100%-1.5rem)] max-w-md -translate-x-1/2 items-center justify-between gap-1.5 rounded-3xl border border-white/10 bg-stone-900/95 p-2 shadow-[0_20px_40px_rgba(0,0,0,0.25)] backdrop-blur-xl lg:hidden"
 >
   {#each navItems as item}
     {@const active = isActive(item.path)}
     <a
       href={item.path}
-      class="flex h-14 w-[60px] flex-col items-center justify-center rounded-2xl border no-underline transition-all duration-300 sm:w-[68px] {active
+      class="flex h-14 flex-1 flex-col items-center justify-center rounded-2xl border no-underline transition-all duration-300 {active
         ? 'border-[#c48a3a]/50 bg-gradient-to-br from-[#c48a3a] to-[#a6722d] text-white shadow-[0_4px_12px_rgba(196,138,58,0.3)]'
         : 'border-transparent text-white/50 hover:bg-white/5 hover:text-white'}"
     >

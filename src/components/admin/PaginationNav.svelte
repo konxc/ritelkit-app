@@ -13,13 +13,15 @@
   } = $props();
 </script>
 
-<div class="mt-8 flex items-center justify-between border-t border-stone-200/60 pt-6">
-  <span class="rounded-md bg-stone-100/80 px-3 py-1.5 text-[0.85rem] font-semibold text-stone-500">
+<div class="relative mt-8 flex w-full items-center justify-between border-t border-stone-200/60 pt-6">
+  <span
+    class="rounded-full bg-stone-100/80 px-3 py-1.5 text-[0.75rem] font-semibold text-stone-500 shadow-sm sm:rounded-md sm:bg-stone-100/80 sm:px-3 sm:py-1.5 sm:text-[0.85rem] sm:shadow-none"
+  >
     Halaman <span class="font-bold text-stone-900">{page}</span> dari
     <span class="font-bold text-stone-900">{totalPages}</span>
   </span>
-  <div class="flex items-center gap-2">
-    <Button variant="simple" size="sm" href={prevHref} disabled={!prevHref} class="!px-3.5">
+  <div class="absolute left-1/2 flex -translate-x-1/2 items-center gap-2 sm:static sm:translate-x-0 sm:gap-2">
+    <Button variant="simple" size="sm" href={prevHref} disabled={!prevHref} class="!rounded-xl !px-4 sm:!px-3.5">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="18"
@@ -34,7 +36,7 @@
       <span class="hidden sm:inline">Sebelumnya</span>
     </Button>
 
-    <Button variant="simple" size="sm" href={nextHref} disabled={!nextHref} class="!px-3.5">
+    <Button variant="simple" size="sm" href={nextHref} disabled={!nextHref} class="!rounded-xl !px-4 sm:!px-3.5">
       <span class="hidden sm:inline">Selanjutnya</span>
       <svg
         xmlns="http://www.w3.org/2000/svg"

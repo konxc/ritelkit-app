@@ -1,5 +1,5 @@
 import { ActionError, defineAction } from "astro:actions";
-import { z } from "zod";
+import { z } from "astro:schema";
 import type { APIContext } from "astro";
 import { asc, desc, eq, like, or, sql } from "drizzle-orm";
 import {
