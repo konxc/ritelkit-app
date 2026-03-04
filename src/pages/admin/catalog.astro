@@ -1,0 +1,310 @@
+---
+import { asc, desc, eq, like, or, sql } from "drizzle-orm";
+import AdminTabs from "../../components/admin/AdminTabs.astro";
+import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
+import PaginationNav from "../../components/admin/PaginationNav.svelte";
+import KatalogTabContent from "../../components/admin/pages/KatalogTabContent.svelte";
+import { categories, inventoryMovements, products } from "../../db/schema";
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { parsePage } from "../../lib/admin";
+import { requireAdmin } from "../../lib/auth";
+import { getDrizzle, initDb } from "../../lib/db";
+import Button from "../../components/admin/ui/Button.svelte";
+import CatalogHeaderFilters from "../../components/admin/CatalogHeaderFilters.svelte";
+
+await initDb(Astro);
+const admin = await requireAdmin(Astro);
+if (!admin) {
+  return Astro.redirect("/admin/login");
+}
+
+const tab = Astro.url.searchParams.get("tab") || "kategori";
+const subtab = Astro.url.searchParams.get("subtab") || "stok";
+const categoryId = Astro.url.searchParams.get("category");
+const statusFilter = Astro.url.searchParams.get("status"); // 'active', 'inactive'
+
+const { page, q, offset, limit } = parsePage(Astro.url, 20);
+const db = getDrizzle(Astro);
+
+let totalPages = 1;
+const initialData = {
+  categories: [] as any[],
+  products: [] as any[],
+  inventoryProducts: [] as any[],
+  inventoryMovements: [] as any[],
+};
+
+// Common: Always fetch ALL categories for dropdowns in other tabs
+const categoryOptions = await db
+  .select()
+  .from(categories)
+  .orderBy(asc(categories.sortOrder), asc(categories.name));
+
+if (tab === "kategori") {
+  const where = q ? like(categories.name, `%${q}%`) : undefined;
+
+  initialData.categories = await db
+    .select()
+    .from(categories)
+    .where(where)
+    .limit(limit)
+    .offset(offset)
+    .orderBy(asc(categories.sortOrder), asc(categories.name));
+
+  const totalRes = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(categories)
+    .where(where);
+
+  const total = totalRes[0]?.count || 0;
+  totalPages = Math.max(1, Math.ceil(total / limit));
+} else if (tab === "produk") {
+  const searchWhere = q ? or(like(products.name, `%${q}%`), like(products.sku, `%${q}%`)) : undefined;
+  const catWhere = categoryId ? eq(products.categoryId, categoryId) : undefined;
+  const statusWhere =
+    statusFilter === "active" ? eq(products.isActive, 1) : statusFilter === "inactive" ? eq(products.isActive, 0) : undefined;
+
+  const filters = [searchWhere, catWhere, statusWhere].filter(Boolean);
+  const where = filters.length > 0 ? (filters.length === 1 ? filters[0] : sql`${filters.reduce((acc, curr, i) => (i === 0 ? curr : sql`${acc} AND ${curr}`))}`) : undefined;
+
+  initialData.products = await db
+    .select({
+      id: products.id,
+      sku: products.sku,
+      name: products.name,
+      slug: products.slug,
+      description: products.description,
+      categoryId: products.categoryId,
+      categoryName: categories.name,
+      price: products.price,
+      cost: products.cost,
+      stock: products.stock,
+      isActive: products.isActive,
+      imagesJson: products.imagesJson,
+    })
+    .from(products)
+    .leftJoin(categories, eq(products.categoryId, categories.id))
+    .where(where)
+    .limit(limit)
+    .offset(offset)
+    .orderBy(desc(products.createdAt));
+
+  const totalRes = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(products)
+    .where(where);
+
+  const total = totalRes[0]?.count || 0;
+  totalPages = Math.max(1, Math.ceil(total / limit));
+
+  // Use all categories for options
+  initialData.categories = categoryOptions;
+} else if (tab === "inventory") {
+  const searchWhere = q ? or(like(products.name, `%${q}%`), like(products.sku, `%${q}%`)) : undefined;
+  const catWhere = categoryId ? eq(products.categoryId, categoryId) : undefined;
+
+  const filters = [searchWhere, catWhere].filter(Boolean);
+  const where = filters.length > 0 ? (filters.length === 1 ? filters[0] : sql`${filters.reduce((acc, curr, i) => (i === 0 ? curr : sql`${acc} AND ${curr}`))}`) : undefined;
+
+  // Always fetch products (for stok tab)
+  initialData.inventoryProducts = await db
+    .select({
+      id: products.id,
+      sku: products.sku,
+      name: products.name,
+      price: products.price,
+      stock: products.stock,
+    })
+    .from(products)
+    .where(where)
+    .limit(limit)
+    .offset(offset)
+    .orderBy(desc(products.createdAt));
+
+  // Always fetch movements (for log tab)
+  initialData.inventoryMovements = await db
+    .select({
+      id: inventoryMovements.id,
+      productId: inventoryMovements.productId,
+      type: inventoryMovements.type,
+      qty: inventoryMovements.qty,
+      notes: inventoryMovements.notes,
+      refOrderNo: inventoryMovements.refOrderNo,
+      createdAt: inventoryMovements.createdAt,
+      productName: products.name,
+    })
+    .from(inventoryMovements)
+    .leftJoin(products, eq(inventoryMovements.productId, products.id))
+    .orderBy(desc(inventoryMovements.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  if (subtab === "stok") {
+    const totalRes = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(products)
+      .where(where);
+    const total = totalRes[0]?.count || 0;
+    totalPages = Math.max(1, Math.ceil(total / limit));
+  } else {
+    const totalRes = await db.select({ count: sql<number>`count(*)` }).from(inventoryMovements);
+    const total = totalRes[0]?.count || 0;
+    totalPages = Math.max(1, Math.ceil(total / limit));
+  }
+
+  // Use all categories for options
+  initialData.categories = categoryOptions;
+}
+
+const tabs = [
+  {
+    id: "kategori",
+    label: "Kategori",
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
+  },
+  {
+    id: "produk",
+    label: "Produk",
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>',
+  },
+  {
+    id: "inventory",
+    label: "Inventory",
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>',
+  },
+];
+---
+
+<AdminLayout title="Catalog">
+  <div slot="header-tabs">
+    <AdminTabs tabs={tabs} activeTab={tab} />
+  </div>
+
+  {
+    tab === "kategori" && (
+      <>
+        <AdminToolbar title="Data Kategori" class="sticky top-2 md:top-4 z-20" client:load>
+          <CatalogHeaderFilters 
+            tab="kategori" 
+            q={q} 
+            client:load 
+          />
+        </AdminToolbar>
+      </>
+    )
+  }
+
+  {
+    tab === "produk" && (
+      <>
+        <AdminToolbar title="Filter Produk" class="sticky top-2 md:top-4 z-20" client:load>
+          <CatalogHeaderFilters 
+            tab="produk" 
+            q={q} 
+            categoryId={categoryId || ""} 
+            status={statusFilter || ""} 
+            categoryOptions={categoryOptions} 
+            client:load 
+          />
+          
+          <div class="mx-1 hidden h-10 w-px bg-stone-200/80 md:block" />
+          
+          <Button variant="simple" size="sm" href="/api/admin/export?entity=products">
+            <svg
+              slot="children"
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </>
+            </svg>
+            Export
+          </Button>
+        </AdminToolbar>
+      </>
+    )
+  }
+
+  {
+    tab === "inventory" && (
+      <>
+        <AdminToolbar title="Data Inventory" class="sticky top-2 md:top-4 z-20" client:load>
+          <CatalogHeaderFilters 
+            tab="inventory" 
+            q={q} 
+            categoryId={categoryId || ""} 
+            categoryOptions={categoryOptions} 
+            client:load 
+          />
+
+          <div class="mx-1 hidden h-10 w-px bg-stone-200/80 md:block" />
+
+          <Button variant="simple" size="sm" href="/api/admin/export?entity=products">
+            <svg
+              slot="children"
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </>
+            </svg>
+            Export
+          </Button>
+
+          <Button variant="simple" size="sm" href="/api/admin/export?entity=inventory">
+            <svg
+              slot="children"
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <>
+                <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                <path d="M10.4 12.6a2 2 0 1 1 3 3L8 21l-4 1 1-4Z" />
+                <path d="M18 18l-1.5 -1.5" />
+                <path d="M15 2H6a2 2 0 0 0 -2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2V7z" />
+              </>
+            </svg>
+            Log
+          </Button>
+        </AdminToolbar>
+      </>
+    )
+  }
+
+  <KatalogTabContent {tab} {q} {page} {limit} {initialData} client:load />
+
+  <PaginationNav
+    page={page}
+    totalPages={totalPages}
+    prevHref={page > 1 ? `?tab=${tab}&q=${encodeURIComponent(q)}&category=${categoryId || ''}&status=${statusFilter || ''}&subtab=${subtab}&page=${page - 1}` : undefined}
+    nextHref={page < totalPages ? `?tab=${tab}&q=${encodeURIComponent(q)}&category=${categoryId || ''}&status=${statusFilter || ''}&subtab=${subtab}&page=${page + 1}` : undefined}
+    client:load
+  />
+</AdminLayout>
