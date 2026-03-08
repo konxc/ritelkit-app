@@ -284,7 +284,6 @@ export async function initDb(ctx?: APIContext): Promise<void> {
       "ALTER TABLE inventory_movements ADD COLUMN order_id TEXT",
     ];
 
-
     for (const sql of migrations) {
       try {
         await client.execute(sql);

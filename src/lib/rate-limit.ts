@@ -1,7 +1,12 @@
 import type { APIContext } from "astro";
 import { getDb } from "./db";
 
-export async function checkRateLimit(ctx: APIContext, key: string, limit: number, windowSeconds: number) {
+export async function checkRateLimit(
+  ctx: APIContext,
+  key: string,
+  limit: number,
+  windowSeconds: number,
+) {
   const db = getDb(ctx);
   const now = Math.floor(Date.now() / 1000);
   const res = await db.execute({

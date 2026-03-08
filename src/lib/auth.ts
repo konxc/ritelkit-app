@@ -120,9 +120,13 @@ export async function requireAdmin(ctx: APIContext) {
 
 export async function hashPassword(password: string) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
-  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), { name: "PBKDF2" }, false, [
-    "deriveBits",
-  ]);
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(password),
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits"],
+  );
   const derived = await crypto.subtle.deriveBits(
     {
       name: "PBKDF2",
@@ -143,9 +147,13 @@ export async function verifyPassword(password: string, stored: string) {
   if (!iterations || !saltB64 || !hashB64) return false;
   const salt = base64UrlDecode(saltB64);
   const expected = base64UrlDecode(hashB64);
-  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), { name: "PBKDF2" }, false, [
-    "deriveBits",
-  ]);
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(password),
+    { name: "PBKDF2" },
+    false,
+    ["deriveBits"],
+  );
   const derived = await crypto.subtle.deriveBits(
     {
       name: "PBKDF2",

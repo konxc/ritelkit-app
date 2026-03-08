@@ -11,18 +11,19 @@ const JsonArraySchema = z.preprocess((val) => {
   return val || [];
 }, z.array(z.any()));
 
-const JsonObjectSchema = z.preprocess((val) => {
-  if (typeof val === "string") {
-    try {
-      return JSON.parse(val);
-    } catch {
-      return {};
+const JsonObjectSchema = z.preprocess(
+  (val) => {
+    if (typeof val === "string") {
+      try {
+        return JSON.parse(val);
+      } catch {
+        return {};
+      }
     }
-  }
-  return val || {};
-}, z.record(z.string(), z.any()));
-
-
+    return val || {};
+  },
+  z.record(z.string(), z.any()),
+);
 
 // Base common fields
 export const BaseEntitySchema = z.object({
@@ -45,7 +46,9 @@ export const CategorySchema = BaseEntitySchema.extend({
   name: z.string().min(1, "Nama wajib diisi"),
   slug: z.string().min(1, "Slug wajib diisi"),
   sortOrder: z.number().int().default(0),
-  isActive: z.union([z.boolean(), z.number()]).transform((v) => (typeof v === "boolean" ? (v ? 1 : 0) : v)),
+  isActive: z
+    .union([z.boolean(), z.number()])
+    .transform((v) => (typeof v === "boolean" ? (v ? 1 : 0) : v)),
 });
 
 export type Category = z.infer<typeof CategorySchema>;
@@ -60,14 +63,15 @@ export const ProductSchema = BaseEntitySchema.extend({
   price: z.number().int().min(0),
   cost: z.number().int().min(0).optional().nullable(),
   stock: z.number().int().optional().nullable(),
-  isActive: z.union([z.boolean(), z.number()]).transform((v) => (typeof v === "boolean" ? (v ? 1 : 0) : v)),
+  isActive: z
+    .union([z.boolean(), z.number()])
+    .transform((v) => (typeof v === "boolean" ? (v ? 1 : 0) : v)),
   imagesJson: z.string().optional().nullable(),
   metadataJson: z.string().optional().nullable(),
   // Helper derived fields for UI
   images: JsonArraySchema.optional(),
   metadata: JsonObjectSchema.optional(),
 });
-
 
 export type Product = z.infer<typeof ProductSchema>;
 
@@ -98,7 +102,6 @@ export const OrderSchema = BaseEntitySchema.extend({
   promo: JsonObjectSchema.optional(),
 });
 
-
 export type Order = z.infer<typeof OrderSchema>;
 
 // Coupon
@@ -112,7 +115,9 @@ export const CouponSchema = BaseEntitySchema.extend({
   endAt: z.string().optional().nullable(),
   usageLimit: z.number().int().optional().nullable(),
   perUserLimit: z.number().int().optional().nullable(),
-  isActive: z.union([z.boolean(), z.number()]).transform((v) => (typeof v === "boolean" ? (v ? 1 : 0) : v)),
+  isActive: z
+    .union([z.boolean(), z.number()])
+    .transform((v) => (typeof v === "boolean" ? (v ? 1 : 0) : v)),
 });
 
 export type Coupon = z.infer<typeof CouponSchema>;
@@ -166,7 +171,6 @@ export const InventoryMovementSchema = z.object({
   orderId: z.string().uuid().optional().nullable(),
   refOrderNo: z.string().optional().nullable(),
   createdAt: z.string(),
-
 });
 
 export type InventoryMovement = z.infer<typeof InventoryMovementSchema>;
@@ -261,7 +265,9 @@ export const ShippingRuleSchema = BaseEntitySchema.extend({
   name: z.string(),
   type: z.string(),
   priority: z.number().int().default(100),
-  isActive: z.union([z.boolean(), z.number()]).transform((v) => (typeof v === "boolean" ? (v ? 1 : 0) : v)),
+  isActive: z
+    .union([z.boolean(), z.number()])
+    .transform((v) => (typeof v === "boolean" ? (v ? 1 : 0) : v)),
   configJson: z.string(),
 });
 

@@ -21,7 +21,8 @@ export type RuntimeEnv = {
 
 export function getEnv(ctx?: APIContext): RuntimeEnv {
   const runtimeEnv = ctx?.locals?.runtime?.env;
-  const source = runtimeEnv ?? (typeof import.meta !== "undefined" ? import.meta.env : undefined) ?? process.env;
+  const source =
+    runtimeEnv ?? (typeof import.meta !== "undefined" ? import.meta.env : undefined) ?? process.env;
 
   return {
     PUBLIC_SITE_URL: source.PUBLIC_SITE_URL,
