@@ -1,42 +1,42 @@
 <script lang="ts">
-  import { actions } from "astro:actions";
+import { actions } from "astro:actions";
 
-  type OrderStatusPayload = {
-    status: string;
-    paymentStatus: string;
-  };
+type OrderStatusPayload = {
+  status: string;
+  paymentStatus: string;
+};
 
-  let {
-    onSuccess,
-  }: {
-    onSuccess?: (payload: OrderStatusPayload) => void;
-  } = $props();
+let {
+  onSuccess,
+}: {
+  onSuccess?: (payload: OrderStatusPayload) => void;
+} = $props();
 
-  let orderNo = $state("");
-  let phone = $state("");
-  let statusMessage = $state("");
-  let isLoading = $state(false);
+let orderNo = $state("");
+let phone = $state("");
+let statusMessage = $state("");
+let isLoading = $state(false);
 
-  const handleCheck = async (e: SubmitEvent) => {
-    e.preventDefault();
-    isLoading = true;
-    statusMessage = "";
+const handleCheck = async (e: SubmitEvent) => {
+  e.preventDefault();
+  isLoading = true;
+  statusMessage = "";
 
-    const { data, error } = await actions.checkOrderStatus({ orderNo, phone });
+  const { data, error } = await actions.checkOrderStatus({ orderNo, phone });
 
-    if (error) {
-      statusMessage = error.message;
-      isLoading = false;
-      return;
-    }
-
-    if (data) {
-      statusMessage = `Status: ${data.status} | Pembayaran: ${data.paymentStatus}`;
-      onSuccess?.(data);
-    }
-
+  if (error) {
+    statusMessage = error.message;
     isLoading = false;
-  };
+    return;
+  }
+
+  if (data) {
+    statusMessage = `Status: ${data.status} | Pembayaran: ${data.paymentStatus}`;
+    onSuccess?.(data);
+  }
+
+  isLoading = false;
+};
 </script>
 
 <form class="mx-auto grid max-w-[420px] gap-2.5" onsubmit={handleCheck}>
