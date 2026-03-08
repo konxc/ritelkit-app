@@ -1,84 +1,85 @@
 <script lang="ts">
-import { createQuery } from "@tanstack/svelte-query";
-import { fade, fly } from "svelte/transition";
-import { trpc } from "../../../lib/trpc";
-import type { Order } from "../../../lib/types";
-import RowActions from "../RowActions.svelte";
-import Table from "../ui/Table.svelte";
-import TableRow from "../ui/TableRow.svelte";
-import TableCell from "../ui/TableCell.svelte";
-import Badge from "../ui/Badge.svelte";
+  import { createQuery } from "@tanstack/svelte-query";
+  import { fade, fly } from "svelte/transition";
+  import { trpc } from "../../../lib/trpc";
+  import type { Order } from "../../../lib/types";
+  import { formatStatus, formatPaymentStatus } from "../../../lib/admin";
+  import RowActions from "../RowActions.svelte";
+  import Table from "../ui/Table.svelte";
+  import TableRow from "../ui/TableRow.svelte";
+  import TableCell from "../ui/TableCell.svelte";
+  import Badge from "../ui/Badge.svelte";
 
-// Use a subset of Order for the table display
-type OrderTableRow = Pick<
-  Order,
-  "id" | "orderNo" | "customerName" | "total" | "status" | "paymentStatus" | "createdAt"
->;
+  // Use a subset of Order for the table display
+  type OrderTableRow = Pick<
+    Order,
+    "id" | "orderNo" | "customerName" | "total" | "status" | "paymentStatus" | "createdAt"
+  >;
 
-let {
-  rows: initialRows = [],
-  total: initialTotal = 0,
-  q = "",
-  page = 1,
-  limit = 20,
-}: {
-  rows?: OrderTableRow[];
-  total?: number;
-  q?: string;
-  page?: number;
-  limit?: number;
-} = $props();
+  let {
+    rows: initialRows = [],
+    total: initialTotal = 0,
+    q = "",
+    page = 1,
+    limit = 20,
+  }: {
+    rows?: OrderTableRow[];
+    total?: number;
+    q?: string;
+    page?: number;
+    limit?: number;
+  } = $props();
 
-const offset = $derived((page - 1) * limit);
+  const offset = $derived((page - 1) * limit);
 
-const ordersQuery = createQuery(() => ({
-  queryKey: ["orders.list", { q, limit, offset }],
-  queryFn: () => trpc.orders.list.query({ q, limit, offset }),
-  initialData:
-    initialRows.length > 0
-      ? {
-          rows: initialRows,
-          total: initialTotal || initialRows.length,
-          totalPages: Math.ceil((initialTotal || initialRows.length) / limit),
-        }
-      : undefined,
-  refetchOnMount: false,
-  staleTime: 1000 * 60 * 5,
-}));
+  const ordersQuery = createQuery(() => ({
+    queryKey: ["orders.list", { q, limit, offset }],
+    queryFn: () => trpc.orders.list.query({ q, limit, offset }),
+    initialData:
+      initialRows.length > 0
+        ? {
+            rows: initialRows,
+            total: initialTotal || initialRows.length,
+            totalPages: Math.ceil((initialTotal || initialRows.length) / limit),
+          }
+        : undefined,
+    refetchOnMount: false,
+    staleTime: 1000 * 60 * 5,
+  }));
 
-let currentRows = $derived((ordersQuery.data?.rows as OrderTableRow[]) || initialRows);
+  let currentRows = $derived((ordersQuery.data?.rows as OrderTableRow[]) || initialRows);
 
-const getStatusType = (status: string) => {
-  if (!status) return "default";
-  switch (status.toLowerCase()) {
-    case "completed":
-      return "success";
-    case "processing":
-    case "shipped":
-      return "warning";
-    case "pending":
-      return "default";
-    case "cancelled":
-      return "danger";
-    default:
-      return "default";
-  }
-};
+  const getStatusType = (status: string) => {
+    if (!status) return "default";
+    switch (status.toLowerCase()) {
+      case "completed":
+        return "success";
+      case "processing":
+      case "shipped":
+        return "warning";
+      case "pending":
+        return "default";
+      case "cancelled":
+        return "danger";
+      default:
+        return "default";
+    }
+  };
 
-const getPaymentStatusType = (status: string) => {
-  if (!status) return "default";
-  switch (status.toLowerCase()) {
-    case "paid":
-      return "success";
-    case "pending":
-      return "warning";
-    case "failed":
-    case "expired":
-      return "danger";
-    default:
-      return "default";
-  }
-};
+  const getPaymentStatusType = (status: string) => {
+    if (!status) return "default";
+    switch (status.toLowerCase()) {
+      case "paid":
+        return "success";
+      case "pending":
+        return "warning";
+      case "failed":
+      case "expired":
+        return "danger";
+      default:
+        return "default";
+    }
+  };
 </script>
 
 <div class="h-full w-full">
@@ -110,12 +111,12 @@ const getPaymentStatusType = (status: string) => {
           </TableCell>
           <TableCell class="py-4">
             <Badge variant={getStatusType(order.status)}>
-              {order.status}
+              {formatStatus(order.status)}
             </Badge>
           </TableCell>
           <TableCell class="py-4">
             <Badge variant={getPaymentStatusType(order.paymentStatus)}>
-              {order.paymentStatus}
+              {formatPaymentStatus(order.paymentStatus)}
             </Badge>
           </TableCell>
 
