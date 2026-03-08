@@ -184,7 +184,7 @@
         <div class="mb-6 flex items-center justify-between">
           <h2 class="font-['Syne',sans-serif] text-xl font-bold text-stone-800">Pesanan Masuk Terbaru</h2>
           <a
-            href="/admin/pesanan?tab=order"
+            href="/admin/orders?tab=order"
             class="text-sm font-bold text-[#c48a3a] transition-colors hover:text-[#a6722d]">Lihat Semua</a
           >
         </div>
@@ -258,7 +258,7 @@
         <h2 class="relative z-10 mb-6 font-['Syne',sans-serif] text-xl font-bold text-white">Tindakan Cepat</h2>
         <div class="relative z-10 flex flex-col gap-3">
           <a
-            href="/admin/katalog?tab=produk"
+            href="/admin/catalog?tab=products"
             class="group flex items-center gap-3 rounded-2xl p-3 text-white no-underline transition-colors hover:bg-white/10"
           >
             <div

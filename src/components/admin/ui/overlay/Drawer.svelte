@@ -39,10 +39,22 @@
     isOpen = false;
     onClose?.();
   };
+
+  function portal(node: HTMLElement) {
+    if (typeof document === "undefined") return;
+    document.body.appendChild(node);
+    return {
+      destroy() {
+        if (node.parentNode) {
+          node.parentNode.removeChild(node);
+        }
+      },
+    };
+  }
 </script>
 
 {#if isOpen}
-  <div class="fixed inset-0 flex justify-end overflow-hidden" style="z-index: {zIndex};">
+  <div use:portal class="fixed inset-0 flex justify-end overflow-hidden" style="z-index: {zIndex};">
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div

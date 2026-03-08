@@ -11,14 +11,22 @@
     status?: string;
     categoryOptions?: any[];
     tab?: string;
+    columns?: { id: string; label: string; isVisible: boolean }[];
   }
 
-  let { q = "", categoryId = "", status = "", categoryOptions = [], tab = "produk" }: Props = $props();
+  let {
+    q = "",
+    categoryId = "",
+    status = "",
+    categoryOptions = [],
+    tab = "products",
+    columns,
+  }: Props = $props();
 
   let showAdvanced = $state(false);
-  let localQ = $state(q);
-  let localCategoryId = $state(categoryId);
-  let localStatus = $state(status);
+  let localQ = $state("");
+  let localCategoryId = $state("");
+  let localStatus = $state("");
 
   function syncFromUrl() {
     const params = new URLSearchParams(window.location.search);
@@ -30,15 +38,23 @@
   onMount(() => {
     syncFromUrl();
     window.addEventListener("popstate", syncFromUrl);
-    return () => window.removeEventListener("popstate", syncFromUrl);
+    return () => {
+      window.removeEventListener("popstate", syncFromUrl);
+    };
+  });
+
+  $effect(() => {
+    if (showAdvanced === false) {
+      syncFromUrl();
+    }
   });
 
   let searchTimeout: ReturnType<typeof setTimeout>;
 
-  const catOptions = [
+  let catOptions = $derived([
     { label: "Semua Kategori", value: "" },
     ...categoryOptions.map((c) => ({ label: c.name, value: String(c.id) })),
-  ];
+  ]);
 
   const statusOptions = [
     { label: "Semua Status", value: "" },
@@ -50,7 +66,7 @@
 
   function updateFilters() {
     const url = new URL(window.location.href);
-    url.searchParams.set("tab", tab || "produk");
+    url.searchParams.set("tab", tab || "products");
 
     if (localQ) url.searchParams.set("q", localQ);
     else url.searchParams.delete("q");
@@ -88,6 +104,21 @@
   let activeFiltersCount = $derived(
     [localCategoryId, localStatus].filter((v) => v !== "" && v !== undefined && v !== null).length,
   );
+
+  const tabLabels: Record<string, string> = {
+    products: "Produk",
+    categories: "Kategori",
+    inventory: "Inventory",
+  };
+  let tabLabel = $derived(tabLabels[tab] || tab);
+
+  function toggleColumn(id: string) {
+    if (!columns) return;
+    const target = columns.find((col) => col.id === id);
+    if (target) {
+      target.isVisible = !target.isVisible;
+    }
+  }
 </script>
 
 <div class="flex w-full flex-col gap-4 lg:flex-row lg:items-center">
@@ -101,14 +132,8 @@
         placeholder={tab === "inventory" ? "Cari nama / SKU..." : "Cari produk..."}
       />
     </div>
-
-    <!-- Mobile-only Filter Toggle -->
-    <div class="relative lg:hidden">
-      <Button
-        variant="outline"
-        class="flex min-w-[100px] items-center gap-2.5 rounded-xl border-stone-200 bg-white px-4"
-        onclick={() => (showAdvanced = true)}
-      >
+    <div class="lg:hidden">
+      <Button variant="outline" size="sm" onclick={() => (showAdvanced = true)} class="px-3">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
@@ -119,18 +144,10 @@
           stroke-width="2.5"
           stroke-linecap="round"
           stroke-linejoin="round"
-          class="text-[#c48a3a]"
         >
           <path d="M20 7h-9" /><path d="M14 17H5" /><circle cx="17" cy="17" r="3" /><circle cx="7" cy="7" r="3" />
         </svg>
-        <span class="font-bold text-stone-700">Filter</span>
-        {#if activeFiltersCount > 0}
-          <span
-            class="animate-in zoom-in absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#c48a3a] text-[10px] font-bold text-white shadow-lg ring-2 ring-white"
-          >
-            {activeFiltersCount}
-          </span>
-        {/if}
+        <span class="text-[0.7rem] font-bold tracking-widest uppercase">Filter</span>
       </Button>
     </div>
   </div>
@@ -147,7 +164,7 @@
       />
     </div>
 
-    {#if tab === "produk"}
+    {#if tab === "products"}
       <div class="w-36">
         <SelectInput
           name="status"
@@ -160,10 +177,28 @@
     {/if}
   </div>
 
+  {#snippet filterHeaderIcon()}
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+    </svg>
+  {/snippet}
+
   <!-- Drawer for Mobile Filtering -->
   <AdminFilterDrawer
     bind:isOpen={showAdvanced}
     title="Filter Lanjutan"
+    subtitle={`Kustomisasi Tampilan Data ${tabLabel}`}
+    icon={filterHeaderIcon}
     onApply={() => {
       showAdvanced = false;
       updateFilters();
@@ -177,12 +212,35 @@
         <SelectInput name="category" bind:value={localCategoryId} options={catOptions} />
       </div>
 
-      {#if tab === "produk"}
+      {#if tab === "products"}
         <div class="space-y-4">
           <label for="status-select" class="text-[0.7rem] font-extrabold tracking-widest text-stone-400 uppercase"
             >Status Produk</label
           >
           <SelectInput name="status" bind:value={localStatus} options={statusOptions} />
+        </div>
+      {/if}
+
+      {#if columns?.length}
+        <div class="space-y-4">
+          <label class="text-[0.7rem] font-extrabold tracking-widest text-stone-400 uppercase"
+            >Kolom</label
+          >
+          <div class="grid gap-2">
+            {#each columns as col}
+              <label
+                class="flex items-center gap-3 rounded-xl border border-stone-100 bg-white px-3 py-2 text-sm font-semibold text-stone-600"
+              >
+                <input
+                  type="checkbox"
+                  checked={col.isVisible}
+                  on:change={() => toggleColumn(col.id)}
+                  class="h-4 w-4 rounded border-stone-300 text-[#c48a3a] transition-all focus:ring-[#c48a3a]"
+                />
+                {col.label}
+              </label>
+            {/each}
+          </div>
         </div>
       {/if}
     </div>

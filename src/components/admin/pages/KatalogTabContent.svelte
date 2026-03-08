@@ -18,22 +18,32 @@
     limit?: number;
     initialData?: {
       categories?: Category[];
+      categoriesTotal?: number;
       products?: any[];
+      productsTotal?: number;
       inventoryProducts?: any[];
+      inventoryProductsTotal?: number;
       inventoryMovements?: any[];
+      inventoryMovementsTotal?: number;
     };
   } = $props();
 </script>
 
 <QueryProvider {initialData}>
-  {#if tab === "kategori"}
-    <CategoriesManager rows={initialData.categories} />
-  {:else if tab === "produk"}
-    <ProductsManager rows={initialData.products} categories={initialData.categories} />
+  {#if tab === "categories"}
+    <CategoriesManager rows={initialData.categories} total={initialData.categoriesTotal} />
+  {:else if tab === "products"}
+    <ProductsManager
+      rows={initialData.products}
+      total={initialData.productsTotal}
+      categories={initialData.categories}
+    />
   {:else if tab === "inventory"}
     <InventoryManager
       products={initialData.inventoryProducts}
+      productsTotal={initialData.inventoryProductsTotal}
       movements={initialData.inventoryMovements}
+      movementsTotal={initialData.inventoryMovementsTotal}
       categories={initialData.categories}
     />
   {/if}
