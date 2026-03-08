@@ -120,7 +120,7 @@
           ? 'text-[#c48a3a]'
           : 'text-stone-400'}"
       >
-        Panel
+        Panel Filter
       </span>
     </button>
   </div>

@@ -98,7 +98,7 @@ const handleCreate = async (event: SubmitEvent) => {
       isActive: true,
     });
 
-    toastRef?.show("Rule pengiriman berhasil ditambahkan!", "success");
+    toastRef?.show("Aturan pengiriman berhasil ditambahkan!", "success");
     form.reset();
     configType = "flat";
     flatFee = 10000;
@@ -122,11 +122,11 @@ const handleRowAction = async (
 ) => {
   const resolvedId = String(id);
   if (action === "delete") {
-    if (confirm("Hapus rule ini?")) {
+    if (confirm("Hapus aturan ini?")) {
       deletingId = resolvedId;
       try {
         await trpc.shippingRules.delete.mutate(resolvedId);
-        toastRef?.show("Rule pengiriman dihapus", "success");
+        toastRef?.show("Aturan pengiriman dihapus", "success");
         queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "An error occurred";
@@ -164,7 +164,7 @@ const handleRowAction = async (
         id: resolvedId,
         data,
       });
-      toastRef?.show("Rule diperbarui", "success");
+      toastRef?.show("Aturan diperbarui", "success");
       queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "An error occurred";
@@ -196,7 +196,7 @@ const handleSimulation = async (event: SubmitEvent) => {
   try {
     const { data, error } = await actions.simulateShipping(payload);
     if (!error && data) {
-      simulateMessage = `Rule: ${String(data.rule || "-")} | Ongkir: Rp ${Number(data.fee || 0).toLocaleString("id-ID")}`;
+      simulateMessage = `Aturan: ${String(data.rule || "-")} | Ongkir: Rp ${Number(data.fee || 0).toLocaleString("id-ID")}`;
     } else if (error) {
       simulateMessage = `Error: ${error.message}`;
     }
@@ -220,7 +220,7 @@ const handleSimulation = async (event: SubmitEvent) => {
       stroke-linecap="round"
       stroke-linejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg
     >
-    Tambah Rule
+    Tambah Aturan
   </Button>
 </div>
 
@@ -240,7 +240,7 @@ const handleSimulation = async (event: SubmitEvent) => {
     >
       <div class="flex items-center justify-between border-b border-stone-100 bg-stone-50/50 px-6 py-5">
         <div>
-          <h3 class="text-lg font-bold text-stone-800">Tambah Rule</h3>
+          <h3 class="text-lg font-bold text-stone-800">Tambah Aturan</h3>
           <p class="mt-0.5 text-xs font-semibold tracking-wider text-stone-400 uppercase">Ongkir dinamis</p>
         </div>
         <button
@@ -267,7 +267,7 @@ const handleSimulation = async (event: SubmitEvent) => {
           <div class="space-y-8 p-6">
             <div class="space-y-6">
               <h4 class="border-b border-[#c48a3a]/20 pb-2 text-xs font-bold tracking-widest text-[#c48a3a] uppercase">
-                Identitas Rule
+                Identitas Aturan
               </h4>
               <div class="space-y-4">
                 <div>
@@ -288,8 +288,8 @@ const handleSimulation = async (event: SubmitEvent) => {
                       label="Tipe"
                       bind:value={configType}
                       options={[
-                        { value: "flat", label: "💵 Flat Fee" },
-                        { value: "free_threshold", label: "🛒 Free Threshold" },
+                        { value: "flat", label: "💵 Biaya Tetap" },
+                        { value: "free_threshold", label: "🛒 Gratis Minimum" },
                         { value: "zone", label: "🗺️ Zonasi" },
                       ]}
                     />
@@ -319,7 +319,7 @@ const handleSimulation = async (event: SubmitEvent) => {
                       id="flat_fee"
                       name="flat_fee"
                       type="number"
-                      label="Flat Fee (Rp)"
+                      label="Biaya Tetap (Rp)"
                       bind:value={flatFee}
                       class="font-bold tabular-nums"
                     />
@@ -370,7 +370,7 @@ const handleSimulation = async (event: SubmitEvent) => {
                   <Textarea
                     id="config_preview"
                     name="config_preview"
-                    label="Preview JSON Konfigurasi"
+                    label="Pratinjau JSON Konfigurasi"
                     rows={2}
                     value={configPreview}
                     readonly
@@ -380,7 +380,7 @@ const handleSimulation = async (event: SubmitEvent) => {
               </div>
               <div class="border-t border-stone-100 pt-2">
                 <p class="mt-4 mb-2 text-xs text-stone-400 italic">
-                  * Rule dengan prioritas lebih tinggi (angka kecil) akan diproses lebih dulu.
+                  * Aturan dengan prioritas lebih tinggi (angka kecil) akan diproses lebih dulu.
                 </p>
               </div>
             </div>
@@ -421,10 +421,10 @@ const handleSimulation = async (event: SubmitEvent) => {
 {/if}
 
 <div class="mt-6">
-  <SectionHeader title="Daftar Rule" muted="Klik sel untuk edit" />
+  <SectionHeader title="Daftar Aturan" muted="Klik sel untuk edit" />
 </div>
 <div class="mt-6">
-  <SectionHeader title="Simulasi Ongkir" badge="Test Rule" />
+  <SectionHeader title="Simulasi Ongkir" badge="Uji Aturan" />
   <div class="mt-4 max-w-5xl overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
     <CrudInlineForm class="p-8" onsubmit={handleSimulation} isSubmitting={isSimulating}>
       <div class="grid grid-cols-2 gap-6 lg:grid-cols-5">
@@ -451,7 +451,7 @@ const handleSimulation = async (event: SubmitEvent) => {
           <SelectInput
             id="free_shipping"
             name="free_shipping"
-            label="Free Promo?"
+            label="Promo Gratis?"
             options={[
               { value: "false", label: "Tidak Ada" },
               { value: "true", label: "Ada Promo" },
@@ -491,11 +491,11 @@ const handleSimulation = async (event: SubmitEvent) => {
 </div>
 
 <div class="mt-2">
-  <Table headers={["Nama", "Tipe", "Prioritas", "Config", "Status", "Aksi"]}>
+  <Table headers={["Nama", "Tipe", "Prioritas", "Konfigurasi", "Status", "Aksi"]}>
     {#if currentRules.length === 0}
       <TableRow>
         <TableCell colspan={6} class="py-12 text-center text-sm text-stone-400 italic"
-          >Belum ada rule pengiriman aktif.</TableCell
+          >Belum ada aturan pengiriman aktif.</TableCell
         >
       </TableRow>
     {/if}
@@ -515,9 +515,9 @@ const handleSimulation = async (event: SubmitEvent) => {
             data-field="type"
             class="cursor-pointer rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-xs font-bold uppercase transition-all outline-none hover:bg-white focus:bg-white"
           >
-            <option value="flat" selected={row.type === "flat"}>💵 Flat</option>
-            <option value="free_threshold" selected={row.type === "free_threshold"}>🛒 Threshold</option>
-            <option value="zone" selected={row.type === "zone"}>🗺️ Zone</option>
+            <option value="flat" selected={row.type === "flat"}>💵 Tetap</option>
+            <option value="free_threshold" selected={row.type === "free_threshold"}>🛒 Minimum</option>
+            <option value="zone" selected={row.type === "zone"}>🗺️ Zona</option>
           </select>
         </TableCell>
         <TableCell class="py-4">

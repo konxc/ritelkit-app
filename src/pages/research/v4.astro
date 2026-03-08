@@ -28,7 +28,7 @@ const stats = [
     icon: "🧾",
   },
   {
-    label: "Revenue",
+    label: "Pendapatan",
     value: `Rp ${Number((revenueToday.rows[0] as any)?.total || 0).toLocaleString("id-ID")}`,
     icon: "💰",
   },
@@ -38,7 +38,7 @@ const stats = [
     icon: "🥐",
   },
   {
-    label: "Shipping",
+    label: "Pengiriman",
     value: (pendingShipments.rows[0] as any)?.count || 0,
     icon: "📦",
   },
@@ -64,8 +64,8 @@ const menuItems = [
     link: "/admin/orders",
   },
   {
-    title: "Fulfillment",
-    desc: "Packing & pengiriman",
+    title: "Pemenuhan Pesanan",
+    desc: "Pengemasan & pengiriman",
     icon: "📦",
     link: "/admin/fulfillment",
   },
@@ -85,7 +85,7 @@ const sideNav = [
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Enterprise V4 - Admin Dashboard</title>
+    <title>Enterprise V4 - Dasbor Admin</title>
   </head>
   <body class="v4-body">
     <div class="v4-shell">
@@ -121,8 +121,8 @@ const sideNav = [
       <!-- Main Content Area -->
       <main class="v4-main">
         <div class="v4-page-header v4-reveal">
-          <h1 class="v4-title">Operational Hub</h1>
-          <p class="v4-subtitle">Selamat datang di Sholawat Enterprise Dashboard</p>
+          <h1 class="v4-title">Pusat Operasional</h1>
+          <p class="v4-subtitle">Selamat datang di Dasbor Sholawat Enterprise</p>
           <div class="mt-6">
             <VersionNav active="v4" />
           </div>

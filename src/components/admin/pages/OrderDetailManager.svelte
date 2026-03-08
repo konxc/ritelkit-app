@@ -87,34 +87,34 @@
   <input type="hidden" name="order_id" value={order.id} />
   <div class="mb-8 flex w-full flex-col flex-wrap items-end gap-4 border-b border-stone-100 pb-8 md:flex-row xl:gap-6">
     <div class="w-full shrink-0 md:w-48">
-      <SelectInput
-        id="status"
-        name="status"
-        label="Status Pesanan"
-        bind:value={order.status}
-        options={[
-          { value: "pending", label: "Pending" },
-          { value: "processing", label: "Processing" },
-          { value: "shipped", label: "Shipped" },
-          { value: "delivered", label: "Delivered" },
-          { value: "completed", label: "Completed" },
-          { value: "cancelled", label: "Cancelled" },
-        ]}
-      />
+        <SelectInput
+          id="status"
+          name="status"
+          label="Status Pesanan"
+          bind:value={order.status}
+          options={[
+            { value: "pending", label: "Menunggu" },
+            { value: "processing", label: "Diproses" },
+            { value: "shipped", label: "Dikirim" },
+            { value: "delivered", label: "Terkirim" },
+            { value: "completed", label: "Selesai" },
+            { value: "cancelled", label: "Dibatalkan" },
+          ]}
+        />
     </div>
     <div class="w-full shrink-0 md:w-48">
-      <SelectInput
-        id="paymentStatus"
-        name="paymentStatus"
-        label="Pembayaran"
-        bind:value={order.paymentStatus}
-        options={[
-          { value: "unpaid", label: "Unpaid" },
+        <SelectInput
+          id="paymentStatus"
+          name="paymentStatus"
+          label="Pembayaran"
+          bind:value={order.paymentStatus}
+          options={[
+            { value: "unpaid", label: "Belum Dibayar" },
             { value: "paid", label: "Dibayar" },
-          { value: "failed", label: "Failed" },
-          { value: "refunded", label: "Refunded" },
-        ]}
-      />
+            { value: "failed", label: "Gagal" },
+            { value: "refunded", label: "Dikembalikan" },
+          ]}
+        />
     </div>
 
     <div class="w-full md:flex-1">

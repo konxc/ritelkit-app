@@ -87,7 +87,7 @@
         reason: (formData.get("reason") as string) || undefined,
       });
 
-      toastRef?.show("Refund berhasil ditambah!", "success");
+      toastRef?.show("Pengembalian berhasil ditambah!", "success");
       form.reset();
       queryClient.invalidateQueries({ queryKey: ["refunds.list"] });
     } catch (error: unknown) {
@@ -105,7 +105,7 @@
         deletingId = resolvedId;
         try {
           await trpc.refunds.delete.mutate(resolvedId);
-          toastRef?.show("Refund dihapus", "success");
+          toastRef?.show("Pengembalian dihapus", "success");
           queryClient.invalidateQueries({ queryKey: ["refunds.list"] });
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : "An error occurred";
@@ -134,7 +134,7 @@
       savingId = resolvedId;
       try {
         await trpc.refunds.update.mutate({ id: resolvedId, data });
-        toastRef?.show("Refund diperbarui", "success");
+        toastRef?.show("Pengembalian diperbarui", "success");
         queryClient.invalidateQueries({ queryKey: ["refunds.list"] });
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "An error occurred";
@@ -148,7 +148,7 @@
 
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-    <SectionHeader title="Buat Refund" />
+    <SectionHeader title="Buat Pengembalian" />
     <CrudInlineForm id="refund-form" onsubmit={handleCreate} {isSubmitting}>
       <div class="grid w-full grid-cols-2 gap-4 border-b border-stone-100 pb-5 md:grid-cols-4">
         <div>
@@ -175,10 +175,10 @@
             name="status"
             label="Status Awal"
             options={[
-              { value: "pending", label: "⏳ Pending" },
+              { value: "pending", label: "⏳ Menunggu" },
               { value: "processing", label: "🔄 Diproses" },
               { value: "completed", label: "✅ Selesai" },
-              { value: "failed", label: "❌ Failed" },
+              { value: "failed", label: "❌ Gagal" },
             ]}
           />
         </div>
@@ -243,10 +243,10 @@
               data-field="status"
               class="cursor-pointer rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-xs font-bold uppercase transition-all outline-none hover:bg-white focus:bg-white"
             >
-              <option value="pending" selected={row.status === "pending"}>⏳ Pending</option>
+              <option value="pending" selected={row.status === "pending"}>⏳ Menunggu</option>
               <option value="processing" selected={row.status === "processing"}>🔄 Proses</option>
               <option value="completed" selected={row.status === "completed"}>✅ Selesai</option>
-              <option value="failed" selected={row.status === "failed"}>❌ Failed</option>
+              <option value="failed" selected={row.status === "failed"}>❌ Gagal</option>
             </select>
           </TableCell>
           <TableCell class="py-4">{row.providerStatus || "-"}</TableCell>

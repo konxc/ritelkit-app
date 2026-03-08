@@ -156,7 +156,7 @@ type AdMutationInput = {
             <TextInput
               id="channel"
               name="channel"
-              label="Channel / Platform"
+              label="Kanal / Platform"
               placeholder="IG / FB / Google Ads"
               required
             />
@@ -166,7 +166,7 @@ type AdMutationInput = {
               id="budget"
               name="budget"
               type="number"
-              label="Budget Total (Rp)"
+              label="Total Anggaran (Rp)"
               required
               placeholder="0"
               class="font-bold tabular-nums"
@@ -178,10 +178,10 @@ type AdMutationInput = {
               name="status"
               label="Status Awal"
               options={[
-                { value: "draft", label: "Draft" },
-                { value: "active", label: "Active" },
-                { value: "paused", label: "Paused" },
-                { value: "completed", label: "Completed" },
+                { value: "draft", label: "Draf" },
+                { value: "active", label: "Aktif" },
+                { value: "paused", label: "Jeda" },
+                { value: "completed", label: "Selesai" },
               ]}
             />
           </div>
@@ -196,7 +196,7 @@ type AdMutationInput = {
               id="notes"
               name="notes"
               label="Catatan Kampanye"
-              placeholder="Tujuan campaign, link kreatif, dll..."
+              placeholder="Tujuan kampanye, link kreatif, dll..."
             />
           </div>
         </div>
@@ -225,7 +225,7 @@ type AdMutationInput = {
       <SectionHeader title="Daftar Kampanye" />
     </div>
 
-    <Table headers={["Nama", "Channel", "Budget", "Spend", "Status", "Aksi"]}>
+    <Table headers={["Nama", "Kanal", "Anggaran", "Pengeluaran", "Status", "Aksi"]}>
       {#if rows.length === 0}
         <TableRow>
           <TableCell colspan={6} class="border-0 p-0">
@@ -281,10 +281,10 @@ type AdMutationInput = {
               data-field="status"
               class="cursor-pointer rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-xs font-bold uppercase transition-all outline-none hover:bg-white focus:bg-white"
             >
-              <option value="draft" selected={row.status === "draft"}>Draft</option>
-              <option value="active" selected={row.status === "active"}>🟢 Active</option>
-              <option value="paused" selected={row.status === "paused"}>🟡 Paused</option>
-              <option value="completed" selected={row.status === "completed"}>⚪ Completed</option>
+              <option value="draft" selected={row.status === "draft"}>Draf</option>
+              <option value="active" selected={row.status === "active"}>🟢 Aktif</option>
+              <option value="paused" selected={row.status === "paused"}>🟡 Jeda</option>
+              <option value="completed" selected={row.status === "completed"}>⚪ Selesai</option>
             </select>
           </TableCell>
           <TableCell class="py-4">

@@ -11,7 +11,7 @@ interface Props {
 
 let {
   src = "",
-  alt = "User Avatar",
+  alt = "Avatar Pengguna",
   initials = "",
   size = "md",
   status,

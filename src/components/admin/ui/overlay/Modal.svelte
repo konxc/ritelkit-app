@@ -72,7 +72,7 @@ function handleKeydown(e: KeyboardEvent) {
           <button
             onclick={close}
             class="group flex h-9 w-9 items-center justify-center rounded-full bg-stone-50 text-stone-400 transition-all hover:bg-red-50 hover:text-red-500 active:scale-90"
-            aria-label="Close modal"
+            aria-label="Tutup modal"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

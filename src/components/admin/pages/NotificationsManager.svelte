@@ -134,7 +134,7 @@ const handleRowAction = async (id: string, action: string, rowEl: HTMLElement | 
 };
 </script>
 
-<SectionHeader title="Buat Notifikasi" badge="Manual Send" />
+<SectionHeader title="Buat Notifikasi" badge="Kirim Manual" />
 <CrudInlineForm id="notif-form" onsubmit={handleCreate} {isSubmitting}>
   <div class="mb-4 w-full space-y-4 border-b border-stone-100 pb-8">
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -142,7 +142,7 @@ const handleRowAction = async (id: string, action: string, rowEl: HTMLElement | 
         <SelectInput
           id="channel"
           name="channel"
-          label="Channel"
+          label="Kanal"
           options={[
             { value: "whatsapp", label: "WhatsApp" },
             { value: "email", label: "Email" },
@@ -159,7 +159,7 @@ const handleRowAction = async (id: string, action: string, rowEl: HTMLElement | 
         <Textarea
           id="payload_json"
           name="payload_json"
-          label="Payload (JSON)"
+          label="Muatan (JSON)"
           rows={3}
           placeholder="Isi JSON payload"
           class="font-mono text-sm"

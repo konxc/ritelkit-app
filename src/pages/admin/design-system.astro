@@ -44,19 +44,19 @@ if (!admin) {
 const title = "Sistem Desain";
 
 const tocItems = [
-  { id: "typography", label: "Typography" },
-  { id: "colors", label: "Colors Palette" },
-  { id: "buttons", label: "Buttons" },
-  { id: "forms", label: "Form Elements" },
-  { id: "cards", label: "Cards & States" },
-  { id: "badges", label: "Badges & Tags" },
-  { id: "tables", label: "Tables" },
-  { id: "alerts", label: "Alerts & Callouts" },
-  { id: "navigation", label: "Navigation & Pagination" },
-  { id: "modals", label: "Modals / Dialogs" },
-  { id: "skeletons", label: "Skeletons (Loading)" },
-  { id: "tooltips", label: "Tooltips & Popovers" },
-  { id: "avatars", label: "Avatars & Media" },
+  { id: "typography", label: "Tipografi" },
+  { id: "colors", label: "Palet Warna" },
+  { id: "buttons", label: "Tombol" },
+  { id: "forms", label: "Elemen Form" },
+  { id: "cards", label: "Kartu & Status" },
+  { id: "badges", label: "Lencana & Tag" },
+  { id: "tables", label: "Tabel" },
+  { id: "alerts", label: "Pemberitahuan & Callout" },
+  { id: "navigation", label: "Navigasi & Paginasi" },
+  { id: "modals", label: "Modal / Dialog" },
+  { id: "skeletons", label: "Skeleton (Memuat)" },
+  { id: "tooltips", label: "Tooltip & Popover" },
+  { id: "avatars", label: "Avatar & Media" },
 ];
 ---
 
@@ -66,43 +66,43 @@ const tocItems = [
     <AsideNav items={tocItems} title="Daftar Komponen" side="right" client:load />
 
     <div class="ds-content w-full min-w-0 flex-1 space-y-16">
-      <!-- Typography -->
+      <!-- Tipografi -->
       <section id="typography" class="ds-section scroll-mt-0 space-y-6">
         <div
           class="sticky top-0 z-30 -mx-4 border-b border-stone-200 bg-white/95 px-4 py-4 backdrop-blur-md sm:-mx-8 sm:px-8 xl:-mx-6 xl:px-6"
         >
-          <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">Typography</h2>
+          <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">Tipografi</h2>
         </div>
         <div
           class="grid gap-8 rounded-3xl border border-stone-200/60 bg-white p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)]"
         >
           <div>
-            <p class="mb-3 text-sm font-semibold tracking-wider text-stone-400 uppercase">Headings (Syne)</p>
+            <p class="mb-3 text-sm font-semibold tracking-wider text-stone-400 uppercase">Judul (Syne)</p>
             <div class="space-y-4">
-              <h1 class="font-['Syne',sans-serif] text-4xl font-extrabold tracking-tight text-stone-900">Heading 1</h1>
-              <h2 class="font-['Syne',sans-serif] text-3xl font-extrabold tracking-tight text-stone-900">Heading 2</h2>
-              <h3 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-900">Heading 3</h3>
-              <h4 class="font-['Syne',sans-serif] text-xl font-bold tracking-tight text-stone-900">Heading 4</h4>
+              <h1 class="font-['Syne',sans-serif] text-4xl font-extrabold tracking-tight text-stone-900">Judul 1</h1>
+              <h2 class="font-['Syne',sans-serif] text-3xl font-extrabold tracking-tight text-stone-900">Judul 2</h2>
+              <h3 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-900">Judul 3</h3>
+              <h4 class="font-['Syne',sans-serif] text-xl font-bold tracking-tight text-stone-900">Judul 4</h4>
             </div>
           </div>
           <div class="h-[1px] w-full bg-stone-100"></div>
           <div>
-            <p class="mb-3 text-sm font-semibold tracking-wider text-stone-400 uppercase">Body (Plus Jakarta Sans)</p>
+            <p class="mb-3 text-sm font-semibold tracking-wider text-stone-400 uppercase">Isi (Plus Jakarta Sans)</p>
             <div class="max-w-2xl space-y-4 text-stone-600">
               <p class="text-lg">
-                <strong>Text Large:</strong> Roti Sholawat menghadirkan rasa otentik dengan resep rahasia keluarga. Berdiri
+                <strong>Teks Besar:</strong> Roti Sholawat menghadirkan rasa otentik dengan resep rahasia keluarga. Berdiri
                 sejak bertahun-tahun yang lalu.
               </p>
               <p class="text-base">
-                <strong>Text Base:</strong> Roti Sholawat menghadirkan rasa otentik dengan resep rahasia keluarga. Berdiri
+                <strong>Teks Dasar:</strong> Roti Sholawat menghadirkan rasa otentik dengan resep rahasia keluarga. Berdiri
                 sejak bertahun-tahun yang lalu.
               </p>
               <p class="text-sm">
-                <strong>Text Small:</strong> Roti Sholawat menghadirkan rasa otentik dengan resep rahasia keluarga. Berdiri
+                <strong>Teks Kecil:</strong> Roti Sholawat menghadirkan rasa otentik dengan resep rahasia keluarga. Berdiri
                 sejak bertahun-tahun yang lalu.
               </p>
               <p class="text-xs">
-                <strong>Text Extra Small:</strong> Roti Sholawat menghadirkan rasa otentik dengan resep rahasia keluarga.
+                <strong>Teks Sangat Kecil:</strong> Roti Sholawat menghadirkan rasa otentik dengan resep rahasia keluarga.
                 Berdiri sejak bertahun-tahun yang lalu.
               </p>
             </div>
@@ -110,34 +110,34 @@ const tocItems = [
         </div>
       </section>
 
-      <!-- Colors -->
+      <!-- Warna -->
       <section id="colors" class="ds-section scroll-mt-0 space-y-6">
         <div
           class="sticky top-0 z-30 -mx-4 border-b border-stone-200 bg-white/95 px-4 py-4 backdrop-blur-md sm:-mx-8 sm:px-8 xl:-mx-6 xl:px-6"
         >
-          <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">Colors Palette</h2>
+          <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">Palet Warna</h2>
         </div>
         <div class="rounded-3xl border border-stone-200/60 bg-white p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
           <div class="grid grid-cols-2 gap-6 md:grid-cols-4">
-            <!-- Brand Colors -->
+            <!-- Warna Brand -->
             <div class="space-y-2">
               <div class="h-20 w-full rounded-2xl bg-[#c48a3a] shadow-sm"></div>
-              <div class="font-semibold text-stone-900">Brand Gold</div>
+              <div class="font-semibold text-stone-900">Emas Brand</div>
               <div class="font-mono text-xs text-stone-500">#c48a3a</div>
             </div>
             <div class="space-y-2">
               <div class="h-20 w-full rounded-2xl bg-[#a6722d] shadow-sm"></div>
-              <div class="font-semibold text-stone-900">Brand Dark</div>
+              <div class="font-semibold text-stone-900">Gelap Brand</div>
               <div class="font-mono text-xs text-stone-500">#a6722d</div>
             </div>
             <div class="space-y-2">
               <div class="h-20 w-full rounded-2xl bg-gradient-to-br from-stone-900 to-stone-600 shadow-sm"></div>
-              <div class="font-semibold text-stone-900">Dark Gradient</div>
+              <div class="font-semibold text-stone-900">Gradasi Gelap</div>
               <div class="font-mono text-xs text-stone-500">from-stone-900 to-600</div>
             </div>
             <div class="space-y-2">
               <div class="h-20 w-full rounded-2xl bg-gradient-to-r from-[#c48a3a] to-[#a6722d] shadow-sm"></div>
-              <div class="font-semibold text-stone-900">Gold Gradient</div>
+              <div class="font-semibold text-stone-900">Gradasi Emas</div>
               <div class="font-mono text-xs text-stone-500">from-[#c48a3a] to-[#a6722d]</div>
             </div>
 
@@ -149,47 +149,47 @@ const tocItems = [
             </div>
             <div class="space-y-2">
               <div class="h-20 w-full rounded-2xl border border-stone-200 bg-[#fdfcf9] shadow-sm"></div>
-              <div class="font-semibold text-stone-900">Background Base</div>
+              <div class="font-semibold text-stone-900">Latar Dasar</div>
               <div class="font-mono text-xs text-stone-500">#fdfcf9</div>
             </div>
             <div class="space-y-2">
               <div class="h-20 w-full rounded-2xl bg-stone-100 shadow-sm"></div>
-              <div class="font-semibold text-stone-900">Neutral Light</div>
+              <div class="font-semibold text-stone-900">Netral Terang</div>
               <div class="font-mono text-xs text-stone-500">stone-100</div>
             </div>
             <div class="space-y-2">
               <div class="h-20 w-full rounded-2xl bg-stone-900 shadow-sm"></div>
-              <div class="font-semibold text-stone-900">Text Primary</div>
+              <div class="font-semibold text-stone-900">Teks Utama</div>
               <div class="font-mono text-xs text-stone-500">stone-900</div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Buttons -->
+      <!-- Tombol -->
       <section id="buttons" class="ds-section scroll-mt-0 space-y-6">
         <div
           class="sticky top-0 z-30 -mx-4 border-b border-stone-200 bg-white/95 px-4 py-4 backdrop-blur-md sm:-mx-8 sm:px-8 xl:-mx-6 xl:px-6"
         >
-          <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">Buttons</h2>
+          <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">Tombol</h2>
         </div>
         <div class="space-y-8 rounded-3xl border border-stone-200/60 bg-white p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
           <div>
-            <p class="mb-4 text-sm font-semibold tracking-wider text-stone-400 uppercase">Variants</p>
+            <p class="mb-4 text-sm font-semibold tracking-wider text-stone-400 uppercase">Varian</p>
             <div class="flex flex-wrap items-center gap-4">
-              <Button variant="primary">Primary Solid</Button>
-              <Button variant="outline">Primary Outline</Button>
-              <Button variant="secondary">Secondary Dark</Button>
-              <Button variant="simple">Outline Simple</Button>
-              <Button variant="ghost">Ghost / Soft</Button>
-              <Button variant="danger">Danger Actions</Button>
+              <Button variant="primary">Utama Solid</Button>
+              <Button variant="outline">Utama Outline</Button>
+              <Button variant="secondary">Sekunder Gelap</Button>
+              <Button variant="simple">Outline Sederhana</Button>
+              <Button variant="ghost">Transparan / Lembut</Button>
+              <Button variant="danger">Aksi Bahaya</Button>
             </div>
           </div>
 
           <div class="h-[1px] w-full bg-stone-100"></div>
 
           <div>
-            <p class="mb-4 text-sm font-semibold tracking-wider text-stone-400 uppercase">With Icons & Sizes</p>
+            <p class="mb-4 text-sm font-semibold tracking-wider text-stone-400 uppercase">Dengan Ikon & Ukuran</p>
             <div class="flex flex-wrap items-center gap-4">
               <Button variant="primary" size="lg">
                 <svg
@@ -203,7 +203,7 @@ const tocItems = [
                   stroke-linecap="round"
                   stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg
                 >
-                Large with Icon
+                Besar dengan Ikon
               </Button>
 
               <Button variant="simple" size="sm">
@@ -221,7 +221,7 @@ const tocItems = [
                     d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
                   ></path><circle cx="12" cy="12" r="3"></circle></svg
                 >
-                Small Button
+                Tombol Kecil
               </Button>
 
               <Button variant="simple" size="icon" class="hover:border-red-200 hover:bg-red-50 hover:text-red-500">
@@ -258,23 +258,23 @@ const tocItems = [
         </div>
       </section>
 
-      <!-- Inputs / Forms -->
+      <!-- Input / Form -->
       <section id="forms" class="ds-section scroll-mt-0 space-y-6">
         <div
           class="sticky top-0 z-30 -mx-4 border-b border-stone-200 bg-white/95 px-4 py-4 backdrop-blur-md sm:-mx-8 sm:px-8 xl:-mx-6 xl:px-6"
         >
-          <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">Form Elements</h2>
+          <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">Elemen Form</h2>
         </div>
         <div
           class="grid grid-cols-1 gap-8 rounded-3xl border border-stone-200/60 bg-white p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] md:grid-cols-2"
         >
           <div class="space-y-4">
-            <TextInput label="Text Input (Default)" placeholder="Masukkan nama..." />
+            <TextInput label="Input Teks (Default)" placeholder="Masukkan nama..." />
 
-            <TextInput label="Text Input (With Error)" value="Invalid format" error="Invalid email." />
+            <TextInput label="Input Teks (Dengan Error)" value="Invalid format" error="Invalid email." />
 
             <SelectInput
-              label="Select Input"
+              label="Pilihan"
               options={[
                 { label: "Pilih Kategori", value: "" },
                 { label: "Roti Manis", value: "manis" },
@@ -288,17 +288,17 @@ const tocItems = [
 
             <Checkbox id="checkbox1"> Aktifkan produk ini di katalog </Checkbox>
 
-            <ToggleSwitch label="Toggle Switch" checked={true} client:load />
+            <ToggleSwitch label="Sakelar" checked={true} client:load />
           </div>
         </div>
       </section>
 
-      <!-- Cards & Containers -->
+      <!-- Kartu & Kontainer -->
       <section id="cards" class="ds-section scroll-mt-0 space-y-6">
         <div
           class="sticky top-0 z-30 -mx-4 border-b border-stone-200 bg-white/95 px-4 py-4 backdrop-blur-md sm:-mx-8 sm:px-8 xl:-mx-6 xl:px-6"
         >
-          <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">Cards & States</h2>
+          <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">Kartu & Status</h2>
         </div>
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -324,7 +324,7 @@ const tocItems = [
             >
           </StatCard>
 
-          <!-- Info Card (Custom themed using Base Card) -->
+          <!-- Kartu Informasi (Custom themed using Base Card) -->
           <Card class="relative overflow-hidden bg-gradient-to-br from-stone-900 to-stone-800 text-white">
             <div class="pointer-events-none absolute -top-6 -right-6 h-32 w-32 rounded-full bg-white/5 blur-2xl"></div>
             <div
@@ -343,7 +343,7 @@ const tocItems = [
                 ><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg
               >
             </div>
-            <h3 class="relative z-10 mb-1 text-xl font-bold">Premium Member</h3>
+            <h3 class="relative z-10 mb-1 text-xl font-bold">Member Premium</h3>
             <p class="relative z-10 text-sm text-stone-400">Akses semua fitur analitik tingkat lanjut.</p>
           </Card>
 
@@ -365,7 +365,7 @@ const tocItems = [
         </div>
 
         <div class="mt-8 space-y-4">
-          <h3 class="mb-4 text-sm font-bold tracking-wider text-stone-500 uppercase">Structural Panels & States</h3>
+          <h3 class="mb-4 text-sm font-bold tracking-wider text-stone-500 uppercase">Panel Struktural & Status</h3>
           <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <!-- Standard Panel -->
             <Card rounded="3xl">
@@ -383,7 +383,7 @@ const tocItems = [
 
             <!-- Empty State -->
             <EmptyState
-              title="State Kosong (Empty State)"
+              title="Keadaan Kosong (Empty State)"
               description="Tampilan pengganti ketika tabel pesanan atau data laporan kosong atau belum memiliki data."
             >
               <svg
@@ -410,12 +410,12 @@ const tocItems = [
         <div
           class="sticky top-0 z-30 -mx-4 border-b border-stone-200 bg-white/95 px-4 py-4 backdrop-blur-md sm:-mx-8 sm:px-8 xl:-mx-6 xl:px-6"
         >
-          <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">Badges & Tags</h2>
+          <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">Lencana & Tag</h2>
         </div>
         <div class="rounded-3xl border border-stone-200/60 bg-white p-6 shadow-sm">
           <div class="flex flex-wrap gap-4">
             <Badge variant="success" showDot={true}>Selesai</Badge>
-            <Badge variant="warning" showDot={true}>Pending Payment</Badge>
+            <Badge variant="warning" showDot={true}>Menunggu Pembayaran</Badge>
             <Badge variant="info" showDot={true}>Sedang Dikemas</Badge>
             <Badge variant="default" showDot={true}>Draf</Badge>
             <Badge variant="danger" showDot={true}>Dibatalkan</Badge>
@@ -428,7 +428,7 @@ const tocItems = [
         <div
           class="sticky top-0 z-30 -mx-4 border-b border-stone-200 bg-white/95 px-4 py-4 backdrop-blur-md sm:-mx-8 sm:px-8 xl:-mx-6 xl:px-6"
         >
-          <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">Tables</h2>
+          <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">Tabel</h2>
         </div>
         <Table headers={["ID Pesanan", "Pelanggan", "Tanggal", "Status", "Total", "Aksi"]}>
           <TableRow>
@@ -448,7 +448,7 @@ const tocItems = [
             <TableCell text-stone-600>Siti Aminah</TableCell>
             <TableCell class="text-stone-500">21 Okt 2026</TableCell>
             <TableCell>
-              <Badge variant="warning" showDot={true}>Pending</Badge>
+              <Badge variant="warning" showDot={true}>Menunggu</Badge>
             </TableCell>
             <TableCell bold={true}>Rp 75.000</TableCell>
             <TableCell align="right">
@@ -463,7 +463,9 @@ const tocItems = [
         <div
           class="sticky top-0 z-30 -mx-4 border-b border-stone-200 bg-white/95 px-4 py-4 backdrop-blur-md sm:-mx-8 sm:px-8 xl:-mx-6 xl:px-6"
         >
-          <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">Alerts & Callouts</h2>
+          <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">
+            Pemberitahuan & Callout
+          </h2>
         </div>
         <div class="grid grid-cols-1 gap-4">
           <!-- Info Alert -->
@@ -498,14 +500,14 @@ const tocItems = [
           class="sticky top-0 z-30 -mx-4 border-b border-stone-200 bg-white/95 px-4 py-4 backdrop-blur-md sm:-mx-8 sm:px-8 xl:-mx-6 xl:px-6"
         >
           <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">
-            Navigation & Pagination
+            Navigasi & Paginasi
           </h2>
         </div>
 
         <div class="space-y-8 rounded-3xl border border-stone-200/60 bg-white p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
           <!-- Pagination -->
           <div>
-            <h3 class="mb-4 text-sm font-semibold tracking-wider text-stone-400 uppercase">Pagination</h3>
+            <h3 class="mb-4 text-sm font-semibold tracking-wider text-stone-400 uppercase">Paginasi</h3>
             <Pagination currentPage={1} totalPages={10} client:load />
           </div>
 
@@ -513,7 +515,7 @@ const tocItems = [
 
           <!-- Tabs -->
           <div>
-            <h3 class="mb-4 text-sm font-semibold tracking-wider text-stone-400 uppercase">Tabs</h3>
+            <h3 class="mb-4 text-sm font-semibold tracking-wider text-stone-400 uppercase">Tab</h3>
             <Tabs
               tabs={[
                 { id: "semua", label: "Semua" },
@@ -529,7 +531,7 @@ const tocItems = [
 
           <!-- Breadcrumbs -->
           <div>
-            <h3 class="mb-4 text-sm font-semibold tracking-wider text-stone-400 uppercase">Breadcrumbs</h3>
+            <h3 class="mb-4 text-sm font-semibold tracking-wider text-stone-400 uppercase">Breadcrumb</h3>
             <Breadcrumbs
               items={[{ label: "Beranda", href: "#" }, { label: "Produk", href: "#" }, { label: "Roti Manis Coklat" }]}
             />
@@ -543,7 +545,7 @@ const tocItems = [
           class="sticky top-0 z-30 -mx-4 border-b border-stone-200 bg-white/95 px-4 py-4 backdrop-blur-md sm:-mx-8 sm:px-8 xl:-mx-6 xl:px-6"
         >
           <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">
-            Modals / Dialogs Output Formats
+            Format Output Modal / Dialog
           </h2>
         </div>
 
@@ -606,7 +608,7 @@ const tocItems = [
           class="sticky top-0 z-30 -mx-4 border-b border-stone-200 bg-white/95 px-4 py-4 backdrop-blur-md sm:-mx-8 sm:px-8 xl:-mx-6 xl:px-6"
         >
           <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">
-            Skeletons (Loading States)
+            Skeleton (Status Memuat)
           </h2>
         </div>
 
@@ -614,7 +616,7 @@ const tocItems = [
           class="grid gap-8 rounded-3xl border border-stone-200/60 bg-white p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)]"
         >
           <div>
-            <p class="mb-4 text-sm font-semibold tracking-wider text-stone-400 uppercase">Text & Elements</p>
+            <p class="mb-4 text-sm font-semibold tracking-wider text-stone-400 uppercase">Teks & Elemen</p>
             <div class="max-w-lg space-y-4">
               <Skeleton height="h-8" width="w-3/4" />
               <div class="space-y-2">
@@ -632,7 +634,7 @@ const tocItems = [
           <div class="h-[1px] w-full bg-stone-100"></div>
 
           <div>
-            <p class="mb-4 text-sm font-semibold tracking-wider text-stone-400 uppercase">Card Placeholder</p>
+            <p class="mb-4 text-sm font-semibold tracking-wider text-stone-400 uppercase">Placeholder Kartu</p>
             <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div class="space-y-4 rounded-3xl border border-stone-200 p-6">
                 <Skeleton height="h-12" width="w-12" rounded="2xl" />
@@ -654,19 +656,19 @@ const tocItems = [
         </div>
       </section>
 
-      <!-- Tooltips & Popovers -->
+      <!-- Tooltip & Popover -->
       <section id="tooltips" class="ds-section scroll-mt-0 space-y-6">
         <div
           class="sticky top-0 z-30 -mx-4 border-b border-stone-200 bg-white/95 px-4 py-4 backdrop-blur-md sm:-mx-8 sm:px-8 xl:-mx-6 xl:px-6"
         >
-          <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">Tooltips & Popovers</h2>
+          <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">Tooltip & Popover</h2>
         </div>
 
         <div
           class="flex flex-wrap items-center justify-center gap-12 rounded-3xl border border-stone-200/60 bg-[#fdfcf9] p-12 shadow-inner"
         >
           <!-- Tooltip Top -->
-          <Tooltip text="Edit Data" position="top" client:load>
+          <Tooltip text="Ubah Data" position="top" client:load>
             <Button variant="simple" size="icon" class="h-12 w-12 rounded-xl">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -744,22 +746,22 @@ const tocItems = [
         </div>
       </section>
 
-      <!-- Avatars & Media -->
+      <!-- Avatar & Media -->
       <section id="avatars" class="ds-section scroll-mt-0 space-y-6">
         <div
           class="sticky top-0 z-30 -mx-4 border-b border-stone-200 bg-white/95 px-4 py-4 backdrop-blur-md sm:-mx-8 sm:px-8 xl:-mx-6 xl:px-6"
         >
           <h2 class="font-['Syne',sans-serif] text-2xl font-bold tracking-tight text-stone-800">
-            Avatars & Media Containers
+            Avatar & Media
           </h2>
         </div>
 
         <div
           class="grid grid-cols-1 gap-12 rounded-3xl border border-stone-200/60 bg-white p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] md:grid-cols-2"
         >
-          <!-- User Avatars -->
+          <!-- Avatar Pengguna -->
           <div>
-            <p class="mb-5 text-sm font-semibold tracking-wider text-stone-400 uppercase">User Profiles</p>
+            <p class="mb-5 text-sm font-semibold tracking-wider text-stone-400 uppercase">Profil Pengguna</p>
 
             <div class="mb-8 flex flex-wrap items-end gap-6">
               <Avatar
@@ -771,13 +773,13 @@ const tocItems = [
               <Avatar
                 size="md"
                 src="https://ui-avatars.com/api/?name=Budi+S&background=f3f4f6&color=374151&size=128"
-                alt="User"
+                alt="Pengguna"
               />
               <Avatar size="sm" initials="SA" />
             </div>
 
-            <!-- Avatar Stack (Overlap) -->
-            <p class="mb-3 text-xs font-semibold tracking-wider text-stone-400 uppercase">Avatar Stack (Team)</p>
+            <!-- Tumpukan Avatar (Overlap) -->
+            <p class="mb-3 text-xs font-semibold tracking-wider text-stone-400 uppercase">Tumpukan Avatar (Tim)</p>
             <AvatarStack
               users={[
                 { src: "https://ui-avatars.com/api/?name=User+A&background=random" },

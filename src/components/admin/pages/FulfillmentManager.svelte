@@ -126,7 +126,7 @@ export type ShipmentRow = {
 
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-    <SectionHeader title="Buat Pengiriman" badge="Tracking" />
+    <SectionHeader title="Buat Pengiriman" badge="Pelacakan" />
     <CrudInlineForm id="shipment-form" on:submit={handleCreate} isSubmitting={shipCreateMutation.isPending}>
       <div
         class="mb-8 flex w-full flex-col flex-wrap items-end gap-4 border-b border-stone-100 pb-8 md:flex-row xl:gap-6"
@@ -156,10 +156,10 @@ export type ShipmentRow = {
             name="status"
             label="Status Awal"
             options={[
-              { value: "packing", label: "📦 Packing" },
+              { value: "packing", label: "📦 Pengemasan" },
               { value: "shipped", label: "🚚 Dikirim" },
               { value: "delivered", label: "✅ Terkirim" },
-              { value: "cancelled", label: "❌ Batal" },
+              { value: "cancelled", label: "❌ Dibatalkan" },
             ]}
           />
         </div>
@@ -214,7 +214,7 @@ export type ShipmentRow = {
               ></path></svg
             >
           {/if}
-          Buat Tracking
+          Buat Pelacakan
         </Button>
       </div>
     </CrudInlineForm>
@@ -249,10 +249,10 @@ export type ShipmentRow = {
               data-field="status"
               class="cursor-pointer rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-sm font-bold text-stone-700 transition-all outline-none hover:bg-white focus:border-[#c48a3a] focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
             >
-              <option value="packing" selected={row.status === "packing"}>📦 Packing</option>
+              <option value="packing" selected={row.status === "packing"}>📦 Pengemasan</option>
               <option value="shipped" selected={row.status === "shipped"}>🚚 Dikirim</option>
               <option value="delivered" selected={row.status === "delivered"}>✅ Terkirim</option>
-              <option value="cancelled" selected={row.status === "cancelled"}>❌ Batal</option>
+              <option value="cancelled" selected={row.status === "cancelled"}>❌ Dibatalkan</option>
             </select>
           </TableCell>
           <TableCell class="py-4">

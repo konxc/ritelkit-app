@@ -331,7 +331,7 @@
         >
       </div>
       <span class="flex flex-col items-start leading-none">
-        <span class="text-[0.6rem] font-bold tracking-wider text-white/70 uppercase">Update</span>
+        <span class="text-[0.6rem] font-bold tracking-wider text-white/70 uppercase">Perbarui</span>
         <span class="text-[0.85rem] font-bold">Mutasi Stok</span>
       </span>
     </Button>
@@ -536,7 +536,7 @@
               <InlineEditableField
                 value={product.stock ?? 0}
                 field="stock"
-                ariaLabel="Edit Stok"
+                ariaLabel="Ubah Stok"
                 class="w-full px-4 text-left font-bold text-stone-700 tabular-nums shadow-inner"
                 onblur={(e: any) => handleUpdateStock(product.id, e.currentTarget.textContent || "0")}
                 onkeydown={(e: any) => e.key === "Enter" && (e.preventDefault(), e.currentTarget.blur())}

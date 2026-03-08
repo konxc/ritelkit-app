@@ -101,20 +101,20 @@ const handleRowAction = async (id: string, action: string, rowEl: HTMLElement | 
 
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-    <SectionHeader title="Tambah Admin" badge="Role" />
+    <SectionHeader title="Tambah Admin" badge="Peran" />
     <CrudInlineForm id="user-form" onsubmit={handleCreate} {isSubmitting}>
       <div class="mb-8 flex w-full flex-col flex-wrap items-end gap-4 border-b border-stone-100 pb-8 md:flex-row">
         <div class="w-full md:w-64">
           <TextInput id="email" name="email" type="email" label="Email" required />
         </div>
         <div class="w-full md:w-64">
-          <TextInput id="password" name="password" type="password" label="Password" required minlength={8} />
+          <TextInput id="password" name="password" type="password" label="Kata Sandi" required minlength={8} />
         </div>
         <div class="w-full md:w-48">
           <SelectInput
             id="role"
             name="role"
-            label="Role"
+            label="Peran"
             options={[
               { value: "owner", label: "Owner" },
               { value: "admin", label: "Admin" },
@@ -142,10 +142,10 @@ const handleRowAction = async (id: string, action: string, rowEl: HTMLElement | 
     </CrudInlineForm>
 
     <div class="mt-6">
-      <SectionHeader title="Daftar Admin" muted="Edit role / reset password" />
+      <SectionHeader title="Daftar Admin" muted="Ubah peran / atur ulang kata sandi" />
     </div>
     <div class="mt-2">
-      <Table headers={["Email", "Role", "Password Baru", "Aksi"]}>
+      <Table headers={["Email", "Peran", "Kata Sandi Baru", "Aksi"]}>
         {#if rows.length === 0}
           <TableRow>
             <TableCell colspan={4} class="py-12 text-center text-sm text-stone-400 italic">Belum ada admin.</TableCell>

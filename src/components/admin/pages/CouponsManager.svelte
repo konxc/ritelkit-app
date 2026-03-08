@@ -192,7 +192,7 @@ let currentCoupons = $derived((couponsQuery.data as Coupon[]) || initialRows);
               id="per_user_limit"
               name="per_user_limit"
               type="number"
-              label="Kuota / User"
+              label="Kuota / Pengguna"
               placeholder="1"
               class="uppercase"
             />
@@ -245,11 +245,11 @@ let currentCoupons = $derived((couponsQuery.data as Coupon[]) || initialRows);
         "Tipe",
         "Nilai",
         "Min. Pesanan",
-        "Max Diskon",
+        "Maks Diskon",
         "Mulai",
         "Berakhir",
         "Limit",
-        "Per User",
+        "Per Pengguna",
         "Status",
         "Aksi",
       ]}
@@ -277,9 +277,9 @@ let currentCoupons = $derived((couponsQuery.data as Coupon[]) || initialRows);
               data-field="type"
               class="cursor-pointer rounded-lg border border-transparent bg-transparent px-2 py-1.5 text-[10px] font-bold uppercase transition-all outline-none hover:bg-white focus:bg-white"
             >
-              <option value="percent" selected={row.type === "percent"}>% Percent</option>
-              <option value="fixed" selected={row.type === "fixed"}>Rp Fixed</option>
-              <option value="free_shipping" selected={row.type === "free_shipping"}>🚚 Free Ship</option>
+              <option value="percent" selected={row.type === "percent"}>% Persen</option>
+              <option value="fixed" selected={row.type === "fixed"}>Rp Tetap</option>
+              <option value="free_shipping" selected={row.type === "free_shipping"}>🚚 Gratis Ongkir</option>
             </select>
           </TableCell>
           <TableCell class="py-4">
@@ -350,8 +350,8 @@ let currentCoupons = $derived((couponsQuery.data as Coupon[]) || initialRows);
               data-field="is_active"
               class="cursor-pointer rounded-lg border border-transparent bg-transparent px-2 py-1.5 font-bold transition-all outline-none hover:bg-white focus:bg-white"
             >
-              <option value="true" selected={row.isActive === 1}>ON</option>
-              <option value="false" selected={row.isActive === 0}>OFF</option>
+              <option value="true" selected={row.isActive === 1}>AKTIF</option>
+              <option value="false" selected={row.isActive === 0}>NONAKTIF</option>
             </select>
           </TableCell>
           <TableCell class="py-4">

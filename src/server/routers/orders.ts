@@ -110,7 +110,7 @@ export const orderRouter = router({
             id: crypto.randomUUID(),
             orderId: input.id,
             status: input.data.status,
-            notes: (input.data as any).notes || "Status updated via Admin Dashboard",
+            notes: (input.data as any).notes || "Status diperbarui melalui Dasbor Admin",
             createdAt: now,
           });
         }

@@ -63,7 +63,7 @@ export const refundRouter = router({
           id: crypto.randomUUID(),
           orderId: input.orderId,
           status: "refunded",
-          notes: `Refund created for Rp${input.amount.toLocaleString()}. Reason: ${input.reason || "-"}`,
+          notes: `Refund dibuat sebesar Rp${input.amount.toLocaleString()}. Alasan: ${input.reason || "-"}`,
           createdAt: now,
         });
       });

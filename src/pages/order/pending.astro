@@ -4,10 +4,10 @@ import Layout from "../../layouts/Layout.astro";
 const orderNo = Astro.url.searchParams.get("order") || "";
 ---
 
-<Layout title="Pembayaran Pending">
+<Layout title="Pembayaran Menunggu">
   <main class="section">
     <div class="container text-center">
-      <h1>Pembayaran Pending</h1>
+      <h1>Pembayaran Menunggu</h1>
       <p>Silakan selesaikan pembayaran agar pesanan dapat diproses.</p>
       {
         orderNo && (

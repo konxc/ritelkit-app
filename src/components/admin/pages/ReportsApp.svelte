@@ -63,7 +63,7 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
         icon={`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>`}
       />
       <StatCard
-        label="Refund"
+        label="Pengembalian"
         value={formatCurrency(reportData.thirtyDays.refundTotal)}
         icon={`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17v-6h-6"/><path d="M18.5 4.5A10 10 0 0 0 4 11"/><path d="M5.5 19.5A10 10 0 0 0 20 13"/></svg>`}
       />
@@ -113,7 +113,7 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
     <div class="mb-4">
       <SectionHeader title="Cohort (customer baru/bulan)" muted="30 hari terakhir" />
     </div>
-    <Table headers={["Bulan", "Customer Baru"]}>
+    <Table headers={["Bulan", "Pelanggan Baru"]}>
       {#if reportData.analytics.cohorts.length === 0}
         <TableRow>
           <TableCell colspan={2} class="py-8 text-center text-sm text-stone-400 italic">

@@ -70,7 +70,7 @@ const handleSubmit = async (event: SubmitEvent) => {
 };
 
 const handleSeed = async () => {
-  toastRef?.show("Demo data generation is temporarily disabled.", "error");
+  toastRef?.show("Pembuatan data demo sementara tidak tersedia.", "error");
 };
 </script>
 
@@ -113,7 +113,7 @@ const handleSeed = async () => {
         type="button"
         onclick={handleSeed}
         disabled={isSeeding || isSubmitting}
-        aria-label="Generate Data Demo"
+        aria-label="Buat Data Demo"
       >
         {#if isSeeding}
           <svg
@@ -127,9 +127,9 @@ const handleSeed = async () => {
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path></svg
           >
-          Generating...
+          Sedang menyiapkan data...
         {:else}
-          Generate Data Demo
+          Buat Data Demo
         {/if}
       </Button>
     </div>
@@ -148,12 +148,12 @@ const handleSeed = async () => {
           <div class="space-y-5">
             <SelectInput
               id="preorder"
-              label="Preorder Only"
+              label="Hanya Preorder"
               bind:value={preorderOnly}
               options={[
                 { label: "Ya, hanya menerima Preorder", value: true },
                 {
-                  label: "Tidak, produk siap jual (Ready Stock)",
+                  label: "Tidak, produk siap jual (Stok Siap)",
                   value: false,
                 },
               ]}
@@ -165,7 +165,7 @@ const handleSeed = async () => {
             <TextInput
               id="lead_time"
               type="number"
-              label="Minimum Lead Time (jam)"
+              label="Waktu Tunda Minimum (jam)"
               min="0"
               bind:value={leadTimeHours}
               aria-describedby="lead_time_help"
@@ -177,7 +177,7 @@ const handleSeed = async () => {
             <TextInput
               id="cutoff_time"
               type="time"
-              label="Cutoff Time (Harian)"
+              label="Batas Waktu (Harian)"
               bind:value={cutoffTime}
               aria-describedby="cutoff_time_help"
             />
@@ -187,7 +187,7 @@ const handleSeed = async () => {
 
             <SelectInput
               id="sameday_enabled"
-              label="Same Day Delivery / Pickup"
+              label="Pengiriman / Ambil Hari yang Sama"
               bind:value={sameDayEnabled}
               options={[
                 { label: "Aktifkan", value: true },

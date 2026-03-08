@@ -106,7 +106,7 @@ let cartItems = $derived(Array.from(cart.values()) as CartItem[]);
     <div
       class="border-border/60 bg-surface/30 hidden shrink-0 items-center justify-between border-b px-6 py-4 lg:flex lg:py-5"
     >
-      <h2 class="text-primary-dark text-lg font-bold">Keranjang & Checkout</h2>
+      <h2 class="text-primary-dark text-lg font-bold">Keranjang & Pembayaran</h2>
       <span class="bg-primary/10 text-primary rounded-full px-3 py-1 text-xs font-bold">{totalQty} item</span>
     </div>
 

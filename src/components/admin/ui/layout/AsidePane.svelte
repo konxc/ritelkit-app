@@ -18,7 +18,7 @@ interface Props {
 }
 
 let {
-  title = "Navigation",
+  title = "Navigasi",
   side = "right",
   children,
   trigger,
@@ -80,7 +80,7 @@ const flyOffset = $derived(side === "right" ? 300 : -300);
         ? 'right-6'
         : 'left-6'} top-auto z-[100] flex h-14 w-14 items-center justify-center !rounded-full p-0 shadow-[0_8px_30px_rgba(0,0,0,0.3)] transition-transform hover:scale-105 active:scale-95"
       onclick={toggle}
-      aria-label="Toggle {title}"
+      aria-label={`${isOpen ? "Tutup" : "Buka"} ${title}`}
     >
       {#if isOpen}
         <svg

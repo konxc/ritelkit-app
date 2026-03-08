@@ -157,7 +157,7 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
           >
         {/snippet}
       </StatCard>
-      <StatCard label="Refund Pending" value={stats.pendingRefunds}>
+      <StatCard label="Pengembalian Menunggu" value={stats.pendingRefunds}>
         {#snippet icon()}
           <svg
             xmlns="http://www.w3.org/2000/svg"

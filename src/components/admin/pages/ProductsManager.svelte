@@ -184,7 +184,7 @@
       uploadStatus = "";
     } catch (err: any) {
       toastRef?.show(err.message, "error");
-      uploadStatus = "Upload failed";
+      uploadStatus = "Gagal upload";
     }
   };
 
@@ -199,7 +199,7 @@
       uploadStatus = "";
     } catch (err: any) {
       toastRef?.show(err.message, "error");
-      uploadStatus = "Upload failed";
+      uploadStatus = "Gagal upload";
     }
   };
 
@@ -491,7 +491,7 @@
                 placeholder="-- Status --"
                 options={[
                   { label: "🟢 Publik / Aktif", value: "true" },
-                  { label: "🔴 Draft / Hidden", value: "false" },
+                  { label: "🔴 Draf / Tersembunyi", value: "false" },
                 ]}
                 class="ring-stone-100/50"
               />

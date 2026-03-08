@@ -36,11 +36,11 @@ const csrfToken = ensureCsrfToken(Astro);
       <header class="pwa-topbar">
         <div class="pwa-topbar-card">
           <div>
-            <div class="pwa-chip">PWA Admin</div>
+            <div class="pwa-chip">Admin PWA</div>
             <div class="pwa-title">{title}</div>
             <div class="pwa-subtitle">{description}</div>
           </div>
-          <a class="pwa-ghost" href="/admin/overview">Dashboard</a>
+          <a class="pwa-ghost" href="/admin/overview">Dasbor</a>
         </div>
       </header>
 
@@ -54,10 +54,10 @@ const csrfToken = ensureCsrfToken(Astro);
             <span>Beranda</span>
           </a>
           <a href="/admin/reports" class={`pwa-nav-item ${activeNav === "insights" ? "pwa-nav-item-active" : ""}`}>
-            <span>Insights</span>
+            <span>Wawasan</span>
           </a>
           <a href="/admin/research" class={`pwa-nav-item ${activeNav === "research" ? "pwa-nav-item-active" : ""}`}>
-            <span>Research</span>
+            <span>Riset</span>
           </a>
           <a href="/admin/settings" class={`pwa-nav-item ${activeNav === "settings" ? "pwa-nav-item-active" : ""}`}>
             <span>Pengaturan</span>

@@ -44,7 +44,7 @@ let {
     <a class="btn-ghost" href={viewHref} target="_blank">{viewLabel}</a>
   {/if}
   {#if showEdit}
-    <button class="btn-ghost" data-action="edit" onclick={onEdit}>Edit</button>
+    <button class="btn-ghost" data-action="edit" onclick={onEdit}>Ubah</button>
   {/if}
   {#if showSend}
     <button
@@ -62,7 +62,7 @@ let {
           ></path></svg
         >
       {/if}
-      Send
+      Kirim
     </button>
   {/if}
   {#if showSave}

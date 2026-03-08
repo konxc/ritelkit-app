@@ -166,7 +166,7 @@ export type CmsPageRow = {
               bind:value={isActive}
               options={[
                 { value: "true", label: "Aktif" },
-                { value: "false", label: "Draft" },
+                { value: "false", label: "Draf" },
               ]}
             />
           </div>
@@ -201,13 +201,13 @@ export type CmsPageRow = {
             {/if}
             Simpan
           </Button>
-          <Button type="button" variant="secondary" class="h-[38px] px-6" onclick={handleClear}>Clear</Button>
+          <Button type="button" variant="secondary" class="h-[38px] px-6" onclick={handleClear}>Bersihkan</Button>
         </ActionGroup>
       </div>
     </CrudInlineForm>
 
     <div class="mt-6">
-      <Table headers={["Judul", "Slug", "Status", "Update", "Aksi"]}>
+      <Table headers={["Judul", "Slug", "Status", "Pembaruan", "Aksi"]}>
         {#each rows as p (p.id)}
           <TableRow data-id={p.id}>
             <TableCell data-field="title" class="px-4 py-3">{p.title}</TableCell>
@@ -216,7 +216,7 @@ export type CmsPageRow = {
               <span
                 class={`rounded-md px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${p.isActive === 1 ? "border border-emerald-100 bg-emerald-50 text-emerald-600" : "border border-stone-200 bg-stone-100 text-stone-500"}`}
               >
-                {p.isActive === 1 ? "Aktif" : "Draft"}
+              {p.isActive === 1 ? "Aktif" : "Draf"}
               </span>
             </TableCell>
             <TableCell class="px-4 py-3 text-xs text-stone-500 tabular-nums"

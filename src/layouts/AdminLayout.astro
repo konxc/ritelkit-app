@@ -4,7 +4,7 @@ import { actions } from "astro:actions";
 import { ClientRouter } from "astro:transitions";
 import { ensureCsrfToken } from "../lib/auth";
 
-const { title = "Dashboard Admin" } = Astro.props;
+const { title = "Dasbor Admin" } = Astro.props;
 const currentPath = Astro.url.pathname;
 const csrfToken = ensureCsrfToken(Astro);
 

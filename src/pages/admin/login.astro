@@ -34,11 +34,11 @@ const success = Astro.url.searchParams.get("success");
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>Login Admin</title>
+    <title>Masuk Admin</title>
   </head>
   <body class="m-0 bg-[#f6f4ef] font-['Outfit',sans-serif]">
     <div class="mx-auto mt-[8vh] max-w-[420px] rounded-2xl bg-white p-8 shadow-[0_20px_40px_rgba(0,0,0,0.08)]">
-      <h1>Login Admin</h1>
+      <h1>Masuk Admin</h1>
       {success === "1" && <p class="mt-4 text-[0.9rem] text-[#6b625a]">Admin berhasil dibuat. Silakan login.</p>}
       {info === "exists" && <p class="mt-4 text-[0.9rem] text-[#6b625a]">Admin sudah tersedia. Silakan login.</p>}
       {
@@ -56,9 +56,9 @@ const success = Astro.url.searchParams.get("success");
       }
       <form method="post" action={actions.adminLogin}>
         <input type="hidden" name="csrf_token" value={csrfToken} />
-        <label>Email</label>
+        <label>Surel</label>
         <input class="my-2 mb-4 w-full rounded-[10px] border border-[#e6dfd3] p-3" name="email" type="email" required />
-        <label>Password</label>
+        <label>Kata Sandi</label>
         <input
           class="my-2 mb-4 w-full rounded-[10px] border border-[#e6dfd3] p-3"
           name="password"
@@ -71,7 +71,7 @@ const success = Astro.url.searchParams.get("success");
         >
       </form>
       <div class="mt-4 text-[0.9rem] text-[#6b625a]">
-        Setup token: {env.SETUP_TOKEN ? "available" : "not set"}.
+        Token pengaturan: {env.SETUP_TOKEN ? "tersedia" : "belum disetel"}.
       </div>
     </div>
   </body>

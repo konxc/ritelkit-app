@@ -97,7 +97,7 @@ function handleReset() {
       </div>
       <!-- Optimistic disable -->
       <Button variant="primary" onclick={handleAdd} disabled={isSubmitting}>
-        {isSubmitting ? "Processing..." : "Simulasi Action"}
+        {isSubmitting ? "Sedang diproses..." : "Jalankan Simulasi"}
       </Button>
     </div>
 
@@ -113,21 +113,21 @@ function handleReset() {
             <span class="font-mono text-xs text-slate-500">ID: {item.id.slice(0, 8)}</span>
           </div>
 
-          <Button variant="danger" size="sm" disabled={deletingId === item.id} onclick={() => handleDelete(item.id)}>
-            {deletingId === item.id ? "Hapus..." : "Del"}
-          </Button>
+            <Button variant="danger" size="sm" disabled={deletingId === item.id} onclick={() => handleDelete(item.id)}>
+              {deletingId === item.id ? "Hapus..." : "Hapus"}
+            </Button>
         </li>
       {/each}
 
       {#if items.length === 0}
         <p class="mt-4 rounded-lg border border-dashed py-8 text-center text-sm text-slate-400 italic">
-          Empty state. No data available.
+          Belum ada data tersedia.
         </p>
       {/if}
     </ul>
   </div>
 
   <div class="flex justify-end border-t bg-slate-50 px-6 py-4">
-    <Button variant="outline" onclick={handleReset}>Restore ke Data SSR</Button>
+    <Button variant="outline" onclick={handleReset}>Kembalikan Data SSR</Button>
   </div>
 </div>

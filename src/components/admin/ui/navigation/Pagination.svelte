@@ -47,7 +47,7 @@ let visiblePages = $derived.by(() => {
     disabled={currentPage === 1}
     onclick={() => handlePageChange(currentPage - 1)}
     class="flex h-10 w-10 items-center justify-center rounded-xl border border-stone-200 bg-white text-stone-400 shadow-sm transition-all hover:border-[#c48a3a]/30 hover:bg-[#c48a3a]/5 hover:text-[#c48a3a] focus:ring-[3px] focus:ring-[#c48a3a]/20 active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
-    aria-label="Previous Page"
+    aria-label="Halaman Sebelumnya"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -85,7 +85,7 @@ let visiblePages = $derived.by(() => {
     disabled={currentPage === totalPages}
     onclick={() => handlePageChange(currentPage + 1)}
     class="flex h-10 w-10 items-center justify-center rounded-xl border border-stone-200 bg-white text-stone-600 shadow-sm transition-all hover:border-[#c48a3a]/30 hover:bg-[#c48a3a]/5 hover:text-[#c48a3a] focus:ring-[3px] focus:ring-[#c48a3a]/20 active:scale-90 disabled:cursor-not-allowed disabled:opacity-50"
-    aria-label="Next Page"
+    aria-label="Halaman Berikutnya"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"

@@ -165,7 +165,7 @@ export type CustomerRow = {
           <TextInput id="email" name="email" type="email" label="Email (Opsional)" placeholder="budi@email.com" />
         </div>
         <div class="w-full md:flex-1">
-          <TextInput id="notes" name="notes" label="Catatan" placeholder="Info tambahan pelanggan..." />
+          <TextInput id="notes" name="notes" label="Catatan" placeholder="Informasi tambahan pelanggan..." />
         </div>
         <Button type="submit" variant="primary" class="h-[42px] w-full px-8 md:w-auto" disabled={isSubmitting}>
           {#if isSubmitting}

@@ -9,7 +9,7 @@ interface Props {
 
 const {
   title = "Kontrol Admin",
-  description = "Mobile-first admin PWA",
+  description = "PWA admin berorientasi mobile",
   activeNav = "lab",
 } = Astro.props;
 ---
@@ -29,7 +29,7 @@ const {
       <header class="alt-header">
         <div class="alt-header-card">
           <div>
-            <div class="alt-pill">Admin Mobile</div>
+            <div class="alt-pill">Admin Seluler</div>
             <div class="alt-title">{title}</div>
             <div class="alt-subtitle">{description}</div>
           </div>
@@ -47,10 +47,10 @@ const {
             <span>Beranda</span>
           </a>
           <a href="/admin/orders" class={`alt-nav-item ${activeNav === "ops" ? "alt-nav-item-active" : ""}`}>
-            <span>Ops</span>
+            <span>Operasional</span>
           </a>
           <a href="/admin/lab" class={`alt-nav-item ${activeNav === "lab" ? "alt-nav-item-active" : ""}`}>
-            <span>Lab</span>
+            <span>Laboratorium</span>
           </a>
           <a href="/admin/settings" class={`alt-nav-item ${activeNav === "settings" ? "alt-nav-item-active" : ""}`}>
             <span>Pengaturan</span>

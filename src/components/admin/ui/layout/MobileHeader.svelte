@@ -15,7 +15,7 @@ let { title, logoText = "SHOLAWAT" }: Props = $props();
     >
       {title}
     </h1>
-    <p class="text-[0.65rem] font-bold tracking-wider text-stone-400 uppercase">Dashboard Admin</p>
+    <p class="text-[0.65rem] font-bold tracking-wider text-stone-400 uppercase">Dasbor Admin</p>
   </div>
 
   <div class="flex items-center gap-3">

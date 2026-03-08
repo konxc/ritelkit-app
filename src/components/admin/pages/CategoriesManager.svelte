@@ -390,7 +390,7 @@
               placeholder="-- Pilih Status --"
               options={[
                 { label: "🟢 Aktif", value: "true" },
-                { label: "🔴 Draft", value: "false" },
+                { label: "🔴 Draf", value: "false" },
               ]}
               class="ring-stone-100/50"
             />

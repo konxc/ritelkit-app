@@ -86,7 +86,7 @@ const ICONS: Record<string, string> = {
   <button
     onclick={toggleSidebar}
     class="absolute top-9 -right-3.5 z-50 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-stone-200 bg-white text-[10px] text-stone-500 shadow-sm transition-all hover:border-[#c48a3a] hover:text-[#c48a3a]"
-    title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+    title={isCollapsed ? "Perluas Sidebar" : "Perkecil Sidebar"}
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
