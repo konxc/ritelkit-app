@@ -11,6 +11,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+tsc_errors.log
+biome_errors.json
+biome_files_summary.txt
+biome_report.txt
 
 
 # environment variables
