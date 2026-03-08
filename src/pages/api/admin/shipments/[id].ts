@@ -10,7 +10,7 @@ export async function PUT(ctx: APIContext) {
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const body = (await ctx.request.json()) as Record<string, unknown>;
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const id = ctx.params.id || "";
   const orderNo = sanitizeText(String(body.order_no || ""));
@@ -19,7 +19,7 @@ export async function PUT(ctx: APIContext) {
   const trackingNo = sanitizeText(String(body.tracking_no || ""));
   const notes = sanitizeText(String(body.notes || ""));
   if (!id || !orderNo || !status) {
-    return new Response("Data tidak valid", { status: 400 });
+    return new Response("Invalid data", { status: 400 });
   }
   const now = nowIso();
   const shippedAt = status === "shipped" ? now : null;
@@ -73,7 +73,7 @@ export async function DELETE(ctx: APIContext) {
     ? await ctx.request.json()
     : Object.fromEntries(await ctx.request.formData());
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const id = ctx.params.id || "";
   const db = getDb(ctx);

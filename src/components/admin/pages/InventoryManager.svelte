@@ -166,7 +166,7 @@
       form.reset();
       isDrawerOpen = false;
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+      const message = error instanceof Error ? error.message : "An error occurred";
       toastRef?.show(message, "error");
     } finally {
       isSubmitting = false;
@@ -176,7 +176,7 @@
   const handleUpdateStock = async (id: string, newStockRaw: string) => {
     const qty = Number(newStockRaw.trim());
     if (Number.isNaN(qty)) {
-      toastRef?.show("Stok harus angka", "error");
+      toastRef?.show("Stock must be a number", "error");
       return;
     }
 
@@ -192,7 +192,7 @@
       queryClient.invalidateQueries({ queryKey: ["inventory.movements.list"] });
       toastRef?.show("Stok berhasil di-update", "success");
     } catch (error: unknown) {
-      toastRef?.show("Gagal update stok", "error");
+      toastRef?.show("Failed to update stock", "error");
     }
   };
 

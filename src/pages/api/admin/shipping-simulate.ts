@@ -10,7 +10,7 @@ export async function POST(ctx: APIContext) {
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const body = (await readBody(ctx)) as any;
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const subtotal = Number(body.subtotal || 0);
   const province = String(body.province || "");
@@ -18,7 +18,7 @@ export async function POST(ctx: APIContext) {
   const district = String(body.district || "");
   const freeShipping = body.free_shipping === true || body.free_shipping === "true";
   if (!province || !city) {
-    return new Response("Provinsi dan kota wajib diisi", { status: 400 });
+    return new Response("Province and city are required", { status: 400 });
   }
   const result = await calculateShipping(ctx, subtotal, { province, city, district }, freeShipping);
   return json(result);

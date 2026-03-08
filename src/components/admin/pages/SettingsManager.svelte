@@ -70,7 +70,7 @@ const handleSubmit = async (event: SubmitEvent) => {
 };
 
 const handleSeed = async () => {
-  toastRef?.show("Fungsi Generate Data Demo dinonaktifkan sementara.", "error");
+  toastRef?.show("Demo data generation is temporarily disabled.", "error");
 };
 </script>
 

@@ -271,7 +271,7 @@ const tocItems = [
           <div class="space-y-4">
             <TextInput label="Text Input (Default)" placeholder="Masukkan nama..." />
 
-            <TextInput label="Text Input (With Error)" value="Salah format" error="Email tidak valid." />
+            <TextInput label="Text Input (With Error)" value="Invalid format" error="Invalid email." />
 
             <SelectInput
               label="Select Input"
@@ -415,7 +415,7 @@ const tocItems = [
         <div class="rounded-3xl border border-stone-200/60 bg-white p-6 shadow-sm">
           <div class="flex flex-wrap gap-4">
             <Badge variant="success" showDot={true}>Selesai</Badge>
-            <Badge variant="warning" showDot={true}>Menunggu Pembayaran</Badge>
+            <Badge variant="warning" showDot={true}>Pending Payment</Badge>
             <Badge variant="info" showDot={true}>Sedang Dikemas</Badge>
             <Badge variant="default" showDot={true}>Draf</Badge>
             <Badge variant="danger" showDot={true}>Dibatalkan</Badge>
@@ -448,7 +448,7 @@ const tocItems = [
             <TableCell text-stone-600>Siti Aminah</TableCell>
             <TableCell class="text-stone-500">21 Okt 2026</TableCell>
             <TableCell>
-              <Badge variant="warning" showDot={true}>Menunggu</Badge>
+              <Badge variant="warning" showDot={true}>Pending</Badge>
             </TableCell>
             <TableCell bold={true}>Rp 75.000</TableCell>
             <TableCell align="right">
@@ -477,10 +477,18 @@ const tocItems = [
           <Alert variant="success" title="Berhasil" message="Data produk berhasil disimpan ke dalam sistem." />
 
           <!-- Warning Alert -->
-          <Alert variant="warning" title="Peringatan" message="Stok produk 'Roti Coklat' tersisa 5 buah." />
+          <Alert
+            variant="warning"
+            title="Warning"
+            message="Product stock for 'Roti Coklat' is down to 5 units."
+          />
 
           <!-- Error Alert -->
-          <Alert variant="error" title="Gagal" message="Gagal mengunggah foto. Pastikan ukuran file di bawah 2MB." />
+          <Alert
+            variant="error"
+            title="Failed"
+            message="Failed to upload photo. Make sure the file size is under 2MB."
+          />
         </div>
       </section>
 

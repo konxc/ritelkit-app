@@ -56,7 +56,7 @@ export async function POST(ctx: APIContext) {
   const ip = getClientIp(ctx);
   const limit = await checkRateLimit(ctx, `checkout:${ip}`, 12, 60);
   if (!limit.ok) {
-    return new Response("Terlalu banyak permintaan. Coba lagi nanti.", {
+    return new Response("Too many requests. Try again later.", {
       status: 429,
       headers: { "X-Request-Id": requestId },
     });
@@ -83,44 +83,44 @@ export async function POST(ctx: APIContext) {
   const couponCode = body.coupon_code ? String(body.coupon_code) : null;
 
   if (!customerName || !customerPhone || items.length === 0) {
-    return new Response("Data checkout tidak lengkap", {
+    return new Response("Checkout data is incomplete", {
       status: 400,
       headers: { "X-Request-Id": requestId },
     });
   }
   if (customerName.length < 2 || customerName.length > 120) {
-    return new Response("Nama pelanggan tidak valid", {
+    return new Response("Invalid customer name", {
       status: 400,
       headers: { "X-Request-Id": requestId },
     });
   }
   const normalizedPhone = normalizePhone(customerPhone);
   if (normalizedPhone.length < 9 || normalizedPhone.length > 15) {
-    return new Response("Nomor WhatsApp tidak valid", {
+    return new Response("Invalid WhatsApp number", {
       status: 400,
       headers: { "X-Request-Id": requestId },
     });
   }
   if (!isValidEmail(customerEmail)) {
-    return new Response("Format email tidak valid", {
+    return new Response("Invalid email format", {
       status: 400,
       headers: { "X-Request-Id": requestId },
     });
   }
   if (items.length > 50) {
-    return new Response("Jumlah item melebihi batas", {
+    return new Response("Item quantity exceeds limit", {
       status: 400,
       headers: { "X-Request-Id": requestId },
     });
   }
   if (couponCode && couponCode.length > 50) {
-    return new Response("Kode kupon terlalu panjang", {
+    return new Response("Coupon code is too long", {
       status: 400,
       headers: { "X-Request-Id": requestId },
     });
   }
   if (address.street && String(address.street).length > 300) {
-    return new Response("Alamat terlalu panjang", {
+    return new Response("Address is too long", {
       status: 400,
       headers: { "X-Request-Id": requestId },
     });
@@ -137,7 +137,7 @@ export async function POST(ctx: APIContext) {
     });
     const product = productRes.rows[0] as ProductRow | undefined;
     if (!product?.id || !product.name || product.price === undefined) {
-      return new Response("Produk tidak ditemukan", {
+      return new Response("Product not found", {
         status: 400,
         headers: { "X-Request-Id": requestId },
       });
@@ -145,7 +145,7 @@ export async function POST(ctx: APIContext) {
     const qty = Math.max(1, asInt(item.qty, 1));
     if (product.stock !== null && product.stock !== undefined) {
       if (Number(product.stock) < qty) {
-        return new Response(`Stok ${product.name} tidak cukup`, {
+        return new Response(`Insufficient stock for ${product.name}`, {
           status: 400,
           headers: { "X-Request-Id": requestId },
         });
@@ -167,7 +167,7 @@ export async function POST(ctx: APIContext) {
   const orderSettings = settings.order_settings || {};
 
   if (orderSettings.preorder_only && !deliveryDate) {
-    return new Response("Tanggal pengiriman wajib diisi", {
+    return new Response("Delivery date is required", {
       status: 400,
       headers: { "X-Request-Id": requestId },
     });
@@ -178,7 +178,7 @@ export async function POST(ctx: APIContext) {
     const minTime = now + leadHours * 60 * 60 * 1000;
     const requested = Date.parse(`${deliveryDate}T${deliveryTime || "08:00"}:00`);
     if (!Number.isNaN(requested) && requested < minTime) {
-      return new Response("Waktu pengiriman tidak memenuhi minimum lead time", {
+      return new Response("Delivery time does not meet minimum lead time", {
         status: 400,
         headers: { "X-Request-Id": requestId },
       });
@@ -186,7 +186,7 @@ export async function POST(ctx: APIContext) {
     if (orderSettings.same_day_enabled === false) {
       const today = new Date().toISOString().split("T")[0];
       if (deliveryDate === today) {
-        return new Response("Same-day order tidak tersedia", {
+        return new Response("Same-day order is not available", {
           status: 400,
           headers: { "X-Request-Id": requestId },
         });
@@ -201,7 +201,7 @@ export async function POST(ctx: APIContext) {
     normalizedPhone,
   );
   if (couponCode && !coupon) {
-    return new Response("Kupon tidak valid atau kuota habis", {
+    return new Response("Invalid coupon or quota exhausted", {
       status: 400,
       headers: { "X-Request-Id": requestId },
     });
@@ -210,7 +210,7 @@ export async function POST(ctx: APIContext) {
   if (deliverySettings.delivery_province) {
     const province = String(address.province || "");
     if (province && province !== deliverySettings.delivery_province) {
-      return new Response("Area pengiriman dibatasi", {
+      return new Response("Delivery area is restricted", {
         status: 400,
         headers: { "X-Request-Id": requestId },
       });
@@ -338,14 +338,14 @@ export async function POST(ctx: APIContext) {
       status: midtransRes.status,
       detail: errText.slice(0, 300),
     });
-    return new Response("Gagal membuat transaksi pembayaran", {
+    return new Response("Failed to create payment transaction", {
       status: 500,
       headers: { "X-Request-Id": requestId },
     });
   }
   const midtransData = (await midtransRes.json()) as MidtransSnapResponse;
   if (!midtransData?.token) {
-    return new Response("Respons pembayaran tidak valid", {
+    return new Response("Invalid payment response", {
       status: 500,
       headers: { "X-Request-Id": requestId },
     });

@@ -43,7 +43,7 @@ export async function GET(ctx: APIContext) {
           !env.R2_SECRET_ACCESS_KEY ||
           !env.R2_BUCKET
         ) {
-          throw new Error("R2 env belum lengkap");
+          throw new Error("R2 env is not fully configured");
         }
         const client = new S3Client({
           region: "auto",

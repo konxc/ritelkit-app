@@ -467,7 +467,7 @@ const refundFixtures: RefundFixture[] = [
   {
     orderNo: "RS-20260220-004",
     amount: 110000,
-    reason: "Double order / Salah input",
+    reason: "Double order / Wrong input",
     status: "completed",
     providerStatus: "refunded",
     createdOffset: 5,

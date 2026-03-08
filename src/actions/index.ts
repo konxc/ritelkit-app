@@ -53,8 +53,8 @@ function normalizePhone(value: string) {
 export const server = {
   checkOrderStatus: defineAction({
     input: z.object({
-      orderNo: z.string().regex(/^RS-\d{10,}$/, "Format order no tidak valid"),
-      phone: z.string().min(9).max(15, "Format nomor HP tidak valid"),
+      orderNo: z.string().regex(/^RS-\d{10,}$/, "Invalid order number format"),
+      phone: z.string().min(9).max(15, "Invalid phone number format"),
     }),
     handler: async (input, ctx) => {
       const apiCtx = ctx as unknown as APIContext;
@@ -63,7 +63,7 @@ export const server = {
       const limit = await checkRateLimit(apiCtx, `order-status:${ip}`, 30, 60);
 
       if (!limit.ok) {
-        throw new Error("Terlalu banyak permintaan. Coba lagi nanti.");
+        throw new Error("Too many requests. Try again later.");
       }
 
       const normalizedPhone = normalizePhone(input.phone);
@@ -79,13 +79,13 @@ export const server = {
         | undefined;
 
       if (!row) {
-        throw new Error("Pesanan tidak ditemukan");
+        throw new Error("Order not found");
       }
 
       const samePhone = normalizePhone(String(row.customer_phone || "")) === normalizedPhone;
 
       if (!samePhone) {
-        throw new Error("Pesanan tidak ditemukan");
+        throw new Error("Order not found");
       }
 
       return {
@@ -98,8 +98,8 @@ export const server = {
   adminLogin: defineAction({
     accept: "form",
     input: z.object({
-      email: z.string().email("Format email tidak valid"),
-      password: z.string().min(1, "Password wajib diisi"),
+      email: z.string().email("Invalid email format"),
+      password: z.string().min(1, "Password is required"),
       csrf_token: z.string().optional(),
     }),
     handler: async (input, ctx) => {
@@ -108,7 +108,7 @@ export const server = {
 
       // CSRF check
       if (!verifyCsrf(apiCtx, input)) {
-        throw new Error("CSRF token tidak valid");
+        throw new Error("Invalid CSRF token");
       }
 
       const email = normalizeEmail(input.email);
@@ -125,7 +125,7 @@ export const server = {
       });
       const attempts = Number(attemptRes.rows[0]?.count || 0);
       if (attempts >= 5) {
-        throw new Error("Terlalu banyak percobaan, coba lagi nanti");
+        throw new Error("Too many attempts, try again later");
       }
 
       const result = await db.execute({
@@ -139,7 +139,7 @@ export const server = {
           sql: "INSERT INTO login_attempts (id, ip, created_at) VALUES (?, ?, ?)",
           args: [crypto.randomUUID(), ip, nowSec],
         });
-        throw new Error("Email atau password salah");
+        throw new Error("Invalid email or password");
       }
 
       const valid = await verifyPassword(password, row.password_hash);
@@ -148,7 +148,7 @@ export const server = {
           sql: "INSERT INTO login_attempts (id, ip, created_at) VALUES (?, ?, ?)",
           args: [crypto.randomUUID(), ip, nowSec],
         });
-        throw new Error("Email atau password salah");
+        throw new Error("Invalid email or password");
       }
 
       // Clean attempts on success? (Optional, here we just insert another success log if wanted, but original logic just inserts an attempt)
@@ -491,7 +491,7 @@ export const server = {
 
         if (!product) {
           tx.rollback();
-          throw new Error("Produk tidak ditemukan");
+          throw new Error("Product not found");
         }
 
         let newStock = product.stock || 0;
@@ -574,7 +574,7 @@ export const server = {
       if (!order) {
         throw new ActionError({
           code: "NOT_FOUND",
-          message: "Pesanan tidak ditemukan",
+          message: "Order not found",
         });
       }
 
@@ -689,7 +689,7 @@ export const server = {
       let orderId = input.orderId;
       if (!orderId) {
         const order = await db.select().from(orders).where(eq(orders.orderNo, input.orderNo)).get();
-        if (!order) throw new Error("Pesanan tidak ditemukan");
+        if (!order) throw new Error("Order not found");
         orderId = order.id;
       }
 
@@ -925,7 +925,7 @@ export const server = {
       let orderId = input.orderId;
       if (!orderId) {
         const order = await db.select().from(orders).where(eq(orders.orderNo, input.orderNo)).get();
-        if (!order) throw new Error("Pesanan tidak ditemukan");
+        if (!order) throw new Error("Order not found");
         orderId = order.id;
       }
 

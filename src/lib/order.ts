@@ -35,18 +35,18 @@ export function validateOrderUpdate(
   nextPayment: string,
 ) {
   if (!nextStatus || !nextPayment) {
-    return { ok: false, message: "Status order dan pembayaran wajib diisi" };
+    return { ok: false, message: "Order and payment status are required" };
   }
   if (currentStatus !== nextStatus) {
     const allowed = orderTransitions[currentStatus] || [];
     if (!allowed.includes(nextStatus)) {
-      return { ok: false, message: "Transisi status order tidak valid" };
+      return { ok: false, message: "Invalid order status transition" };
     }
   }
   if (currentPayment !== nextPayment) {
     const allowed = paymentTransitions[currentPayment] || [];
     if (!allowed.includes(nextPayment)) {
-      return { ok: false, message: "Transisi status pembayaran tidak valid" };
+      return { ok: false, message: "Invalid payment status transition" };
     }
   }
   return { ok: true };

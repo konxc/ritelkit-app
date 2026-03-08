@@ -60,7 +60,7 @@ export async function POST(ctx: APIContext) {
     | { id?: string; payment_status?: string }
     | undefined;
   if (!existingOrder?.id) {
-    return new Response("Pesanan tidak ditemukan", {
+    return new Response("Order not found", {
       status: 404,
       headers: { "X-Request-Id": requestId },
     });

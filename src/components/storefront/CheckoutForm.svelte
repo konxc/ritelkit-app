@@ -85,7 +85,7 @@ async function handleSubmit(e: SubmitEvent) {
         window.location.href = `/order/pending?order=${data.order_no}`;
       },
       onError: () => {
-        error = "Pembayaran gagal.";
+        error = "Payment failed.";
         loading = false;
       },
       onClose: () => {
@@ -93,7 +93,7 @@ async function handleSubmit(e: SubmitEvent) {
       },
     });
   } catch (err: any) {
-    error = err.message || "Terjadi kesalahan sistem.";
+    error = err.message || "A system error occurred.";
     loading = false;
   }
 }

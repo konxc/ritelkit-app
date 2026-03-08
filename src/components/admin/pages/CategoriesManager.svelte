@@ -109,7 +109,7 @@
       newSlug = "";
       isDrawerOpen = false;
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Gagal menambah kategori";
+      const message = error instanceof Error ? error.message : "Failed to add category";
       toastRef?.show(message, "error");
     } finally {
       isSubmitting = false;
@@ -125,7 +125,7 @@
         queryClient.invalidateQueries({ queryKey: ["categories.list"] });
         toastRef?.show("Kategori dihapus", "success");
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Gagal menghapus kategori";
+        const message = error instanceof Error ? error.message : "Failed to delete category";
         toastRef?.show(message, "error");
       } finally {
         processingId = null;
@@ -160,7 +160,7 @@
         queryClient.invalidateQueries({ queryKey: ["categories.list"] });
         toastRef?.show("Kategori diperbarui", "success");
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Gagal memperbarui kategori";
+        const message = error instanceof Error ? error.message : "Failed to update category";
         toastRef?.show(message, "error");
       } finally {
         processingId = null;

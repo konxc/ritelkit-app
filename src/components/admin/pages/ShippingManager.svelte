@@ -108,7 +108,7 @@ const handleCreate = async (event: SubmitEvent) => {
     queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
     isDrawerOpen = false;
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+    const message = error instanceof Error ? error.message : "An error occurred";
     toastRef?.show(message, "error");
   } finally {
     isSubmitting = false;
@@ -129,7 +129,7 @@ const handleRowAction = async (
         toastRef?.show("Rule pengiriman dihapus", "success");
         queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+        const message = error instanceof Error ? error.message : "An error occurred";
         toastRef?.show(message, "error");
       } finally {
         deletingId = null;
@@ -167,7 +167,7 @@ const handleRowAction = async (
       toastRef?.show("Rule diperbarui", "success");
       queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+      const message = error instanceof Error ? error.message : "An error occurred";
       toastRef?.show(message, "error");
     } finally {
       savingId = null;

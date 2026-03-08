@@ -27,29 +27,29 @@ export async function POST(ctx: APIContext) {
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const body = await readBody(ctx);
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const name = sanitizeText(String(body.name || ""));
   const type = sanitizeText(String(body.type || ""));
   if (!name || !type) {
-    return new Response("Nama dan tipe rule wajib diisi", { status: 400 });
+    return new Response("Name and rule type are required", { status: 400 });
   }
   if (!["flat", "free_threshold", "zone"].includes(type)) {
-    return new Response("Tipe rule tidak valid", { status: 400 });
+    return new Response("Invalid rule type", { status: 400 });
   }
   const config =
     body.config && typeof body.config === "object" ? (body.config as ShippingRuleConfig) : {};
   if (type === "flat" && (!config || typeof config.fee !== "number")) {
-    return new Response("Config flat fee tidak valid", { status: 400 });
+    return new Response("Invalid flat fee config", { status: 400 });
   }
   if (
     type === "free_threshold" &&
     (!config || typeof config.threshold !== "number" || typeof config.fee !== "number")
   ) {
-    return new Response("Config threshold tidak valid", { status: 400 });
+    return new Response("Invalid threshold config", { status: 400 });
   }
   if (type === "zone" && (!config || !Array.isArray(config.zones))) {
-    return new Response("Config zone tidak valid", { status: 400 });
+    return new Response("Invalid zone config", { status: 400 });
   }
   const now = nowIso();
   const db = getDb(ctx);

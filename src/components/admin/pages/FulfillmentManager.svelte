@@ -50,7 +50,7 @@ export type ShipmentRow = {
       toastRef?.show("Pengiriman berhasil dibuat!", "success");
     },
     onError: (err: unknown) => {
-      const message = err instanceof Error ? err.message : "Gagal membuat pengiriman";
+      const message = err instanceof Error ? err.message : "Failed to create shipment";
       toastRef?.show(message, "error");
     },
   }));
@@ -62,7 +62,7 @@ export type ShipmentRow = {
       toastRef?.show("Pengiriman diperbarui", "success");
     },
     onError: (err: unknown) => {
-      const message = err instanceof Error ? err.message : "Gagal memperbarui pengiriman";
+      const message = err instanceof Error ? err.message : "Failed to update shipment";
       toastRef?.show(message, "error");
     },
   }));
@@ -74,7 +74,7 @@ export type ShipmentRow = {
       toastRef?.show("Pengiriman dihapus", "success");
     },
     onError: (err: unknown) => {
-      const message = err instanceof Error ? err.message : "Gagal menghapus pengiriman";
+      const message = err instanceof Error ? err.message : "Failed to delete shipment";
       toastRef?.show(message, "error");
     },
   }));
@@ -83,8 +83,17 @@ export type ShipmentRow = {
     event.preventDefault();
     const form = event.currentTarget as HTMLFormElement;
     const data = new FormData(form);
+    const orderNo = data.get("orderNo") as string;
+
+    const order = pendingOrders.find((o: any) => o.orderNo === orderNo);
+    if (!order) {
+      toastRef?.show("Order not found or invalid", "error");
+      return;
+    }
+
     shipCreateMutation.mutate({
-      orderNo: data.get("orderNo") as string,
+      orderId: order.id,
+      orderNo: orderNo,
       status: data.get("status") as string,
       carrier: data.get("carrier") as string,
       trackingNo: data.get("trackingNo") as string,

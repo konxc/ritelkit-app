@@ -26,7 +26,7 @@ export async function POST(ctx: APIContext) {
 
   if (!verifyCsrf(ctx, body)) {
     if (isJson) {
-      return new Response("CSRF token tidak valid. Gunakan form /admin/setup.", {
+      return new Response("Invalid CSRF token. Use the /admin/setup form.", {
         status: 403,
       });
     }
@@ -39,7 +39,7 @@ export async function POST(ctx: APIContext) {
   const setupToken = sanitizeText(String(body.setup_token || ""));
   if (!env.SETUP_TOKEN) {
     if (isJson) {
-      return new Response("SETUP_TOKEN belum diset di env", { status: 500 });
+      return new Response("SETUP_TOKEN is not set in env", { status: 500 });
     }
     return new Response(null, {
       status: 303,
@@ -48,7 +48,7 @@ export async function POST(ctx: APIContext) {
   }
   if (setupToken !== env.SETUP_TOKEN) {
     if (isJson) {
-      return new Response("Token setup tidak valid. Gunakan token dari env SETUP_TOKEN.", {
+      return new Response("Invalid setup token. Use the token from env SETUP_TOKEN.", {
         status: 403,
       });
     }
@@ -64,7 +64,7 @@ export async function POST(ctx: APIContext) {
   const count = Number(countRow?.count || 0);
   if (count > 0) {
     if (isJson) {
-      return new Response("Admin sudah tersedia", { status: 400 });
+      return new Response("Admin already exists", { status: 400 });
     }
     return new Response(null, {
       status: 303,
@@ -76,7 +76,7 @@ export async function POST(ctx: APIContext) {
   const password = sanitizeText(String(body.password || ""));
   if (!email || password.length < 8) {
     if (isJson) {
-      return new Response("Email atau password tidak valid", { status: 400 });
+      return new Response("Invalid email or password", { status: 400 });
     }
     return new Response(null, {
       status: 303,

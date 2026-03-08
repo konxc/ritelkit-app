@@ -14,19 +14,19 @@ export async function POST(ctx: APIContext) {
   const admin = await requireAdmin(ctx);
   if (!admin) return new Response("Unauthorized", { status: 401 });
   if (!verifyCsrf(ctx)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
 
   const formData = await ctx.request.formData();
   const file = formData.get("file");
   if (!(file instanceof File)) {
-    return new Response("File tidak valid", { status: 400 });
+    return new Response("Invalid file", { status: 400 });
   }
   if (!ALLOWED_TYPES.includes(file.type)) {
-    return new Response("Tipe file tidak didukung", { status: 400 });
+    return new Response("Unsupported file type", { status: 400 });
   }
   if (file.size > MAX_SIZE_BYTES) {
-    return new Response("File terlalu besar (max 5MB)", { status: 400 });
+    return new Response("File too large (max 5MB)", { status: 400 });
   }
 
   const env = getEnv(ctx);
@@ -61,7 +61,7 @@ export async function POST(ctx: APIContext) {
       !env.R2_SECRET_ACCESS_KEY ||
       !env.R2_BUCKET
     ) {
-      return new Response("R2 env belum lengkap", { status: 500 });
+      return new Response("R2 env is not fully configured", { status: 500 });
     }
     const client = new S3Client({
       region: "auto",
@@ -85,7 +85,7 @@ export async function POST(ctx: APIContext) {
   }
 
   if (!isNodeLike()) {
-    return new Response("Upload local hanya tersedia di node/bun", {
+    return new Response("Local upload is only available in node/bun", {
       status: 500,
     });
   }

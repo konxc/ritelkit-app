@@ -16,7 +16,7 @@ export async function POST(ctx: APIContext) {
       !env.R2_SECRET_ACCESS_KEY ||
       !env.R2_BUCKET
     ) {
-      return new Response("R2 env belum lengkap", { status: 500 });
+      return new Response("R2 env is not fully configured", { status: 500 });
     }
     const client = new S3Client({
       region: "auto",
@@ -44,7 +44,7 @@ export async function POST(ctx: APIContext) {
   }
 
   if (!isNodeLike()) {
-    return new Response("Storage test tidak tersedia di runtime ini", {
+    return new Response("Storage test is not available in this runtime", {
       status: 500,
     });
   }

@@ -1,5 +1,5 @@
 import { adminProcedure, router } from "../trpc";
-import { orders } from "../../db/schema";
+import { orders, orderStatusHistory } from "../../db/schema";
 import { OrderSchema } from "../../lib/types";
 import { eq, desc, asc, like, or, inArray, sql } from "drizzle-orm";
 import { logAudit } from "../../lib/admin";
@@ -89,10 +89,32 @@ export const orderRouter = router({
     )
     .mutation(async ({ ctx, input }) => {
       const now = new Date().toISOString();
-      await ctx.db
-        .update(orders)
-        .set({ ...(input.data as any), updatedAt: now })
-        .where(eq(orders.id, input.id));
+
+      await ctx.db.transaction(async (tx) => {
+        // 1. Get original order to see if status changed
+        const originalOrder = await tx
+          .select({ status: orders.status })
+          .from(orders)
+          .where(eq(orders.id, input.id))
+          .get();
+
+        // 2. Update order
+        await tx
+          .update(orders)
+          .set({ ...(input.data as any), updatedAt: now })
+          .where(eq(orders.id, input.id));
+
+        // 3. If status changed, log to history
+        if (originalOrder && input.data.status && originalOrder.status !== input.data.status) {
+          await tx.insert(orderStatusHistory).values({
+            id: crypto.randomUUID(),
+            orderId: input.id,
+            status: input.data.status,
+            notes: (input.data as any).notes || "Status updated via Admin Dashboard",
+            createdAt: now,
+          });
+        }
+      });
 
       await logAudit(ctx.ctx, "update", "order", input.id, input.data);
       return { ok: true };

@@ -23,7 +23,7 @@ export async function POST(ctx: APIContext) {
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const body = await readBody(ctx);
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const db = getDb(ctx);
   const now = nowIso();

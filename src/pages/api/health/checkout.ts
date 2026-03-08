@@ -8,7 +8,7 @@ export async function POST(ctx: APIContext) {
   const productRes = await db.execute("SELECT id FROM products WHERE is_active = 1 LIMIT 1");
   const product = productRes.rows[0] as any;
   if (!product) {
-    return new Response("Tidak ada produk aktif untuk health check", {
+    return new Response("No active products for health check", {
       status: 400,
     });
   }

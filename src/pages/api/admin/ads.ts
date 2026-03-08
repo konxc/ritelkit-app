@@ -10,7 +10,7 @@ export async function POST(ctx: APIContext) {
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const body = Object.fromEntries(await ctx.request.formData());
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const name = sanitizeText(String(body.name || ""));
   const channel = sanitizeText(String(body.channel || ""));
@@ -20,7 +20,7 @@ export async function POST(ctx: APIContext) {
   const endAt = sanitizeText(String(body.end_at || ""));
   const notes = sanitizeText(String(body.notes || ""));
   if (!name || !channel || budget <= 0) {
-    return new Response("Nama, channel, dan budget wajib diisi", {
+    return new Response("Name, channel, and budget are required", {
       status: 400,
     });
   }

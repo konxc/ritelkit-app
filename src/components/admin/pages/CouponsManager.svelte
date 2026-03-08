@@ -33,7 +33,7 @@ const createCouponMutation = createMutation(() => ({
     toastRef?.show("Kupon berhasil ditambahkan!", "success");
   },
   onError: (err: unknown) => {
-    const message = err instanceof Error ? err.message : "Gagal menambah kupon";
+    const message = err instanceof Error ? err.message : "Failed to add coupon";
     toastRef?.show(message, "error");
   },
 }));
@@ -45,7 +45,7 @@ const updateCouponMutation = createMutation(() => ({
     toastRef?.show("Kupon diperbarui", "success");
   },
   onError: (err: unknown) => {
-    const message = err instanceof Error ? err.message : "Gagal memperbarui kupon";
+    const message = err instanceof Error ? err.message : "Failed to update coupon";
     toastRef?.show(message, "error");
   },
 }));
@@ -57,7 +57,7 @@ const deleteCouponMutation = createMutation(() => ({
     toastRef?.show("Kupon dihapus", "success");
   },
   onError: (err: unknown) => {
-    const message = err instanceof Error ? err.message : "Gagal menghapus kupon";
+    const message = err instanceof Error ? err.message : "Failed to delete coupon";
     toastRef?.show(message, "error");
   },
 }));

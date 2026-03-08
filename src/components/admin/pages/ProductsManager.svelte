@@ -128,7 +128,7 @@
       toastRef?.show("Produk berhasil ditambahkan!", "success");
       return true;
     } catch (err: any) {
-      toastRef?.show(err.message || "Gagal menambah produk", "error");
+      toastRef?.show(err.message || "Failed to add product", "error");
       return false;
     } finally {
       isMutating = false;
@@ -142,7 +142,7 @@
       queryClient.invalidateQueries({ queryKey: ["products.list"] });
       toastRef?.show("Produk diperbarui", "success");
     } catch (err: any) {
-      toastRef?.show(err.message || "Gagal memperbarui produk", "error");
+      toastRef?.show(err.message || "Failed to update product", "error");
     } finally {
       isMutating = false;
     }
@@ -156,7 +156,7 @@
       queryClient.invalidateQueries({ queryKey: ["products.list"] });
       toastRef?.show("Produk dihapus", "success");
     } catch (err: any) {
-      toastRef?.show(err.message || "Gagal menghapus produk", "error");
+      toastRef?.show(err.message || "Failed to delete product", "error");
     } finally {
       isMutating = false;
     }
@@ -184,7 +184,7 @@
       uploadStatus = "";
     } catch (err: any) {
       toastRef?.show(err.message, "error");
-      uploadStatus = "Gagal upload";
+      uploadStatus = "Upload failed";
     }
   };
 
@@ -199,7 +199,7 @@
       uploadStatus = "";
     } catch (err: any) {
       toastRef?.show(err.message, "error");
-      uploadStatus = "Gagal upload";
+      uploadStatus = "Upload failed";
     }
   };
 

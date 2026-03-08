@@ -133,7 +133,7 @@ export const inventoryRouter = router({
           .from(products)
           .where(eq(products.id, input.productId))
           .get();
-        if (!product) throw new Error("Produk tidak ditemukan");
+        if (!product) throw new Error("Product not found");
 
         let newStock = product.stock || 0;
         if (input.type === "in") newStock += input.qty;

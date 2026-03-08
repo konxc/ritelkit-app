@@ -8,7 +8,7 @@ export async function GET(ctx: APIContext) {
   const admin = await requireAdmin(ctx);
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const invoiceNo = ctx.params.invoice_no;
-  if (!invoiceNo) return new Response("Faktur tidak valid", { status: 400 });
+  if (!invoiceNo) return new Response("Invalid invoice", { status: 400 });
 
   const db = getDb(ctx);
   const result = await db.execute({
@@ -18,7 +18,7 @@ export async function GET(ctx: APIContext) {
     args: [invoiceNo],
   });
   const invoice = result.rows[0] as any;
-  if (!invoice) return new Response("Faktur tidak ditemukan", { status: 404 });
+  if (!invoice) return new Response("Invoice not found", { status: 404 });
 
   if (isCloudflare(ctx) || !isNodeLike()) {
     return new Response(null, {

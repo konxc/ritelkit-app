@@ -1,5 +1,5 @@
 import { adminProcedure, router } from "../trpc";
-import { shipments } from "../../db/schema";
+import { shipments, orders, orderStatusHistory } from "../../db/schema";
 import { eq, desc } from "drizzle-orm";
 import { z } from "zod";
 
@@ -25,7 +25,7 @@ export const shipmentRouter = router({
       z.object({
         orderId: z.string(),
         orderNo: z.string(),
-        status: z.string(),
+        status: z.string(), // initial tracking status (packing, shipped, etc)
         carrier: z.string().optional(),
         trackingNo: z.string().optional(),
         notes: z.string().optional(),
@@ -34,17 +34,38 @@ export const shipmentRouter = router({
     .mutation(async ({ ctx, input }) => {
       const id = crypto.randomUUID();
       const now = new Date().toISOString();
-      await ctx.db.insert(shipments).values({
-        id,
-        orderId: input.orderId,
-        orderNo: input.orderNo,
-        status: input.status,
-        carrier: input.carrier || null,
-        trackingNo: input.trackingNo || null,
-        notes: input.notes || null,
-        createdAt: now,
-        updatedAt: now,
+
+      await ctx.db.transaction(async (tx) => {
+        // 1. Create shipment record
+        await tx.insert(shipments).values({
+          id,
+          orderId: input.orderId,
+          orderNo: input.orderNo,
+          status: input.status,
+          carrier: input.carrier || null,
+          trackingNo: input.trackingNo || null,
+          notes: input.notes || null,
+          createdAt: now,
+          updatedAt: now,
+        });
+
+        // 2. If status is 'shipped' or 'delivered', update the order status
+        if (input.status === "shipped" || input.status === "delivered") {
+          await tx
+            .update(orders)
+            .set({ status: input.status, updatedAt: now })
+            .where(eq(orders.id, input.orderId));
+
+          await tx.insert(orderStatusHistory).values({
+            id: crypto.randomUUID(),
+            orderId: input.orderId,
+            status: input.status,
+            notes: `Auto-updated via Shipment Tracking (${input.carrier || "Kurir"})`,
+            createdAt: now,
+          });
+        }
       });
+
       return { id };
     }),
 

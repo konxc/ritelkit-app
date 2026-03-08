@@ -26,17 +26,17 @@ export async function POST(ctx: APIContext) {
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const body = await readBody(ctx);
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const orderNo = sanitizeText(String(body.order_no || ""));
-  if (!orderNo) return new Response("No. pesanan wajib diisi", { status: 400 });
+  if (!orderNo) return new Response("Order number is required", { status: 400 });
   const db = getDb(ctx);
   const orderRes = await db.execute({
     sql: "SELECT id FROM orders WHERE order_no = ?",
     args: [orderNo],
   });
   const order = orderRes.rows[0] as OrderLookupRow | undefined;
-  if (!order?.id) return new Response("Pesanan tidak ditemukan", { status: 404 });
+  if (!order?.id) return new Response("Order not found", { status: 404 });
   const invoiceNo = `INV-${Date.now()}`;
   const now = nowIso();
   await db.execute({

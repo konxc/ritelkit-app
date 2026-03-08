@@ -43,8 +43,8 @@ export type AdminUser = z.infer<typeof AdminUserSchema>;
 
 // Category
 export const CategorySchema = BaseEntitySchema.extend({
-  name: z.string().min(1, "Nama wajib diisi"),
-  slug: z.string().min(1, "Slug wajib diisi"),
+  name: z.string().min(1, "Name is required"),
+  slug: z.string().min(1, "Slug is required"),
   sortOrder: z.number().int().default(0),
   isActive: z
     .union([z.boolean(), z.number()])
@@ -56,8 +56,8 @@ export type Category = z.infer<typeof CategorySchema>;
 // Product
 export const ProductSchema = BaseEntitySchema.extend({
   sku: z.string().optional().nullable(),
-  name: z.string().min(1, "Nama wajib diisi"),
-  slug: z.string().min(1, "Slug wajib diisi"),
+  name: z.string().min(1, "Name is required"),
+  slug: z.string().min(1, "Slug is required"),
   description: z.string().optional().nullable(),
   categoryId: z.string().optional().nullable(),
   price: z.number().int().min(0),
@@ -124,9 +124,9 @@ export type Coupon = z.infer<typeof CouponSchema>;
 
 // Customer
 export const CustomerSchema = BaseEntitySchema.extend({
-  name: z.string().min(1, "Nama wajib diisi"),
+  name: z.string().min(1, "Name is required"),
   email: z.string().email().nullish(),
-  phone: z.string().min(1, "No. telepon wajib diisi"),
+  phone: z.string().min(1, "Phone number is required"),
   notes: z.string().optional().nullable(),
 });
 
@@ -149,8 +149,8 @@ export type Notification = z.infer<typeof NotificationSchema>;
 
 // Ads Campaign
 export const AdsCampaignSchema = BaseEntitySchema.extend({
-  name: z.string().min(1, "Nama wajib diisi"),
-  channel: z.string().min(1, "Channel wajib diisi"),
+  name: z.string().min(1, "Name is required"),
+  channel: z.string().min(1, "Channel is required"),
   budget: z.number().int().min(0),
   spend: z.number().int().min(0).default(0),
   status: z.enum(["draft", "active", "paused", "completed"]),

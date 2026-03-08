@@ -1,5 +1,5 @@
 import { adminProcedure, router } from "../trpc";
-import { refunds } from "../../db/schema";
+import { refunds, orders, orderStatusHistory } from "../../db/schema";
 import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -38,16 +38,36 @@ export const refundRouter = router({
     .mutation(async ({ ctx, input }) => {
       const id = crypto.randomUUID();
       const now = new Date().toISOString();
-      await ctx.db.insert(refunds).values({
-        id,
-        orderId: input.orderId,
-        orderNo: input.orderNo,
-        amount: input.amount,
-        status: input.status,
-        reason: input.reason || null,
-        createdAt: now,
-        updatedAt: now,
+
+      await ctx.db.transaction(async (tx) => {
+        // 1. Insert refund record
+        await tx.insert(refunds).values({
+          id,
+          orderId: input.orderId,
+          orderNo: input.orderNo,
+          amount: input.amount,
+          status: input.status,
+          reason: input.reason || null,
+          createdAt: now,
+          updatedAt: now,
+        });
+
+        // 2. Update order payment status to refunded
+        await tx
+          .update(orders)
+          .set({ paymentStatus: "refunded", updatedAt: now })
+          .where(eq(orders.id, input.orderId));
+
+        // 3. Log to history
+        await tx.insert(orderStatusHistory).values({
+          id: crypto.randomUUID(),
+          orderId: input.orderId,
+          status: "refunded",
+          notes: `Refund created for Rp${input.amount.toLocaleString()}. Reason: ${input.reason || "-"}`,
+          createdAt: now,
+        });
       });
+
       return { id };
     }),
 

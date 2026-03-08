@@ -15,14 +15,14 @@ export async function POST(ctx: APIContext) {
       : Object.fromEntries(await ctx.request.formData())
   ) as Record<string, unknown>;
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const title = sanitizeText(String(body.title || ""));
   const slug = sanitizeText(String(body.slug || ""));
   const content = String(body.content_md || "");
   const isActive = String(body.is_active || "true") === "true";
   if (!title || !slug || !content) {
-    return new Response("Judul, slug, dan konten wajib diisi", { status: 400 });
+    return new Response("Title, slug, and content are required", { status: 400 });
   }
   const now = nowIso();
   const db = getDb(ctx);

@@ -11,7 +11,7 @@ export async function POST(ctx: APIContext) {
 
   const body = Object.fromEntries(await ctx.request.formData());
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
 
   const productId = String(body.product_id || "");
@@ -19,7 +19,7 @@ export async function POST(ctx: APIContext) {
   const qty = asInt(body.qty, 0);
   const notes = sanitizeText(String(body.notes || ""));
   if (!productId || qty === 0) {
-    return new Response("Produk dan qty wajib diisi", { status: 400 });
+    return new Response("Product and qty are required", { status: 400 });
   }
 
   const db = getDb(ctx);
@@ -29,7 +29,7 @@ export async function POST(ctx: APIContext) {
   });
   const product = productRes.rows[0] as { stock?: number } | undefined;
   if (!product) {
-    return new Response("Produk tidak ditemukan", { status: 404 });
+    return new Response("Product not found", { status: 404 });
   }
 
   let signedQty = qty;

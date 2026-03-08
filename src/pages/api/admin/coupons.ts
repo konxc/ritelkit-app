@@ -19,12 +19,12 @@ export async function POST(ctx: APIContext) {
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const body = await readBody(ctx);
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const code = sanitizeText(String(body.code || "")).toUpperCase();
   const type = sanitizeText(String(body.type || ""));
   if (!code || !type) {
-    return new Response("Kode kupon dan tipe wajib diisi", {
+    return new Response("Coupon code and type are required", {
       status: 400,
     });
   }

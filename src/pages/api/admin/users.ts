@@ -16,13 +16,13 @@ export async function POST(ctx: APIContext) {
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const body = Object.fromEntries(await ctx.request.formData());
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const email = normalizeEmail(String(body.email || ""));
   const password = sanitizeText(String(body.password || ""));
   const role = sanitizeText(String(body.role || "admin"));
   if (!email || password.length < 8) {
-    return new Response("Email/password tidak valid", { status: 400 });
+    return new Response("Invalid email or password", { status: 400 });
   }
   const db = getDb(ctx);
   const hash = await hashPassword(password);

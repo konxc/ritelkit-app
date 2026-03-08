@@ -45,8 +45,8 @@ async function handleAdd() {
     // Reset input form
     newItemName = "";
   } catch (e) {
-    console.error("Gagal saat memanggil Astro Action: ", e);
-    alert("Gagal memanggil mutasi Action.");
+    console.error("Failed to call Astro Action:", e);
+    alert("Failed to call mutation Action.");
   } finally {
     isSubmitting = false;
   }
@@ -121,7 +121,7 @@ function handleReset() {
 
       {#if items.length === 0}
         <p class="mt-4 rounded-lg border border-dashed py-8 text-center text-sm text-slate-400 italic">
-          State kosong. Tidak ada data.
+          Empty state. No data available.
         </p>
       {/if}
     </ul>

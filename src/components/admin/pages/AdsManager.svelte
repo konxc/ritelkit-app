@@ -79,7 +79,7 @@ type AdMutationInput = {
       form.reset();
       queryClient.invalidateQueries({ queryKey: ["ads.list"] });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Gagal membuat campaign";
+      const message = error instanceof Error ? error.message : "Failed to create campaign";
       toastRef?.show(message, "error");
     } finally {
       isSubmitting = false;
@@ -96,7 +96,7 @@ type AdMutationInput = {
           toastRef?.show("Kampanye dihapus", "success");
           queryClient.invalidateQueries({ queryKey: ["ads.list"] });
         } catch (error: unknown) {
-          const message = error instanceof Error ? error.message : "Gagal menghapus campaign";
+          const message = error instanceof Error ? error.message : "Failed to delete campaign";
           toastRef?.show(message, "error");
         } finally {
           deletingId = null;
@@ -127,7 +127,7 @@ type AdMutationInput = {
         toastRef?.show("Kampanye diperbarui", "success");
         queryClient.invalidateQueries({ queryKey: ["ads.list"] });
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Gagal memperbarui campaign";
+        const message = error instanceof Error ? error.message : "Failed to update campaign";
         toastRef?.show(message, "error");
       } finally {
         savingId = null;

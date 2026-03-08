@@ -15,14 +15,14 @@ export async function POST(ctx: APIContext) {
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const body = Object.fromEntries(await ctx.request.formData());
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const orderNo = sanitizeText(String(body.order_no || ""));
   const amount = asInt(body.amount, 0);
   const status = sanitizeText(String(body.status || "requested"));
   const reason = sanitizeText(String(body.reason || ""));
   if (!orderNo || amount <= 0) {
-    return new Response("Pesanan dan jumlah wajib diisi", { status: 400 });
+    return new Response("Order and amount are required", { status: 400 });
   }
   const db = getDb(ctx);
   const now = nowIso();

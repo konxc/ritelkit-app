@@ -10,14 +10,14 @@ export async function POST(ctx: APIContext) {
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const body = Object.fromEntries(await ctx.request.formData());
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const channel = sanitizeText(String(body.channel || ""));
   const recipient = sanitizeText(String(body.recipient || ""));
   const template = sanitizeText(String(body.template || ""));
   const payloadJson = String(body.payload_json || "");
   if (!channel || !recipient) {
-    return new Response("Channel dan penerima wajib diisi", { status: 400 });
+    return new Response("Channel and recipient are required", { status: 400 });
   }
   const db = getDb(ctx);
   const id = crypto.randomUUID();

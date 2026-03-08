@@ -37,7 +37,7 @@ export async function uploadFiles(
     }
     const data = (await response.json()) as { url?: string };
     if (!data.url) {
-      throw new Error("Response upload tidak valid");
+      throw new Error("Invalid upload response");
     }
     urls.push(data.url);
   }

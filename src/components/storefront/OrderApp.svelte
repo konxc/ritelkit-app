@@ -196,7 +196,7 @@ $effect(() => {
               stroke-linejoin="round"
               class="text-primary/30 mb-4"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg
             >
-            <p class="text-lg font-medium">Menu tidak ditemukan</p>
+            <p class="text-lg font-medium">Menu not found</p>
           </div>
         {:else}
           <div class="grid grid-cols-1 gap-4 pb-8 sm:grid-cols-2 lg:gap-5 xl:grid-cols-3">

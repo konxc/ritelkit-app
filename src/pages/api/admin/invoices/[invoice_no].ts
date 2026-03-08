@@ -9,7 +9,7 @@ export async function GET(ctx: APIContext) {
   const admin = await requireAdmin(ctx);
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const invoiceNo = ctx.params.invoice_no;
-  if (!invoiceNo) return new Response("Faktur tidak valid", { status: 400 });
+  if (!invoiceNo) return new Response("Invalid invoice", { status: 400 });
   const db = getDb(ctx);
   const result = await db.execute({
     sql: `SELECT i.*, o.order_no, o.customer_name, o.customer_phone, o.total, o.items_json, o.shipping_address_json
@@ -25,10 +25,10 @@ export async function PUT(ctx: APIContext) {
   const admin = await requireAdmin(ctx);
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const invoiceNo = ctx.params.invoice_no;
-  if (!invoiceNo) return new Response("Faktur tidak valid", { status: 400 });
+  if (!invoiceNo) return new Response("Invalid invoice", { status: 400 });
   const body = await readBody(ctx);
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const status = sanitizeText(String(body.status || ""));
   const dueAt = body.due_at ? String(body.due_at) : null;

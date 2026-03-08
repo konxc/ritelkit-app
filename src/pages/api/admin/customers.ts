@@ -11,7 +11,7 @@ export async function POST(ctx: APIContext) {
 
   const body = Object.fromEntries(await ctx.request.formData());
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
 
   const name = sanitizeText(String(body.name || ""));
@@ -19,7 +19,7 @@ export async function POST(ctx: APIContext) {
   const email = sanitizeText(String(body.email || ""));
   const notes = sanitizeText(String(body.notes || ""));
   if (!name || !phone) {
-    return new Response("Nama dan telepon wajib diisi", { status: 400 });
+    return new Response("Name and phone are required", { status: 400 });
   }
 
   const db = getDb(ctx);

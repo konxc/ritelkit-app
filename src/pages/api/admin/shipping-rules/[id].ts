@@ -9,15 +9,15 @@ export async function PUT(ctx: APIContext) {
   const admin = await requireAdmin(ctx);
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const id = ctx.params.id;
-  if (!id) return new Response("ID tidak valid", { status: 400 });
+  if (!id) return new Response("Invalid ID", { status: 400 });
   const body = await readBody(ctx);
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const name = sanitizeText(String(body.name || ""));
   const type = sanitizeText(String(body.type || ""));
   if (!name || !type) {
-    return new Response("Nama dan tipe rule wajib diisi", { status: 400 });
+    return new Response("Name and rule type are required", { status: 400 });
   }
   const db = getDb(ctx);
   await db.execute({
@@ -42,10 +42,10 @@ export async function DELETE(ctx: APIContext) {
   const admin = await requireAdmin(ctx);
   if (!admin) return new Response("Unauthorized", { status: 401 });
   if (!verifyCsrf(ctx)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const id = ctx.params.id;
-  if (!id) return new Response("ID tidak valid", { status: 400 });
+  if (!id) return new Response("Invalid ID", { status: 400 });
   const db = getDb(ctx);
   await db.execute({
     sql: "DELETE FROM shipping_rules WHERE id = ?",

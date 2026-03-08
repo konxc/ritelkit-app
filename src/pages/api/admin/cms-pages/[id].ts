@@ -32,7 +32,7 @@ export async function PUT(ctx: APIContext) {
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const body = (await ctx.request.json()) as Record<string, unknown>;
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const id = ctx.params.id || "";
   const title = sanitizeText(String(body.title || ""));
@@ -40,7 +40,7 @@ export async function PUT(ctx: APIContext) {
   const content = String(body.content_md || "");
   const isActive = String(body.is_active || "true") === "true";
   if (!id || !title || !slug || !content) {
-    return new Response("Data tidak valid", { status: 400 });
+    return new Response("Invalid data", { status: 400 });
   }
   const db = getDb(ctx);
   await db.execute({
@@ -62,7 +62,7 @@ export async function DELETE(ctx: APIContext) {
     ? await ctx.request.json()
     : Object.fromEntries(await ctx.request.formData());
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const id = ctx.params.id || "";
   const db = getDb(ctx);

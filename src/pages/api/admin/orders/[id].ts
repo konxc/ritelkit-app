@@ -10,7 +10,7 @@ export async function GET(ctx: APIContext) {
   const admin = await requireAdmin(ctx);
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const id = ctx.params.id;
-  if (!id) return new Response("ID tidak valid", { status: 400 });
+  if (!id) return new Response("Invalid ID", { status: 400 });
   const db = getDb(ctx);
   const result = await db.execute({
     sql: "SELECT * FROM orders WHERE id = ?",
@@ -24,10 +24,10 @@ export async function PUT(ctx: APIContext) {
   const admin = await requireAdmin(ctx);
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const id = ctx.params.id;
-  if (!id) return new Response("ID tidak valid", { status: 400 });
+  if (!id) return new Response("Invalid ID", { status: 400 });
   const body = await readBody(ctx);
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const status = sanitizeText(String(body.status || ""));
   const paymentStatus = sanitizeText(String(body.payment_status || ""));
@@ -38,7 +38,7 @@ export async function PUT(ctx: APIContext) {
   });
   const current = currentRes.rows[0] as { status?: string; payment_status?: string } | undefined;
   if (!current?.status || !current?.payment_status) {
-    return new Response("Pesanan tidak ditemukan", { status: 404 });
+    return new Response("Order not found", { status: 404 });
   }
   const validation = validateOrderUpdate(
     current.status,
@@ -47,7 +47,7 @@ export async function PUT(ctx: APIContext) {
     paymentStatus,
   );
   if (!validation.ok) {
-    return new Response(validation.message || "Transisi tidak valid", {
+    return new Response(validation.message || "Invalid transition", {
       status: 400,
     });
   }

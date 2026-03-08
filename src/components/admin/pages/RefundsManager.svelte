@@ -57,6 +57,13 @@
   let savingId = $state<string | null>(null);
   let deletingId = $state<string | null>(null);
 
+  const ordersQuery = createQuery(() => ({
+    queryKey: ["orders.list", { limit: 100 }],
+    queryFn: () => trpc.orders.list.query({ limit: 100 }),
+  }));
+
+  let availableOrders = $derived(ordersQuery.data?.rows || []);
+
   const handleCreate = async (event: SubmitEvent) => {
     event.preventDefault();
     const form = event.currentTarget as HTMLFormElement;
@@ -64,9 +71,17 @@
 
     isSubmitting = true;
     try {
+      const orderNo = formData.get("order_no") as string;
+      const order = availableOrders.find((o: any) => o.orderNo === orderNo);
+
+      if (!order) {
+        toastRef?.show("Invalid order number", "error");
+        return;
+      }
+
       await trpc.refunds.create.mutate({
-        orderNo: formData.get("order_no") as string,
-        orderId: crypto.randomUUID(), // Assuming orderId is needed although ideally linked.
+        orderNo: orderNo,
+        orderId: order.id,
         amount: Number(formData.get("amount")),
         status: formData.get("status") as string,
         reason: (formData.get("reason") as string) || undefined,
@@ -76,7 +91,7 @@
       form.reset();
       queryClient.invalidateQueries({ queryKey: ["refunds.list"] });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+      const message = error instanceof Error ? error.message : "An error occurred";
       toastRef?.show(message, "error");
     } finally {
       isSubmitting = false;
@@ -93,7 +108,7 @@
           toastRef?.show("Refund dihapus", "success");
           queryClient.invalidateQueries({ queryKey: ["refunds.list"] });
         } catch (error: unknown) {
-          const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+          const message = error instanceof Error ? error.message : "An error occurred";
           toastRef?.show(message, "error");
         } finally {
           deletingId = null;
@@ -122,7 +137,7 @@
         toastRef?.show("Refund diperbarui", "success");
         queryClient.invalidateQueries({ queryKey: ["refunds.list"] });
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+        const message = error instanceof Error ? error.message : "An error occurred";
         toastRef?.show(message, "error");
       } finally {
         savingId = null;
@@ -143,7 +158,13 @@
             label="No. Pesanan"
             required
             class="w-full font-bold tabular-nums"
+            list="available-orders"
           />
+          <datalist id="available-orders">
+            {#each availableOrders as order}
+              <option value={order.orderNo}>{order.customerName} - Rp{order.total}</option>
+            {/each}
+          </datalist>
         </div>
         <div>
           <TextInput id="amount" name="amount" type="number" label="Jumlah (Rp)" required />
@@ -157,7 +178,7 @@
               { value: "pending", label: "⏳ Pending" },
               { value: "processing", label: "🔄 Diproses" },
               { value: "completed", label: "✅ Selesai" },
-              { value: "failed", label: "❌ Gagal" },
+              { value: "failed", label: "❌ Failed" },
             ]}
           />
         </div>
@@ -225,7 +246,7 @@
               <option value="pending" selected={row.status === "pending"}>⏳ Pending</option>
               <option value="processing" selected={row.status === "processing"}>🔄 Proses</option>
               <option value="completed" selected={row.status === "completed"}>✅ Selesai</option>
-              <option value="failed" selected={row.status === "failed"}>❌ Gagal</option>
+              <option value="failed" selected={row.status === "failed"}>❌ Failed</option>
             </select>
           </TableCell>
           <TableCell class="py-4">{row.providerStatus || "-"}</TableCell>

@@ -11,7 +11,7 @@ export async function PUT(ctx: APIContext) {
 
   const body = (await ctx.request.json()) as Record<string, unknown>;
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const id = ctx.params.id || "";
   const name = sanitizeText(String(body.name || ""));
@@ -19,7 +19,7 @@ export async function PUT(ctx: APIContext) {
   const email = sanitizeText(String(body.email || ""));
   const notes = sanitizeText(String(body.notes || ""));
   if (!id || !name || !phone) {
-    return new Response("Data tidak valid", { status: 400 });
+    return new Response("Invalid data", { status: 400 });
   }
   const db = getDb(ctx);
   await db.execute({
@@ -41,7 +41,7 @@ export async function DELETE(ctx: APIContext) {
     ? await ctx.request.json()
     : Object.fromEntries(await ctx.request.formData());
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const id = ctx.params.id || "";
   const db = getDb(ctx);

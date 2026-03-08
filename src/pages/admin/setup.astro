@@ -27,10 +27,10 @@ const error = Astro.url.searchParams.get("error");
     <div class="mx-auto mt-[8vh] max-w-[440px] rounded-2xl bg-white p-8 shadow-[0_20px_40px_rgba(0,0,0,0.08)]">
       <h1>Pengaturan Admin</h1>
       <p class="text-[0.9rem] text-[#6b625a]">Halaman ini hanya untuk pertama kali membuat admin.</p>
-      {error === "token" && <p class="text-[0.9rem] text-[#6b625a]">Token pengaturan salah.</p>}
-      {error === "csrf" && <p class="text-[0.9rem] text-[#6b625a]">Sesi form kadaluarsa, refresh halaman.</p>}
-      {error === "invalid" && <p class="text-[0.9rem] text-[#6b625a]">Email atau password tidak valid.</p>}
-      {error === "missing" && <p class="text-[0.9rem] text-[#6b625a]">SETUP_TOKEN belum diset di env.</p>}
+      {error === "token" && <p class="text-[0.9rem] text-[#6b625a]">Invalid setup token.</p>}
+      {error === "csrf" && <p class="text-[0.9rem] text-[#6b625a]">Form session expired, refresh the page.</p>}
+      {error === "invalid" && <p class="text-[0.9rem] text-[#6b625a]">Invalid email or password.</p>}
+      {error === "missing" && <p class="text-[0.9rem] text-[#6b625a]">SETUP_TOKEN is not set in env.</p>}
       <form method="post" action="/api/admin/setup">
         <input type="hidden" name="csrf_token" value={csrfToken} />
         <label>Token Pengaturan</label>
@@ -56,7 +56,7 @@ const error = Astro.url.searchParams.get("error");
         >
       </form>
       <p class="text-[0.9rem] text-[#6b625a]">
-        SETUP_TOKEN env: {env.SETUP_TOKEN ? "tersedia" : "belum diset"}.
+        SETUP_TOKEN env: {env.SETUP_TOKEN ? "available" : "not set"}.
       </p>
     </div>
   </body>

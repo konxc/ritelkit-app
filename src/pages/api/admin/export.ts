@@ -92,7 +92,7 @@ export async function GET(ctx: APIContext) {
     rows = res.rows as Record<string, unknown>[];
     filename = "refunds.csv";
   } else {
-    return new Response("Entity tidak didukung", { status: 400 });
+    return new Response("Unsupported entity", { status: 400 });
   }
 
   const csv = toCsv(rows);

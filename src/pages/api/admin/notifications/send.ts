@@ -10,10 +10,10 @@ export async function POST(ctx: APIContext) {
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const body = (await ctx.request.json()) as Record<string, unknown>;
   if (!verifyCsrf(ctx, body)) {
-    return new Response("CSRF token tidak valid", { status: 403 });
+    return new Response("Invalid CSRF token", { status: 403 });
   }
   const id = String(body.id || "");
-  if (!id) return new Response("ID tidak valid", { status: 400 });
+  if (!id) return new Response("Invalid ID", { status: 400 });
   const db = getDb(ctx);
   await db.execute({
     sql: "UPDATE notifications SET status = ?, sent_at = ?, updated_at = ? WHERE id = ?",

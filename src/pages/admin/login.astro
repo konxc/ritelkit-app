@@ -45,11 +45,11 @@ const success = Astro.url.searchParams.get("success");
         error && (
           <p class="mt-4 text-[0.9rem] font-medium text-red-600">
             {error === "invalid"
-              ? "Email atau password salah."
+              ? "Invalid email or password."
               : error === "rate"
-                ? "Terlalu banyak percobaan, coba lagi nanti."
+                ? "Too many attempts, try again later."
                 : error === "csrf"
-                  ? "Sesi form kadaluarsa, refresh halaman."
+                  ? "Form session expired, refresh the page."
                   : error}
           </p>
         )
@@ -71,7 +71,7 @@ const success = Astro.url.searchParams.get("success");
         >
       </form>
       <div class="mt-4 text-[0.9rem] text-[#6b625a]">
-        Token setup: {env.SETUP_TOKEN ? "tersedia" : "belum diset"}.
+        Setup token: {env.SETUP_TOKEN ? "available" : "not set"}.
       </div>
     </div>
   </body>
