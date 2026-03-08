@@ -25,7 +25,17 @@ export async function POST(ctx: APIContext) {
   await db.execute({
     sql: `INSERT INTO notifications (id, channel, recipient, template, payload_json, status, created_at, sent_at, updated_at)
               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    args: [id, channel, recipient, template || null, payloadJson || null, "pending", now, null, now],
+    args: [
+      id,
+      channel,
+      recipient,
+      template || null,
+      payloadJson || null,
+      "pending",
+      now,
+      null,
+      now,
+    ],
   });
   await logAudit(ctx, "create", "notification", id, { channel, recipient });
   return new Response(JSON.stringify({ ok: true }), {

@@ -44,7 +44,9 @@ export async function PUT(ctx: APIContext) {
     const midtransOrderId = String(orderRow?.midtrans_order_id || "");
     if (midtransOrderId) {
       const env = getEnv(ctx);
-      const base = isProduction(ctx) ? "https://api.midtrans.com" : "https://api.sandbox.midtrans.com";
+      const base = isProduction(ctx)
+        ? "https://api.midtrans.com"
+        : "https://api.sandbox.midtrans.com";
       const auth = btoa(`${env.MIDTRANS_SERVER_KEY}:`);
       try {
         const res = await fetch(`${base}/v2/${midtransOrderId}/refund`, {

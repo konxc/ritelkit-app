@@ -56,7 +56,9 @@ export async function POST(ctx: APIContext) {
     sql: "SELECT id, payment_status FROM orders WHERE order_no = ?",
     args: [orderId],
   });
-  const existingOrder = existingOrderRes.rows[0] as { id?: string; payment_status?: string } | undefined;
+  const existingOrder = existingOrderRes.rows[0] as
+    | { id?: string; payment_status?: string }
+    | undefined;
   if (!existingOrder?.id) {
     return new Response("Order tidak ditemukan", {
       status: 404,
@@ -99,7 +101,13 @@ export async function POST(ctx: APIContext) {
         if (count === 0) {
           await db.execute({
             sql: "INSERT INTO coupon_usages (id, coupon_id, order_id, customer_phone, created_at) VALUES (?, ?, ?, ?, ?)",
-            args: [crypto.randomUUID(), coupon.id, order.id, order.customer_phone || null, nowIso()],
+            args: [
+              crypto.randomUUID(),
+              coupon.id,
+              order.id,
+              order.customer_phone || null,
+              nowIso(),
+            ],
           });
         }
       }

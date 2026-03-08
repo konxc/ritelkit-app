@@ -15,7 +15,9 @@ export async function GET(ctx: APIContext) {
   const admin = await requireAdmin(ctx);
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const db = getDb(ctx);
-  const result = await db.execute("SELECT * FROM shipping_rules ORDER BY priority ASC, created_at DESC");
+  const result = await db.execute(
+    "SELECT * FROM shipping_rules ORDER BY priority ASC, created_at DESC",
+  );
   return json({ items: result.rows });
 }
 
@@ -35,7 +37,8 @@ export async function POST(ctx: APIContext) {
   if (!["flat", "free_threshold", "zone"].includes(type)) {
     return new Response("Tipe rule tidak valid", { status: 400 });
   }
-  const config = body.config && typeof body.config === "object" ? (body.config as ShippingRuleConfig) : {};
+  const config =
+    body.config && typeof body.config === "object" ? (body.config as ShippingRuleConfig) : {};
   if (type === "flat" && (!config || typeof config.fee !== "number")) {
     return new Response("Config flat fee tidak valid", { status: 400 });
   }

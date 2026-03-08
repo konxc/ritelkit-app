@@ -22,7 +22,11 @@ export const orderRouter = router({
       const whereClause = [];
       if (q) {
         whereClause.push(
-          or(like(orders.orderNo, `%${q}%`), like(orders.customerName, `%${q}%`), like(orders.customerPhone, `%${q}%`)),
+          or(
+            like(orders.orderNo, `%${q}%`),
+            like(orders.customerName, `%${q}%`),
+            like(orders.customerPhone, `%${q}%`),
+          ),
         );
       }
       if (status && status.length > 0) {
@@ -31,14 +35,18 @@ export const orderRouter = router({
 
       const baseQuery = ctx.db.select().from(orders);
       const finalQuery =
-        whereClause.length > 0 ? baseQuery.where(sql`${sql.join(whereClause, sql` AND `)}`) : baseQuery;
+        whereClause.length > 0
+          ? baseQuery.where(sql`${sql.join(whereClause, sql` AND `)}`)
+          : baseQuery;
 
       const rows = await finalQuery.orderBy(desc(orders.createdAt)).limit(limit).offset(offset);
 
       // Get total count for pagination
       const countQuery = ctx.db.select({ count: sql<number>`count(*)` }).from(orders);
       const finalCountQuery =
-        whereClause.length > 0 ? countQuery.where(sql`${sql.join(whereClause, sql` AND `)}`) : countQuery;
+        whereClause.length > 0
+          ? countQuery.where(sql`${sql.join(whereClause, sql` AND `)}`)
+          : countQuery;
 
       const countResult = await finalCountQuery;
       const total = Number(countResult[0]?.count || 0);

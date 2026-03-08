@@ -37,7 +37,12 @@ export async function GET(ctx: APIContext) {
 
     if (env.UPLOAD_DRIVER === "r2") {
       try {
-        if (!env.R2_ACCOUNT_ID || !env.R2_ACCESS_KEY_ID || !env.R2_SECRET_ACCESS_KEY || !env.R2_BUCKET) {
+        if (
+          !env.R2_ACCOUNT_ID ||
+          !env.R2_ACCESS_KEY_ID ||
+          !env.R2_SECRET_ACCESS_KEY ||
+          !env.R2_BUCKET
+        ) {
           throw new Error("R2 env belum lengkap");
         }
         const client = new S3Client({
@@ -65,7 +70,9 @@ export async function GET(ctx: APIContext) {
         const grossAmount = 1000;
         const auth = btoa(`${env.MIDTRANS_SERVER_KEY}:`);
         const base =
-          env.MIDTRANS_IS_PRODUCTION === "true" ? "https://app.midtrans.com" : "https://app.sandbox.midtrans.com";
+          env.MIDTRANS_IS_PRODUCTION === "true"
+            ? "https://app.midtrans.com"
+            : "https://app.sandbox.midtrans.com";
         const start = Date.now();
         const res = await fetch(`${base}/snap/v1/transactions`, {
           method: "POST",

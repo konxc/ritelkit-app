@@ -194,7 +194,12 @@ export async function POST(ctx: APIContext) {
     }
   }
 
-  const { discount, freeShipping, coupon } = await applyCoupon(ctx, couponCode, subtotal, normalizedPhone);
+  const { discount, freeShipping, coupon } = await applyCoupon(
+    ctx,
+    couponCode,
+    subtotal,
+    normalizedPhone,
+  );
   if (couponCode && !coupon) {
     return new Response("Kupon tidak valid atau kuota habis", {
       status: 400,
