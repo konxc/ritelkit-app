@@ -2,14 +2,19 @@ import { chromium } from "playwright";
 
 const BASE_URL = process.env.SMOKE_BASE_URL ?? "http://localhost:4321";
 const ROUTES = (
-  process.env.SMOKE_ROUTES ?? "/admin/katalog,/admin/pesanan,/admin/pemasaran,/admin/settings,/admin/sistem"
+  process.env.SMOKE_ROUTES ??
+  "/admin/katalog,/admin/pesanan,/admin/pemasaran,/admin/settings,/admin/sistem"
 )
   .split(",")
   .map((route) => route.trim())
   .filter(Boolean);
 
 function isIgnorable(message) {
-  return message.includes("favicon.ico") || message.includes("404 (Not Found)") || message.includes("Manifest");
+  return (
+    message.includes("favicon.ico") ||
+    message.includes("404 (Not Found)") ||
+    message.includes("Manifest")
+  );
 }
 
 async function run() {

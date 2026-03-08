@@ -6,7 +6,9 @@ async function loadPlaywright() {
     const { chromium } = await import("playwright");
     return chromium;
   } catch (err) {
-    console.error("\n[error] Playwright is not installed. Install first: pnpm dlx playwright install --with-deps\n");
+    console.error(
+      "\n[error] Playwright is not installed. Install first: pnpm dlx playwright install --with-deps\n",
+    );
     throw err;
   }
 }

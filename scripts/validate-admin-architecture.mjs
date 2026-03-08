@@ -34,7 +34,10 @@ for (const file of files) {
     const line = lines[i];
     for (const check of checks) {
       if (!check.pattern.test(line)) continue;
-      if (check.message.includes("direct /api/admin fetch") && line.includes("/api/admin/shipping-simulate")) {
+      if (
+        check.message.includes("direct /api/admin fetch") &&
+        line.includes("/api/admin/shipping-simulate")
+      ) {
         continue;
       }
       violations.push({
