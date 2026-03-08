@@ -1,42 +1,42 @@
 <script lang="ts">
-  interface Props {
-    value?: string | number;
-    label?: string;
-    type?: "text" | "email" | "password" | "number" | "tel" | "time" | "url" | string;
-    placeholder?: string;
-    error?: string;
-    id?: string;
-    name?: string;
-    class?: string;
-    [key: string]: any;
-  }
+interface Props {
+  value?: string | number;
+  label?: string;
+  type?: "text" | "email" | "password" | "number" | "tel" | "time" | "url" | string;
+  placeholder?: string;
+  error?: string;
+  id?: string;
+  name?: string;
+  class?: string;
+  [key: string]: any;
+}
 
-  let {
-    value = $bindable(""),
-    label = "",
-    type = "text",
-    placeholder = "",
-    error = "",
-    id = "",
-    name = "",
-    class: className = "",
-    ...rest
-  }: Props = $props();
+let {
+  value = $bindable(""),
+  label = "",
+  type = "text",
+  placeholder = "",
+  error = "",
+  id = "",
+  name = "",
+  class: className = "",
+  ...rest
+}: Props = $props();
 
-  const baseInputClasses =
-    "w-full px-4 py-3 rounded-xl border bg-white placeholder:text-stone-400 focus:outline-none focus:ring-[3px] transition-all duration-300 text-stone-900 shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:border-stone-300 focus:shadow-md";
+const baseInputClasses =
+  "w-full px-4 py-3 rounded-xl border bg-white placeholder:text-stone-400 focus:outline-none focus:ring-[3px] transition-all duration-300 text-stone-900 shadow-[0_2px_10px_rgba(0,0,0,0.01)] hover:border-stone-300 focus:shadow-md";
 
-  let inputClasses = $derived(
-    [
-      baseInputClasses,
-      error
-        ? "border-red-300 bg-red-50/50 text-red-900 focus:ring-red-500/30 focus:border-red-500"
-        : "border-stone-200 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a]",
-      className,
-    ]
-      .filter(Boolean)
-      .join(" "),
-  );
+let inputClasses = $derived(
+  [
+    baseInputClasses,
+    error
+      ? "border-red-300 bg-red-50/50 text-red-900 focus:ring-red-500/30 focus:border-red-500"
+      : "border-stone-200 focus:ring-[#c48a3a]/30 focus:border-[#c48a3a]",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" "),
+);
 </script>
 
 <div class="w-full space-y-1 lg:space-y-1.5">

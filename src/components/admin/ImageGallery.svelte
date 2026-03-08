@@ -1,42 +1,42 @@
 <script lang="ts">
-  let {
-    urls = [],
-    onChange,
-    editable = true,
-  }: {
-    urls: string[];
-    onChange?: (next: string[]) => void;
-    editable?: boolean;
-  } = $props();
+let {
+  urls = [],
+  onChange,
+  editable = true,
+}: {
+  urls: string[];
+  onChange?: (next: string[]) => void;
+  editable?: boolean;
+} = $props();
 
-  const handleMove = (index: number, direction: -1 | 1) => {
-    if (!onChange) return;
-    const nextIndex = index + direction;
-    if (nextIndex < 0 || nextIndex >= urls.length) return;
-    const next = [...urls];
-    [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
-    onChange(next);
-  };
+const handleMove = (index: number, direction: -1 | 1) => {
+  if (!onChange) return;
+  const nextIndex = index + direction;
+  if (nextIndex < 0 || nextIndex >= urls.length) return;
+  const next = [...urls];
+  [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+  onChange(next);
+};
 
-  const handleDelete = (index: number) => {
-    if (!onChange) return;
-    onChange(urls.filter((_, i) => i !== index));
-  };
+const handleDelete = (index: number) => {
+  if (!onChange) return;
+  onChange(urls.filter((_, i) => i !== index));
+};
 
-  let dragIndex = $state<number | null>(null);
+let dragIndex = $state<number | null>(null);
 
-  const handleDragStart = (index: number) => {
-    dragIndex = index;
-  };
+const handleDragStart = (index: number) => {
+  dragIndex = index;
+};
 
-  const handleDrop = (toIndex: number) => {
-    if (dragIndex === null || dragIndex === toIndex || !onChange) return;
-    const next = [...urls];
-    const [moved] = next.splice(dragIndex, 1);
-    next.splice(toIndex, 0, moved);
-    onChange(next);
-    dragIndex = null;
-  };
+const handleDrop = (toIndex: number) => {
+  if (dragIndex === null || dragIndex === toIndex || !onChange) return;
+  const next = [...urls];
+  const [moved] = next.splice(dragIndex, 1);
+  next.splice(toIndex, 0, moved);
+  onChange(next);
+  dragIndex = null;
+};
 </script>
 
 <div class="flex flex-wrap gap-3">

@@ -1,35 +1,39 @@
 <script lang="ts">
-  import { onDestroy, onMount } from "svelte";
+import { onDestroy, onMount } from "svelte";
 
-  let {
-    message = "",
-    type = "info",
-    duration = 3500,
-    visible = false,
-  }: {
-    message?: string;
-    type?: "success" | "error" | "info";
-    duration?: number;
-    visible?: boolean;
-  } = $props();
+let {
+  message = "",
+  type = "info",
+  duration = 3500,
+  visible = false,
+}: {
+  message?: string;
+  type?: "success" | "error" | "info";
+  duration?: number;
+  visible?: boolean;
+} = $props();
 
-  export function show(msg: string, msgType: "success" | "error" | "info" = "info", customDuration?: number) {
-    message = msg;
-    type = msgType;
-    visible = true;
+export function show(
+  msg: string,
+  msgType: "success" | "error" | "info" = "info",
+  customDuration?: number,
+) {
+  message = msg;
+  type = msgType;
+  visible = true;
 
-    if (timeoutId) clearTimeout(timeoutId);
+  if (timeoutId) clearTimeout(timeoutId);
 
-    timeoutId = setTimeout(() => {
-      visible = false;
-    }, customDuration || duration);
-  }
+  timeoutId = setTimeout(() => {
+    visible = false;
+  }, customDuration || duration);
+}
 
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-  onDestroy(() => {
-    if (timeoutId) clearTimeout(timeoutId);
-  });
+onDestroy(() => {
+  if (timeoutId) clearTimeout(timeoutId);
+});
 </script>
 
 {#if visible}

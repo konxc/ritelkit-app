@@ -1,9 +1,9 @@
 <script lang="ts">
-  interface Props {
-    title: string;
-    logoText?: string;
-  }
-  let { title, logoText = "SHOLAWAT" }: Props = $props();
+interface Props {
+  title: string;
+  logoText?: string;
+}
+let { title, logoText = "SHOLAWAT" }: Props = $props();
 </script>
 
 <header

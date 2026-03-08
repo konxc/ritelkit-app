@@ -1,81 +1,81 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { fade, slide, fly } from "svelte/transition";
+import { onMount } from "svelte";
+import { fade, slide, fly } from "svelte/transition";
 
-  interface NavItem {
-    name: string;
-    path: string;
-    icon: string;
+interface NavItem {
+  name: string;
+  path: string;
+  icon: string;
+}
+
+interface NavGroup {
+  title: string;
+  items: NavItem[];
+}
+
+interface Props {
+  navGroups: NavGroup[];
+  currentPath: string;
+  logoText?: string;
+  logoSubtext?: string;
+}
+
+let { navGroups, currentPath, logoText = "SHOLAWAT", logoSubtext = ".ENT" }: Props = $props();
+
+let isCollapsed = $state(false);
+let hasMounted = $state(false);
+
+onMount(() => {
+  const savedState = localStorage.getItem("sidebarState");
+  isCollapsed = savedState === "collapsed";
+  updateBodyClass();
+
+  // Prevent animation glitch on initial hydration load
+  setTimeout(() => {
+    hasMounted = true;
+  }, 50);
+});
+
+function toggleSidebar() {
+  isCollapsed = !isCollapsed;
+  localStorage.setItem("sidebarState", isCollapsed ? "collapsed" : "expanded");
+  updateBodyClass();
+}
+
+function updateBodyClass() {
+  if (isCollapsed) {
+    document.body.classList.add("sidebar-collapsed");
+    document.documentElement.classList.add("sidebar-collapsed");
+  } else {
+    document.body.classList.remove("sidebar-collapsed");
+    document.documentElement.classList.remove("sidebar-collapsed");
   }
+}
 
-  interface NavGroup {
-    title: string;
-    items: NavItem[];
+const isActive = (path: string) => {
+  if (path === "/admin/overview") {
+    return currentPath === "/admin/overview" || currentPath === "/admin";
   }
+  return currentPath.startsWith(path);
+};
 
-  interface Props {
-    navGroups: NavGroup[];
-    currentPath: string;
-    logoText?: string;
-    logoSubtext?: string;
-  }
-
-  let { navGroups, currentPath, logoText = "SHOLAWAT", logoSubtext = ".ENT" }: Props = $props();
-
-  let isCollapsed = $state(false);
-  let hasMounted = $state(false);
-
-  onMount(() => {
-    const savedState = localStorage.getItem("sidebarState");
-    isCollapsed = savedState === "collapsed";
-    updateBodyClass();
-
-    // Prevent animation glitch on initial hydration load
-    setTimeout(() => {
-      hasMounted = true;
-    }, 50);
-  });
-
-  function toggleSidebar() {
-    isCollapsed = !isCollapsed;
-    localStorage.setItem("sidebarState", isCollapsed ? "collapsed" : "expanded");
-    updateBodyClass();
-  }
-
-  function updateBodyClass() {
-    if (isCollapsed) {
-      document.body.classList.add("sidebar-collapsed");
-      document.documentElement.classList.add("sidebar-collapsed");
-    } else {
-      document.body.classList.remove("sidebar-collapsed");
-      document.documentElement.classList.remove("sidebar-collapsed");
-    }
-  }
-
-  const isActive = (path: string) => {
-    if (path === "/admin/overview") {
-      return currentPath === "/admin/overview" || currentPath === "/admin";
-    }
-    return currentPath.startsWith(path);
-  };
-
-  const ICONS: Record<string, string> = {
-    overview:
-      '<rect width="7" height="9" x="3" y="3" rx="1" ry="1"/><rect width="7" height="5" x="14" y="3" rx="1" ry="1"/><rect width="7" height="9" x="14" y="12" rx="1" ry="1"/><rect width="7" height="5" x="3" y="16" rx="1" ry="1"/>',
-    katalog:
-      '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
-    pesanan:
-      '<path d="M14 2H6a2 2 0 0 0 -2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>',
-    pemasaran:
-      '<path d="M16 21v-2a4 4 0 0 0 -4 -4H6a4 4 0 0 0 -4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0 -3 -3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
-    user: '<path d="M19 21v-2a4 4 0 0 0 -4 -4H9a4 4 0 0 0 -4 4v2"/><circle cx="12" cy="7" r="4"/>',
-    sistem: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/>',
-    settings:
-      '<path d="M12 15a3 3 0 1 0 0 -6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 0.33 1.82l0.06 0.06a2 2 0 0 1 0 2.83 2 2 0 0 1 -2.83 0l-0.06 -0.06a1.65 1.65 0 0 0 -1.82 -0.33 1.65 1.65 0 0 0 -1 1.51V21a2 2 0 0 1 -2 2 2 2 0 0 1 -2 -2v-0.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0 -1.82 0.33l-0.06 0.06a2 2 0 0 1 -2.83 0 2 2 0 0 1 0 -2.83l0.06 -0.06a1.65 1.65 0 0 0 0.33 -1.82 1.65 1.65 0 0 0 -1.51 -1H3a2 2 0 0 1 -2 -2 2 2 0 0 1 2 -2h0.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0 -0.33 -1.82l-0.06 -0.06a2 2 0 0 1 0 -2.83 2 2 0 0 1 2.83 0l0.06 0.06a1.65 1.65 0 0 0 1.82 0.33H9a1.65 1.65 0 0 0 1 -1.51V3a2 2 0 0 1 2 -2 2 2 0 0 1 2 2v0.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82 -0.33l0.06 -0.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-0.06 0.06a1.65 1.65 0 0 0 -0.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1 -2 2h-0.09a1.65 1.65 0 0 0 -1.51 1Z"/>',
-    reports: '<path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/>',
-    layout:
-      '<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>',
-  };
+const ICONS: Record<string, string> = {
+  overview:
+    '<rect width="7" height="9" x="3" y="3" rx="1" ry="1"/><rect width="7" height="5" x="14" y="3" rx="1" ry="1"/><rect width="7" height="9" x="14" y="12" rx="1" ry="1"/><rect width="7" height="5" x="3" y="16" rx="1" ry="1"/>',
+  katalog:
+    '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+  pesanan:
+    '<path d="M14 2H6a2 2 0 0 0 -2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>',
+  pemasaran:
+    '<path d="M16 21v-2a4 4 0 0 0 -4 -4H6a4 4 0 0 0 -4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0 -3 -3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  user: '<path d="M19 21v-2a4 4 0 0 0 -4 -4H9a4 4 0 0 0 -4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  sistem: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/>',
+  settings:
+    '<path d="M12 15a3 3 0 1 0 0 -6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 0.33 1.82l0.06 0.06a2 2 0 0 1 0 2.83 2 2 0 0 1 -2.83 0l-0.06 -0.06a1.65 1.65 0 0 0 -1.82 -0.33 1.65 1.65 0 0 0 -1 1.51V21a2 2 0 0 1 -2 2 2 2 0 0 1 -2 -2v-0.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0 -1.82 0.33l-0.06 0.06a2 2 0 0 1 -2.83 0 2 2 0 0 1 0 -2.83l0.06 -0.06a1.65 1.65 0 0 0 0.33 -1.82 1.65 1.65 0 0 0 -1.51 -1H3a2 2 0 0 1 -2 -2 2 2 0 0 1 2 -2h0.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0 -0.33 -1.82l-0.06 -0.06a2 2 0 0 1 0 -2.83 2 2 0 0 1 2.83 0l0.06 0.06a1.65 1.65 0 0 0 1.82 0.33H9a1.65 1.65 0 0 0 1 -1.51V3a2 2 0 0 1 2 -2 2 2 0 0 1 2 2v0.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82 -0.33l0.06 -0.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-0.06 0.06a1.65 1.65 0 0 0 -0.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1 -2 2h-0.09a1.65 1.65 0 0 0 -1.51 1Z"/>',
+  reports: '<path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/>',
+  layout:
+    '<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>',
+};
 </script>
 
 <aside

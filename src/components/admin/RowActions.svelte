@@ -1,39 +1,39 @@
 <script lang="ts">
-  import ActionGroup from "./ActionGroup.svelte";
+import ActionGroup from "./ActionGroup.svelte";
 
-  let {
-    detailHref,
-    detailLabel = "Detail",
-    viewHref,
-    viewLabel = "Lihat",
-    showEdit = false,
-    showSend = false,
-    showSave = true,
-    showDelete = true,
-    isSaving = false,
-    isDeleting = false,
-    isSending = false,
-    onSave,
-    onDelete,
-    onSend,
-    onEdit,
-  }: {
-    detailHref?: string;
-    detailLabel?: string;
-    viewHref?: string;
-    viewLabel?: string;
-    showEdit?: boolean;
-    showSend?: boolean;
-    showSave?: boolean;
-    showDelete?: boolean;
-    isSaving?: boolean;
-    isDeleting?: boolean;
-    isSending?: boolean;
-    onSave?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
-    onDelete?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
-    onSend?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
-    onEdit?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
-  } = $props();
+let {
+  detailHref,
+  detailLabel = "Detail",
+  viewHref,
+  viewLabel = "Lihat",
+  showEdit = false,
+  showSend = false,
+  showSave = true,
+  showDelete = true,
+  isSaving = false,
+  isDeleting = false,
+  isSending = false,
+  onSave,
+  onDelete,
+  onSend,
+  onEdit,
+}: {
+  detailHref?: string;
+  detailLabel?: string;
+  viewHref?: string;
+  viewLabel?: string;
+  showEdit?: boolean;
+  showSend?: boolean;
+  showSave?: boolean;
+  showDelete?: boolean;
+  isSaving?: boolean;
+  isDeleting?: boolean;
+  isSending?: boolean;
+  onSave?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
+  onDelete?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
+  onSend?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
+  onEdit?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
+} = $props();
 </script>
 
 <ActionGroup>

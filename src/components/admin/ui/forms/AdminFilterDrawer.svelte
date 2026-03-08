@@ -6,11 +6,15 @@
   let {
     isOpen = $bindable(false),
     title = "Filter Lanjutan",
+    subtitle,
+    icon,
     children,
     onApply,
   }: {
     isOpen: boolean;
     title?: string;
+    subtitle?: string;
+    icon?: Snippet;
     children: Snippet;
     onApply?: () => void;
   } = $props();
@@ -21,17 +25,17 @@
   }
 </script>
 
-<Drawer bind:isOpen {title} maxWidth="sm">
-  <div class="flex h-full flex-col">
-    <div class="flex-1 space-y-6 p-6">
-      {@render children()}
-    </div>
+{#snippet drawerFooter()}
+  <div class="flex gap-3">
+    <Button variant="simple" class="flex-1 font-bold" onclick={() => (isOpen = false)}>Batal</Button>
+    <Button variant="primary" class="flex-1 font-bold" onclick={handleApply}>Terapkan Filter</Button>
+  </div>
+{/snippet}
 
-    <div class="border-t border-stone-100 bg-stone-50/50 p-6">
-      <div class="flex gap-3">
-        <Button variant="simple" class="flex-1 font-bold" onclick={() => (isOpen = false)}>Batal</Button>
-        <Button variant="primary" class="flex-1 font-bold" onclick={handleApply}>Terapkan Filter</Button>
-      </div>
+<Drawer bind:isOpen {title} {subtitle} {icon} maxWidth="sm" footer={drawerFooter}>
+  <div class="flex h-full flex-col">
+    <div class="flex-1 space-y-6 px-5 py-6 lg:px-7 lg:py-8">
+      {@render children()}
     </div>
   </div>
 </Drawer>

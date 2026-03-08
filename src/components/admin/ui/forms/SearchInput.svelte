@@ -1,14 +1,21 @@
 <script lang="ts">
-  interface Props {
-    value?: string;
-    name?: string;
-    placeholder?: string;
-    class?: string;
-    oninput?: (e: Event & { currentTarget: HTMLInputElement }) => void;
-    onchange?: (e: Event & { currentTarget: HTMLInputElement }) => void;
-  }
+interface Props {
+  value?: string;
+  name?: string;
+  placeholder?: string;
+  class?: string;
+  oninput?: (e: Event & { currentTarget: HTMLInputElement }) => void;
+  onchange?: (e: Event & { currentTarget: HTMLInputElement }) => void;
+}
 
-  let { value = "", name = "q", placeholder = "Cari...", class: className = "", oninput, onchange }: Props = $props();
+let {
+  value = "",
+  name = "q",
+  placeholder = "Cari...",
+  class: className = "",
+  oninput,
+  onchange,
+}: Props = $props();
 </script>
 
 <div class="relative flex-1 {className} group">

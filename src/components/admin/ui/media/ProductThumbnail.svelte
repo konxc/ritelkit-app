@@ -1,13 +1,19 @@
 <script lang="ts">
-  interface Props {
-    src?: string;
-    alt?: string;
-    isEmpty?: boolean;
-    class?: string;
-    [key: string]: any;
-  }
+interface Props {
+  src?: string;
+  alt?: string;
+  isEmpty?: boolean;
+  class?: string;
+  [key: string]: any;
+}
 
-  let { src = "", alt = "Product Thumbnail", isEmpty = false, class: className = "", ...rest }: Props = $props();
+let {
+  src = "",
+  alt = "Product Thumbnail",
+  isEmpty = false,
+  class: className = "",
+  ...rest
+}: Props = $props();
 </script>
 
 <div

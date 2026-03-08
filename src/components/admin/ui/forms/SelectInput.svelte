@@ -54,7 +54,7 @@
   {/if}
 
   <div class="relative">
-    <select {id} {name} bind:value class={selectClasses} aria-invalid={!!error} {...rest}>
+    <select {id} {name} bind:value {onchange} class={selectClasses} aria-invalid={!!error} {...rest}>
       {#if placeholder}
         <option value="" disabled selected={!value}>{placeholder}</option>
       {/if}

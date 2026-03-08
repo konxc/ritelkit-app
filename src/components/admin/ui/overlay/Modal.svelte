@@ -1,37 +1,37 @@
 <script lang="ts">
-  import { onMount, type Snippet } from "svelte";
+import { onMount, type Snippet } from "svelte";
 
-  interface Props {
-    open?: boolean;
-    title?: string;
-    description?: string;
-    inline?: boolean;
-    class?: string;
-    children?: Snippet;
-    footer?: Snippet;
-    [key: string]: any;
+interface Props {
+  open?: boolean;
+  title?: string;
+  description?: string;
+  inline?: boolean;
+  class?: string;
+  children?: Snippet;
+  footer?: Snippet;
+  [key: string]: any;
+}
+
+let {
+  open = $bindable(false),
+  title = "",
+  description = "",
+  inline = false,
+  class: className = "",
+  children,
+  footer,
+  ...rest
+}: Props = $props();
+
+function close() {
+  if (!inline) open = false;
+}
+
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === "Escape" && open && !inline) {
+    close();
   }
-
-  let {
-    open = $bindable(false),
-    title = "",
-    description = "",
-    inline = false,
-    class: className = "",
-    children,
-    footer,
-    ...rest
-  }: Props = $props();
-
-  function close() {
-    if (!inline) open = false;
-  }
-
-  function handleKeydown(e: KeyboardEvent) {
-    if (e.key === "Escape" && open && !inline) {
-      close();
-    }
-  }
+}
 </script>
 
 <svelte:window onkeydown={handleKeydown} />

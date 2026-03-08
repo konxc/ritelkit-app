@@ -1,33 +1,38 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { fade, scale } from "svelte/transition";
-  import Avatar from "../media/Avatar.svelte";
+import { onMount } from "svelte";
+import { fade, scale } from "svelte/transition";
+import Avatar from "../media/Avatar.svelte";
 
-  interface Props {
-    email?: string;
-    name?: string;
-    role?: string;
-    logoutAction?: string;
+interface Props {
+  email?: string;
+  name?: string;
+  role?: string;
+  logoutAction?: string;
+}
+
+let {
+  email = "admin@rotisholawat.com",
+  name = "Admin",
+  role = "Administrator",
+  logoutAction = "",
+}: Props = $props();
+
+let isOpen = $state(false);
+
+function toggle() {
+  isOpen = !isOpen;
+}
+
+const closeOnOutsideClick = (_e: MouseEvent) => {
+  if (isOpen) {
+    isOpen = false;
   }
+};
 
-  let { email = "admin@rotisholawat.com", name = "Admin", role = "Administrator", logoutAction = "" }: Props = $props();
-
-  let isOpen = $state(false);
-
-  function toggle() {
-    isOpen = !isOpen;
-  }
-
-  const closeOnOutsideClick = (_e: MouseEvent) => {
-    if (isOpen) {
-      isOpen = false;
-    }
-  };
-
-  onMount(() => {
-    window.addEventListener("click", closeOnOutsideClick);
-    return () => window.removeEventListener("click", closeOnOutsideClick);
-  });
+onMount(() => {
+  window.addEventListener("click", closeOnOutsideClick);
+  return () => window.removeEventListener("click", closeOnOutsideClick);
+});
 </script>
 
 <div class="relative shrink-0">

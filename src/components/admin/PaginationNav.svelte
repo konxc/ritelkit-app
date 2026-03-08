@@ -11,6 +11,13 @@
     prevHref?: string;
     nextHref?: string;
   } = $props();
+
+  const handleNavigate = (e: MouseEvent, href: string | undefined) => {
+    if (!href) return;
+    e.preventDefault();
+    window.history.pushState({}, "", href);
+    window.dispatchEvent(new Event("popstate"));
+  };
 </script>
 
 <div class="relative mt-8 flex w-full items-center justify-between border-t border-stone-200/60 pt-6">
@@ -21,7 +28,14 @@
     <span class="font-bold text-stone-900">{totalPages}</span>
   </span>
   <div class="absolute left-1/2 flex -translate-x-1/2 items-center gap-2 sm:static sm:translate-x-0 sm:gap-2">
-    <Button variant="simple" size="sm" href={prevHref} disabled={!prevHref} class="!rounded-xl !px-4 sm:!px-3.5">
+    <Button
+      variant="simple"
+      size="sm"
+      href={prevHref}
+      onclick={(e: MouseEvent) => handleNavigate(e, prevHref)}
+      disabled={!prevHref}
+      class="!rounded-xl !px-4 sm:!px-3.5"
+    >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="18"
@@ -36,7 +50,14 @@
       <span class="hidden sm:inline">Sebelumnya</span>
     </Button>
 
-    <Button variant="simple" size="sm" href={nextHref} disabled={!nextHref} class="!rounded-xl !px-4 sm:!px-3.5">
+    <Button
+      variant="simple"
+      size="sm"
+      href={nextHref}
+      onclick={(e: MouseEvent) => handleNavigate(e, nextHref)}
+      disabled={!nextHref}
+      class="!rounded-xl !px-4 sm:!px-3.5"
+    >
       <span class="hidden sm:inline">Selanjutnya</span>
       <svg
         xmlns="http://www.w3.org/2000/svg"

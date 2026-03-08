@@ -1,13 +1,13 @@
 <script lang="ts">
-  let {
-    title,
-    badge,
-    muted,
-  }: {
-    title: string;
-    badge?: string;
-    muted?: string;
-  } = $props();
+let {
+  title,
+  badge,
+  muted,
+}: {
+  title: string;
+  badge?: string;
+  muted?: string;
+} = $props();
 </script>
 
 <div class="mb-2 flex flex-col gap-1.5">

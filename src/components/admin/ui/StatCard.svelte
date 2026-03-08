@@ -1,29 +1,37 @@
 <script lang="ts">
-  import type { Snippet } from "svelte";
-  import Card from "./Card.svelte";
+import type { Snippet } from "svelte";
+import Card from "./Card.svelte";
 
-  interface Props {
-    label: string;
-    value: string | number;
-    trend?: string;
-    trendType?: "up" | "down" | "neutral";
-    icon?: Snippet;
-    class?: string;
-    [key: string]: any;
+interface Props {
+  label: string;
+  value: string | number;
+  trend?: string;
+  trendType?: "up" | "down" | "neutral";
+  icon?: Snippet;
+  class?: string;
+  [key: string]: any;
+}
+
+let {
+  label,
+  value,
+  trend = "",
+  trendType = "neutral",
+  icon,
+  class: className = "",
+  ...rest
+}: Props = $props();
+
+let trendColor = $derived.by(() => {
+  switch (trendType) {
+    case "up":
+      return "text-emerald-700 bg-emerald-100/80 border border-emerald-200/50";
+    case "down":
+      return "text-rose-700 bg-rose-100/80 border border-rose-200/50";
+    default:
+      return "text-stone-500 bg-stone-100 border border-stone-200/50";
   }
-
-  let { label, value, trend = "", trendType = "neutral", icon, class: className = "", ...rest }: Props = $props();
-
-  let trendColor = $derived.by(() => {
-    switch (trendType) {
-      case "up":
-        return "text-emerald-700 bg-emerald-100/80 border border-emerald-200/50";
-      case "down":
-        return "text-rose-700 bg-rose-100/80 border border-rose-200/50";
-      default:
-        return "text-stone-500 bg-stone-100 border border-stone-200/50";
-    }
-  });
+});
 </script>
 
 <Card hover={true} class="flex flex-col {className}" {...rest}>

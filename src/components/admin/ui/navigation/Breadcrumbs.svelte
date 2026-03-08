@@ -1,16 +1,16 @@
 <script lang="ts">
-  interface BreadcrumbItem {
-    label: string;
-    href?: string;
-  }
+interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
 
-  interface Props {
-    items?: BreadcrumbItem[];
-    class?: string;
-    [key: string]: any;
-  }
+interface Props {
+  items?: BreadcrumbItem[];
+  class?: string;
+  [key: string]: any;
+}
 
-  let { items = [], class: className = "", ...rest }: Props = $props();
+let { items = [], class: className = "", ...rest }: Props = $props();
 </script>
 
 <nav class="flex space-x-2 text-sm font-medium text-stone-500 {className}" aria-label="Breadcrumb" {...rest}>

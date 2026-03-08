@@ -1,23 +1,23 @@
 <script lang="ts">
-  interface Props {
-    currentPath: string;
+interface Props {
+  currentPath: string;
+}
+
+let { currentPath }: Props = $props();
+
+const isActive = (path: string) => {
+  if (path === "/admin/overview") {
+    return currentPath === "/admin/overview" || currentPath === "/admin";
   }
+  return currentPath.startsWith(path);
+};
 
-  let { currentPath }: Props = $props();
-
-  const isActive = (path: string) => {
-    if (path === "/admin/overview") {
-      return currentPath === "/admin/overview" || currentPath === "/admin";
-    }
-    return currentPath.startsWith(path);
-  };
-
-  const navItems = [
-    { name: "Home", path: "/admin/overview" },
-    { name: "Order", path: "/admin/orders" },
-    { name: "Produk", path: "/admin/catalog" },
-    { name: "Setup", path: "/admin/settings" },
-  ];
+const navItems = [
+  { name: "Home", path: "/admin/overview" },
+  { name: "Order", path: "/admin/orders" },
+  { name: "Produk", path: "/admin/catalog" },
+  { name: "Setup", path: "/admin/settings" },
+];
 </script>
 
 <nav

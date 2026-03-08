@@ -1,39 +1,45 @@
 <script lang="ts">
-  interface Props {
-    currentPage?: number;
-    totalPages?: number;
-    class?: string;
-    onPageChange?: (page: number) => void;
-    [key: string]: any;
+interface Props {
+  currentPage?: number;
+  totalPages?: number;
+  class?: string;
+  onPageChange?: (page: number) => void;
+  [key: string]: any;
+}
+
+let {
+  currentPage = $bindable(1),
+  totalPages = 1,
+  class: className = "",
+  onPageChange,
+  ...rest
+}: Props = $props();
+
+function handlePageChange(page: number) {
+  if (page >= 1 && page <= totalPages && page !== currentPage) {
+    currentPage = page;
+    if (onPageChange) onPageChange(page);
   }
+}
 
-  let { currentPage = $bindable(1), totalPages = 1, class: className = "", onPageChange, ...rest }: Props = $props();
+// Calculate pages to show
+let visiblePages = $derived.by(() => {
+  const pages: (number | string)[] = [];
 
-  function handlePageChange(page: number) {
-    if (page >= 1 && page <= totalPages && page !== currentPage) {
-      currentPage = page;
-      if (onPageChange) onPageChange(page);
-    }
-  }
-
-  // Calculate pages to show
-  let visiblePages = $derived.by(() => {
-    const pages: (number | string)[] = [];
-
-    if (totalPages <= 5) {
-      for (let i = 1; i <= totalPages; i++) pages.push(i);
+  if (totalPages <= 5) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+  } else {
+    if (currentPage <= 3) {
+      pages.push(1, 2, 3, 4, "...", totalPages);
+    } else if (currentPage >= totalPages - 2) {
+      pages.push(1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
     } else {
-      if (currentPage <= 3) {
-        pages.push(1, 2, 3, 4, "...", totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
-      } else {
-        pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
-      }
+      pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
     }
+  }
 
-    return pages;
-  });
+  return pages;
+});
 </script>
 
 <div class="flex items-center gap-2 {className}" {...rest}>

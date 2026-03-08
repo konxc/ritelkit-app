@@ -1,75 +1,77 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+import { onMount } from "svelte";
 
-  interface TocItem {
-    id: string;
-    label: string;
-  }
+interface TocItem {
+  id: string;
+  label: string;
+}
 
-  interface Props {
-    items: TocItem[];
-    activeId?: string;
-    class?: string;
-    onItemClick?: () => void;
-  }
+interface Props {
+  items: TocItem[];
+  activeId?: string;
+  class?: string;
+  onItemClick?: () => void;
+}
 
-  let { items, activeId = $bindable(""), class: className = "", onItemClick }: Props = $props();
+let { items, activeId = $bindable(""), class: className = "", onItemClick }: Props = $props();
 
-  onMount(() => {
-    const sections = items.map((item) => document.getElementById(item.id)).filter(Boolean) as HTMLElement[];
+onMount(() => {
+  const sections = items
+    .map((item) => document.getElementById(item.id))
+    .filter(Boolean) as HTMLElement[];
 
-    if (sections.length === 0) return;
+  if (sections.length === 0) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // Find the first entry that is intersecting
-        const visibleEntry = entries.find((entry) => entry.isIntersecting);
-        if (visibleEntry) {
-          activeId = visibleEntry.target.id;
-        }
-      },
-      {
-        rootMargin: "-100px 0px -40% 0px",
-        threshold: 0.1,
-      },
-    );
+  const observer = new IntersectionObserver(
+    (entries) => {
+      // Find the first entry that is intersecting
+      const visibleEntry = entries.find((entry) => entry.isIntersecting);
+      if (visibleEntry) {
+        activeId = visibleEntry.target.id;
+      }
+    },
+    {
+      rootMargin: "-100px 0px -40% 0px",
+      threshold: 0.1,
+    },
+  );
 
-    sections.forEach((section) => {
-      observer.observe(section);
-    });
-
-    return () => {
-      sections.forEach((section) => {
-        observer.unobserve(section);
-      });
-    };
+  sections.forEach((section) => {
+    observer.observe(section);
   });
 
-  function handleClick(e: MouseEvent, id: string) {
-    if (onItemClick) onItemClick();
+  return () => {
+    sections.forEach((section) => {
+      observer.unobserve(section);
+    });
+  };
+});
 
-    // Smooth scroll is handled by CSS usually, but we want to ensure focus if needed
-    const target = document.getElementById(id);
-    if (target) {
-      // Offset scroll if header is sticky
-      const offset = 100; // Adjust based on header height
-      const bodyRect = document.body.getBoundingClientRect().top;
-      const elementRect = target.getBoundingClientRect().top;
-      const elementPosition = elementRect - bodyRect;
-      const offsetPosition = elementPosition - offset;
+function handleClick(e: MouseEvent, id: string) {
+  if (onItemClick) onItemClick();
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth",
-      });
+  // Smooth scroll is handled by CSS usually, but we want to ensure focus if needed
+  const target = document.getElementById(id);
+  if (target) {
+    // Offset scroll if header is sticky
+    const offset = 100; // Adjust based on header height
+    const bodyRect = document.body.getBoundingClientRect().top;
+    const elementRect = target.getBoundingClientRect().top;
+    const elementPosition = elementRect - bodyRect;
+    const offsetPosition = elementPosition - offset;
 
-      // Update active state immediately for better response
-      activeId = id;
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: "smooth",
+    });
 
-      // Prevent original anchor jump to handle offset
-      e.preventDefault();
-    }
+    // Update active state immediately for better response
+    activeId = id;
+
+    // Prevent original anchor jump to handle offset
+    e.preventDefault();
   }
+}
 </script>
 
 <nav class="flex flex-col gap-1.5 {className}">
