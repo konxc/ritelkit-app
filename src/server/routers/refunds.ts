@@ -29,6 +29,7 @@ export const refundRouter = router({
     .input(
       z.object({
         orderNo: z.string(),
+        orderId: z.string(),
         amount: z.number(),
         status: z.string(),
         reason: z.string().optional(),
@@ -39,6 +40,7 @@ export const refundRouter = router({
       const now = new Date().toISOString();
       await ctx.db.insert(refunds).values({
         id,
+        orderId: input.orderId,
         orderNo: input.orderNo,
         amount: input.amount,
         status: input.status,

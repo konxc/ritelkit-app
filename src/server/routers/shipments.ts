@@ -23,6 +23,7 @@ export const shipmentRouter = router({
   create: adminProcedure
     .input(
       z.object({
+        orderId: z.string(),
         orderNo: z.string(),
         status: z.string(),
         carrier: z.string().optional(),
@@ -35,6 +36,7 @@ export const shipmentRouter = router({
       const now = new Date().toISOString();
       await ctx.db.insert(shipments).values({
         id,
+        orderId: input.orderId,
         orderNo: input.orderNo,
         status: input.status,
         carrier: input.carrier || null,
