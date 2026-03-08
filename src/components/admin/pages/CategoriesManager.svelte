@@ -1,6 +1,7 @@
 <script lang="ts">
   import { trpc } from "../../../lib/trpc";
   import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+  import { onMount } from "svelte";
   import type { Category } from "../../../lib/types";
   import CrudInlineForm from "../CrudInlineForm.svelte";
   import RowActions from "../RowActions.svelte";
@@ -9,11 +10,27 @@
   import Table from "../ui/Table.svelte";
   import TableRow from "../ui/TableRow.svelte";
   import TableCell from "../ui/TableCell.svelte";
+  import TableEmptyState from "../ui/TableEmptyState.svelte";
+  import InlineEditableField from "../ui/forms/InlineEditableField.svelte";
   import Button from "../ui/Button.svelte";
-  import TextInput from "../ui/forms/TextInput.svelte";
-  import SelectInput from "../ui/forms/SelectInput.svelte";
   import CatalogHeaderFilters from "../CatalogHeaderFilters.svelte";
   import Fab from "../ui/Fab.svelte";
+  import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
+  import TextInput from "../ui/forms/TextInput.svelte";
+  import SelectInput from "../ui/forms/SelectInput.svelte";
+  import Drawer from "../ui/overlay/Drawer.svelte";
+
+  let columns = $state([
+    { id: "kategori", label: "Kategori", isVisible: true, class: "" },
+    { id: "slug", label: "URL Slug", isVisible: true, class: "hidden lg:table-cell" },
+    { id: "urut", label: "Urut", isVisible: true, class: "" },
+    { id: "status", label: "Status", isVisible: true, class: "" },
+  ]);
+
+  let activeHeaders = $derived([
+    ...columns.filter((c) => c.isVisible).map((c) => ({ label: c.label, class: c.class })),
+    "Aksi",
+  ]);
 
   type CategoryMutationInput = {
     name: string;
@@ -22,7 +39,7 @@
     sortOrder?: number;
   };
 
-  let { rows: initialRows = [] }: { rows?: Category[] } = $props();
+  let { rows: initialRows = [], total: initialTotal = 0 }: { rows?: Category[]; total?: number } = $props();
 
   const queryClient = useQueryClient();
   let toastRef = $state<ToastNotification>();
@@ -32,15 +49,35 @@
   let processingId = $state<string | null>(null);
   let isDrawerOpen = $state(false);
 
+  let q = $state("");
+  let page = $state(1);
+  const limit = 20;
+
+  const syncFiltersFromUrl = () => {
+    const params = new URLSearchParams(window.location.search);
+    q = params.get("q") || "";
+    page = parseInt(params.get("page") || "1", 10);
+  };
+
+  onMount(() => {
+    syncFiltersFromUrl();
+    window.addEventListener("popstate", syncFiltersFromUrl);
+    window.addEventListener("astro:after-navigation", syncFiltersFromUrl);
+
+    return () => {
+      window.removeEventListener("popstate", syncFiltersFromUrl);
+      window.removeEventListener("astro:after-navigation", syncFiltersFromUrl);
+    };
+  });
+
   const categoriesQuery = createQuery(() => ({
-    queryKey: ["categories.list"],
-    queryFn: () => trpc.categories.list.query(),
-    initialData: initialRows.length > 0 ? initialRows : undefined,
-    refetchOnMount: false,
-    staleTime: 1000 * 60 * 5,
+    queryKey: ["categories.list", { q, page, limit }],
+    queryFn: () => trpc.categories.list.query({ q, page, limit }),
+    initialData: q === "" && page === 1 ? { data: initialRows, total: initialTotal } : undefined,
+    placeholderData: (prev) => prev,
   }));
 
-  let categories = $derived((categoriesQuery.data as Category[]) || initialRows);
+  let categories = $derived((categoriesQuery.data?.data as Category[]) || initialRows);
 
   $effect(() => {
     if (newName) {
@@ -130,15 +167,15 @@
       }
     }
   };
-  import Drawer from "../ui/overlay/Drawer.svelte";
 </script>
 
 <div class="mt-2 mb-8 flex items-center justify-between">
   <SectionHeader title="Daftar Kategori" muted="Kelola dan edit kategori produk" />
   <div class="hidden lg:flex lg:items-center lg:gap-3">
     <div class="mr-2">
-      <CatalogHeaderFilters tab="kategori" />
+      <CatalogHeaderFilters tab="categories" columns={columns} />
     </div>
+    <ColumnVisibilityToggle bind:columns />
     <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
       <div
         class="flex h-5 w-5 items-center justify-center rounded-full bg-white/20 transition-transform group-hover:rotate-90"
@@ -388,90 +425,58 @@
   </div>
 </Drawer>
 
-<Table headers={["Kategori", { label: "URL Slug", class: "hidden lg:table-cell" }, "Urut", "Status", "Aksi"]}>
+<Table headers={activeHeaders}>
   {#if categories.length === 0}
-    <TableRow>
-      <TableCell colspan={5} class="py-12">
-        <div class="flex flex-col items-center justify-center text-center">
-          <div
-            class="mb-3 flex h-16 w-16 items-center justify-center rounded-full border border-stone-100 bg-stone-50 text-stone-300"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              ><path
-                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
-              /><polyline points="3.29 7 12 12 20.71 7" /><line x1="12" y1="22" x2="12" y2="12" /></svg
-            >
-          </div>
-          <p class="mb-1 text-sm font-bold text-stone-900">Daftar Kategori Kosong</p>
-          <p class="max-w-[200px] text-xs text-stone-500">
-            Belum ada kategori yang dibuat. Gunakan form di atas untuk menambahkannya.
-          </p>
-        </div>
-      </TableCell>
-    </TableRow>
+    <TableEmptyState
+      title="Daftar Kategori Kosong"
+      subtitle="Belum ada kategori yang dibuat. Gunakan form di atas untuk menambahkannya."
+      colspan={activeHeaders.length}
+    />
   {/if}
   {#each categories as row (row.id)}
     <TableRow
       data-id={row.id}
       class="group border-b border-stone-100 transition-colors last:border-0 hover:bg-stone-50/50"
     >
-      <TableCell class="py-4">
-        <div class="flex flex-col gap-1">
-          <div
-            contenteditable="true"
-            role="textbox"
-            tabindex="0"
-            aria-label="Nama Kategori"
-            data-field="name"
-            class="inline-block min-w-[120px] rounded-lg border border-stone-200/50 bg-stone-100/60 px-3 py-1.5 font-bold text-stone-900 transition-all outline-none hover:border-[#c48a3a]/30 hover:bg-white focus:border-[#c48a3a] focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
-          >
-            {row.name}
+      {#if columns[0].isVisible}
+        <TableCell class="py-4">
+          <div class="flex flex-col gap-1">
+            <InlineEditableField value={row.name} field="name" ariaLabel="Nama Kategori" class="min-w-[120px]" />
+            <div class="font-mono text-[0.65rem] text-stone-400 lg:hidden">/{row.slug}</div>
           </div>
-          <div class="font-mono text-[0.65rem] text-stone-400 lg:hidden">/{row.slug}</div>
-        </div>
-      </TableCell>
-      <TableCell class="hidden py-4 lg:table-cell">
-        <div
-          contenteditable="true"
-          role="textbox"
-          tabindex="0"
-          aria-label="URL Slug"
-          data-field="slug"
-          class="inline-block min-w-[120px] rounded-lg border border-stone-200/50 bg-stone-100/60 px-3 py-1.5 font-mono text-[0.8rem] text-stone-500 transition-all outline-none hover:border-[#c48a3a]/30 hover:bg-white focus:border-[#c48a3a] focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
-        >
-          {row.slug || ""}
-        </div>
-      </TableCell>
-      <TableCell class="py-4">
-        <div
-          contenteditable="true"
-          role="textbox"
-          tabindex="0"
-          aria-label="Urutan"
-          data-field="sortOrder"
-          class="inline-block w-16 rounded-lg border border-stone-200/50 bg-stone-100/60 px-3 py-1.5 text-left font-bold text-stone-600 tabular-nums transition-all outline-none hover:border-[#c48a3a]/30 hover:bg-white focus:border-[#c48a3a] focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
-        >
-          {row.sortOrder}
-        </div>
-      </TableCell>
-      <TableCell class="py-4">
-        <select
-          data-field="isActive"
-          class="cursor-pointer rounded-lg border border-stone-200/50 bg-stone-100/60 px-3 py-1.5 text-[0.7rem] font-bold tracking-wider text-stone-700 uppercase transition-all outline-none hover:border-[#c48a3a]/30 hover:bg-white focus:bg-white"
-        >
-          <option value="true" selected={row.isActive === 1}>🟢 AKTIF</option>
-          <option value="false" selected={row.isActive === 0}>🔴 DRAF</option>
-        </select>
-      </TableCell>
+        </TableCell>
+      {/if}
+      {#if columns[1].isVisible}
+        <TableCell class="hidden py-4 lg:table-cell">
+          <InlineEditableField
+            value={row.slug || ""}
+            field="slug"
+            ariaLabel="URL Slug"
+            class="min-w-[120px] font-mono text-[0.8rem] font-normal text-stone-500"
+          />
+        </TableCell>
+      {/if}
+      {#if columns[2].isVisible}
+        <TableCell class="py-4">
+          <InlineEditableField
+            value={row.sortOrder}
+            field="sortOrder"
+            ariaLabel="Urutan"
+            class="w-16 text-center text-stone-600 tabular-nums"
+          />
+        </TableCell>
+      {/if}
+      {#if columns[3].isVisible}
+        <TableCell class="py-4">
+          <select
+            data-field="isActive"
+            class="cursor-pointer rounded-lg border border-stone-200/50 bg-stone-100/60 px-3 py-1.5 text-[0.7rem] font-bold tracking-wider text-stone-700 uppercase transition-all outline-none hover:border-[#c48a3a]/30 hover:bg-white focus:bg-white"
+          >
+            <option value="true" selected={row.isActive === 1}>🟢 AKTIF</option>
+            <option value="false" selected={row.isActive === 0}>🔴 DRAF</option>
+          </select>
+        </TableCell>
+      {/if}
       <TableCell align="center" class="py-4">
         <div class="flex items-center justify-center">
           <RowActions

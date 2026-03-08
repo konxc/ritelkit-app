@@ -14,11 +14,28 @@
   import Table from "../ui/Table.svelte";
   import TableRow from "../ui/TableRow.svelte";
   import TableCell from "../ui/TableCell.svelte";
+  import TableEmptyState from "../ui/TableEmptyState.svelte";
+  import InlineEditableField from "../ui/forms/InlineEditableField.svelte";
   import Button from "../ui/Button.svelte";
   import TextInput from "../ui/forms/TextInput.svelte";
   import SelectInput from "../ui/forms/SelectInput.svelte";
-  import Textarea from "../ui/forms/Textarea.svelte";
   import CatalogHeaderFilters from "../CatalogHeaderFilters.svelte";
+  import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
+  import Textarea from "../ui/forms/Textarea.svelte";
+
+  let columns = $state([
+    { id: "foto", label: "Foto", isVisible: true, class: "" },
+    { id: "produk", label: "Produk", isVisible: true, class: "" },
+    { id: "kategori", label: "Kategori", isVisible: true, class: "hidden lg:table-cell" },
+    { id: "harga", label: "Harga", isVisible: true, class: "" },
+    { id: "stok", label: "Stok", isVisible: true, class: "" },
+    { id: "status", label: "Status", isVisible: true, class: "" },
+  ]);
+
+  let activeHeaders = $derived([
+    ...columns.filter((c) => c.isVisible).map((c) => ({ label: c.label, class: c.class })),
+    "Aksi",
+  ]);
 
   type ProductRow = Pick<
     Product,
@@ -42,9 +59,11 @@
 
   let {
     rows: initialRows = [],
+    total: initialTotal = 0,
     categories = [],
   }: {
     rows?: ProductRow[];
+    total?: number;
     categories?: CategoryOption[];
   } = $props();
 
@@ -53,16 +72,18 @@
   let csrfToken = $state("");
   let toastRef = $state<ToastNotification>();
 
-  // Reactive filters from URL
   let q = $state("");
   let categoryFilterId = $state("");
   let statusFilterValue = $state("");
+  let page = $state(1);
+  const limit = 20;
 
   function syncFiltersFromUrl() {
     const params = new URLSearchParams(window.location.search);
     q = params.get("q") || "";
     categoryFilterId = params.get("category") || "";
     statusFilterValue = params.get("status") || "";
+    page = parseInt(params.get("page") || "1", 10);
   }
 
   onMount(() => {
@@ -80,18 +101,23 @@
   });
 
   const productsQuery = createQuery(() => ({
-    queryKey: ["products.list", { q, categoryId: categoryFilterId, status: statusFilterValue }],
+    queryKey: ["products.list", { q, categoryId: categoryFilterId, status: statusFilterValue, page, limit }],
     queryFn: () =>
       trpc.products.list.query({
         q,
         categoryId: categoryFilterId,
         status: statusFilterValue,
+        page,
+        limit,
       }),
-    initialData: q === "" && categoryFilterId === "" && statusFilterValue === "" ? initialRows : undefined,
+    initialData:
+      q === "" && categoryFilterId === "" && statusFilterValue === "" && page === 1
+        ? { data: initialRows, total: initialTotal }
+        : undefined,
     placeholderData: (prev) => prev, // Keep old data while fetching
   }));
 
-  let currentRows = $derived((productsQuery.data as ProductRow[]) || []);
+  let currentRows = $derived((productsQuery.data?.data as ProductRow[]) || initialRows);
   let isFetching = $derived(productsQuery.isFetching);
 
   const handleCreate = async (payload: ProductMutationInput) => {
@@ -242,10 +268,12 @@
   <SectionHeader title="Daftar Produk" muted="Kelola produk, edit harga, dan perbarui stok." />
   <div class="hidden lg:flex lg:items-center lg:gap-3">
     <div class="mr-2">
-      <CatalogHeaderFilters tab="produk" categoryOptions={currentCategories} />
+      <CatalogHeaderFilters tab="products" categoryOptions={currentCategories} columns={columns} />
     </div>
 
-    <div class="h-10 w-px bg-stone-200/80" />
+    <ColumnVisibilityToggle bind:columns />
+
+    <div class="h-10 w-px bg-stone-200/80"></div>
 
     <Button
       variant="outline"
@@ -539,146 +567,117 @@
     </CrudInlineForm>
   </div>
 </Drawer>
-<Table
-  headers={["Foto", "Produk", { label: "Kategori", class: "hidden lg:table-cell" }, "Harga", "Stok", "Status", "Aksi"]}
->
+<Table headers={activeHeaders}>
   {#if currentRows.length === 0}
-    <TableRow>
-      <TableCell colspan={7} class="py-12">
-        <div class="flex flex-col items-center justify-center text-center">
-          <div
-            class="mb-3 flex h-16 w-16 items-center justify-center rounded-full border border-stone-100 bg-stone-50 text-stone-300"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              ><path d="m7.5 4.27 9 5.15" /><path
-                d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"
-              /><path d="m3.3 7 8.7 5 8.7-5" /><path d="M12 22V12" /></svg
-            >
-          </div>
-          <p class="mb-1 text-sm font-bold text-stone-900">Daftar Produk Kosong</p>
-          <p class="max-w-[200px] text-xs text-stone-500">
-            Belum ada produk yang dibuat. Gunakan form di atas untuk menambahkannya.
-          </p>
-        </div>
-      </TableCell>
-    </TableRow>
+    <TableEmptyState
+      title="Daftar Produk Kosong"
+      subtitle="Belum ada produk yang dibuat. Gunakan form di atas untuk menambahkannya."
+      colspan={activeHeaders.length}
+    />
   {/if}
   {#each currentRows as row (row.id)}
     <TableRow
       data-id={row.id}
       class="group border-b border-stone-100 transition-colors last:border-0 hover:bg-stone-50/50"
     >
-      <TableCell class="vertical-top py-4">
-        <div
-          data-field="images_json"
-          data-value={row.imagesJson || "[]"}
-          class="h-16 w-16 overflow-hidden rounded-xl border border-stone-100 bg-white p-1 shadow-sm transition-transform hover:scale-105 lg:h-[84px] lg:w-[84px]"
-        >
-          <ImageGallery
-            urls={parseUrls(row.imagesJson || "[]")}
-            onChange={(next) => {
-              row.imagesJson = JSON.stringify(next);
-            }}
-          />
-        </div>
-      </TableCell>
-      <TableCell class="py-4">
-        <div class="flex max-w-[240px] flex-col items-start gap-1">
+      {#if columns[0].isVisible}
+        <TableCell class="vertical-top py-4">
           <div
-            contenteditable="true"
-            role="textbox"
-            tabindex="0"
-            aria-label="Nama Produk"
-            data-field="name"
-            class="w-full truncate rounded-lg border border-stone-200/50 bg-stone-100/60 px-3 py-1.5 text-[0.85rem] leading-tight font-bold text-stone-900 transition-all outline-none hover:bg-white focus:border-[#c48a3a] focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 lg:text-[0.95rem]"
-            title={row.name}
+            data-field="images_json"
+            data-value={row.imagesJson || "[]"}
+            class="h-16 w-16 overflow-hidden rounded-xl border border-stone-100 bg-white p-1 shadow-sm transition-transform hover:scale-105 lg:h-[84px] lg:w-[84px]"
           >
-            {row.name}
+            <ImageGallery
+              urls={parseUrls(row.imagesJson || "[]")}
+              onChange={(next) => {
+                row.imagesJson = JSON.stringify(next);
+              }}
+            />
           </div>
-          <div class="flex items-center gap-1.5 lg:ml-3">
-            <span
-              class="px-1.2 rounded bg-stone-100 py-0.5 text-[0.55rem] font-bold tracking-wider text-stone-400 uppercase lg:px-1.5 lg:text-[0.6rem]"
-              >SKU</span
-            >
-            <div
-              contenteditable="true"
-              role="textbox"
-              tabindex="0"
-              aria-label="SKU Produk"
-              data-field="sku"
-              class="w-full truncate rounded-md border border-stone-200/50 bg-stone-100/60 px-2 py-0.5 font-mono text-[0.65rem] text-stone-500 shadow-sm transition-all outline-none hover:bg-white focus:border-[#c48a3a] focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30 lg:text-[0.7rem]"
-            >
-              {row.sku || "-"}
+        </TableCell>
+      {/if}
+      {#if columns[1].isVisible}
+        <TableCell class="py-4">
+          <div class="flex max-w-[240px] flex-col items-start gap-1">
+            <InlineEditableField
+              value={row.name}
+              field="name"
+              ariaLabel="Nama Produk"
+              title={row.name}
+              class="w-full truncate text-[0.85rem] leading-tight lg:text-[0.95rem]"
+            />
+            <div class="flex items-center gap-1.5 lg:ml-3">
+              <span
+                class="px-1.2 rounded bg-stone-100 py-0.5 text-[0.55rem] font-bold tracking-wider text-stone-400 uppercase lg:px-1.5 lg:text-[0.6rem]"
+                >SKU</span
+              >
+              <InlineEditableField
+                value={row.sku || "-"}
+                field="sku"
+                ariaLabel="SKU Produk"
+                class="w-full truncate px-2 py-0.5 font-mono text-[0.65rem] font-normal text-stone-500 shadow-sm lg:text-[0.7rem]"
+              />
+            </div>
+            <!-- Mobile Category Badge -->
+            <div class="mt-0.5 lg:hidden">
+              <span class="text-[0.65rem] font-bold tracking-wide text-[#c48a3a] uppercase">
+                {categories.find((c) => String(c.id) === String(row.categoryId))?.name || "Tanpa Kategori"}
+              </span>
             </div>
           </div>
-          <!-- Mobile Category Badge -->
-          <div class="mt-0.5 lg:hidden">
-            <span class="text-[0.65rem] font-bold tracking-wide text-[#c48a3a] uppercase">
-              {categories.find((c) => String(c.id) === String(row.categoryId))?.name || "Tanpa Kategori"}
-            </span>
-          </div>
-        </div>
-      </TableCell>
-      <TableCell class="hidden py-4 lg:table-cell">
-        <select
-          data-field="categoryId"
-          class="w-[140px] cursor-pointer truncate rounded-xl border border-stone-200/50 bg-stone-100/60 px-3 py-2 text-sm font-semibold text-stone-700 shadow-sm transition-all outline-none hover:bg-white focus:border-[#c48a3a] focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
-        >
-          <option value="">Tanpa Kategori</option>
-          {#each categories as cat}
-            <option value={cat.id} selected={cat.id === row.categoryId}>
-              {cat.name}
-            </option>
-          {/each}
-        </select>
-      </TableCell>
-      <TableCell class="py-4">
-        <div class="flex items-center">
-          <span class="mr-1.5 pl-3 text-xs font-bold text-stone-400">Rp</span>
-          <div
-            contenteditable="true"
-            role="textbox"
-            tabindex="0"
-            aria-label="Harga Produk"
-            data-field="price"
-            class="w-auto rounded-lg border border-stone-200/50 bg-stone-100/60 px-3 py-1.5 text-left font-bold text-stone-800 tabular-nums transition-all outline-none hover:bg-white focus:border-[#c48a3a] focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
+        </TableCell>
+      {/if}
+      {#if columns[2].isVisible}
+        <TableCell class="hidden py-4 lg:table-cell">
+          <select
+            data-field="categoryId"
+            class="w-[140px] cursor-pointer truncate rounded-xl border border-stone-200/50 bg-stone-100/60 px-3 py-2 text-sm font-semibold text-stone-700 shadow-sm transition-all outline-none hover:bg-white focus:border-[#c48a3a] focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
           >
-            {row.price}
+            <option value="">Tanpa Kategori</option>
+            {#each categories as cat}
+              <option value={cat.id} selected={cat.id === row.categoryId}>
+                {cat.name}
+              </option>
+            {/each}
+          </select>
+        </TableCell>
+      {/if}
+      {#if columns[3].isVisible}
+        <TableCell class="py-4">
+          <div class="flex items-center">
+            <span class="mr-1.5 pl-3 text-xs font-bold text-stone-400">Rp</span>
+            <InlineEditableField
+              value={row.price}
+              field="price"
+              ariaLabel="Harga Produk"
+              class="w-auto text-stone-800 tabular-nums"
+            />
           </div>
-        </div>
-      </TableCell>
-      <TableCell class="py-4">
-        <div class="flex items-center">
-          <div
-            contenteditable="true"
-            role="textbox"
-            tabindex="0"
-            aria-label="Stok Produk"
-            data-field="stock"
-            class="w-16 rounded-lg border border-stone-200/50 bg-stone-100/60 px-3 py-1.5 text-left font-bold text-stone-700 tabular-nums shadow-inner transition-all outline-none hover:bg-white focus:border-[#c48a3a] focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
+        </TableCell>
+      {/if}
+      {#if columns[4].isVisible}
+        <TableCell class="py-4">
+          <div class="flex items-center">
+            <InlineEditableField
+              value={row.stock ?? ""}
+              field="stock"
+              ariaLabel="Stok Produk"
+              class="w-20 text-center text-[1rem] tabular-nums"
+            />
+          </div>
+        </TableCell>
+      {/if}
+      {#if columns[5].isVisible}
+        <TableCell class="py-4">
+          <select
+            data-field="isActive"
+            class="cursor-pointer rounded-full border border-stone-200/50 bg-stone-100/60 px-3 py-1.5 text-[0.75rem] font-bold tracking-wider text-stone-700 uppercase transition-all outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
           >
-            {row.stock}
-          </div>
-        </div>
-      </TableCell>
-      <TableCell class="py-4">
-        <select
-          data-field="isActive"
-          class="cursor-pointer rounded-full border border-stone-200/50 bg-stone-100/60 px-3 py-1.5 text-[0.75rem] font-bold tracking-wider text-stone-700 uppercase transition-all outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
-        >
-          <option value="true" selected={row.isActive === 1}>🟢 AKTIF</option>
-          <option value="false" selected={row.isActive === 0}>🔴 DRAF</option>
-        </select>
-      </TableCell>
+            <option value="true" selected={row.isActive === 1}>🟢 AKTIF</option>
+            <option value="false" selected={row.isActive === 0}>🔴 DRAF</option>
+          </select>
+        </TableCell>
+      {/if}
       <TableCell align="center" class="py-4">
         <div class="flex items-center justify-center">
           <RowActions
