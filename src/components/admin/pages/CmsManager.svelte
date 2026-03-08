@@ -1,12 +1,12 @@
 <script module lang="ts">
-  export type CmsPageRow = {
-    id: string;
-    slug: string;
-    title: string;
-    contentMd?: string;
-    isActive?: number;
-    updatedAt?: string | Date;
-  };
+export type CmsPageRow = {
+  id: string;
+  slug: string;
+  title: string;
+  contentMd?: string;
+  isActive?: number;
+  updatedAt?: string | Date;
+};
 </script>
 
 <script lang="ts">

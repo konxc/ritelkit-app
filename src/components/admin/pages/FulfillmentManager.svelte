@@ -1,12 +1,12 @@
 <script module lang="ts">
-  export type ShipmentRow = {
-    id: string | number;
-    orderNo: string;
-    status: string;
-    carrier?: string | null;
-    trackingNo?: string | null;
-    notes?: string | null;
-  };
+export type ShipmentRow = {
+  id: string | number;
+  orderNo: string;
+  status: string;
+  carrier?: string | null;
+  trackingNo?: string | null;
+  notes?: string | null;
+};
 </script>
 
 <script lang="ts">

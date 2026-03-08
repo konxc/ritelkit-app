@@ -1,137 +1,137 @@
 <script lang="ts">
-  import { actions } from "astro:actions";
-  import type { Notification } from "../../../lib/types";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
-  import RowActions from "../RowActions.svelte";
-  import SectionHeader from "../SectionHeader.svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import Table from "../ui/Table.svelte";
-  import TableRow from "../ui/TableRow.svelte";
-  import TableCell from "../ui/TableCell.svelte";
-  import Button from "../ui/Button.svelte";
-  import TextInput from "../ui/forms/TextInput.svelte";
-  import SelectInput from "../ui/forms/SelectInput.svelte";
-  import Textarea from "../ui/forms/Textarea.svelte";
+import { actions } from "astro:actions";
+import type { Notification } from "../../../lib/types";
+import CrudInlineForm from "../CrudInlineForm.svelte";
+import RowActions from "../RowActions.svelte";
+import SectionHeader from "../SectionHeader.svelte";
+import ToastNotification from "../ToastNotification.svelte";
+import Table from "../ui/Table.svelte";
+import TableRow from "../ui/TableRow.svelte";
+import TableCell from "../ui/TableCell.svelte";
+import Button from "../ui/Button.svelte";
+import TextInput from "../ui/forms/TextInput.svelte";
+import SelectInput from "../ui/forms/SelectInput.svelte";
+import Textarea from "../ui/forms/Textarea.svelte";
 
-  let {
-    initialRows = [],
-    q = "",
-    page = 1,
-    limit = 30,
-  }: {
-    initialRows?: Notification[];
-    q?: string;
-    page?: number;
-    limit?: number;
-  } = $props();
+let {
+  initialRows = [],
+  q = "",
+  page = 1,
+  limit = 30,
+}: {
+  initialRows?: Notification[];
+  q?: string;
+  page?: number;
+  limit?: number;
+} = $props();
 
-  let toastRef = $state<ToastNotification>();
-  let rows = $state<Notification[]>([]);
-  let isSubmitting = $state(false);
-  let savingId = $state<string | null>(null);
-  let sendingId = $state<string | null>(null);
-  let deletingId = $state<string | null>(null);
+let toastRef = $state<ToastNotification>();
+let rows = $state<Notification[]>([]);
+let isSubmitting = $state(false);
+let savingId = $state<string | null>(null);
+let sendingId = $state<string | null>(null);
+let deletingId = $state<string | null>(null);
 
-  // Sync with initialRows from SSR
-  $effect(() => {
-    rows = initialRows;
+// Sync with initialRows from SSR
+$effect(() => {
+  rows = initialRows;
+});
+
+const refreshData = async () => {
+  const offset = (page - 1) * limit;
+  const { data, error } = await actions.listNotifications({
+    q,
+    limit,
+    offset,
   });
+  if (!error && data) {
+    rows = data.rows as Notification[];
+  }
+};
 
-  const refreshData = async () => {
-    const offset = (page - 1) * limit;
-    const { data, error } = await actions.listNotifications({
-      q,
-      limit,
-      offset,
-    });
-    if (!error && data) {
-      rows = data.rows as Notification[];
-    }
+const handleCreate = async (event: SubmitEvent) => {
+  event.preventDefault();
+  const form = event.currentTarget as HTMLFormElement | null;
+  if (!form) return;
+  const formData = new FormData(form);
+
+  const data = {
+    channel: String(formData.get("channel") || ""),
+    recipient: String(formData.get("recipient") || ""),
+    template: String(formData.get("template") || "") || undefined,
+    payloadJson: String(formData.get("payload_json") || "") || undefined,
   };
 
-  const handleCreate = async (event: SubmitEvent) => {
-    event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement | null;
-    if (!form) return;
-    const formData = new FormData(form);
+  isSubmitting = true;
+  const { error } = await actions.createNotification(data);
+  isSubmitting = false;
 
-    const data = {
-      channel: String(formData.get("channel") || ""),
-      recipient: String(formData.get("recipient") || ""),
-      template: String(formData.get("template") || "") || undefined,
-      payloadJson: String(formData.get("payload_json") || "") || undefined,
-    };
+  if (error) {
+    toastRef?.show(error.message, "error");
+  } else {
+    toastRef?.show("Notifikasi disimpan", "success");
+    form.reset();
+    refreshData();
+  }
+};
 
-    isSubmitting = true;
-    const { error } = await actions.createNotification(data);
-    isSubmitting = false;
+const handleRowAction = async (id: string, action: string, rowEl: HTMLElement | null) => {
+  if (action === "delete") {
+    if (!confirm("Hapus notifikasi ini?")) return;
+    deletingId = id;
+    const { error } = await actions.deleteNotification(id);
+    deletingId = null;
 
     if (error) {
       toastRef?.show(error.message, "error");
     } else {
-      toastRef?.show("Notifikasi disimpan", "success");
-      form.reset();
+      toastRef?.show("Notifikasi dihapus", "success");
       refreshData();
     }
-  };
+    return;
+  }
 
-  const handleRowAction = async (id: string, action: string, rowEl: HTMLElement | null) => {
-    if (action === "delete") {
-      if (!confirm("Hapus notifikasi ini?")) return;
-      deletingId = id;
-      const { error } = await actions.deleteNotification(id);
-      deletingId = null;
+  if (action === "send") {
+    sendingId = id;
+    const { error } = await actions.sendNotification(id);
+    sendingId = null;
 
-      if (error) {
-        toastRef?.show(error.message, "error");
-      } else {
-        toastRef?.show("Notifikasi dihapus", "success");
-        refreshData();
-      }
-      return;
+    if (error) {
+      toastRef?.show(error.message, "error");
+    } else {
+      toastRef?.show("Notifikasi dikirim", "success");
+      refreshData();
     }
+    return;
+  }
 
-    if (action === "send") {
-      sendingId = id;
-      const { error } = await actions.sendNotification(id);
-      sendingId = null;
+  if (action === "save" && rowEl) {
+    const fields: Record<string, string> = {};
+    rowEl.querySelectorAll("[data-field]").forEach((cell) => {
+      const field = cell.getAttribute("data-field");
+      if (!field) return;
+      fields[field] = String(cell.textContent?.trim() || "");
+    });
 
-      if (error) {
-        toastRef?.show(error.message, "error");
-      } else {
-        toastRef?.show("Notifikasi dikirim", "success");
-        refreshData();
-      }
-      return;
+    savingId = id;
+    const { error } = await actions.updateNotification({
+      id,
+      data: {
+        channel: fields.channel || "",
+        recipient: fields.recipient || "",
+        status: fields.status || "pending",
+      },
+    });
+    savingId = null;
+
+    if (error) {
+      toastRef?.show(error.message, "error");
+    } else {
+      toastRef?.show("Notifikasi diperbarui", "success");
+      refreshData();
     }
-
-    if (action === "save" && rowEl) {
-      const fields: Record<string, string> = {};
-      rowEl.querySelectorAll("[data-field]").forEach((cell) => {
-        const field = cell.getAttribute("data-field");
-        if (!field) return;
-        fields[field] = String(cell.textContent?.trim() || "");
-      });
-
-      savingId = id;
-      const { error } = await actions.updateNotification({
-        id,
-        data: {
-          channel: fields.channel || "",
-          recipient: fields.recipient || "",
-          status: fields.status || "pending",
-        },
-      });
-      savingId = null;
-
-      if (error) {
-        toastRef?.show(error.message, "error");
-      } else {
-        toastRef?.show("Notifikasi diperbarui", "success");
-        refreshData();
-      }
-    }
-  };
+  }
+};
 </script>
 
 <SectionHeader title="Buat Notifikasi" badge="Manual Send" />

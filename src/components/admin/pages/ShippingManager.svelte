@@ -1,201 +1,209 @@
 <script lang="ts">
-  import { trpc } from "../../../lib/trpc";
-  import { fade, fly } from "svelte/transition";
-  import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-  import { actions } from "astro:actions";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
-  import RowActions from "../RowActions.svelte";
-  import SectionHeader from "../SectionHeader.svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import Table from "../ui/Table.svelte";
-  import TableRow from "../ui/TableRow.svelte";
-  import TableCell from "../ui/TableCell.svelte";
-  import Button from "../ui/Button.svelte";
-  import TextInput from "../ui/forms/TextInput.svelte";
-  import SelectInput from "../ui/forms/SelectInput.svelte";
-  import Textarea from "../ui/forms/Textarea.svelte";
+import { trpc } from "../../../lib/trpc";
+import { fade, fly } from "svelte/transition";
+import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+import { actions } from "astro:actions";
+import CrudInlineForm from "../CrudInlineForm.svelte";
+import RowActions from "../RowActions.svelte";
+import SectionHeader from "../SectionHeader.svelte";
+import ToastNotification from "../ToastNotification.svelte";
+import Table from "../ui/Table.svelte";
+import TableRow from "../ui/TableRow.svelte";
+import TableCell from "../ui/TableCell.svelte";
+import Button from "../ui/Button.svelte";
+import TextInput from "../ui/forms/TextInput.svelte";
+import SelectInput from "../ui/forms/SelectInput.svelte";
+import Textarea from "../ui/forms/Textarea.svelte";
 
-  export type RuleRow = {
-    id: string | number;
-    name: string;
-    type: string;
-    priority: number;
-    configJson: string;
-    isActive: boolean | number;
-  };
+export type RuleRow = {
+  id: string | number;
+  name: string;
+  type: string;
+  priority: number;
+  configJson: string;
+  isActive: boolean | number;
+};
 
-  type ShippingRuleInput = {
-    name: string;
-    type: string;
-    priority: number;
-    config: Record<string, unknown>;
-    isActive: boolean | number;
-  };
+type ShippingRuleInput = {
+  name: string;
+  type: string;
+  priority: number;
+  config: Record<string, unknown>;
+  isActive: boolean | number;
+};
 
-  let { rows: initialRows = [] }: { rows: RuleRow[] } = $props();
+let { rows: initialRows = [] }: { rows: RuleRow[] } = $props();
 
-  const queryClient = useQueryClient();
-  let toastRef = $state<ToastNotification>();
-  let isSubmitting = $state(false);
-  let isDrawerOpen = $state(false);
+const queryClient = useQueryClient();
+let toastRef = $state<ToastNotification>();
+let isSubmitting = $state(false);
+let isDrawerOpen = $state(false);
 
-  const rulesQuery = createQuery(() => ({
-    queryKey: ["shippingRules.list"],
-    queryFn: () => trpc.shippingRules.list.query(),
-    initialData: initialRows.length > 0 ? initialRows : undefined,
-    refetchOnMount: false,
-    staleTime: 1000 * 60 * 5,
-  }));
+const rulesQuery = createQuery(() => ({
+  queryKey: ["shippingRules.list"],
+  queryFn: () => trpc.shippingRules.list.query(),
+  initialData: initialRows.length > 0 ? initialRows : undefined,
+  refetchOnMount: false,
+  staleTime: 1000 * 60 * 5,
+}));
 
-  let currentRules = $derived((rulesQuery.data as RuleRow[]) || initialRows);
+let currentRules = $derived((rulesQuery.data as RuleRow[]) || initialRows);
 
-  // Reactive state for the create form
-  let configType = $state("flat");
-  let flatFee = $state(10000);
-  let thresholdAmount = $state(150000);
-  let thresholdFee = $state(10000);
-  let zoneList = $state("");
+// Reactive state for the create form
+let configType = $state("flat");
+let flatFee = $state(10000);
+let thresholdAmount = $state(150000);
+let thresholdFee = $state(10000);
+let zoneList = $state("");
 
-  const currentConfig = $derived.by(() => {
-    if (configType === "flat") return { fee: flatFee };
-    if (configType === "free_threshold") return { threshold: thresholdAmount, fee: thresholdFee };
-    if (configType === "zone") {
-      const zones = zoneList
-        .split("\n")
-        .map((line) => line.trim())
-        .filter(Boolean)
-        .map((line) => {
-          const [province, city, district, fee] = line.split("|");
-          return {
-            province: (province || "").trim(),
-            city: (city || "").trim(),
-            district: (district || "").trim(),
-            fee: Number(fee || 0),
-          };
-        });
-      return { zones };
-    }
-    return {};
-  });
-
-  const configPreview = $derived(JSON.stringify(currentConfig));
-
-  let savingId = $state<string | null>(null);
-  let deletingId = $state<string | null>(null);
-
-  const handleCreate = async (event: SubmitEvent) => {
-    event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement;
-    const formData = new FormData(form);
-
-    isSubmitting = true;
-    try {
-      await trpc.shippingRules.create.mutate({
-        name: formData.get("name") as string,
-        type: configType,
-        priority: Number(formData.get("priority")),
-        config: currentConfig,
-        isActive: true,
+const currentConfig = $derived.by(() => {
+  if (configType === "flat") return { fee: flatFee };
+  if (configType === "free_threshold") return { threshold: thresholdAmount, fee: thresholdFee };
+  if (configType === "zone") {
+    const zones = zoneList
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const [province, city, district, fee] = line.split("|");
+        return {
+          province: (province || "").trim(),
+          city: (city || "").trim(),
+          district: (district || "").trim(),
+          fee: Number(fee || 0),
+        };
       });
+    return { zones };
+  }
+  return {};
+});
 
-      toastRef?.show("Rule pengiriman berhasil ditambahkan!", "success");
-      form.reset();
-      configType = "flat";
-      flatFee = 10000;
-      thresholdAmount = 150000;
-      thresholdFee = 10000;
-      zoneList = "";
-      queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
-      isDrawerOpen = false;
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Terjadi kesalahan";
-      toastRef?.show(message, "error");
-    } finally {
-      isSubmitting = false;
-    }
-  };
+const configPreview = $derived(JSON.stringify(currentConfig));
 
-  const handleRowAction = async (id: string | number, action: string, rowElement: HTMLElement | null) => {
-    const resolvedId = String(id);
-    if (action === "delete") {
-      if (confirm("Hapus rule ini?")) {
-        deletingId = resolvedId;
-        try {
-          await trpc.shippingRules.delete.mutate(resolvedId);
-          toastRef?.show("Rule pengiriman dihapus", "success");
-          queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
-        } catch (error: unknown) {
-          const message = error instanceof Error ? error.message : "Terjadi kesalahan";
-          toastRef?.show(message, "error");
-        } finally {
-          deletingId = null;
-        }
-      }
-    } else if (action === "save" && rowElement) {
-      const fields: Record<string, string> = {};
-      rowElement.querySelectorAll("[data-field]").forEach((el) => {
-        const field = el.getAttribute("data-field")!;
-        if (el instanceof HTMLSelectElement || el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
-          fields[field] = el.value;
-        } else {
-          fields[field] = el.textContent?.trim() || "";
-        }
-      });
+let savingId = $state<string | null>(null);
+let deletingId = $state<string | null>(null);
 
-      const data = {
-        name: fields.name,
-        type: fields.type,
-        priority: Number(fields.priority),
-        config: fields.config ? (JSON.parse(fields.config) as Record<string, unknown>) : undefined,
-        isActive: fields.isActive === "true",
-      };
+const handleCreate = async (event: SubmitEvent) => {
+  event.preventDefault();
+  const form = event.currentTarget as HTMLFormElement;
+  const formData = new FormData(form);
 
-      savingId = resolvedId;
+  isSubmitting = true;
+  try {
+    await trpc.shippingRules.create.mutate({
+      name: formData.get("name") as string,
+      type: configType,
+      priority: Number(formData.get("priority")),
+      config: currentConfig,
+      isActive: true,
+    });
+
+    toastRef?.show("Rule pengiriman berhasil ditambahkan!", "success");
+    form.reset();
+    configType = "flat";
+    flatFee = 10000;
+    thresholdAmount = 150000;
+    thresholdFee = 10000;
+    zoneList = "";
+    queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
+    isDrawerOpen = false;
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+    toastRef?.show(message, "error");
+  } finally {
+    isSubmitting = false;
+  }
+};
+
+const handleRowAction = async (
+  id: string | number,
+  action: string,
+  rowElement: HTMLElement | null,
+) => {
+  const resolvedId = String(id);
+  if (action === "delete") {
+    if (confirm("Hapus rule ini?")) {
+      deletingId = resolvedId;
       try {
-        await trpc.shippingRules.update.mutate({
-          id: resolvedId,
-          data,
-        });
-        toastRef?.show("Rule diperbarui", "success");
+        await trpc.shippingRules.delete.mutate(resolvedId);
+        toastRef?.show("Rule pengiriman dihapus", "success");
         queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Terjadi kesalahan";
         toastRef?.show(message, "error");
       } finally {
-        savingId = null;
+        deletingId = null;
       }
     }
-  };
+  } else if (action === "save" && rowElement) {
+    const fields: Record<string, string> = {};
+    rowElement.querySelectorAll("[data-field]").forEach((el) => {
+      const field = el.getAttribute("data-field")!;
+      if (
+        el instanceof HTMLSelectElement ||
+        el instanceof HTMLInputElement ||
+        el instanceof HTMLTextAreaElement
+      ) {
+        fields[field] = el.value;
+      } else {
+        fields[field] = el.textContent?.trim() || "";
+      }
+    });
 
-  let isSimulating = $state(false);
-  let simulateMessage = $state("");
-
-  const handleSimulation = async (event: SubmitEvent) => {
-    event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement;
-    const formData = new FormData(form);
-    const payload = {
-      subtotal: Number(formData.get("subtotal") || 0),
-      province: String(formData.get("province") || ""),
-      city: String(formData.get("city") || ""),
-      district: String(formData.get("district") || ""),
-      freeShipping: formData.get("free_shipping") === "true",
+    const data = {
+      name: fields.name,
+      type: fields.type,
+      priority: Number(fields.priority),
+      config: fields.config ? (JSON.parse(fields.config) as Record<string, unknown>) : undefined,
+      isActive: fields.isActive === "true",
     };
 
-    isSimulating = true;
-    simulateMessage = "";
-
+    savingId = resolvedId;
     try {
-      const { data, error } = await actions.simulateShipping(payload);
-      if (!error && data) {
-        simulateMessage = `Rule: ${String(data.rule || "-")} | Ongkir: Rp ${Number(data.fee || 0).toLocaleString("id-ID")}`;
-      } else if (error) {
-        simulateMessage = `Error: ${error.message}`;
-      }
+      await trpc.shippingRules.update.mutate({
+        id: resolvedId,
+        data,
+      });
+      toastRef?.show("Rule diperbarui", "success");
+      queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Terjadi kesalahan";
+      toastRef?.show(message, "error");
     } finally {
-      isSimulating = false;
+      savingId = null;
     }
+  }
+};
+
+let isSimulating = $state(false);
+let simulateMessage = $state("");
+
+const handleSimulation = async (event: SubmitEvent) => {
+  event.preventDefault();
+  const form = event.currentTarget as HTMLFormElement;
+  const formData = new FormData(form);
+  const payload = {
+    subtotal: Number(formData.get("subtotal") || 0),
+    province: String(formData.get("province") || ""),
+    city: String(formData.get("city") || ""),
+    district: String(formData.get("district") || ""),
+    freeShipping: formData.get("free_shipping") === "true",
   };
+
+  isSimulating = true;
+  simulateMessage = "";
+
+  try {
+    const { data, error } = await actions.simulateShipping(payload);
+    if (!error && data) {
+      simulateMessage = `Rule: ${String(data.rule || "-")} | Ongkir: Rp ${Number(data.fee || 0).toLocaleString("id-ID")}`;
+    } else if (error) {
+      simulateMessage = `Error: ${error.message}`;
+    }
+  } finally {
+    isSimulating = false;
+  }
+};
 </script>
 
 <div class="mt-2 mb-8 flex items-center justify-between">

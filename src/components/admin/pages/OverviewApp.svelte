@@ -1,28 +1,28 @@
 <script lang="ts">
-  import { fade, fly } from "svelte/transition";
-  import StatCard from "../ui/StatCard.svelte";
-  import Button from "../ui/Button.svelte";
-  import Table from "../ui/Table.svelte";
-  import TableRow from "../ui/TableRow.svelte";
-  import TableCell from "../ui/TableCell.svelte";
-  import Badge from "../ui/Badge.svelte";
+import { fade, fly } from "svelte/transition";
+import StatCard from "../ui/StatCard.svelte";
+import Button from "../ui/Button.svelte";
+import Table from "../ui/Table.svelte";
+import TableRow from "../ui/TableRow.svelte";
+import TableCell from "../ui/TableCell.svelte";
+import Badge from "../ui/Badge.svelte";
 
-  let {
-    stats,
-    recentOrders = [],
-  }: {
-    stats: {
-      ordersToday: number;
-      revenueToday: number;
-      activeCoupons: number;
-      activeProducts: number;
-      pendingShipments: number;
-      pendingRefunds: number;
-    };
-    recentOrders?: any[];
-  } = $props();
+let {
+  stats,
+  recentOrders = [],
+}: {
+  stats: {
+    ordersToday: number;
+    revenueToday: number;
+    activeCoupons: number;
+    activeProducts: number;
+    pendingShipments: number;
+    pendingRefunds: number;
+  };
+  recentOrders?: any[];
+} = $props();
 
-  const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
+const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
 </script>
 
 <div class="h-full w-full">

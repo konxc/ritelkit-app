@@ -1,79 +1,79 @@
 <script lang="ts">
-  import { actions } from "astro:actions";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
-  import PanelCard from "../PanelCard.svelte";
-  import Badge from "../ui/Badge.svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import Table from "../ui/Table.svelte";
-  import TableRow from "../ui/TableRow.svelte";
-  import TableCell from "../ui/TableCell.svelte";
-  import Button from "../ui/Button.svelte";
-  import SelectInput from "../ui/forms/SelectInput.svelte";
-  import TextInput from "../ui/forms/TextInput.svelte";
+import { actions } from "astro:actions";
+import CrudInlineForm from "../CrudInlineForm.svelte";
+import PanelCard from "../PanelCard.svelte";
+import Badge from "../ui/Badge.svelte";
+import ToastNotification from "../ToastNotification.svelte";
+import Table from "../ui/Table.svelte";
+import TableRow from "../ui/TableRow.svelte";
+import TableCell from "../ui/TableCell.svelte";
+import Button from "../ui/Button.svelte";
+import SelectInput from "../ui/forms/SelectInput.svelte";
+import TextInput from "../ui/forms/TextInput.svelte";
 
-  type InvoiceItem = {
-    name: string;
-    qty: number;
-    price: number;
-    total: number;
+type InvoiceItem = {
+  name: string;
+  qty: number;
+  price: number;
+  total: number;
+};
+type InvoiceDetail = {
+  id: string;
+  invoiceNo: string;
+  orderNo: string;
+  customerName: string;
+  customerPhone: string;
+  total: number;
+  status: string;
+  dueAt?: string | null;
+  parsedItems: InvoiceItem[];
+  shippingAddressJson?: {
+    province?: string;
+    city?: string;
+    district?: string;
   };
-  type InvoiceDetail = {
-    id: string;
-    invoiceNo: string;
-    orderNo: string;
-    customerName: string;
-    customerPhone: string;
-    total: number;
-    status: string;
-    dueAt?: string | null;
-    parsedItems: InvoiceItem[];
-    shippingAddressJson?: {
-      province?: string;
-      city?: string;
-      district?: string;
-    };
+};
+
+let { invoice: initialInvoice }: { invoice: InvoiceDetail } = $props();
+
+let invoice = $state<InvoiceDetail>({} as InvoiceDetail);
+$effect(() => {
+  invoice = initialInvoice;
+});
+let toastRef = $state<ToastNotification>();
+let isSubmitting = $state(false);
+
+// Sync with initialInvoice from SSR
+$effect(() => {
+  invoice = initialInvoice;
+});
+
+const handleSubmit = async (event: SubmitEvent) => {
+  event.preventDefault();
+  const form = event.currentTarget as HTMLFormElement;
+  const formData = new FormData(form);
+  const data = {
+    status: String(formData.get("status") || ""),
+    dueAt: (String(formData.get("dueAt") || "") || null) as string | null,
   };
 
-  let { invoice: initialInvoice }: { invoice: InvoiceDetail } = $props();
-
-  let invoice = $state<InvoiceDetail>({} as InvoiceDetail);
-  $effect(() => {
-    invoice = initialInvoice;
+  isSubmitting = true;
+  const { error } = await actions.updateInvoice({
+    id: invoice.id,
+    data,
   });
-  let toastRef = $state<ToastNotification>();
-  let isSubmitting = $state(false);
+  isSubmitting = false;
 
-  // Sync with initialInvoice from SSR
-  $effect(() => {
-    invoice = initialInvoice;
-  });
-
-  const handleSubmit = async (event: SubmitEvent) => {
-    event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement;
-    const formData = new FormData(form);
-    const data = {
-      status: String(formData.get("status") || ""),
-      dueAt: (String(formData.get("dueAt") || "") || null) as string | null,
+  if (error) {
+    toastRef?.show(error.message, "error");
+  } else {
+    invoice = {
+      ...invoice,
+      ...data,
     };
-
-    isSubmitting = true;
-    const { error } = await actions.updateInvoice({
-      id: invoice.id,
-      data,
-    });
-    isSubmitting = false;
-
-    if (error) {
-      toastRef?.show(error.message, "error");
-    } else {
-      invoice = {
-        ...invoice,
-        ...data,
-      };
-      toastRef?.show("Invoice diperbarui", "success");
-    }
-  };
+    toastRef?.show("Invoice diperbarui", "success");
+  }
+};
 </script>
 
 <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">

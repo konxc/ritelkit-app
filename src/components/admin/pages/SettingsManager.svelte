@@ -1,77 +1,77 @@
 <script lang="ts">
-  import { actions } from "astro:actions";
-  import { fly } from "svelte/transition";
-  import ToastNotification from "../ToastNotification.svelte";
-  import TextInput from "../ui/forms/TextInput.svelte";
-  import SelectInput from "../ui/forms/SelectInput.svelte";
-  import Button from "../ui/Button.svelte";
+import { actions } from "astro:actions";
+import { fly } from "svelte/transition";
+import ToastNotification from "../ToastNotification.svelte";
+import TextInput from "../ui/forms/TextInput.svelte";
+import SelectInput from "../ui/forms/SelectInput.svelte";
+import Button from "../ui/Button.svelte";
 
-  let toastRef = $state<ToastNotification>();
-  let isSubmitting = $state(false);
-  let isSeeding = $state(false);
+let toastRef = $state<ToastNotification>();
+let isSubmitting = $state(false);
+let isSeeding = $state(false);
 
-  let preorderOnly = $state(false);
-  let leadTimeHours = $state(0);
-  let cutoffTime = $state("");
-  let sameDayEnabled = $state(false);
-  let availableDays = $state("");
-  let deliveryProvince = $state("DI Yogyakarta");
-  let freeDeliveryThreshold = $state(0);
+let preorderOnly = $state(false);
+let leadTimeHours = $state(0);
+let cutoffTime = $state("");
+let sameDayEnabled = $state(false);
+let availableDays = $state("");
+let deliveryProvince = $state("DI Yogyakarta");
+let freeDeliveryThreshold = $state(0);
 
-  const fetchSettings = async () => {
-    const { data, error } = await actions.getSettings({});
-    if (!error && data) {
-      const os = data.order_settings || {};
-      const ds = data.delivery_settings || {};
+const fetchSettings = async () => {
+  const { data, error } = await actions.getSettings({});
+  if (!error && data) {
+    const os = data.order_settings || {};
+    const ds = data.delivery_settings || {};
 
-      preorderOnly = os.preorderOnly ?? os.preorder_only ?? false;
-      leadTimeHours = os.minimumLeadTimeHours ?? os.minimum_lead_time_hours ?? 0;
-      cutoffTime = os.cutoffTime ?? os.cutoff_time ?? "";
-      sameDayEnabled = os.sameDayEnabled ?? os.same_day_enabled ?? false;
-      availableDays = (os.availableDays ?? os.available_days ?? []).join(", ");
-      deliveryProvince = ds.deliveryProvince ?? ds.delivery_province ?? "DI Yogyakarta";
-      freeDeliveryThreshold = ds.freeDeliveryThreshold ?? ds.free_delivery_threshold ?? 0;
-    }
-  };
+    preorderOnly = os.preorderOnly ?? os.preorder_only ?? false;
+    leadTimeHours = os.minimumLeadTimeHours ?? os.minimum_lead_time_hours ?? 0;
+    cutoffTime = os.cutoffTime ?? os.cutoff_time ?? "";
+    sameDayEnabled = os.sameDayEnabled ?? os.same_day_enabled ?? false;
+    availableDays = (os.availableDays ?? os.available_days ?? []).join(", ");
+    deliveryProvince = ds.deliveryProvince ?? ds.delivery_province ?? "DI Yogyakarta";
+    freeDeliveryThreshold = ds.freeDeliveryThreshold ?? ds.free_delivery_threshold ?? 0;
+  }
+};
 
-  $effect(() => {
-    fetchSettings();
+$effect(() => {
+  fetchSettings();
+});
+
+const formatDays = (value: string) =>
+  value
+    .split(/[,;]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+const handleSubmit = async (event: SubmitEvent) => {
+  event.preventDefault();
+  isSubmitting = true;
+  const { error } = await actions.updateSettings({
+    orderSettings: {
+      preorderOnly,
+      minimumLeadTimeHours: Number(leadTimeHours),
+      cutoffTime,
+      sameDayEnabled,
+      availableDays: formatDays(availableDays),
+    },
+    deliverySettings: {
+      deliveryProvince,
+      freeDeliveryThreshold: Number(freeDeliveryThreshold),
+    },
   });
+  isSubmitting = false;
 
-  const formatDays = (value: string) =>
-    value
-      .split(/[,;]/)
-      .map((item) => item.trim())
-      .filter(Boolean);
+  if (error) {
+    toastRef?.show(error.message, "error");
+  } else {
+    toastRef?.show("Pengaturan berhasil disimpan!", "success");
+  }
+};
 
-  const handleSubmit = async (event: SubmitEvent) => {
-    event.preventDefault();
-    isSubmitting = true;
-    const { error } = await actions.updateSettings({
-      orderSettings: {
-        preorderOnly,
-        minimumLeadTimeHours: Number(leadTimeHours),
-        cutoffTime,
-        sameDayEnabled,
-        availableDays: formatDays(availableDays),
-      },
-      deliverySettings: {
-        deliveryProvince,
-        freeDeliveryThreshold: Number(freeDeliveryThreshold),
-      },
-    });
-    isSubmitting = false;
-
-    if (error) {
-      toastRef?.show(error.message, "error");
-    } else {
-      toastRef?.show("Pengaturan berhasil disimpan!", "success");
-    }
-  };
-
-  const handleSeed = async () => {
-    toastRef?.show("Fungsi Generate Data Demo dinonaktifkan sementara.", "error");
-  };
+const handleSeed = async () => {
+  toastRef?.show("Fungsi Generate Data Demo dinonaktifkan sementara.", "error");
+};
 </script>
 
 <div class="h-full w-full">

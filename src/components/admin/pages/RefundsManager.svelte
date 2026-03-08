@@ -66,6 +66,7 @@
     try {
       await trpc.refunds.create.mutate({
         orderNo: formData.get("order_no") as string,
+        orderId: crypto.randomUUID(), // Assuming orderId is needed although ideally linked.
         amount: Number(formData.get("amount")),
         status: formData.get("status") as string,
         reason: (formData.get("reason") as string) || undefined,

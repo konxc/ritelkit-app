@@ -1,11 +1,11 @@
 <script module lang="ts">
-  export type CustomerRow = {
-    id: string | number;
-    name: string;
-    phone: string;
-    email?: string | null;
-    notes?: string | null;
-  };
+export type CustomerRow = {
+  id: string | number;
+  name: string;
+  phone: string;
+  email?: string | null;
+  notes?: string | null;
+};
 </script>
 
 <script lang="ts">

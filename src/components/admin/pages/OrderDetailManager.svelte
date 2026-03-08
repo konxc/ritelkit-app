@@ -27,13 +27,10 @@
     shippingAddressJson?: ShippingAddress; // Consistent with Drizzle
   };
 
-  let { order: initialOrder }: { order: OrderDetail } = $props();
+  let props: { order: OrderDetail } = $props();
 
-  let order = $state<OrderDetail>({ ...initialOrder });
-
-  $effect(() => {
-    Object.assign(order, initialOrder);
-  });
+  // svelte-ignore state_referenced_locally
+  let order = $state<OrderDetail>({ ...props.order });
 
   let toastRef = $state<ToastNotification>();
   let isSubmitting = $state(false);
@@ -42,7 +39,7 @@
 
   // Sync with initialOrder from SSR if it changes
   $effect(() => {
-    order = initialOrder;
+    order = { ...props.order };
   });
 
   const handleUpdateStatus = async (event: SubmitEvent) => {
@@ -126,7 +123,7 @@
         name="notes"
         label="Catatan Internal"
         placeholder="Tambahkan catatan untuk tim..."
-        bind:value={order.notes}
+        bind:value={() => order.notes || "", (v) => (order.notes = v)}
       />
     </div>
 

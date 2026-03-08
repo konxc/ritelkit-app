@@ -1,50 +1,50 @@
 <script lang="ts">
-  import { actions } from "astro:actions";
-  import { fade, fly } from "svelte/transition";
-  import type { AuditLog } from "../../../lib/types";
-  import EmptyState from "../ui/EmptyState.svelte";
-  import Table from "../ui/Table.svelte";
-  import TableRow from "../ui/TableRow.svelte";
-  import TableCell from "../ui/TableCell.svelte";
+import { actions } from "astro:actions";
+import { fade, fly } from "svelte/transition";
+import type { AuditLog } from "../../../lib/types";
+import EmptyState from "../ui/EmptyState.svelte";
+import Table from "../ui/Table.svelte";
+import TableRow from "../ui/TableRow.svelte";
+import TableCell from "../ui/TableCell.svelte";
 
-  let {
-    rows: initialRows = [],
-    q = "",
-    page = 1,
-    limit = 30,
-  }: {
-    rows?: AuditLog[];
-    q?: string;
-    page?: number;
-    limit?: number;
-  } = $props();
+let {
+  rows: initialRows = [],
+  q = "",
+  page = 1,
+  limit = 30,
+}: {
+  rows?: AuditLog[];
+  q?: string;
+  page?: number;
+  limit?: number;
+} = $props();
 
-  let rows = $state<AuditLog[]>([]);
-  $effect(() => {
-    rows = initialRows;
+let rows = $state<AuditLog[]>([]);
+$effect(() => {
+  rows = initialRows;
+});
+const offset = $derived((page - 1) * limit);
+
+// Sync with initialRows from SSR
+$effect(() => {
+  rows = initialRows;
+});
+
+const refreshData = async () => {
+  const { data, error } = await actions.listAuditLogs({
+    q,
+    limit,
+    offset,
   });
-  const offset = $derived((page - 1) * limit);
+  if (!error && data) {
+    rows = data.rows as AuditLog[];
+  }
+};
 
-  // Sync with initialRows from SSR
-  $effect(() => {
-    rows = initialRows;
-  });
-
-  const refreshData = async () => {
-    const { data, error } = await actions.listAuditLogs({
-      q,
-      limit,
-      offset,
-    });
-    if (!error && data) {
-      rows = data.rows as AuditLog[];
-    }
-  };
-
-  // Re-fetch when props change (search/pagination)
-  $effect(() => {
-    refreshData();
-  });
+// Re-fetch when props change (search/pagination)
+$effect(() => {
+  refreshData();
+});
 </script>
 
 <div class="h-full w-full">

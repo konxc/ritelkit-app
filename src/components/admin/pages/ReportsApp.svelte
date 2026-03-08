@@ -1,34 +1,34 @@
 <script lang="ts">
-  import { fade, fly } from "svelte/transition";
-  import SectionHeader from "../SectionHeader.svelte";
-  import StatCard from "../StatCard.svelte";
-  import Table from "../ui/Table.svelte";
-  import TableRow from "../ui/TableRow.svelte";
-  import TableCell from "../ui/TableCell.svelte";
+import { fade, fly } from "svelte/transition";
+import SectionHeader from "../SectionHeader.svelte";
+import StatCard from "../StatCard.svelte";
+import Table from "../ui/Table.svelte";
+import TableRow from "../ui/TableRow.svelte";
+import TableCell from "../ui/TableCell.svelte";
 
-  let {
-    reportData,
-  }: {
-    reportData: {
-      thirtyDays: {
-        totalOrders: number;
-        paidOrders: number;
-        revenue: number;
-        discountTotal: number;
-        cogs: number;
-        refundTotal: number;
-        grossProfit: number;
-      };
-      topProducts: any[];
-      analytics: {
-        ltv: number;
-        roas: string;
-        cohorts: any[];
-      };
+let {
+  reportData,
+}: {
+  reportData: {
+    thirtyDays: {
+      totalOrders: number;
+      paidOrders: number;
+      revenue: number;
+      discountTotal: number;
+      cogs: number;
+      refundTotal: number;
+      grossProfit: number;
     };
-  } = $props();
+    topProducts: any[];
+    analytics: {
+      ltv: number;
+      roas: string;
+      cohorts: any[];
+    };
+  };
+} = $props();
 
-  const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
+const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
 </script>
 
 <div class="h-full w-full">

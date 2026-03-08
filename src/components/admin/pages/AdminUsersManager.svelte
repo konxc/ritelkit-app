@@ -1,100 +1,102 @@
 <script lang="ts">
-  import { actions } from "astro:actions";
-  import { fade, fly } from "svelte/transition";
-  import type { AdminUser } from "../../../lib/types";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
-  import RowActions from "../RowActions.svelte";
-  import SectionHeader from "../SectionHeader.svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import Table from "../ui/Table.svelte";
-  import TableRow from "../ui/TableRow.svelte";
-  import TableCell from "../ui/TableCell.svelte";
-  import Button from "../ui/Button.svelte";
-  import TextInput from "../ui/forms/TextInput.svelte";
-  import SelectInput from "../ui/forms/SelectInput.svelte";
+import { actions } from "astro:actions";
+import { fade, fly } from "svelte/transition";
+import type { AdminUser } from "../../../lib/types";
+import CrudInlineForm from "../CrudInlineForm.svelte";
+import RowActions from "../RowActions.svelte";
+import SectionHeader from "../SectionHeader.svelte";
+import ToastNotification from "../ToastNotification.svelte";
+import Table from "../ui/Table.svelte";
+import TableRow from "../ui/TableRow.svelte";
+import TableCell from "../ui/TableCell.svelte";
+import Button from "../ui/Button.svelte";
+import TextInput from "../ui/forms/TextInput.svelte";
+import SelectInput from "../ui/forms/SelectInput.svelte";
 
-  let { rows: initialRows = [] }: { rows?: AdminUser[] } = $props();
+let { rows: initialRows = [] }: { rows?: AdminUser[] } = $props();
 
-  let toastRef = $state<ToastNotification>();
-  let rows = $state<AdminUser[]>([]);
-  let isSubmitting = $state(false);
-  let savingId = $state<string | null>(null);
-  let deletingId = $state<string | null>(null);
+let toastRef = $state<ToastNotification>();
+let rows = $state<AdminUser[]>([]);
+let isSubmitting = $state(false);
+let savingId = $state<string | null>(null);
+let deletingId = $state<string | null>(null);
 
-  // Sync with initialRows from SSR
-  $effect(() => {
-    rows = initialRows;
-  });
+// Sync with initialRows from SSR
+$effect(() => {
+  rows = initialRows;
+});
 
-  const refreshData = async () => {
-    const { data, error } = await actions.listAdminUsers({});
-    if (!error && data) {
-      rows = data as AdminUser[];
-    }
+const refreshData = async () => {
+  const { data, error } = await actions.listAdminUsers({});
+  if (!error && data) {
+    rows = data as AdminUser[];
+  }
+};
+
+const handleCreate = async (event: SubmitEvent) => {
+  event.preventDefault();
+  const form = event.currentTarget as HTMLFormElement | null;
+  if (!form) return;
+  const formData = new FormData(form);
+  const data = {
+    email: String(formData.get("email") || ""),
+    password: String(formData.get("password") || ""),
+    role: String(formData.get("role") || "admin") as "owner" | "admin" | "editor",
   };
 
-  const handleCreate = async (event: SubmitEvent) => {
-    event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement | null;
-    if (!form) return;
-    const formData = new FormData(form);
-    const data = {
-      email: String(formData.get("email") || ""),
-      password: String(formData.get("password") || ""),
-      role: String(formData.get("role") || "admin") as "owner" | "admin" | "editor",
-    };
+  isSubmitting = true;
+  const { error } = await actions.createAdminUser(data);
+  isSubmitting = false;
 
-    isSubmitting = true;
-    const { error } = await actions.createAdminUser(data);
-    isSubmitting = false;
+  if (error) {
+    toastRef?.show(error.message, "error");
+  } else {
+    toastRef?.show("Admin ditambahkan", "success");
+    await refreshData();
+    form.reset();
+  }
+};
+
+const handleRowAction = async (id: string, action: string, rowEl: HTMLElement | null) => {
+  if (action === "delete") {
+    if (!confirm("Hapus admin ini?")) return;
+    deletingId = id;
+    const { error } = await actions.deleteAdminUser(id);
+    deletingId = null;
+    if (error) {
+      toastRef?.show(error.message, "error");
+    } else {
+      toastRef?.show("Admin dihapus", "success");
+      await refreshData();
+    }
+    return;
+  }
+
+  if (action === "save" && rowEl) {
+    const role = String(rowEl.querySelector("[data-field='role']")?.textContent?.trim() || "");
+    const password = String(
+      (rowEl.querySelector("[data-field='password']") as HTMLInputElement | null)?.value || "",
+    );
+
+    savingId = id;
+    // Standardized updateAdminUser in index.ts
+    const { error } = await actions.updateAdminUser({
+      id,
+      data: {
+        role: role as "owner" | "admin" | "editor",
+        password: password || undefined,
+      },
+    });
+    savingId = null;
 
     if (error) {
       toastRef?.show(error.message, "error");
     } else {
-      toastRef?.show("Admin ditambahkan", "success");
+      toastRef?.show("Admin diperbarui", "success");
       await refreshData();
-      form.reset();
     }
-  };
-
-  const handleRowAction = async (id: string, action: string, rowEl: HTMLElement | null) => {
-    if (action === "delete") {
-      if (!confirm("Hapus admin ini?")) return;
-      deletingId = id;
-      const { error } = await actions.deleteAdminUser(id);
-      deletingId = null;
-      if (error) {
-        toastRef?.show(error.message, "error");
-      } else {
-        toastRef?.show("Admin dihapus", "success");
-        await refreshData();
-      }
-      return;
-    }
-
-    if (action === "save" && rowEl) {
-      const role = String(rowEl.querySelector("[data-field='role']")?.textContent?.trim() || "");
-      const password = String((rowEl.querySelector("[data-field='password']") as HTMLInputElement | null)?.value || "");
-
-      savingId = id;
-      // Standardized updateAdminUser in index.ts
-      const { error } = await actions.updateAdminUser({
-        id,
-        data: {
-          role: role as "owner" | "admin" | "editor",
-          password: password || undefined,
-        },
-      });
-      savingId = null;
-
-      if (error) {
-        toastRef?.show(error.message, "error");
-      } else {
-        toastRef?.show("Admin diperbarui", "success");
-        await refreshData();
-      }
-    }
-  };
+  }
+};
 </script>
 
 <div class="h-full w-full">

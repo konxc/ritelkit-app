@@ -1,24 +1,24 @@
 <script lang="ts">
-  import FulfillmentManager from "./FulfillmentManager.svelte";
-  import InvoicesManager from "./InvoicesManager.svelte";
-  import OrdersManager from "./OrdersManager.svelte";
-  import RefundsManager from "./RefundsManager.svelte";
-  import ShippingManager from "./ShippingManager.svelte";
-  import QueryProvider from "../QueryProvider.svelte";
+import FulfillmentManager from "./FulfillmentManager.svelte";
+import InvoicesManager from "./InvoicesManager.svelte";
+import OrdersManager from "./OrdersManager.svelte";
+import RefundsManager from "./RefundsManager.svelte";
+import ShippingManager from "./ShippingManager.svelte";
+import QueryProvider from "../QueryProvider.svelte";
 
-  let {
-    tab,
-    q = "",
-    page = 1,
-    limit = 20,
-    initialData = null,
-  }: {
-    tab: string;
-    q?: string;
-    page?: number;
-    limit?: number;
-    initialData?: any;
-  } = $props();
+let {
+  tab,
+  q = "",
+  page = 1,
+  limit = 20,
+  initialData = null,
+}: {
+  tab: string;
+  q?: string;
+  page?: number;
+  limit?: number;
+  initialData?: any;
+} = $props();
 </script>
 
 <QueryProvider {initialData}>

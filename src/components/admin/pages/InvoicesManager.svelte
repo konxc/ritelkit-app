@@ -1,76 +1,76 @@
 <script lang="ts">
-  import { trpc } from "../../../lib/trpc";
-  import { fade, fly } from "svelte/transition";
-  import { createQuery } from "@tanstack/svelte-query";
-  import { actions } from "astro:actions";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
-  import SectionHeader from "../SectionHeader.svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import Table from "../ui/Table.svelte";
-  import TableRow from "../ui/TableRow.svelte";
-  import TableCell from "../ui/TableCell.svelte";
-  import Button from "../ui/Button.svelte";
-  import TextInput from "../ui/forms/TextInput.svelte";
-  import Badge from "../ui/Badge.svelte";
+import { trpc } from "../../../lib/trpc";
+import { fade, fly } from "svelte/transition";
+import { createQuery } from "@tanstack/svelte-query";
+import { actions } from "astro:actions";
+import CrudInlineForm from "../CrudInlineForm.svelte";
+import SectionHeader from "../SectionHeader.svelte";
+import ToastNotification from "../ToastNotification.svelte";
+import Table from "../ui/Table.svelte";
+import TableRow from "../ui/TableRow.svelte";
+import TableCell from "../ui/TableCell.svelte";
+import Button from "../ui/Button.svelte";
+import TextInput from "../ui/forms/TextInput.svelte";
+import Badge from "../ui/Badge.svelte";
 
-  export type InvoiceRow = {
-    id: string;
-    invoiceNo: string;
-    orderNo: string;
-    total: number;
-    status: string;
-    issuedAt: string;
-    dueAt: string | null;
-  };
+export type InvoiceRow = {
+  id: string;
+  invoiceNo: string;
+  orderNo: string;
+  total: number;
+  status: string;
+  issuedAt: string;
+  dueAt: string | null;
+};
 
-  let {
-    rows: initialRows = [],
-    page = 1,
-    limit = 20,
-  }: {
-    rows?: InvoiceRow[];
-    page?: number;
-    limit?: number;
-  } = $props();
+let {
+  rows: initialRows = [],
+  page = 1,
+  limit = 20,
+}: {
+  rows?: InvoiceRow[];
+  page?: number;
+  limit?: number;
+} = $props();
 
-  const offset = $derived((page - 1) * limit);
+const offset = $derived((page - 1) * limit);
 
-  const invoicesQuery = createQuery(() => ({
-    queryKey: ["invoices.list", { limit, offset }],
-    queryFn: () => trpc.invoices.list.query({ limit, offset }),
-    initialData: initialRows.length > 0 ? initialRows : undefined,
-    refetchOnMount: false,
-    staleTime: 1000 * 60 * 5,
-  }));
+const invoicesQuery = createQuery(() => ({
+  queryKey: ["invoices.list", { limit, offset }],
+  queryFn: () => trpc.invoices.list.query({ limit, offset }),
+  initialData: initialRows.length > 0 ? initialRows : undefined,
+  refetchOnMount: false,
+  staleTime: 1000 * 60 * 5,
+}));
 
-  let currentInvoices = $derived((invoicesQuery.data as InvoiceRow[]) || initialRows);
+let currentInvoices = $derived((invoicesQuery.data as InvoiceRow[]) || initialRows);
 
-  let isSubmitting = $state(false);
-  let orderNo = $state("");
-  let toastRef = $state<ToastNotification>();
+let isSubmitting = $state(false);
+let orderNo = $state("");
+let toastRef = $state<ToastNotification>();
 
-  const badgeTone = (status: string): "green" | "red" | "gray" => {
-    if (status === "paid") return "green";
-    if (status === "void") return "red";
-    return "gray";
-  };
+const badgeTone = (status: string): "green" | "red" | "gray" => {
+  if (status === "paid") return "green";
+  if (status === "void") return "red";
+  return "gray";
+};
 
-  const handleSubmit = async (event: SubmitEvent) => {
-    event.preventDefault();
-    isSubmitting = true;
-    try {
-      const { error } = await actions.createInvoice({ orderNo });
-      if (error) {
-        toastRef?.show(error.message, "error");
-      } else {
-        toastRef?.show("Invoice berhasil dibuat", "success");
-        orderNo = "";
-        invoicesQuery.refetch();
-      }
-    } finally {
-      isSubmitting = false;
+const handleSubmit = async (event: SubmitEvent) => {
+  event.preventDefault();
+  isSubmitting = true;
+  try {
+    const { error } = await actions.createInvoice({ orderNo });
+    if (error) {
+      toastRef?.show(error.message, "error");
+    } else {
+      toastRef?.show("Invoice berhasil dibuat", "success");
+      orderNo = "";
+      invoicesQuery.refetch();
     }
-  };
+  } finally {
+    isSubmitting = false;
+  }
+};
 </script>
 
 <div class="h-full w-full">
