@@ -83,7 +83,7 @@ const getPaymentStatusType = (status: string) => {
 
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-    <Table headers={["Order No", "Pelanggan", "Total", "Status", "Payment", "Tanggal", "Aksi"]}>
+    <Table headers={["No. Pesanan", "Pelanggan", "Total", "Status", "Pembayaran", "Tanggal", "Aksi"]}>
       {#if currentRows.length === 0}
         <TableRow>
           <TableCell colspan={7} class="py-12 text-center text-sm text-stone-400 italic">

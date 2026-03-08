@@ -189,7 +189,7 @@ const handleRowAction = async (id: string, action: string, rowEl: HTMLElement | 
   <SectionHeader title="Log Notifikasi" />
 </div>
 <div class="mt-2">
-  <Table headers={["Channel", "Penerima", "Status", "Created", "Sent", "Aksi"]}>
+  <Table headers={["Kanal", "Penerima", "Status", "Dibuat", "Terkirim", "Aksi"]}>
     {#if rows.length === 0}
       <TableRow>
         <TableCell colspan={6} class="py-12 text-center text-sm text-stone-400 italic">

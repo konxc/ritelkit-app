@@ -63,7 +63,7 @@ const handleSubmit = async (event: SubmitEvent) => {
     if (error) {
       toastRef?.show(error.message, "error");
     } else {
-      toastRef?.show("Invoice berhasil dibuat", "success");
+      toastRef?.show("Faktur berhasil dibuat", "success");
       orderNo = "";
       invoicesQuery.refetch();
     }
@@ -75,14 +75,14 @@ const handleSubmit = async (event: SubmitEvent) => {
 
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-    <SectionHeader title="Buat Invoice" badge="Manual" />
+    <SectionHeader title="Buat Faktur" badge="Manual" />
     <CrudInlineForm id="invoice-form" onsubmit={handleSubmit} {isSubmitting}>
       <div class="mb-8 flex w-full flex-col items-end gap-4 border-b border-stone-100 pb-8 md:flex-row xl:gap-6">
         <div class="w-full md:w-80">
           <TextInput
             id="order_no"
             name="order_no"
-            label="Nomor Order"
+            label="Nomor Pesanan"
             bind:value={orderNo}
             required
             placeholder="Cth: ORD-20240226-001"
@@ -108,16 +108,16 @@ const handleSubmit = async (event: SubmitEvent) => {
               ></path></svg
             >
           {/if}
-          Terbitkan Invoice
+          Terbitkan Faktur
         </Button>
       </div>
     </CrudInlineForm>
 
     <div class="mt-6">
-      <SectionHeader title="Daftar Invoice" muted="Auto update status di tahap berikutnya" />
+      <SectionHeader title="Daftar Faktur" muted="Auto update status di tahap berikutnya" />
     </div>
     <div class="mt-4">
-      <Table headers={["Invoice", "Order", "Total", "Status", "Tanggal"]}>
+      <Table headers={["Faktur", "Pesanan", "Total", "Status", "Tanggal"]}>
         {#if currentInvoices.length === 0}
           <TableRow>
             <TableCell colspan={5} class="py-12 text-center text-sm text-stone-400 italic">

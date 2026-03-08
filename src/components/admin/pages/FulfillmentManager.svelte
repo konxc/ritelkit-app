@@ -126,7 +126,7 @@ export type ShipmentRow = {
           <TextInput
             id="orderNo"
             name="orderNo"
-            label="Order No"
+            label="No. Pesanan"
             required
             placeholder="Cth: ORD-1001"
             list="pending-orders"
@@ -214,7 +214,7 @@ export type ShipmentRow = {
       <SectionHeader title="Daftar Pengiriman" />
     </div>
 
-    <Table headers={["Order", "Status", "Kurir", "Resi", "Catatan", "Aksi"]}>
+    <Table headers={["Pesanan", "Status", "Kurir", "Resi", "Catatan", "Aksi"]}>
       {#if currentShipments.length === 0}
         <TableRow>
           <TableCell colspan={6} class="py-12 text-center text-sm text-stone-400 italic"

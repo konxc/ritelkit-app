@@ -79,13 +79,13 @@ export const server = {
         | undefined;
 
       if (!row) {
-        throw new Error("Order tidak ditemukan");
+        throw new Error("Pesanan tidak ditemukan");
       }
 
       const samePhone = normalizePhone(String(row.customer_phone || "")) === normalizedPhone;
 
       if (!samePhone) {
-        throw new Error("Order tidak ditemukan");
+        throw new Error("Pesanan tidak ditemukan");
       }
 
       return {
@@ -574,7 +574,7 @@ export const server = {
       if (!order) {
         throw new ActionError({
           code: "NOT_FOUND",
-          message: "Order tidak ditemukan",
+          message: "Pesanan tidak ditemukan",
         });
       }
 
@@ -689,7 +689,7 @@ export const server = {
       let orderId = input.orderId;
       if (!orderId) {
         const order = await db.select().from(orders).where(eq(orders.orderNo, input.orderNo)).get();
-        if (!order) throw new Error("Order tidak ditemukan");
+        if (!order) throw new Error("Pesanan tidak ditemukan");
         orderId = order.id;
       }
 
@@ -925,7 +925,7 @@ export const server = {
       let orderId = input.orderId;
       if (!orderId) {
         const order = await db.select().from(orders).where(eq(orders.orderNo, input.orderNo)).get();
-        if (!order) throw new Error("Order tidak ditemukan");
+        if (!order) throw new Error("Pesanan tidak ditemukan");
         orderId = order.id;
       }
 

@@ -160,7 +160,7 @@ let currentCoupons = $derived((couponsQuery.data as Coupon[]) || initialRows);
             />
           </div>
           <div>
-            <TextInput id="min_order" name="min_order" type="number" label="Minimal Order" placeholder="0" />
+            <TextInput id="min_order" name="min_order" type="number" label="Minimal Pesanan" placeholder="0" />
           </div>
           <div>
             <TextInput
@@ -244,7 +244,7 @@ let currentCoupons = $derived((couponsQuery.data as Coupon[]) || initialRows);
         "Kode",
         "Tipe",
         "Nilai",
-        "Min Order",
+        "Min. Pesanan",
         "Max Diskon",
         "Mulai",
         "Berakhir",

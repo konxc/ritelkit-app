@@ -75,7 +75,7 @@ type AdMutationInput = {
     isSubmitting = true;
     try {
       await trpc.ads.create.mutate(data);
-      toastRef?.show("Campaign berhasil dibuat!", "success");
+      toastRef?.show("Kampanye berhasil dibuat!", "success");
       form.reset();
       queryClient.invalidateQueries({ queryKey: ["ads.list"] });
     } catch (error: unknown) {
@@ -93,7 +93,7 @@ type AdMutationInput = {
         deletingId = resolvedId;
         try {
           await trpc.ads.delete.mutate(resolvedId);
-          toastRef?.show("Campaign dihapus", "success");
+          toastRef?.show("Kampanye dihapus", "success");
           queryClient.invalidateQueries({ queryKey: ["ads.list"] });
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : "Gagal menghapus campaign";
@@ -124,7 +124,7 @@ type AdMutationInput = {
       savingId = resolvedId;
       try {
         await trpc.ads.update.mutate({ id: resolvedId, data });
-        toastRef?.show("Campaign diperbarui", "success");
+        toastRef?.show("Kampanye diperbarui", "success");
         queryClient.invalidateQueries({ queryKey: ["ads.list"] });
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Gagal memperbarui campaign";
@@ -138,7 +138,7 @@ type AdMutationInput = {
 
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-    <SectionHeader title="Buat Campaign" badge="Ads" />
+    <SectionHeader title="Buat Kampanye" badge="Iklan" />
     <CrudInlineForm id="ads-form" onsubmit={handleCreate} {isSubmitting}>
       <div class="mb-8 space-y-6 border-b border-stone-100 pb-8">
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -146,7 +146,7 @@ type AdMutationInput = {
             <TextInput
               id="name"
               name="name"
-              label="Nama Campaign"
+              label="Nama Kampanye"
               required
               placeholder="Cth: Promo Ramadhan"
               class="font-bold"
@@ -195,7 +195,7 @@ type AdMutationInput = {
             <TextInput
               id="notes"
               name="notes"
-              label="Catatan Campaign"
+              label="Catatan Kampanye"
               placeholder="Tujuan campaign, link kreatif, dll..."
             />
           </div>
@@ -216,13 +216,13 @@ type AdMutationInput = {
               ></path></svg
             >
           {/if}
-          Luncurkan Campaign
+          Luncurkan Kampanye
         </Button>
       </div>
     </CrudInlineForm>
 
     <div class="mt-6">
-      <SectionHeader title="Daftar Campaign" />
+      <SectionHeader title="Daftar Kampanye" />
     </div>
 
     <Table headers={["Nama", "Channel", "Budget", "Spend", "Status", "Aksi"]}>
@@ -230,7 +230,7 @@ type AdMutationInput = {
         <TableRow>
           <TableCell colspan={6} class="border-0 p-0">
             <EmptyState
-              title="Belum Ada Campaign"
+              title="Belum Ada Kampanye"
               description="Belum ada campaign beriklan berjalan."
               class="!rounded-none !border-0 !bg-transparent py-16 !shadow-none"
             />

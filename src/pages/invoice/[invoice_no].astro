@@ -36,7 +36,7 @@ const address = JSON.parse(String(invoice.shipping_address_json || "{}"));
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>Invoice {invoice.invoice_no}</title>
+    <title>Faktur {invoice.invoice_no}</title>
   </head>
   <body class="m-6 text-[#1f1b16]">
     <div class="flex items-center justify-between">
@@ -45,8 +45,8 @@ const address = JSON.parse(String(invoice.shipping_address_json || "{}"));
         <div class="muted text-[#6b625a]">Semesta Bersholawat</div>
       </div>
       <div>
-        <div>Invoice: {invoice.invoice_no}</div>
-        <div class="muted text-[#6b625a]">Order: {invoice.order_no}</div>
+        <div>Faktur: {invoice.invoice_no}</div>
+        <div class="muted text-[#6b625a]">Pesanan: {invoice.order_no}</div>
         <div class="muted text-[#6b625a]">
           Tanggal: {String(invoice.issued_at).split("T")[0]}
         </div>

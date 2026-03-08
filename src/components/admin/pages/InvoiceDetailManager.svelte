@@ -71,14 +71,14 @@ const handleSubmit = async (event: SubmitEvent) => {
       ...invoice,
       ...data,
     };
-    toastRef?.show("Invoice diperbarui", "success");
+    toastRef?.show("Faktur diperbarui", "success");
   }
 };
 </script>
 
 <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
   <PanelCard>
-    <strong>Order</strong>
+    <strong>Pesanan</strong>
     <p class="mb-2 text-xl font-bold text-[#c48a3a]">{invoice.orderNo}</p>
     <div class="space-y-1">
       <p class="font-bold text-stone-900">{invoice.customerName}</p>
@@ -131,7 +131,7 @@ const handleSubmit = async (event: SubmitEvent) => {
 </div>
 
 <PanelCard className="border-t-4 border-t-[#c48a3a]">
-  <strong class="mb-6 block text-xs tracking-widest text-stone-500 uppercase">Perbarui Detail Invoice</strong>
+  <strong class="mb-6 block text-xs tracking-widest text-stone-500 uppercase">Perbarui Detail Faktur</strong>
   <CrudInlineForm id="invoice-form" data-invoice={invoice.invoiceNo} onsubmit={handleSubmit} {isSubmitting}>
     <div class="flex flex-col items-end gap-6 md:flex-row">
       <div class="w-full md:w-64">
@@ -142,7 +142,7 @@ const handleSubmit = async (event: SubmitEvent) => {
           value={invoice.status}
           options={[
             { value: "issued", label: "Issued" },
-            { value: "paid", label: "Paid" },
+            { value: "paid", label: "Dibayar" },
             { value: "overdue", label: "Overdue" },
             { value: "void", label: "Void" },
           ]}

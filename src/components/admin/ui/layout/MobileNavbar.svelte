@@ -13,10 +13,10 @@ const isActive = (path: string) => {
 };
 
 const navItems = [
-  { name: "Home", path: "/admin/overview" },
-  { name: "Order", path: "/admin/orders" },
+  { name: "Beranda", path: "/admin/overview" },
+  { name: "Pesanan", path: "/admin/orders" },
   { name: "Produk", path: "/admin/catalog" },
-  { name: "Setup", path: "/admin/settings" },
+  { name: "Pengaturan", path: "/admin/settings" },
 ];
 </script>
 
@@ -31,7 +31,7 @@ const navItems = [
         ? 'border-[#c48a3a]/50 bg-gradient-to-br from-[#c48a3a] to-[#a6722d] text-white shadow-[0_4px_12px_rgba(196,138,58,0.3)]'
         : 'border-transparent text-white/50 hover:bg-white/5 hover:text-white'}"
     >
-      {#if item.name === "Home"}
+      {#if item.name === "Beranda"}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
@@ -46,7 +46,7 @@ const navItems = [
           ><path d="m3 9 9-7 9 7v11a2 2 0 0 1 -2 2H5a2 2 0 0 1 -2 -2z"></path><polyline points="9 22 9 12 15 12 15 22"
           ></polyline></svg
         >
-      {:else if item.name === "Order"}
+      {:else if item.name === "Pesanan"}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"
@@ -81,7 +81,7 @@ const navItems = [
           ></path><path d="m14 7 3 3"></path><path d="M5 6v4"></path><path d="M19 14v4"></path><path d="M10 2v2"
           ></path><path d="M7 8H3"></path><path d="M21 16h-4"></path><path d="M11 3H9"></path></svg
         >
-      {:else if item.name === "Setup"}
+      {:else if item.name === "Pengaturan"}
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="20"

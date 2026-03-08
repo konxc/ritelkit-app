@@ -48,7 +48,7 @@ export async function POST(ctx: APIContext) {
   }
   if (setupToken !== env.SETUP_TOKEN) {
     if (isJson) {
-      return new Response("Setup token tidak valid. Gunakan token dari env SETUP_TOKEN.", {
+      return new Response("Token setup tidak valid. Gunakan token dari env SETUP_TOKEN.", {
         status: 403,
       });
     }

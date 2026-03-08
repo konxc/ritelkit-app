@@ -20,7 +20,7 @@ export async function POST(ctx: APIContext) {
   const trackingNo = sanitizeText(String(body.tracking_no || ""));
   const notes = sanitizeText(String(body.notes || ""));
   if (!orderNo) {
-    return new Response("Order no wajib diisi", { status: 400 });
+    return new Response("No. pesanan wajib diisi", { status: 400 });
   }
 
   const now = nowIso();

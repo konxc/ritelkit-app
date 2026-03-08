@@ -136,12 +136,12 @@ const handleSeed = async () => {
 
     <form id="settings-form" onsubmit={handleSubmit} class="space-y-8">
       <div class="grid gap-8 lg:grid-cols-2">
-        <!-- Panel 1: Model Order -->
+        <!-- Panel 1: Model Pesanan -->
         <div
           class="space-y-6 rounded-3xl border border-stone-200/60 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] sm:p-8"
         >
           <div class="border-b border-stone-100 pb-4">
-            <h3 class="font-['Syne',sans-serif] text-xl font-bold text-stone-800">Model Order</h3>
+            <h3 class="font-['Syne',sans-serif] text-xl font-bold text-stone-800">Model Pesanan</h3>
             <p class="mt-1 text-sm text-stone-500">Atur ketersediaan dan ketentuan pemesanan produk Anda.</p>
           </div>
 

@@ -27,6 +27,6 @@ const stats = await getDashboardStats(db);
 const recentOrders = await getRecentOrders(db, 5);
 ---
 
-<AdminLayout title="Overview">
+<AdminLayout title="Ringkasan">
   <OverviewApp {stats} {recentOrders} client:load />
 </AdminLayout>

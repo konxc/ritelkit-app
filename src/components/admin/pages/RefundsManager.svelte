@@ -137,7 +137,13 @@
     <CrudInlineForm id="refund-form" onsubmit={handleCreate} {isSubmitting}>
       <div class="grid w-full grid-cols-2 gap-4 border-b border-stone-100 pb-5 md:grid-cols-4">
         <div>
-          <TextInput id="order_no" name="order_no" label="Order No" required class="w-full font-bold tabular-nums" />
+          <TextInput
+            id="order_no"
+            name="order_no"
+            label="No. Pesanan"
+            required
+            class="w-full font-bold tabular-nums"
+          />
         </div>
         <div>
           <TextInput id="amount" name="amount" type="number" label="Jumlah (Rp)" required />
@@ -183,7 +189,7 @@
       <Badge text="Dana Keluar" color="red" />
     </div>
 
-    <Table headers={["Order", "Jumlah", "Status", "Gateway", "Alasan", "Aksi"]}>
+    <Table headers={["Pesanan", "Jumlah", "Status", "Gateway", "Alasan", "Aksi"]}>
       {#if currentRefunds.length === 0}
         <TableRow>
           <TableCell colspan={6} class="py-12 text-center text-sm text-stone-400 italic">

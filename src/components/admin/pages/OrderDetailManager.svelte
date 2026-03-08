@@ -55,7 +55,7 @@
     isSubmitting = true;
     try {
       await trpc.orders.update.mutate({ id: order.id, data });
-      toastRef?.show("Order updated", "success");
+      toastRef?.show("Pesanan diperbarui", "success");
       queryClient.invalidateQueries({ queryKey: ["orders.list"] });
     } catch (error: any) {
       toastRef?.show(error.message, "error");
@@ -90,7 +90,7 @@
       <SelectInput
         id="status"
         name="status"
-        label="Status Order"
+        label="Status Pesanan"
         bind:value={order.status}
         options={[
           { value: "pending", label: "Pending" },
@@ -110,7 +110,7 @@
         bind:value={order.paymentStatus}
         options={[
           { value: "unpaid", label: "Unpaid" },
-          { value: "paid", label: "Paid" },
+            { value: "paid", label: "Dibayar" },
           { value: "failed", label: "Failed" },
           { value: "refunded", label: "Refunded" },
         ]}

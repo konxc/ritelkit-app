@@ -38,7 +38,7 @@ export async function PUT(ctx: APIContext) {
   });
   const current = currentRes.rows[0] as { status?: string; payment_status?: string } | undefined;
   if (!current?.status || !current?.payment_status) {
-    return new Response("Order tidak ditemukan", { status: 404 });
+    return new Response("Pesanan tidak ditemukan", { status: 404 });
   }
   const validation = validateOrderUpdate(
     current.status,

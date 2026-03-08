@@ -53,10 +53,10 @@ const ordersRes = await db.execute({
   </PanelCard>
 
   <div class="mt-6">
-    <SectionHeader title="Riwayat Order" muted="Berdasarkan telepon/email" />
+    <SectionHeader title="Riwayat Pesanan" muted="Berdasarkan telepon/email" />
   </div>
   <div class="mt-4">
-    <Table headers={["Order", "Total", "Status", "Pembayaran", "Tanggal"]}>
+    <Table headers={["Pesanan", "Total", "Status", "Pembayaran", "Tanggal"]}>
       {
         ordersRes.rows.map((order) => (
           <TableRow>

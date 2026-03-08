@@ -43,7 +43,7 @@ const handleCheck = async (e: SubmitEvent) => {
   <input
     class="rounded-[10px] border border-[#e6dfd3] p-2.5"
     name="order_no"
-    placeholder="Masukkan Order No"
+    placeholder="Masukkan No. Pesanan"
     bind:value={orderNo}
     required
   />

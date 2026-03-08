@@ -9,7 +9,7 @@ interface Props {
 
 let {
   src = "",
-  alt = "Product Thumbnail",
+  alt = "Thumbnail Produk",
   isEmpty = false,
   class: className = "",
   ...rest

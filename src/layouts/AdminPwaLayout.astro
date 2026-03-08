@@ -9,8 +9,8 @@ interface Props {
 }
 
 const {
-  title = "Admin Workspace",
-  description = "Admin dashboard PWA",
+  title = "Ruang Kerja Admin",
+  description = "Dasbor Admin PWA",
   activeNav = "research",
 } = Astro.props;
 
@@ -36,7 +36,7 @@ const csrfToken = ensureCsrfToken(Astro);
       <header class="pwa-topbar">
         <div class="pwa-topbar-card">
           <div>
-            <div class="pwa-chip">Admin PWA</div>
+            <div class="pwa-chip">PWA Admin</div>
             <div class="pwa-title">{title}</div>
             <div class="pwa-subtitle">{description}</div>
           </div>
@@ -51,7 +51,7 @@ const csrfToken = ensureCsrfToken(Astro);
       <nav class="pwa-nav">
         <div class="pwa-nav-card">
           <a href="/admin/overview" class={`pwa-nav-item ${activeNav === "home" ? "pwa-nav-item-active" : ""}`}>
-            <span>Home</span>
+            <span>Beranda</span>
           </a>
           <a href="/admin/reports" class={`pwa-nav-item ${activeNav === "insights" ? "pwa-nav-item-active" : ""}`}>
             <span>Insights</span>
@@ -60,7 +60,7 @@ const csrfToken = ensureCsrfToken(Astro);
             <span>Research</span>
           </a>
           <a href="/admin/settings" class={`pwa-nav-item ${activeNav === "settings" ? "pwa-nav-item-active" : ""}`}>
-            <span>Settings</span>
+            <span>Pengaturan</span>
           </a>
         </div>
       </nav>

@@ -108,7 +108,7 @@
   const tabLabels: Record<string, string> = {
     products: "Produk",
     categories: "Kategori",
-    inventory: "Inventory",
+    inventory: "Inventori",
   };
   let tabLabel = $derived(tabLabels[tab] || tab);
 

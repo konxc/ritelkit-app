@@ -29,14 +29,14 @@ export async function POST(ctx: APIContext) {
     return new Response("CSRF token tidak valid", { status: 403 });
   }
   const orderNo = sanitizeText(String(body.order_no || ""));
-  if (!orderNo) return new Response("Order no wajib diisi", { status: 400 });
+  if (!orderNo) return new Response("No. pesanan wajib diisi", { status: 400 });
   const db = getDb(ctx);
   const orderRes = await db.execute({
     sql: "SELECT id FROM orders WHERE order_no = ?",
     args: [orderNo],
   });
   const order = orderRes.rows[0] as OrderLookupRow | undefined;
-  if (!order?.id) return new Response("Order tidak ditemukan", { status: 404 });
+  if (!order?.id) return new Response("Pesanan tidak ditemukan", { status: 404 });
   const invoiceNo = `INV-${Date.now()}`;
   const now = nowIso();
   await db.execute({

@@ -47,7 +47,7 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
             ><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"
             ></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg
           >
-          Export
+          Ekspor
         </Button>
         <Button variant="primary" size="sm">
           <svg
@@ -61,13 +61,13 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
             stroke-linecap="round"
             stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg
           >
-          Order Baru
+          Pesanan Baru
         </Button>
       </div>
     </div>
 
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      <StatCard label="Order Hari Ini" value={stats.ordersToday}>
+      <StatCard label="Pesanan Hari Ini" value={stats.ordersToday}>
         {#snippet icon()}
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -215,7 +215,7 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
             </p>
           </div>
         {:else}
-          <Table headers={["Order No", "Pelanggan", "Total", "Status"]} class="!rounded-none border-none shadow-none">
+          <Table headers={["No. Pesanan", "Pelanggan", "Total", "Status"]} class="!rounded-none border-none shadow-none">
             {#each recentOrders as order}
               <TableRow class="group border-b border-stone-100 last:border-0 hover:bg-stone-50/50">
                 <TableCell class="py-4">

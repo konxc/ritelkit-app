@@ -22,7 +22,7 @@ export async function POST(ctx: APIContext) {
   const status = sanitizeText(String(body.status || "requested"));
   const reason = sanitizeText(String(body.reason || ""));
   if (!orderNo || amount <= 0) {
-    return new Response("Order dan amount wajib diisi", { status: 400 });
+    return new Response("Pesanan dan jumlah wajib diisi", { status: 400 });
   }
   const db = getDb(ctx);
   const now = nowIso();

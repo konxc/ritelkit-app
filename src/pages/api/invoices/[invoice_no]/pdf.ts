@@ -8,7 +8,7 @@ export async function GET(ctx: APIContext) {
   const admin = await requireAdmin(ctx);
   if (!admin) return new Response("Unauthorized", { status: 401 });
   const invoiceNo = ctx.params.invoice_no;
-  if (!invoiceNo) return new Response("Invoice tidak valid", { status: 400 });
+  if (!invoiceNo) return new Response("Faktur tidak valid", { status: 400 });
 
   const db = getDb(ctx);
   const result = await db.execute({
@@ -18,7 +18,7 @@ export async function GET(ctx: APIContext) {
     args: [invoiceNo],
   });
   const invoice = result.rows[0] as any;
-  if (!invoice) return new Response("Invoice tidak ditemukan", { status: 404 });
+  if (!invoice) return new Response("Faktur tidak ditemukan", { status: 404 });
 
   if (isCloudflare(ctx) || !isNodeLike()) {
     return new Response(null, {
@@ -41,8 +41,8 @@ export async function GET(ctx: APIContext) {
   doc.fontSize(11).text("Semesta Bersholawat", { align: "left" });
   doc.moveDown();
 
-  doc.fontSize(12).text(`Invoice: ${invoice.invoice_no}`);
-  doc.text(`Order: ${invoice.order_no}`);
+  doc.fontSize(12).text(`Faktur: ${invoice.invoice_no}`);
+  doc.text(`Pesanan: ${invoice.order_no}`);
   doc.text(`Tanggal: ${String(invoice.issued_at).split("T")[0]}`);
   doc.moveDown();
 
