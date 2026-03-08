@@ -14,10 +14,7 @@ const db = getDrizzle(Astro);
 let redirectUrl = "";
 
 if (!admin) {
-  const result = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(adminUsers)
-    .get();
+  const result = await db.select({ count: sql<number>`count(*)` }).from(adminUsers).get();
   const userCount = Number(result?.count || 0);
   redirectUrl = userCount === 0 ? "/admin/setup" : "/admin/login";
 }

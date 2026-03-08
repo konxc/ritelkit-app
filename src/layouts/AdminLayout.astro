@@ -8,8 +8,8 @@ const { title = "Dashboard Admin" } = Astro.props;
 const currentPath = Astro.url.pathname;
 const csrfToken = ensureCsrfToken(Astro);
 
-const logoutResult = await Astro.getActionResult(actions.adminLogout);
-if (logoutResult && !logoutResult.error) {
+const logoutRes = Astro.getActionResult(actions.adminLogout);
+if (logoutRes && !logoutRes.error) {
   return Astro.redirect("/admin/login");
 }
 

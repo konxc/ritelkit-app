@@ -23,22 +23,23 @@ if (!order) {
 
 // Map and parse JSON fields for the Svelte component
 const rawItems = JSON.parse(String(order.itemsJson || "[]")) as any[];
-const productIds = rawItems.map(i => i.product_id).filter(Boolean);
+const productIds = rawItems.map((i) => i.product_id).filter(Boolean);
 
 // Fetch product names to enrich the items
-const productsData = productIds.length > 0 
-  ? await db.query.products.findMany({
-      where: (products, { inArray }) => inArray(products.id, productIds),
-      columns: { id: true, name: true }
-    })
-  : [];
+const productsData =
+  productIds.length > 0
+    ? await db.query.products.findMany({
+        where: (products, { inArray }) => inArray(products.id, productIds),
+        columns: { id: true, name: true },
+      })
+    : [];
 
-const productMap = Object.fromEntries(productsData.map(p => [p.id, p.name]));
+const productMap = Object.fromEntries(productsData.map((p) => [p.id, p.name]));
 
-const parsedItems = rawItems.map(item => ({
+const parsedItems = rawItems.map((item) => ({
   ...item,
   name: item.name || productMap[item.product_id] || "Produk dihapus",
-  total: item.qty * item.price
+  total: item.qty * item.price,
 }));
 
 const parsedOrder = {
@@ -51,5 +52,3 @@ const parsedOrder = {
 <AdminLayout title={`Order ${order.orderNo}`}>
   <OrderDetailPageContent order={parsedOrder as any} client:load />
 </AdminLayout>
-
-

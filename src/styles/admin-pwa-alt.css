@@ -23,7 +23,8 @@
     color: var(--alt-ink);
     background:
       radial-gradient(800px 400px at -10% 10%, rgba(31, 140, 122, 0.15), transparent 60%),
-      radial-gradient(800px 500px at 110% -10%, rgba(179, 106, 43, 0.15), transparent 55%), var(--alt-bg);
+      radial-gradient(800px 500px at 110% -10%, rgba(179, 106, 43, 0.15), transparent 55%),
+      var(--alt-bg);
   }
 }
 
