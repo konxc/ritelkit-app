@@ -42,7 +42,6 @@ type SampleCustomer = {
 };
 
 type SampleAd = {
-
   name: string;
   channel: string;
   budget: number;
@@ -80,15 +79,6 @@ type SampleAdminUser = {
   role: string;
 };
 
-type InventoryFixture = {
-  productSlug: string;
-  type: "in" | "out" | "adjustment";
-  qty: number;
-  notes: string;
-  refOrder?: string;
-  daysAgo: number;
-};
-
 type NotificationFixture = {
   channel: string;
   recipientField: "customer_email" | "customer_phone";
@@ -102,7 +92,6 @@ type CouponUsageFixture = {
   couponCode: string;
   orderNo: string;
 };
-
 
 type OrderFixture = {
   orderNo: string;
@@ -126,16 +115,6 @@ type OrderFixture = {
   payment?: { midtransToken?: string; midtransOrderId?: string };
 };
 
-type ShipmentFixture = {
-  orderNo: string;
-  status: string;
-  carrier: string;
-  trackingNo: string;
-  shippedOffset: number | null;
-  deliveredOffset: number | null;
-  notes: string;
-};
-
 type RefundFixture = {
   orderNo: string;
   amount: number;
@@ -144,15 +123,6 @@ type RefundFixture = {
   providerStatus: string;
   createdOffset: number;
 };
-
-type InvoiceFixture = {
-  orderNo: string;
-  invoiceNo: string;
-  status: string;
-  issuedOffset: number;
-  dueOffset: number;
-};
-
 
 const sampleCategories: SampleCategory[] = [
   { name: "Roti Manis", slug: "roti-manis" },
@@ -493,28 +463,6 @@ const orderFixtures: OrderFixture[] = [
   },
 ];
 
-
-const shipmentFixtures: ShipmentFixture[] = [
-  {
-    orderNo: "RS-20260226-001",
-    status: "packing",
-    carrier: "SiCepat",
-    trackingNo: "SIG-RS-001",
-    shippedOffset: 0,
-    deliveredOffset: null,
-    notes: "Barang sedang disiapkan.",
-  },
-  {
-    orderNo: "RS-20260225-002",
-    status: "shipped",
-    carrier: "GrabExpress",
-    trackingNo: "GRB-RS-002",
-    shippedOffset: 1,
-    deliveredOffset: 0,
-    notes: "Sudah sampai di lokasi.",
-  },
-];
-
 const refundFixtures: RefundFixture[] = [
   {
     orderNo: "RS-20260220-004",
@@ -523,56 +471,6 @@ const refundFixtures: RefundFixture[] = [
     status: "completed",
     providerStatus: "refunded",
     createdOffset: 5,
-  },
-];
-
-const invoiceFixtures: InvoiceFixture[] = [
-  {
-    orderNo: "RS-20260226-001",
-    invoiceNo: "INV-20260226-001",
-    status: "paid",
-    issuedOffset: 0,
-    dueOffset: -1,
-  },
-  {
-    orderNo: "RS-20260225-002",
-    invoiceNo: "INV-20260225-002",
-    status: "paid",
-    issuedOffset: 1,
-    dueOffset: -6,
-  },
-];
-
-const inventoryFixtures: InventoryFixture[] = [
-  {
-    productSlug: "roti-coklat-sholawat",
-    type: "in",
-    qty: 200,
-    notes: "Stok awal produksi",
-    daysAgo: 10,
-  },
-  {
-    productSlug: "roti-keju-sholawat",
-    type: "in",
-    qty: 150,
-    notes: "Restock keju premium",
-    daysAgo: 8,
-  },
-  {
-    productSlug: "roti-coklat-sholawat",
-    type: "out",
-    qty: 5,
-    notes: "Order RS-20260226-001",
-    refOrder: "RS-20260226-001",
-    daysAgo: 0,
-  },
-  {
-    productSlug: "snack-box-syukur",
-    type: "out",
-    qty: 50,
-    notes: "Order RS-20260225-002",
-    refOrder: "RS-20260225-002",
-    daysAgo: 1,
   },
 ];
 
@@ -602,7 +500,6 @@ const couponUsageFixtures: CouponUsageFixture[] = [
   },
 ];
 
-
 type SeedOptions = {
   adminEmail: string;
   now?: string;
@@ -624,18 +521,16 @@ export async function seedAdminData(db: Client, options: SeedOptions) {
   await ensureAds(db, now);
   await ensureCmsPages(db, now);
   await ensureShippingRules(db, now);
-  
+
   // Orders now handle their own RELATIONAL history, movements, invoices, and shipments
   await ensureOrders(db, couponMap, productMap, customerMap);
-  
+
   const orderMap = await buildOrderMap(db);
   await ensureRefunds(db, orderMap); // Still handles specific refund fixture
   await ensureCouponUsages(db, now, orderMap, couponMap);
   await ensureNotifications(db, now, orderMap);
   await ensureAuditLogs(db, now, options.adminEmail, orderMap, productMap);
 }
-
-
 
 async function ensureAdminUsers(db: Client, now: string) {
   const count = await db.execute("SELECT COUNT(*) as count FROM admin_users");
@@ -873,7 +768,10 @@ async function ensureShippingRules(db: Client, now: string) {
 
 async function ensureOrders(
   db: Client,
-  couponMap: Record<string, { id: string; type: string; value: number; max_discount: number | null }>,
+  couponMap: Record<
+    string,
+    { id: string; type: string; value: number; max_discount: number | null }
+  >,
   productMap: Record<string, { id: string; price: number; slug: string; name: string }>,
   customerMap: Record<string, string>,
 ) {
@@ -896,7 +794,10 @@ async function ensureOrders(
     const customer = sampleCustomers[Math.floor(Math.random() * sampleCustomers.length)];
     const city = cities[Math.floor(Math.random() * cities.length)];
     const status = statuses[Math.floor(Math.random() * statuses.length)];
-    const pStatus = status === "cancelled" ? "unpaid" : paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)];
+    const pStatus =
+      status === "cancelled"
+        ? "unpaid"
+        : paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)];
 
     const randomItems = [];
     const itemNum = Math.floor(Math.random() * 3) + 1;
@@ -936,7 +837,10 @@ async function ensureOrders(
 async function insertOrderFullRelational(
   db: Client,
   fixture: OrderFixture,
-  couponMap: Record<string, { id: string; type: string; value: number; max_discount: number | null }>,
+  couponMap: Record<
+    string,
+    { id: string; type: string; value: number; max_discount: number | null }
+  >,
   productMap: Record<string, { id: string; price: number; slug: string; name: string }>,
   customerMap: Record<string, string>,
 ) {
@@ -946,7 +850,9 @@ async function insertOrderFullRelational(
       if (!product) return null;
       return { product_id: product.id, qty: item.qty, price: product.price, name: product.name };
     })
-    .filter((item): item is { product_id: string; qty: number; price: number; name: string } => Boolean(item));
+    .filter((item): item is { product_id: string; qty: number; price: number; name: string } =>
+      Boolean(item),
+    );
 
   if (items.length === 0) return;
 
@@ -956,9 +862,10 @@ async function insertOrderFullRelational(
 
   if (couponCode && couponMap[couponCode]) {
     const coupon = couponMap[couponCode];
-    discountTotal = coupon.type === "percent" 
-      ? Math.min(Math.round((subtotal * coupon.value) / 100), coupon.max_discount ?? subtotal)
-      : coupon.value;
+    discountTotal =
+      coupon.type === "percent"
+        ? Math.min(Math.round((subtotal * coupon.value) / 100), coupon.max_discount ?? subtotal)
+        : coupon.value;
   } else {
     couponCode = null;
   }
@@ -973,12 +880,27 @@ async function insertOrderFullRelational(
     sql: `INSERT INTO orders (id, order_no, status, payment_status, customer_id, customer_name, customer_email, customer_phone, shipping_address_json, items_json, subtotal, discount_total, delivery_fee, total, coupon_code, promo_json, notes, midtrans_token, midtrans_order_id, created_at, updated_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
-      orderId, fixture.orderNo, fixture.status, fixture.paymentStatus, customerId, 
-      fixture.customerName, fixture.customerEmail, fixture.customerPhone,
-      JSON.stringify(fixture.shipping), JSON.stringify(items), subtotal, discountTotal,
-      fixture.deliveryFee, total, couponCode, JSON.stringify(fixture.promo || {}),
-      fixture.notes, fixture.payment?.midtransToken || null, fixture.payment?.midtransOrderId || null,
-      createdAt, createdAt
+      orderId,
+      fixture.orderNo,
+      fixture.status,
+      fixture.paymentStatus,
+      customerId,
+      fixture.customerName,
+      fixture.customerEmail,
+      fixture.customerPhone,
+      JSON.stringify(fixture.shipping),
+      JSON.stringify(items),
+      subtotal,
+      discountTotal,
+      fixture.deliveryFee,
+      total,
+      couponCode,
+      JSON.stringify(fixture.promo || {}),
+      fixture.notes,
+      fixture.payment?.midtransToken || null,
+      fixture.payment?.midtransOrderId || null,
+      createdAt,
+      createdAt,
     ],
   });
 
@@ -989,10 +911,17 @@ async function insertOrderFullRelational(
   const baseDate = new Date(createdAt).getTime();
 
   for (let i = 0; i < historyLimit; i++) {
-    const status = fixture.status === "cancelled" && i === 1 ? "cancelled" : sequence[i] || fixture.status;
+    const status =
+      fixture.status === "cancelled" && i === 1 ? "cancelled" : sequence[i] || fixture.status;
     await db.execute({
       sql: `INSERT INTO order_status_history (id, order_id, status, notes, created_at) VALUES (?, ?, ?, ?, ?)`,
-      args: [crypto.randomUUID(), orderId, status, `Seeded status: ${status}`, new Date(baseDate + i * 3600000).toISOString()],
+      args: [
+        crypto.randomUUID(),
+        orderId,
+        status,
+        `Seeded status: ${status}`,
+        new Date(baseDate + i * 3600000).toISOString(),
+      ],
     });
     if (fixture.status === "cancelled" && i === 1) break;
   }
@@ -1002,7 +931,16 @@ async function insertOrderFullRelational(
     await db.execute({
       sql: `INSERT INTO inventory_movements (id, product_id, type, qty, notes, order_id, ref_order_no, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      args: [crypto.randomUUID(), item.product_id, "out", item.qty, `Order ${fixture.orderNo}`, orderId, fixture.orderNo, createdAt],
+      args: [
+        crypto.randomUUID(),
+        item.product_id,
+        "out",
+        item.qty,
+        `Order ${fixture.orderNo}`,
+        orderId,
+        fixture.orderNo,
+        createdAt,
+      ],
     });
   }
 
@@ -1013,9 +951,17 @@ async function insertOrderFullRelational(
       sql: `INSERT INTO shipments (id, order_id, order_no, status, carrier, tracking_no, shipped_at, delivered_at, notes, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
-        crypto.randomUUID(), orderId, fixture.orderNo, isDelivered ? "delivered" : "shipped",
-        "J&T Express", `JT-${fixture.orderNo}`, createdAt, isDelivered ? createdAt : null,
-        "Auto-seeded shipment", createdAt, createdAt
+        crypto.randomUUID(),
+        orderId,
+        fixture.orderNo,
+        isDelivered ? "delivered" : "shipped",
+        "J&T Express",
+        `JT-${fixture.orderNo}`,
+        createdAt,
+        isDelivered ? createdAt : null,
+        "Auto-seeded shipment",
+        createdAt,
+        createdAt,
       ],
     });
   }
@@ -1025,17 +971,24 @@ async function insertOrderFullRelational(
     await db.execute({
       sql: `INSERT INTO invoices (id, order_id, invoice_no, status, issued_at, due_at, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      args: [crypto.randomUUID(), orderId, `INV-${fixture.orderNo}`, "paid", createdAt, createdAt, createdAt, createdAt],
+      args: [
+        crypto.randomUUID(),
+        orderId,
+        `INV-${fixture.orderNo}`,
+        "paid",
+        createdAt,
+        createdAt,
+        createdAt,
+        createdAt,
+      ],
     });
   }
 }
 
-
-async function ensureShipments() {
-  // Logic now handled in insertOrderFullRelational to ensure 100% linkage
-}
-
-async function ensureRefunds(db: Client, orderMap: Record<string, { id: string; orderNo: string }>) {
+async function ensureRefunds(
+  db: Client,
+  orderMap: Record<string, { id: string; orderNo: string }>,
+) {
   const count = await db.execute("SELECT COUNT(*) as count FROM refunds");
   if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
   for (const fixture of refundFixtures) {
@@ -1060,26 +1013,13 @@ async function ensureRefunds(db: Client, orderMap: Record<string, { id: string; 
   }
 }
 
-
-async function ensureInvoices() {
-  // Logic now handled in insertOrderFullRelational
-}
-
-
-async function ensureOrderStatusHistory() {
-  // Logic now handled in insertOrderFullRelational
-}
-
-async function ensureInventoryMovements() {
-  // Logic now handled in insertOrderFullRelational
-}
-
-
-
 async function ensureNotifications(
   db: Client,
   now: string,
-  orderMap: Record<string, { id: string; orderNo: string; customerEmail: string; customerPhone: string }>,
+  orderMap: Record<
+    string,
+    { id: string; orderNo: string; customerEmail: string; customerPhone: string }
+  >,
 ) {
   const count = await db.execute("SELECT COUNT(*) as count FROM notifications");
   if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
@@ -1088,7 +1028,8 @@ async function ensureNotifications(
     if (!order) continue;
     const createdAt = isoDaysAgo(fixture.sentOffset ?? 0);
     const sentAt = fixture.sentOffset !== null ? isoDaysAgo(fixture.sentOffset) : null;
-    const recipient = fixture.recipientField === "customer_email" ? order.customerEmail : order.customerPhone;
+    const recipient =
+      fixture.recipientField === "customer_email" ? order.customerEmail : order.customerPhone;
     await db.execute({
       sql: `INSERT INTO notifications (id, channel, recipient, template, payload_json, status, created_at, sent_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -1106,7 +1047,6 @@ async function ensureNotifications(
     });
   }
 }
-
 
 async function ensureCouponUsages(
   db: Client,
@@ -1127,7 +1067,6 @@ async function ensureCouponUsages(
     });
   }
 }
-
 
 async function ensureAuditLogs(
   db: Client,
@@ -1155,7 +1094,15 @@ async function ensureAuditLogs(
     await db.execute({
       sql: `INSERT INTO audit_logs (id, actor_email, action, entity_type, entity_id, data_json, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      args: [crypto.randomUUID(), adminEmail, "seed", ref.entity, ref.id, JSON.stringify({ note: ref.note }), now],
+      args: [
+        crypto.randomUUID(),
+        adminEmail,
+        "seed",
+        ref.entity,
+        ref.id,
+        JSON.stringify({ note: ref.note }),
+        now,
+      ],
     });
   }
 }
@@ -1189,7 +1136,10 @@ async function buildProductMap(db: Client) {
 
 async function buildCouponMap(db: Client) {
   const rows = await db.execute("SELECT id, code, type, value, max_discount FROM coupons");
-  const map: Record<string, { id: string; type: string; value: number; max_discount: number | null }> = {};
+  const map: Record<
+    string,
+    { id: string; type: string; value: number; max_discount: number | null }
+  > = {};
   (rows.rows as Array<Record<string, unknown>>).forEach((row) => {
     if (row.code) {
       map[String(row.code)] = {
@@ -1204,7 +1154,9 @@ async function buildCouponMap(db: Client) {
 }
 
 async function buildOrderMap(db: Client) {
-  const rows = await db.execute("SELECT id, order_no, created_at, customer_email, customer_phone FROM orders");
+  const rows = await db.execute(
+    "SELECT id, order_no, created_at, customer_email, customer_phone FROM orders",
+  );
   const map: Record<
     string,
     {
@@ -1239,5 +1191,3 @@ async function buildCustomerMap(db: Client) {
   });
   return map;
 }
-
-
