@@ -1,13 +1,42 @@
 import { adminProcedure, router } from "../trpc";
 import { categories } from "../../db/schema";
 import { CategorySchema } from "../../lib/types";
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, like, sql } from "drizzle-orm";
 import { z } from "zod";
 
 export const categoryRouter = router({
-  list: adminProcedure.query(async ({ ctx }) => {
-    return await ctx.db.select().from(categories).orderBy(asc(categories.sortOrder), asc(categories.name));
-  }),
+  list: adminProcedure
+    .input(
+      z.object({
+        q: z.string().optional(),
+        page: z.number().optional().default(1),
+        limit: z.number().optional().default(50),
+      }).optional()
+    )
+    .query(async ({ ctx, input }) => {
+      const { q, page = 1, limit = 50 } = input || {};
+      const offset = (page - 1) * limit;
+
+      const whereClause = q ? like(categories.name, `%${q}%`) : undefined;
+
+      const data = await ctx.db
+        .select()
+        .from(categories)
+        .where(whereClause)
+        .orderBy(asc(categories.sortOrder), asc(categories.name))
+        .limit(limit)
+        .offset(offset);
+      
+      const totalRes = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(categories)
+        .where(whereClause);
+        
+      return {
+        data,
+        total: totalRes[0]?.count || 0,
+      };
+    }),
 
   create: adminProcedure
     .input(CategorySchema.omit({ id: true, createdAt: true, updatedAt: true }))

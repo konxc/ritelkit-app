@@ -1,25 +1,27 @@
 import { adminProcedure, router } from "../trpc";
 import { products, categories } from "../../db/schema";
 import { ProductSchema } from "../../lib/types";
-import { eq, desc, and, or, like } from "drizzle-orm";
+import { eq, desc, and, or, like, sql } from "drizzle-orm";
 import { z } from "zod";
 
 export const productRouter = router({
   list: adminProcedure
     .input(
-      z.object({
-        q: z.string().optional(),
-        categoryId: z.string().optional(),
-        status: z.string().optional(),
-        page: z.number().optional().default(1),
-        limit: z.number().optional().default(50),
-      }).optional(),
+      z
+        .object({
+          q: z.string().optional(),
+          categoryId: z.string().optional(),
+          status: z.string().optional(),
+          page: z.number().optional().default(1),
+          limit: z.number().optional().default(50),
+        })
+        .optional(),
     )
     .query(async ({ ctx, input }) => {
       const { q, categoryId, status, page = 1, limit = 50 } = input || {};
       const offset = (page - 1) * limit;
 
-      let whereClause: any = undefined;
+      let whereClause: any;
       const conditions = [];
 
       if (q) {
@@ -44,7 +46,7 @@ export const productRouter = router({
         whereClause = and(...conditions);
       }
 
-      return await ctx.db
+      const data = await ctx.db
         .select({
           id: products.id,
           sku: products.sku,
@@ -65,6 +67,16 @@ export const productRouter = router({
         .orderBy(desc(products.createdAt))
         .limit(limit)
         .offset(offset);
+        
+      const totalRes = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(products)
+        .where(whereClause);
+        
+      return {
+        data,
+        total: totalRes[0]?.count || 0,
+      };
     }),
 
   create: adminProcedure

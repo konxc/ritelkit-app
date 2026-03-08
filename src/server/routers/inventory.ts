@@ -1,44 +1,106 @@
 import { z } from "zod";
 import { router, adminProcedure } from "../trpc";
 import { inventoryMovements, products } from "../../db/schema";
-import { eq, desc, or, like } from "drizzle-orm";
+import { eq, desc, or, like, sql, and } from "drizzle-orm";
 
 export const inventoryRouter = router({
-  listMovements: adminProcedure.query(async ({ ctx }) => {
-    return ctx.db
-      .select({
-        id: inventoryMovements.id,
-        productId: inventoryMovements.productId,
-        type: inventoryMovements.type,
-        qty: inventoryMovements.qty,
-        notes: inventoryMovements.notes,
-        refOrderNo: inventoryMovements.refOrderNo,
-        createdAt: inventoryMovements.createdAt,
-        product_name: products.name,
-      })
-      .from(inventoryMovements)
-      .leftJoin(products, eq(inventoryMovements.productId, products.id))
-      .orderBy(desc(inventoryMovements.createdAt))
-      .limit(30)
-      .all();
-  }),
+  listMovements: adminProcedure
+    .input(
+      z.object({
+        q: z.string().optional(),
+        page: z.number().optional().default(1),
+        limit: z.number().optional().default(50),
+      }).optional()
+    )
+    .query(async ({ ctx, input }) => {
+      const { q, page = 1, limit = 50 } = input || {};
+      const offset = (page - 1) * limit;
+
+      // Note: We might want to filter by product name if 'q' is provided, but since we retrieve movements, we need to join products and then filter
+      let whereClause: any = undefined;
+      if (q) {
+        // If searching across movements, maybe filter by product name or sku? We'll search product name and sku.
+        whereClause = or(like(products.name, `%${q}%`), like(products.sku, `%${q}%`));
+      }
+
+      const data = await ctx.db
+        .select({
+          id: inventoryMovements.id,
+          productId: inventoryMovements.productId,
+          type: inventoryMovements.type,
+          qty: inventoryMovements.qty,
+          notes: inventoryMovements.notes,
+          refOrderNo: inventoryMovements.refOrderNo,
+          createdAt: inventoryMovements.createdAt,
+          product_name: products.name,
+        })
+        .from(inventoryMovements)
+        .leftJoin(products, eq(inventoryMovements.productId, products.id))
+        .where(whereClause)
+        .orderBy(desc(inventoryMovements.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+      const totalRes = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(inventoryMovements)
+        .leftJoin(products, eq(inventoryMovements.productId, products.id))
+        .where(whereClause);
+
+      return {
+        data,
+        total: totalRes[0]?.count || 0,
+      };
+    }),
 
   listProducts: adminProcedure
-    .input(z.object({ q: z.string().optional() }).optional())
+    .input(
+      z.object({
+        q: z.string().optional(),
+        categoryId: z.string().optional(),
+        page: z.number().optional().default(1),
+        limit: z.number().optional().default(50),
+      }).optional()
+    )
     .query(async ({ ctx, input }) => {
-      const { q } = input || {};
-      let query = ctx.db.select().from(products);
-      
+      const { q, categoryId, page = 1, limit = 50 } = input || {};
+      const offset = (page - 1) * limit;
+
+      const conditions = [];
+
       if (q) {
-        query = (query as any).where(
-          or(
-            like(products.name, `%${q}%`),
-            like(products.sku, `%${q}%`)
-          )
-        );
+        conditions.push(or(like(products.name, `%${q}%`), like(products.sku, `%${q}%`)));
       }
-      
-      return query.all();
+
+      if (categoryId) {
+        conditions.push(eq(products.categoryId, categoryId));
+      }
+
+      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+      const data = await ctx.db
+        .select({
+          id: products.id,
+          sku: products.sku,
+          name: products.name,
+          price: products.price,
+          stock: products.stock,
+        })
+        .from(products)
+        .where(whereClause)
+        .orderBy(desc(products.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+      const totalRes = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(products)
+        .where(whereClause);
+
+      return {
+        data,
+        total: totalRes[0]?.count || 0,
+      };
     }),
 
   createMovement: adminProcedure
@@ -66,7 +128,11 @@ export const inventoryRouter = router({
           .run();
 
         // 2. Update product stock
-        const product = await tx.select().from(products).where(eq(products.id, input.productId)).get();
+        const product = await tx
+          .select()
+          .from(products)
+          .where(eq(products.id, input.productId))
+          .get();
         if (!product) throw new Error("Produk tidak ditemukan");
 
         let newStock = product.stock || 0;
