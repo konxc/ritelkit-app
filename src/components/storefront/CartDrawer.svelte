@@ -1,32 +1,32 @@
 <script lang="ts">
-  import CheckoutForm from "./CheckoutForm.svelte";
+import CheckoutForm from "./CheckoutForm.svelte";
 
-  interface CartItem {
-    id: string;
-    name: string;
-    price: number;
-    qty: number;
-  }
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  qty: number;
+}
 
-  let {
-    isOpen = $bindable(false),
-    cart,
-    totalQty,
-    totalPrice,
-    updateQty,
-    env,
-  } = $props<{
-    isOpen: boolean;
-    cart: Map<string, CartItem>;
-    totalQty: number;
-    totalPrice: number;
-    updateQty: (id: string, delta: number) => void;
-    env: any;
-  }>();
+let {
+  isOpen = $bindable(false),
+  cart,
+  totalQty,
+  totalPrice,
+  updateQty,
+  env,
+} = $props<{
+  isOpen: boolean;
+  cart: Map<string, CartItem>;
+  totalQty: number;
+  totalPrice: number;
+  updateQty: (id: string, delta: number) => void;
+  env: any;
+}>();
 
-  const format = (value: number) => `Rp ${value.toLocaleString("id-ID")}`;
+const format = (value: number) => `Rp ${value.toLocaleString("id-ID")}`;
 
-  let cartItems = $derived(Array.from(cart.values()) as CartItem[]);
+let cartItems = $derived(Array.from(cart.values()) as CartItem[]);
 </script>
 
 <aside
