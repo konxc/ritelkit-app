@@ -1,16 +1,16 @@
 ---
-import { asc, desc, eq, like, or, sql } from "drizzle-orm";
+import { asc } from "drizzle-orm";
 import AdminTabs from "../../components/admin/AdminTabs.astro";
 import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
 import PaginationNav from "../../components/admin/PaginationNav.svelte";
 import KatalogTabContent from "../../components/admin/pages/KatalogTabContent.svelte";
-import { categories, inventoryMovements, products } from "../../db/schema";
+import { categories } from "../../db/schema";
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import { parsePage } from "../../lib/admin";
+import { normalizeTab, parsePage } from "../../lib/admin";
 import { requireAdmin } from "../../lib/auth";
 import { getDrizzle, initDb } from "../../lib/db";
-import Button from "../../components/admin/ui/Button.svelte";
 import CatalogHeaderFilters from "../../components/admin/CatalogHeaderFilters.svelte";
+import { appRouter } from "../../server/router";
 
 await initDb(Astro);
 const admin = await requireAdmin(Astro);
@@ -18,20 +18,54 @@ if (!admin) {
   return Astro.redirect("/admin/login");
 }
 
-const tab = Astro.url.searchParams.get("tab") || "kategori";
-const subtab = Astro.url.searchParams.get("subtab") || "stok";
+const TAB_IDS = ["products", "categories", "inventory"] as const;
+const SUBTAB_IDS = ["stock", "log"] as const;
+
+const rawTab = Astro.url.searchParams.get("tab");
+const rawSubtab = Astro.url.searchParams.get("subtab");
+
+const tab = normalizeTab(rawTab, {
+  allowed: TAB_IDS,
+  defaultTab: "products",
+  aliases: {
+    product: "products",
+    category: "categories",
+    categories: "categories",
+  },
+});
+
+const subtab = normalizeTab(rawSubtab, {
+  allowed: SUBTAB_IDS,
+  defaultTab: "stock",
+  aliases: {
+    stocks: "stock",
+    logs: "log",
+    history: "log",
+  },
+});
+
+if ((rawTab && rawTab !== tab) || (rawSubtab && rawSubtab !== subtab)) {
+  const canonicalUrl = new URL(Astro.url);
+  if (rawTab && rawTab !== tab) canonicalUrl.searchParams.set("tab", tab);
+  if (rawSubtab && rawSubtab !== subtab) canonicalUrl.searchParams.set("subtab", subtab);
+  return Astro.redirect(canonicalUrl.pathname + canonicalUrl.search);
+}
 const categoryId = Astro.url.searchParams.get("category");
 const statusFilter = Astro.url.searchParams.get("status"); // 'active', 'inactive'
 
-const { page, q, offset, limit } = parsePage(Astro.url, 20);
+const { page, q, limit } = parsePage(Astro.url, 20);
 const db = getDrizzle(Astro);
 
 let totalPages = 1;
 const initialData = {
   categories: [] as any[],
+  categoriesTotal: 0,
   products: [] as any[],
+  productsTotal: 0,
   inventoryProducts: [] as any[],
+  inventoryProductsTotal: 0,
   inventoryMovements: [] as any[],
+  inventoryMovementsTotal: 0,
 };
 
 // Common: Always fetch ALL categories for dropdowns in other tabs
@@ -40,132 +74,70 @@ const categoryOptions = await db
   .from(categories)
   .orderBy(asc(categories.sortOrder), asc(categories.name));
 
-if (tab === "kategori") {
-  const where = q ? like(categories.name, `%${q}%`) : undefined;
+const caller = appRouter.createCaller({ db, admin, ctx: Astro as any });
 
-  initialData.categories = await db
-    .select()
-    .from(categories)
-    .where(where)
-    .limit(limit)
-    .offset(offset)
-    .orderBy(asc(categories.sortOrder), asc(categories.name));
-
-  const totalRes = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(categories)
-    .where(where);
-
-  const total = totalRes[0]?.count || 0;
-  totalPages = Math.max(1, Math.ceil(total / limit));
-} else if (tab === "produk") {
-  const searchWhere = q ? or(like(products.name, `%${q}%`), like(products.sku, `%${q}%`)) : undefined;
-  const catWhere = categoryId ? eq(products.categoryId, categoryId) : undefined;
-  const statusWhere =
-    statusFilter === "active" ? eq(products.isActive, 1) : statusFilter === "inactive" ? eq(products.isActive, 0) : undefined;
-
-  const filters = [searchWhere, catWhere, statusWhere].filter(Boolean);
-  const where = filters.length > 0 ? (filters.length === 1 ? filters[0] : sql`${filters.reduce((acc, curr, i) => (i === 0 ? curr : sql`${acc} AND ${curr}`))}`) : undefined;
-
-  initialData.products = await db
-    .select({
-      id: products.id,
-      sku: products.sku,
-      name: products.name,
-      slug: products.slug,
-      description: products.description,
-      categoryId: products.categoryId,
-      categoryName: categories.name,
-      price: products.price,
-      cost: products.cost,
-      stock: products.stock,
-      isActive: products.isActive,
-      imagesJson: products.imagesJson,
-    })
-    .from(products)
-    .leftJoin(categories, eq(products.categoryId, categories.id))
-    .where(where)
-    .limit(limit)
-    .offset(offset)
-    .orderBy(desc(products.createdAt));
-
-  const totalRes = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(products)
-    .where(where);
-
-  const total = totalRes[0]?.count || 0;
-  totalPages = Math.max(1, Math.ceil(total / limit));
+if (tab === "categories") {
+  const result = await caller.categories.list({ limit, page, q: q || undefined });
+  initialData.categories = result.data;
+  initialData.categoriesTotal = result.total;
+  totalPages = Math.max(1, Math.ceil(result.total / limit));
+} else if (tab === "products") {
+  const result = await caller.products.list({
+    limit,
+    page,
+    q: q || undefined,
+    categoryId: categoryId || undefined,
+    status: statusFilter || undefined,
+  });
+  
+  initialData.products = result.data;
+  initialData.productsTotal = result.total;
+  totalPages = Math.max(1, Math.ceil(result.total / limit));
 
   // Use all categories for options
   initialData.categories = categoryOptions;
+  initialData.categoriesTotal = categoryOptions.length;
 } else if (tab === "inventory") {
-  const searchWhere = q ? or(like(products.name, `%${q}%`), like(products.sku, `%${q}%`)) : undefined;
-  const catWhere = categoryId ? eq(products.categoryId, categoryId) : undefined;
-
-  const filters = [searchWhere, catWhere].filter(Boolean);
-  const where = filters.length > 0 ? (filters.length === 1 ? filters[0] : sql`${filters.reduce((acc, curr, i) => (i === 0 ? curr : sql`${acc} AND ${curr}`))}`) : undefined;
-
   // Always fetch products (for stok tab)
-  initialData.inventoryProducts = await db
-    .select({
-      id: products.id,
-      sku: products.sku,
-      name: products.name,
-      price: products.price,
-      stock: products.stock,
-    })
-    .from(products)
-    .where(where)
-    .limit(limit)
-    .offset(offset)
-    .orderBy(desc(products.createdAt));
+  const productsResult = await caller.inventory.listProducts({
+    limit,
+    page,
+    q: q || undefined,
+    categoryId: categoryId || undefined,
+  });
+  initialData.inventoryProducts = productsResult.data;
+  initialData.inventoryProductsTotal = productsResult.total;
 
   // Always fetch movements (for log tab)
-  initialData.inventoryMovements = await db
-    .select({
-      id: inventoryMovements.id,
-      productId: inventoryMovements.productId,
-      type: inventoryMovements.type,
-      qty: inventoryMovements.qty,
-      notes: inventoryMovements.notes,
-      refOrderNo: inventoryMovements.refOrderNo,
-      createdAt: inventoryMovements.createdAt,
-      productName: products.name,
-    })
-    .from(inventoryMovements)
-    .leftJoin(products, eq(inventoryMovements.productId, products.id))
-    .orderBy(desc(inventoryMovements.createdAt))
-    .limit(limit)
-    .offset(offset);
+  const movementsResult = await caller.inventory.listMovements({
+    limit,
+    page,
+    q: q || undefined,
+  });
+  initialData.inventoryMovements = movementsResult.data;
+  initialData.inventoryMovementsTotal = movementsResult.total;
 
-  if (subtab === "stok") {
-    const totalRes = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(products)
-      .where(where);
-    const total = totalRes[0]?.count || 0;
-    totalPages = Math.max(1, Math.ceil(total / limit));
+  if (subtab === "stock") {
+    totalPages = Math.max(1, Math.ceil(productsResult.total / limit));
   } else {
-    const totalRes = await db.select({ count: sql<number>`count(*)` }).from(inventoryMovements);
-    const total = totalRes[0]?.count || 0;
-    totalPages = Math.max(1, Math.ceil(total / limit));
+    totalPages = Math.max(1, Math.ceil(movementsResult.total / limit));
   }
 
   // Use all categories for options
   initialData.categories = categoryOptions;
+  initialData.categoriesTotal = categoryOptions.length;
 }
 
 const tabs = [
   {
-    id: "kategori",
-    label: "Kategori",
-    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
-  },
-  {
-    id: "produk",
+    id: "products",
     label: "Produk",
     icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>',
+  },
+  {
+    id: "categories",
+    label: "Kategori",
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
   },
   {
     id: "inventory",
@@ -181,30 +153,36 @@ const tabs = [
   </div>
 
   {
-    tab === "kategori" && (
+    tab === "categories" && (
       <>
-        <AdminToolbar title="Data Kategori" class="sticky top-0 z-20 sm:top-2 md:top-4 lg:hidden" client:load>
-          <CatalogHeaderFilters 
-            tab="kategori" 
-            q={q} 
-            client:load 
-          />
+        <AdminToolbar
+          title="Data Kategori"
+          class="sticky top-0 z-20 sm:top-2 md:top-4 lg:hidden"
+          showMobileFloat={true}
+          client:load
+        >
+          <CatalogHeaderFilters tab="categories" q={q} client:load />
         </AdminToolbar>
       </>
     )
   }
 
   {
-    tab === "produk" && (
+    tab === "products" && (
       <>
-        <AdminToolbar title="Filter Produk" class="sticky top-0 z-20 sm:top-2 md:top-4 lg:hidden" client:load>
-          <CatalogHeaderFilters 
-            tab="produk" 
-            q={q} 
-            categoryId={categoryId || ""} 
-            status={statusFilter || ""} 
-            categoryOptions={categoryOptions} 
-            client:load 
+        <AdminToolbar
+          title="Filter Produk"
+          class="sticky top-0 z-20 sm:top-2 md:top-4 lg:hidden"
+          showMobileFloat={true}
+          client:load
+        >
+          <CatalogHeaderFilters
+            tab="products"
+            q={q}
+            categoryId={categoryId || ""}
+            status={statusFilter || ""}
+            categoryOptions={categoryOptions}
+            client:load
           />
         </AdminToolbar>
       </>
@@ -214,13 +192,18 @@ const tabs = [
   {
     tab === "inventory" && (
       <>
-        <AdminToolbar title="Data Inventory" class="sticky top-0 z-20 sm:top-2 md:top-4 lg:hidden" client:load>
-          <CatalogHeaderFilters 
-            tab="inventory" 
-            q={q} 
-            categoryId={categoryId || ""} 
-            categoryOptions={categoryOptions} 
-            client:load 
+        <AdminToolbar
+          title="Data Inventory"
+          class="sticky top-0 z-20 sm:top-2 md:top-4 lg:hidden"
+          showMobileFloat={true}
+          client:load
+        >
+          <CatalogHeaderFilters
+            tab="inventory"
+            q={q}
+            categoryId={categoryId || ""}
+            categoryOptions={categoryOptions}
+            client:load
           />
         </AdminToolbar>
       </>
@@ -232,8 +215,12 @@ const tabs = [
   <PaginationNav
     page={page}
     totalPages={totalPages}
-    prevHref={page > 1 ? `?tab=${tab}&q=${encodeURIComponent(q)}&category=${categoryId || ''}&status=${statusFilter || ''}&subtab=${subtab}&page=${page - 1}` : undefined}
-    nextHref={page < totalPages ? `?tab=${tab}&q=${encodeURIComponent(q)}&category=${categoryId || ''}&status=${statusFilter || ''}&subtab=${subtab}&page=${page + 1}` : undefined}
+    prevHref={page > 1
+      ? `?tab=${tab}&q=${encodeURIComponent(q)}&category=${categoryId || ""}&status=${statusFilter || ""}&subtab=${subtab}&page=${page - 1}`
+      : undefined}
+    nextHref={page < totalPages
+      ? `?tab=${tab}&q=${encodeURIComponent(q)}&category=${categoryId || ""}&status=${statusFilter || ""}&subtab=${subtab}&page=${page + 1}`
+      : undefined}
     client:load
   />
 </AdminLayout>

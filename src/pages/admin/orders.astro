@@ -4,7 +4,7 @@ import AdminTabs from "../../components/admin/AdminTabs.astro";
 import PaginationNav from "../../components/admin/PaginationNav.svelte";
 import PesananTabContent from "../../components/admin/pages/PesananTabContent.svelte";
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import { parsePage } from "../../lib/admin";
+import { normalizeTab, parsePage } from "../../lib/admin";
 import { requireAdmin } from "../../lib/auth";
 import { initDb } from "../../lib/db";
 import { appRouter } from "../../server/router";
@@ -16,7 +16,26 @@ if (!admin) {
   return Astro.redirect("/admin/login");
 }
 
-const tab = Astro.url.searchParams.get("tab") || "order";
+const TAB_IDS = ["order", "fulfillment", "shipping", "invoice", "refund"] as const;
+
+const rawTab = Astro.url.searchParams.get("tab");
+
+const tab = normalizeTab(rawTab, {
+  allowed: TAB_IDS,
+  defaultTab: "order",
+  aliases: {
+    orders: "order",
+    fulfill: "fulfillment",
+    invoices: "invoice",
+    refunds: "refund",
+  },
+});
+
+if (rawTab && rawTab !== tab) {
+  const canonicalUrl = new URL(Astro.url);
+  canonicalUrl.searchParams.set("tab", tab);
+  return Astro.redirect(canonicalUrl.pathname + canonicalUrl.search);
+}
 const { page, q, offset, limit } = parsePage(Astro.url, 20);
 
 const trpc = appRouter.createCaller(await createContext(Astro as any));

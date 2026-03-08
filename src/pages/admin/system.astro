@@ -4,7 +4,7 @@ import AdminTabs from "../../components/admin/AdminTabs.astro";
 import PaginationNav from "../../components/admin/PaginationNav.svelte";
 import SistemTabContent from "../../components/admin/pages/SistemTabContent.svelte";
 import AdminLayout from "../../layouts/AdminLayout.astro";
-import { parsePage } from "../../lib/admin";
+import { normalizeTab, parsePage } from "../../lib/admin";
 import { requireAdmin } from "../../lib/auth";
 import { initDb } from "../../lib/db";
 
@@ -14,13 +14,30 @@ if (!admin) {
   return Astro.redirect("/admin/login");
 }
 
-const tab = Astro.url.searchParams.get("tab") || "konten";
+const TAB_IDS = ["content", "notifications", "audit", "admins"] as const;
+
+const rawTab = Astro.url.searchParams.get("tab");
+
+const tab = normalizeTab(rawTab, {
+  allowed: TAB_IDS,
+  defaultTab: "content",
+  aliases: {
+    notification: "notifications",
+    administrators: "admins",
+  },
+});
+
+if (rawTab && rawTab !== tab) {
+  const canonicalUrl = new URL(Astro.url);
+  canonicalUrl.searchParams.set("tab", tab);
+  return Astro.redirect(canonicalUrl.pathname + canonicalUrl.search);
+}
 const { page, q, offset, limit } = parsePage(Astro.url, 30);
 
 let initialRows: any[] = [];
 let totalPages = 1;
 
-if (tab === "konten") {
+if (tab === "content") {
   const { data } = await Astro.callAction(actions.listCmsPages, {
     q,
     limit,
@@ -28,7 +45,7 @@ if (tab === "konten") {
   });
   initialRows = data?.rows || [];
   totalPages = Math.max(1, Math.ceil(Number(data?.total || 0) / limit));
-} else if (tab === "notifikasi") {
+} else if (tab === "notifications") {
   const { data } = await Astro.callAction(actions.listNotifications, {
     q,
     limit,
@@ -44,7 +61,7 @@ if (tab === "konten") {
   });
   initialRows = data?.rows || [];
   totalPages = Math.max(1, Math.ceil(Number(data?.total || 0) / limit));
-} else if (tab === "admin") {
+} else if (tab === "admins") {
   const { data } = await Astro.callAction(actions.listAdminUsers, {});
   initialRows = data || [];
   totalPages = 1;
@@ -52,12 +69,12 @@ if (tab === "konten") {
 
 const tabs = [
   {
-    id: "konten",
+    id: "content",
     label: "Konten",
     icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>',
   },
   {
-    id: "notifikasi",
+    id: "notifications",
     label: "Notifikasi",
     icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
   },
@@ -67,7 +84,7 @@ const tabs = [
     icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>',
   },
   {
-    id: "admin",
+    id: "admins",
     label: "Admin",
     icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>',
   },

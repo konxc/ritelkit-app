@@ -20,7 +20,8 @@ const baseUrl = Astro.url.pathname;
   {
     tabs.map((tab) => {
       const isActive = tab.id === activeTab;
-      const url = new URL(Astro.url.origin + baseUrl);
+      const url = new URL(Astro.url);
+      url.pathname = baseUrl;
       url.searchParams.set("tab", tab.id);
 
       return (
