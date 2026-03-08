@@ -86,7 +86,6 @@ export const orders = sqliteTable("orders", {
   updatedAt: text("updated_at").notNull(),
 });
 
-
 export const inventoryMovements = sqliteTable("inventory_movements", {
   id: text("id").primaryKey(),
   productId: text("product_id")
@@ -99,7 +98,6 @@ export const inventoryMovements = sqliteTable("inventory_movements", {
   refOrderNo: text("ref_order_no"),
   createdAt: text("created_at").notNull(),
 });
-
 
 export const shipments = sqliteTable("shipments", {
   id: text("id").primaryKey(),
@@ -117,7 +115,6 @@ export const shipments = sqliteTable("shipments", {
   updatedAt: text("updated_at").notNull(),
 });
 
-
 export const refunds = sqliteTable("refunds", {
   id: text("id").primaryKey(),
   orderId: text("order_id")
@@ -132,7 +129,6 @@ export const refunds = sqliteTable("refunds", {
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
-
 
 export const adsCampaigns = sqliteTable("ads_campaigns", {
   id: text("id").primaryKey(),
@@ -294,4 +290,3 @@ export const refundsRelations = relations(refunds, ({ one }) => ({
 export const couponsRelations = relations(coupons, ({ many }) => ({
   usages: many(couponUsages),
 }));
-
