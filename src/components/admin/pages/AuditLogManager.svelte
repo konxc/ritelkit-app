@@ -1,61 +1,71 @@
 <script lang="ts">
-import { actions } from "astro:actions";
-import { fade, fly } from "svelte/transition";
-import type { AuditLog } from "../../../lib/types";
-import EmptyState from "../ui/EmptyState.svelte";
-import Table from "../ui/Table.svelte";
-import TableRow from "../ui/TableRow.svelte";
-import TableCell from "../ui/TableCell.svelte";
+  import { actions } from "astro:actions";
+  import { fade, fly } from "svelte/transition";
+  import type { AuditLog } from "../../../lib/types";
+  import EmptyState from "../ui/EmptyState.svelte";
+  import Table from "../ui/Table.svelte";
+  import TableRow from "../ui/TableRow.svelte";
+  import TableCell from "../ui/TableCell.svelte";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
+  import { onMount } from "svelte";
 
-let {
-  rows: initialRows = [],
-  q = "",
-  page = 1,
-  limit = 30,
-}: {
-  rows?: AuditLog[];
-  q?: string;
-  page?: number;
-  limit?: number;
-} = $props();
+  let {
+    rows: initialRows = [],
+    q = "",
+    page = 1,
+    limit = 30,
+  }: {
+    rows?: AuditLog[];
+    q?: string;
+    page?: number;
+    limit?: number;
+  } = $props();
 
-let rows = $state<AuditLog[]>([]);
-$effect(() => {
-  rows = initialRows;
-});
-const offset = $derived((page - 1) * limit);
-
-// Sync with initialRows from SSR
-$effect(() => {
-  rows = initialRows;
-});
-
-const refreshData = async () => {
-  const { data, error } = await actions.listAuditLogs({
-    q,
-    limit,
-    offset,
+  let rows = $state<AuditLog[]>([]);
+  $effect(() => {
+    rows = initialRows;
   });
-  if (!error && data) {
-    rows = data.rows as AuditLog[];
-  }
-};
+  const offset = $derived((page - 1) * limit);
 
-// Re-fetch when props change (search/pagination)
-$effect(() => {
-  refreshData();
-});
+  // Sync with initialRows from SSR
+  $effect(() => {
+    rows = initialRows;
+  });
+
+  const refreshData = async () => {
+    const { data, error } = await actions.listAuditLogs({
+      q,
+      limit,
+      offset,
+    });
+    if (!error && data) {
+      rows = data.rows as AuditLog[];
+    }
+  };
+
+  // Re-fetch when props change (search/pagination)
+  $effect(() => {
+    refreshData();
+  });
 </script>
 
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-    <Table headers={["Aktor", "Aksi", "Entity", "ID", "Waktu"]}>
+    <Table
+      headers={[
+        t("system_admin.audit_log.user"),
+        t("system_admin.audit_log.action"),
+        t("system_admin.audit_log.entity"),
+        t("system_admin.audit_log.id"),
+        t("system_admin.audit_log.time"),
+      ]}
+    >
       {#if rows.length === 0}
         <TableRow>
           <TableCell colspan={5} class="border-0 p-0">
             <EmptyState
-              title="Log Kosong"
-              description="Belum ada catatan aktivitas sistem."
+              title={t("system_admin.audit_log.empty_title")}
+              description={t("system_admin.audit_log.empty")}
               class="!rounded-none !border-0 !bg-transparent py-16 !shadow-none"
             />
           </TableCell>

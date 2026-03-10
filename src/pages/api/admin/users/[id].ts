@@ -30,7 +30,7 @@ export async function PUT(ctx: APIContext) {
       args: [role, id],
     });
   }
-  await logAudit(ctx, "update", "admin_user", id, { role });
+  await logAudit(ctx, "update_admin_user", "admin_user", id, { role });
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { "Content-Type": "application/json" },
@@ -50,7 +50,7 @@ export async function DELETE(ctx: APIContext) {
   const id = ctx.params.id || "";
   const db = getDb(ctx);
   await db.execute({ sql: "DELETE FROM admin_users WHERE id = ?", args: [id] });
-  await logAudit(ctx, "delete", "admin_user", id);
+  await logAudit(ctx, "delete_admin_user", "admin_user", id);
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { "Content-Type": "application/json" },

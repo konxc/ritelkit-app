@@ -1,29 +1,29 @@
 <script lang="ts">
-interface Tab {
-  id: string;
-  label: string;
-}
+  interface Tab {
+    id: string;
+    label: string;
+  }
 
-interface Props {
-  tabs?: Tab[];
-  activeTab?: string;
-  class?: string;
-  onChange?: (id: string) => void;
-  [key: string]: any;
-}
+  interface Props {
+    tabs?: Tab[];
+    activeTab?: string;
+    class?: string;
+    onChange?: (id: string) => void;
+    [key: string]: any;
+  }
 
-let {
-  tabs = [],
-  activeTab = $bindable(tabs[0]?.id || ""),
-  class: className = "",
-  onChange,
-  ...rest
-}: Props = $props();
+  let {
+    tabs = [],
+    activeTab = $bindable(tabs[0]?.id || ""),
+    class: className = "",
+    onChange,
+    ...rest
+  }: Props = $props();
 
-function handleTabClick(id: string) {
-  activeTab = id;
-  if (onChange) onChange(id);
-}
+  function handleTabClick(id: string) {
+    activeTab = id;
+    if (onChange) onChange(id);
+  }
 </script>
 
 <div class="inline-flex rounded-xl bg-stone-100 p-1 {className}" {...rest}>

@@ -3,7 +3,8 @@
   import SelectInput from "./ui/forms/SelectInput.svelte";
   import Button from "./ui/Button.svelte";
   import AdminFilterDrawer from "./ui/forms/AdminFilterDrawer.svelte";
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
+  import { t, initI18n } from "../../lib/i18n/store.svelte";
 
   interface Props {
     q?: string;
@@ -12,16 +13,13 @@
     categoryOptions?: any[];
     tab?: string;
     columns?: { id: string; label: string; isVisible: boolean }[];
+    lang?: any;
   }
 
-  let {
-    q = "",
-    categoryId = "",
-    status = "",
-    categoryOptions = [],
-    tab = "products",
-    columns,
-  }: Props = $props();
+  let props: Props = $props();
+
+  // Root call for SSR and initial hydration (untracked for Svelte 5)
+  initI18n(untrack(() => props.lang));
 
   let showAdvanced = $state(false);
   let localQ = $state("");
@@ -52,21 +50,21 @@
   let searchTimeout: ReturnType<typeof setTimeout>;
 
   let catOptions = $derived([
-    { label: "Semua Kategori", value: "" },
-    ...categoryOptions.map((c) => ({ label: c.name, value: String(c.id) })),
+    { label: t("common.all_categories"), value: "" },
+    ...(props.categoryOptions || []).map((c: any) => ({ label: c.name, value: String(c.id) })),
   ]);
 
   const statusOptions = [
-    { label: "Semua Status", value: "" },
-    { label: "Aktif", value: "active" },
-    { label: "Tidak Aktif", value: "inactive" },
+    { label: t("common.all_statuses"), value: "" },
+    { label: t("common.active"), value: "active" },
+    { label: t("common.inactive"), value: "inactive" },
   ];
 
   let isUpdating = $state(false);
 
   function updateFilters() {
     const url = new URL(window.location.href);
-    url.searchParams.set("tab", tab || "products");
+    url.searchParams.set("tab", props.tab || "products");
 
     if (localQ) url.searchParams.set("q", localQ);
     else url.searchParams.delete("q");
@@ -106,15 +104,15 @@
   );
 
   const tabLabels: Record<string, string> = {
-    products: "Produk",
-    categories: "Kategori",
-    inventory: "Inventori",
+    products: t("nav.catalog"),
+    categories: t("catalog.categories.title"),
+    inventory: t("nav.catalog"),
   };
-  let tabLabel = $derived(tabLabels[tab] || tab);
+  let tabLabel = $derived(tabLabels[props.tab || "products"] || props.tab || "");
 
   function toggleColumn(id: string) {
-    if (!columns) return;
-    const target = columns.find((col) => col.id === id);
+    if (!props.columns) return;
+    const target = props.columns.find((col: any) => col.id === id);
     if (target) {
       target.isVisible = !target.isVisible;
     }
@@ -129,7 +127,9 @@
         name="q"
         value={localQ}
         oninput={onSearchInput}
-        placeholder={tab === "inventory" ? "Cari nama / SKU..." : "Cari produk..."}
+        placeholder={props.tab === "inventory"
+          ? t("catalog.inventory.placeholder_search") || "Search name / SKU..."
+          : t("common.search")}
       />
     </div>
     <div class="lg:hidden">
@@ -147,7 +147,7 @@
         >
           <path d="M20 7h-9" /><path d="M14 17H5" /><circle cx="17" cy="17" r="3" /><circle cx="7" cy="7" r="3" />
         </svg>
-        <span class="text-[0.7rem] font-bold tracking-widest uppercase">Filter</span>
+        <span class="text-[0.7rem] font-bold tracking-widest uppercase">{t("common.filter")}</span>
       </Button>
     </div>
   </div>
@@ -164,7 +164,7 @@
       />
     </div>
 
-    {#if tab === "products"}
+    {#if props.tab === "products"}
       <div class="w-36">
         <SelectInput
           name="status"
@@ -193,11 +193,10 @@
     </svg>
   {/snippet}
 
-  <!-- Drawer for Mobile Filtering -->
   <AdminFilterDrawer
     bind:isOpen={showAdvanced}
-    title="Filter Lanjutan"
-    subtitle={`Kustomisasi Tampilan Data ${tabLabel}`}
+    title={t("common.filter_advanced")}
+    subtitle={`${t("common.customize")} ${tabLabel}`}
     icon={filterHeaderIcon}
     onApply={() => {
       showAdvanced = false;
@@ -207,34 +206,34 @@
     <div class="grid gap-6 py-4">
       <div class="space-y-4">
         <label for="category-select" class="text-[0.7rem] font-extrabold tracking-widest text-stone-400 uppercase"
-          >Kategori</label
+          >{t("catalog.products.category")}</label
         >
         <SelectInput name="category" bind:value={localCategoryId} options={catOptions} />
       </div>
 
-      {#if tab === "products"}
+      {#if props.tab === "products"}
         <div class="space-y-4">
           <label for="status-select" class="text-[0.7rem] font-extrabold tracking-widest text-stone-400 uppercase"
-            >Status Produk</label
+            >{t("common.status")}</label
           >
           <SelectInput name="status" bind:value={localStatus} options={statusOptions} />
         </div>
       {/if}
 
-      {#if columns?.length}
+      {#if props.columns?.length}
         <div class="space-y-4">
-          <label class="text-[0.7rem] font-extrabold tracking-widest text-stone-400 uppercase"
-            >Kolom</label
+          <span class="text-[0.7rem] font-extrabold tracking-widest text-stone-400 uppercase"
+            >{t("common.columns")}</span
           >
           <div class="grid gap-2">
-            {#each columns as col}
+            {#each props.columns as col (col.id)}
               <label
                 class="flex items-center gap-3 rounded-xl border border-stone-100 bg-white px-3 py-2 text-sm font-semibold text-stone-600"
               >
                 <input
                   type="checkbox"
                   checked={col.isVisible}
-                  on:change={() => toggleColumn(col.id)}
+                  onchange={() => toggleColumn(col.id)}
                   class="h-4 w-4 rounded border-stone-300 text-[#c48a3a] transition-all focus:ring-[#c48a3a]"
                 />
                 {col.label}

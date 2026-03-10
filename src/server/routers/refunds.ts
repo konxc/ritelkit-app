@@ -53,10 +53,7 @@ export const refundRouter = router({
         });
 
         // 2. Update order payment status to refunded
-        await tx
-          .update(orders)
-          .set({ paymentStatus: "refunded", updatedAt: now })
-          .where(eq(orders.id, input.orderId));
+        await tx.update(orders).set({ paymentStatus: "refunded", updatedAt: now }).where(eq(orders.id, input.orderId));
 
         // 3. Log to history
         await tx.insert(orderStatusHistory).values({

@@ -22,11 +22,7 @@ export const orderRouter = router({
       const whereClause = [];
       if (q) {
         whereClause.push(
-          or(
-            like(orders.orderNo, `%${q}%`),
-            like(orders.customerName, `%${q}%`),
-            like(orders.customerPhone, `%${q}%`),
-          ),
+          or(like(orders.orderNo, `%${q}%`), like(orders.customerName, `%${q}%`), like(orders.customerPhone, `%${q}%`)),
         );
       }
       if (status && status.length > 0) {
@@ -35,18 +31,14 @@ export const orderRouter = router({
 
       const baseQuery = ctx.db.select().from(orders);
       const finalQuery =
-        whereClause.length > 0
-          ? baseQuery.where(sql`${sql.join(whereClause, sql` AND `)}`)
-          : baseQuery;
+        whereClause.length > 0 ? baseQuery.where(sql`${sql.join(whereClause, sql` AND `)}`) : baseQuery;
 
       const rows = await finalQuery.orderBy(desc(orders.createdAt)).limit(limit).offset(offset);
 
       // Get total count for pagination
       const countQuery = ctx.db.select({ count: sql<number>`count(*)` }).from(orders);
       const finalCountQuery =
-        whereClause.length > 0
-          ? countQuery.where(sql`${sql.join(whereClause, sql` AND `)}`)
-          : countQuery;
+        whereClause.length > 0 ? countQuery.where(sql`${sql.join(whereClause, sql` AND `)}`) : countQuery;
 
       const countResult = await finalCountQuery;
       const total = Number(countResult[0]?.count || 0);
@@ -105,18 +97,19 @@ export const orderRouter = router({
           .where(eq(orders.id, input.id));
 
         // 3. If status changed, log to history
-        if (originalOrder && input.data.status && originalOrder.status !== input.data.status) {
+        const status = (input.data as any).status;
+        if (originalOrder && status && originalOrder.status !== status) {
           await tx.insert(orderStatusHistory).values({
             id: crypto.randomUUID(),
             orderId: input.id,
-            status: input.data.status,
-            notes: (input.data as any).notes || "Status diperbarui melalui Dasbor Admin",
+            status: status,
+            notes: (input.data as any).notes || "Status updated via Admin Dashboard",
             createdAt: now,
           });
         }
       });
 
-      await logAudit(ctx.ctx, "update", "order", input.id, input.data);
+      await logAudit(ctx.ctx, "update_order", "order", input.id, input.data);
       return { ok: true };
     }),
 });

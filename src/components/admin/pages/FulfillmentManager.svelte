@@ -1,12 +1,12 @@
 <script module lang="ts">
-export type ShipmentRow = {
-  id: string | number;
-  orderNo: string;
-  status: string;
-  carrier?: string | null;
-  trackingNo?: string | null;
-  notes?: string | null;
-};
+  export type ShipmentRow = {
+    id: string | number;
+    orderNo: string;
+    status: string;
+    carrier?: string | null;
+    trackingNo?: string | null;
+    notes?: string | null;
+  };
 </script>
 
 <script lang="ts">
@@ -24,6 +24,7 @@ export type ShipmentRow = {
   import { fade, fly } from "svelte/transition";
   import { createQuery, createMutation, useQueryClient } from "@tanstack/svelte-query";
   import { onMount } from "svelte";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
 
   let { rows: initialShipments = [] }: { rows: ShipmentRow[] } = $props();
 
@@ -47,7 +48,7 @@ export type ShipmentRow = {
     mutationFn: (data: any) => trpc.shipments.create.mutate(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shipments"] });
-      toastRef?.show("Pengiriman berhasil dibuat!", "success");
+      toastRef?.show(t("fulfillment.toast_create"), "success");
     },
     onError: (err: unknown) => {
       const message = err instanceof Error ? err.message : "Failed to create shipment";
@@ -59,7 +60,7 @@ export type ShipmentRow = {
     mutationFn: (payload: { id: string; data: any }) => trpc.shipments.update.mutate(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shipments"] });
-      toastRef?.show("Pengiriman diperbarui", "success");
+      toastRef?.show(t("fulfillment.toast_update"), "success");
     },
     onError: (err: unknown) => {
       const message = err instanceof Error ? err.message : "Failed to update shipment";
@@ -71,7 +72,7 @@ export type ShipmentRow = {
     mutationFn: (id: string) => trpc.shipments.delete.mutate(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shipments"] });
-      toastRef?.show("Pengiriman dihapus", "success");
+      toastRef?.show(t("fulfillment.toast_delete"), "success");
     },
     onError: (err: unknown) => {
       const message = err instanceof Error ? err.message : "Failed to delete shipment";
@@ -87,7 +88,7 @@ export type ShipmentRow = {
 
     const order = pendingOrders.find((o: any) => o.orderNo === orderNo);
     if (!order) {
-      toastRef?.show("Order not found or invalid", "error");
+      toastRef?.show(t("fulfillment.order_not_found"), "error");
       return;
     }
 
@@ -104,7 +105,7 @@ export type ShipmentRow = {
 
   const handleRowAction = (id: string | number, action: string, rowElement: HTMLElement | null) => {
     if (action === "delete") {
-      if (confirm("Hapus pengiriman ini?")) {
+      if (confirm(t("fulfillment.confirm_delete"))) {
         shipDeleteMutation.mutate(String(id));
       }
     } else if (action === "save" && rowElement) {
@@ -126,7 +127,7 @@ export type ShipmentRow = {
 
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-    <SectionHeader title="Buat Pengiriman" badge="Pelacakan" />
+    <SectionHeader title={t("fulfillment.title_create")} badge={t("fulfillment.badge_tracking")} />
     <CrudInlineForm id="shipment-form" on:submit={handleCreate} isSubmitting={shipCreateMutation.isPending}>
       <div
         class="mb-8 flex w-full flex-col flex-wrap items-end gap-4 border-b border-stone-100 pb-8 md:flex-row xl:gap-6"
@@ -135,9 +136,9 @@ export type ShipmentRow = {
           <TextInput
             id="orderNo"
             name="orderNo"
-            label="No. Pesanan"
+            label={t("fulfillment.order_no")}
             required
-            placeholder="Cth: ORD-1001"
+            placeholder={t("fulfillment.order_no_placeholder")}
             list="pending-orders"
             class="w-full font-bold"
           />
@@ -146,7 +147,7 @@ export type ShipmentRow = {
               <option value={order.orderNo}>{order.customerName}</option>
             {/each}
             {#if pendingOrders.length === 0}
-              <option value="" disabled>Belum ada order untuk diproses</option>
+              <option value="" disabled>{t("fulfillment.no_orders_to_process")}</option>
             {/if}
           </datalist>
         </div>
@@ -154,12 +155,12 @@ export type ShipmentRow = {
           <SelectInput
             id="status"
             name="status"
-            label="Status Awal"
+            label={t("fulfillment.initial_status")}
             options={[
-              { value: "packing", label: "📦 Pengemasan" },
-              { value: "shipped", label: "🚚 Dikirim" },
-              { value: "delivered", label: "✅ Terkirim" },
-              { value: "cancelled", label: "❌ Dibatalkan" },
+              { value: "packing", label: `📦 ${t("status.packing")}` },
+              { value: "shipped", label: `🚚 ${t("status.shipped")}` },
+              { value: "delivered", label: `✅ ${t("status.delivered")}` },
+              { value: "cancelled", label: `❌ ${t("status.cancelled")}` },
             ]}
           />
         </div>
@@ -167,9 +168,9 @@ export type ShipmentRow = {
           <TextInput
             id="carrier"
             name="carrier"
-            label="Kurir / Ekspedisi"
+            label={t("fulfillment.carrier")}
             list="kurir-options"
-            placeholder="Cth: JNE, J&T"
+            placeholder={t("fulfillment.carrier_placeholder")}
             class="w-full"
           />
           <datalist id="kurir-options">
@@ -187,13 +188,19 @@ export type ShipmentRow = {
           <TextInput
             id="trackingNo"
             name="trackingNo"
-            label="Nomor Resi"
-            placeholder="Masukkan no resi..."
+            label={t("fulfillment.tracking_no")}
+            placeholder={t("fulfillment.tracking_no_placeholder")}
             class="w-full font-mono"
           />
         </div>
         <div class="w-full md:flex-1">
-          <TextInput id="notes" name="notes" label="Catatan Internal" placeholder="Opsional" class="w-full" />
+          <TextInput
+            id="notes"
+            name="notes"
+            label={t("fulfillment.internal_notes")}
+            placeholder={t("fulfillment.internal_notes_placeholder")}
+            class="w-full"
+          />
         </div>
         <Button
           type="submit"
@@ -214,20 +221,29 @@ export type ShipmentRow = {
               ></path></svg
             >
           {/if}
-          Buat Pelacakan
+          {t("fulfillment.create_tracking")}
         </Button>
       </div>
     </CrudInlineForm>
 
     <div class="mt-6">
-      <SectionHeader title="Daftar Pengiriman" />
+      <SectionHeader title={t("fulfillment.title_list")} />
     </div>
 
-    <Table headers={["Pesanan", "Status", "Kurir", "Resi", "Catatan", "Aksi"]}>
+    <Table
+      headers={[
+        t("orders.order_no"),
+        t("common.status"),
+        t("fulfillment.carrier"),
+        t("fulfillment.tracking_no"),
+        t("fulfillment.internal_notes"),
+        t("common.actions"),
+      ]}
+    >
       {#if currentShipments.length === 0}
         <TableRow>
           <TableCell colspan={6} class="py-12 text-center text-sm text-stone-400 italic"
-            >Belum ada pengiriman aktif.</TableCell
+            >{t("fulfillment.empty")}</TableCell
           >
         </TableRow>
       {/if}
@@ -249,10 +265,10 @@ export type ShipmentRow = {
               data-field="status"
               class="cursor-pointer rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-sm font-bold text-stone-700 transition-all outline-none hover:bg-white focus:border-[#c48a3a] focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
             >
-              <option value="packing" selected={row.status === "packing"}>📦 Pengemasan</option>
-              <option value="shipped" selected={row.status === "shipped"}>🚚 Dikirim</option>
-              <option value="delivered" selected={row.status === "delivered"}>✅ Terkirim</option>
-              <option value="cancelled" selected={row.status === "cancelled"}>❌ Dibatalkan</option>
+              <option value="packing" selected={row.status === "packing"}>📦 {t("status.packing")}</option>
+              <option value="shipped" selected={row.status === "shipped"}>🚚 {t("status.shipped")}</option>
+              <option value="delivered" selected={row.status === "delivered"}>✅ {t("status.delivered")}</option>
+              <option value="cancelled" selected={row.status === "cancelled"}>❌ {t("status.cancelled")}</option>
             </select>
           </TableCell>
           <TableCell class="py-4">

@@ -12,8 +12,10 @@ if (!admin) {
 }
 const db = getDrizzle(Astro);
 const reportData = await getReportData(db);
+import { getLang, type LanguageCode, tServer } from "../../lib/i18n/server";
+const lang: LanguageCode = getLang(Astro.cookies);
 ---
 
-<AdminLayout title="Laporan">
-  <ReportsApp {reportData} client:load />
+<AdminLayout title={tServer(lang, "nav.reports")}>
+  <ReportsApp {reportData} {lang} client:load />
 </AdminLayout>

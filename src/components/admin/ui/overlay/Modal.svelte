@@ -1,37 +1,39 @@
 <script lang="ts">
-import { onMount, type Snippet } from "svelte";
+  import { onMount, type Snippet } from "svelte";
 
-interface Props {
-  open?: boolean;
-  title?: string;
-  description?: string;
-  inline?: boolean;
-  class?: string;
-  children?: Snippet;
-  footer?: Snippet;
-  [key: string]: any;
-}
-
-let {
-  open = $bindable(false),
-  title = "",
-  description = "",
-  inline = false,
-  class: className = "",
-  children,
-  footer,
-  ...rest
-}: Props = $props();
-
-function close() {
-  if (!inline) open = false;
-}
-
-function handleKeydown(e: KeyboardEvent) {
-  if (e.key === "Escape" && open && !inline) {
-    close();
+  interface Props {
+    open?: boolean;
+    title?: string;
+    description?: string;
+    inline?: boolean;
+    class?: string;
+    children?: Snippet;
+    footer?: Snippet;
+    [key: string]: any;
   }
-}
+
+  import { t } from "../../../../lib/i18n/store.svelte";
+
+  let {
+    open = $bindable(false),
+    title = "",
+    description = "",
+    inline = false,
+    class: className = "",
+    children,
+    footer,
+    ...rest
+  }: Props = $props();
+
+  function close() {
+    if (!inline) open = false;
+  }
+
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.key === "Escape" && open && !inline) {
+      close();
+    }
+  }
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -72,7 +74,7 @@ function handleKeydown(e: KeyboardEvent) {
           <button
             onclick={close}
             class="group flex h-9 w-9 items-center justify-center rounded-full bg-stone-50 text-stone-400 transition-all hover:bg-red-50 hover:text-red-500 active:scale-90"
-            aria-label="Tutup modal"
+            aria-label={t("design_system.close_modal")}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

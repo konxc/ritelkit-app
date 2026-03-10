@@ -4,13 +4,7 @@ import { getAdminSession } from "./auth";
 import { getDrizzle } from "./db";
 import { nowIso } from "./utils";
 
-export async function logAudit(
-  ctx: APIContext,
-  action: string,
-  entityType: string,
-  entityId?: string,
-  data?: unknown,
-) {
+export async function logAudit(ctx: APIContext, action: string, entityType: string, entityId?: string, data?: unknown) {
   const db = getDrizzle(ctx);
   const session = await getAdminSession(ctx);
   await db.insert(auditLogs).values({
@@ -42,37 +36,4 @@ export function normalizeTab<T extends string>(raw: string | null, config: TabCo
   if (value && config.aliases?.[value]) return config.aliases[value];
   if (config.allowed.includes(value as T)) return value as T;
   return config.defaultTab;
-}
-
-export function formatStatus(status: string | null | undefined): string {
-  if (!status) return "-";
-  const map: Record<string, string> = {
-    pending: "Menunggu",
-    processing: "Diproses",
-    shipped: "Dikirim",
-    delivered: "Terkirim",
-    completed: "Selesai",
-    cancelled: "Dibatalkan",
-    packing: "Pengemasan",
-    sent: "Terkirim",
-    failed: "Gagal",
-    paid: "Lunas",
-    void: "Batal",
-    unpaid: "Belum Bayar",
-    active: "Aktif",
-    inactive: "Nonaktif",
-  };
-  return map[status.toLowerCase()] || status;
-}
-
-export function formatPaymentStatus(status: string | null | undefined): string {
-  if (!status) return "-";
-  const map: Record<string, string> = {
-    unpaid: "Belum Dibayar",
-    paid: "Dibayar",
-    failed: "Gagal",
-    refunded: "Dikembalikan",
-    expired: "Kedaluwarsa",
-  };
-  return map[status.toLowerCase()] || status;
 }

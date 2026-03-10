@@ -2,6 +2,7 @@
 import "../../styles/global.css";
 import { requireAdmin } from "../../lib/auth";
 import { getDb, initDb } from "../../lib/db";
+import { getLang, tServer } from "../../lib/i18n/server";
 
 await initDb(Astro);
 const db = getDb(Astro);
@@ -14,14 +15,16 @@ if (!admin) {
   }
   return Astro.redirect("/admin/login");
 }
+
+const lang = getLang(Astro.cookies);
 ---
 
 <!doctype html>
-<html lang="id">
+<html lang={lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>Memuat Sholawat Enterprise...</title>
+    <title>{tServer(lang, "auth.loading_workspace")} - {tServer(lang, "auth.brand_name")}</title>
     <meta http-equiv="refresh" content="1.5;url=/admin/overview" />
     <style>
       @keyframes pulse-ring {
@@ -61,9 +64,13 @@ if (!admin) {
           d="M16 10a4 4 0 0 1-8 0"></path></svg
       >
     </div>
-    <h1 class="text-center text-2xl font-bold tracking-tight text-[#4a443e]">Sholawat Enterprise</h1>
-    <p class="mt-1 text-[10px] font-bold tracking-[0.2em] text-[#c48a3a]/60 uppercase">Didukung oleh Satria Bakery</p>
-    <p class="mt-2 animate-pulse text-sm font-medium tracking-widest text-[#8c8277] uppercase">Memuat Area Kerja...</p>
+    <h1 class="text-center text-2xl font-bold tracking-tight text-[#4a443e]">{tServer(lang, "auth.brand_name")}</h1>
+    <p class="mt-1 text-[10px] font-bold tracking-[0.2em] text-[#c48a3a]/60 uppercase">
+      {tServer(lang, "auth.supported_by")} Satria Bakery
+    </p>
+    <p class="mt-2 animate-pulse text-sm font-medium tracking-widest text-[#8c8277] uppercase">
+      {tServer(lang, "auth.loading_workspace")}
+    </p>
 
     <script>
       setTimeout(() => {

@@ -1,39 +1,40 @@
 <script lang="ts">
-import ActionGroup from "./ActionGroup.svelte";
+  import ActionGroup from "./ActionGroup.svelte";
+  import { t } from "../../lib/i18n/store.svelte";
 
-let {
-  detailHref,
-  detailLabel = "Detail",
-  viewHref,
-  viewLabel = "Lihat",
-  showEdit = false,
-  showSend = false,
-  showSave = true,
-  showDelete = true,
-  isSaving = false,
-  isDeleting = false,
-  isSending = false,
-  onSave,
-  onDelete,
-  onSend,
-  onEdit,
-}: {
-  detailHref?: string;
-  detailLabel?: string;
-  viewHref?: string;
-  viewLabel?: string;
-  showEdit?: boolean;
-  showSend?: boolean;
-  showSave?: boolean;
-  showDelete?: boolean;
-  isSaving?: boolean;
-  isDeleting?: boolean;
-  isSending?: boolean;
-  onSave?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
-  onDelete?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
-  onSend?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
-  onEdit?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
-} = $props();
+  let {
+    detailHref,
+    detailLabel = t("common.detail"),
+    viewHref,
+    viewLabel = t("common.view"),
+    showEdit = false,
+    showSend = false,
+    showSave = true,
+    showDelete = true,
+    isSaving = false,
+    isDeleting = false,
+    isSending = false,
+    onSave,
+    onDelete,
+    onSend,
+    onEdit,
+  }: {
+    detailHref?: string;
+    detailLabel?: string;
+    viewHref?: string;
+    viewLabel?: string;
+    showEdit?: boolean;
+    showSend?: boolean;
+    showSave?: boolean;
+    showDelete?: boolean;
+    isSaving?: boolean;
+    isDeleting?: boolean;
+    isSending?: boolean;
+    onSave?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
+    onDelete?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
+    onSend?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
+    onEdit?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
+  } = $props();
 </script>
 
 <ActionGroup>
@@ -44,7 +45,7 @@ let {
     <a class="btn-ghost" href={viewHref} target="_blank">{viewLabel}</a>
   {/if}
   {#if showEdit}
-    <button class="btn-ghost" data-action="edit" onclick={onEdit}>Ubah</button>
+    <button class="btn-ghost" data-action="edit" onclick={onEdit}>{t("common.edit")}</button>
   {/if}
   {#if showSend}
     <button
@@ -62,7 +63,7 @@ let {
           ></path></svg
         >
       {/if}
-      Kirim
+      {t("common.send")}
     </button>
   {/if}
   {#if showSave}
@@ -81,7 +82,7 @@ let {
           ></path></svg
         >
       {/if}
-      Simpan
+      {t("common.save")}
     </button>
   {/if}
   {#if showDelete}
@@ -104,7 +105,7 @@ let {
           ></path></svg
         >
       {/if}
-      Hapus
+      {t("common.delete")}
     </button>
   {/if}
 </ActionGroup>

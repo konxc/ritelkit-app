@@ -1,23 +1,23 @@
 <script lang="ts">
-import Avatar from "./Avatar.svelte";
+  import Avatar from "./Avatar.svelte";
 
-interface AvatarUser {
-  src?: string;
-  alt?: string;
-  initials?: string;
-}
+  interface AvatarUser {
+    src?: string;
+    alt?: string;
+    initials?: string;
+  }
 
-interface Props {
-  users?: AvatarUser[];
-  limit?: number;
-  class?: string;
-  [key: string]: any;
-}
+  interface Props {
+    users?: AvatarUser[];
+    limit?: number;
+    class?: string;
+    [key: string]: any;
+  }
 
-let { users = [], limit = 3, class: className = "", ...rest }: Props = $props();
+  let { users = [], limit = 3, class: className = "", ...rest }: Props = $props();
 
-let visibleUsers = $derived(users.slice(0, limit));
-let remainingCount = $derived(users.length - limit);
+  let visibleUsers = $derived(users.slice(0, limit));
+  let remainingCount = $derived(users.length - limit);
 </script>
 
 <div class="flex items-center -space-x-4 {className}" {...rest}>

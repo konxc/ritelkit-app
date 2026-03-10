@@ -29,7 +29,7 @@ export async function POST(ctx: APIContext) {
     sql: "INSERT INTO customers (id, name, email, phone, notes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
     args: [id, name, email || null, phone, notes || null, now, now],
   });
-  await logAudit(ctx, "create", "customer", id, { name, phone });
+  await logAudit(ctx, "create_customer", "customer", id, { name, phone });
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { "Content-Type": "application/json" },

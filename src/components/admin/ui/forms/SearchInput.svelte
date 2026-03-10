@@ -1,21 +1,17 @@
 <script lang="ts">
-interface Props {
-  value?: string;
-  name?: string;
-  placeholder?: string;
-  class?: string;
-  oninput?: (e: Event & { currentTarget: HTMLInputElement }) => void;
-  onchange?: (e: Event & { currentTarget: HTMLInputElement }) => void;
-}
+  import { t } from "../../../../lib/i18n/store.svelte";
+  interface Props {
+    value?: string;
+    name?: string;
+    placeholder?: string;
+    class?: string;
+    oninput?: (e: Event & { currentTarget: HTMLInputElement }) => void;
+    onchange?: (e: Event & { currentTarget: HTMLInputElement }) => void;
+  }
 
-let {
-  value = "",
-  name = "q",
-  placeholder = "Cari...",
-  class: className = "",
-  oninput,
-  onchange,
-}: Props = $props();
+  let { value = "", name = "q", placeholder = "", class: className = "", oninput, onchange }: Props = $props();
+
+  let displayPlaceholder = $derived(placeholder || t("common.search"));
 </script>
 
 <div class="relative flex-1 {className} group">
@@ -39,7 +35,7 @@ let {
 
   <input
     {name}
-    {placeholder}
+    placeholder={placeholder || displayPlaceholder}
     {value}
     {oninput}
     {onchange}

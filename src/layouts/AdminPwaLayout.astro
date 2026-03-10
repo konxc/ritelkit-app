@@ -8,11 +8,7 @@ interface Props {
   activeNav?: "home" | "insights" | "research" | "settings";
 }
 
-const {
-  title = "Ruang Kerja Admin",
-  description = "Dasbor Admin PWA",
-  activeNav = "research",
-} = Astro.props;
+const { title = "Ruang Kerja Admin", description = "Dasbor Admin PWA", activeNav = "research" } = Astro.props;
 
 const csrfToken = ensureCsrfToken(Astro);
 ---

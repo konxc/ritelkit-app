@@ -74,9 +74,7 @@ export const server = {
         args: [input.orderNo],
       });
 
-      const row = result.rows[0] as
-        | { status?: string; payment_status?: string; customer_phone?: string }
-        | undefined;
+      const row = result.rows[0] as { status?: string; payment_status?: string; customer_phone?: string } | undefined;
 
       if (!row) {
         throw new Error("Order not found");
@@ -239,6 +237,8 @@ export const server = {
         updatedAt: now,
       });
 
+      await logAudit(apiCtx, "create_product", "product", id, { name: input.name, sku: input.sku });
+
       return { success: true, id };
     },
   }),
@@ -266,6 +266,8 @@ export const server = {
         .set({ ...input.data, updatedAt: now })
         .where(eq(products.id, input.id));
 
+      await logAudit(apiCtx, "update_product", "product", input.id, input.data);
+
       return { success: true };
     },
   }),
@@ -282,6 +284,8 @@ export const server = {
 
       await db.delete(products).where(eq(products.id, id));
 
+      await logAudit(apiCtx, "delete_product", "product", id);
+
       return { success: true };
     },
   }),
@@ -296,10 +300,7 @@ export const server = {
       await initDb(apiCtx);
       const db = getDrizzle(apiCtx);
 
-      const rows = await db
-        .select()
-        .from(categories)
-        .orderBy(asc(categories.sortOrder), asc(categories.name));
+      const rows = await db.select().from(categories).orderBy(asc(categories.sortOrder), asc(categories.name));
 
       return rows;
     },
@@ -316,12 +317,15 @@ export const server = {
       const db = getDrizzle(apiCtx);
       const now = new Date().toISOString();
 
+      const id = crypto.randomUUID();
       await db.insert(categories).values({
-        id: crypto.randomUUID(),
+        id,
         ...input,
         createdAt: now,
         updatedAt: now,
       });
+
+      await logAudit(apiCtx, "create_category", "category", id, { name: input.name });
 
       return { success: true };
     },
@@ -350,6 +354,8 @@ export const server = {
         .set({ ...input.data, updatedAt: now })
         .where(eq(categories.id, input.id));
 
+      await logAudit(apiCtx, "update_category", "category", input.id, input.data);
+
       return { success: true };
     },
   }),
@@ -365,6 +371,8 @@ export const server = {
       const db = getDrizzle(apiCtx);
 
       await db.delete(categories).where(eq(categories.id, id));
+
+      await logAudit(apiCtx, "delete_category", "category", id);
 
       return { success: true };
     },
@@ -459,11 +467,7 @@ export const server = {
 
         let orderId = input.orderId;
         if (!orderId && input.refOrderNo) {
-          const order = await tx
-            .select()
-            .from(orders)
-            .where(eq(orders.orderNo, input.refOrderNo))
-            .get();
+          const order = await tx.select().from(orders).where(eq(orders.orderNo, input.refOrderNo)).get();
           if (order) orderId = order.id;
         }
 
@@ -499,10 +503,13 @@ export const server = {
         else if (input.type === "out") newStock -= input.qty;
         else if (input.type === "adjustment") newStock = input.qty;
 
-        await tx
-          .update(products)
-          .set({ stock: newStock, updatedAt: now })
-          .where(eq(products.id, input.productId));
+        await tx.update(products).set({ stock: newStock, updatedAt: now }).where(eq(products.id, input.productId));
+      });
+
+      await logAudit(apiCtx, "create_inventory_movement", "inventory_movement", input.productId, {
+        type: input.type,
+        qty: input.qty,
+        notes: input.notes,
       });
 
       return { success: true };
@@ -525,9 +532,7 @@ export const server = {
       const db = getDrizzle(apiCtx);
       const { q, limit, offset } = input;
 
-      const where = q
-        ? or(like(invoices.invoiceNo, `%${q}%`), like(orders.orderNo, `%${q}%`))
-        : undefined;
+      const where = q ? or(like(invoices.invoiceNo, `%${q}%`), like(orders.orderNo, `%${q}%`)) : undefined;
 
       const rows = await db
         .select({
@@ -591,7 +596,7 @@ export const server = {
         updatedAt: now,
       });
 
-      await logAudit(apiCtx, "create", "invoice", id, {
+      await logAudit(apiCtx, "create_invoice", "invoice", id, {
         orderNo: input.orderNo,
         invoiceNo,
       });
@@ -626,7 +631,7 @@ export const server = {
         })
         .where(eq(invoices.id, input.id));
 
-      await logAudit(apiCtx, "update", "invoice", input.id, input.data);
+      await logAudit(apiCtx, "update_invoice", "invoice", input.id, input.data);
 
       return { success: true };
     },
@@ -648,9 +653,7 @@ export const server = {
       const db = getDrizzle(apiCtx);
       const { q, limit, offset } = input;
 
-      const where = q
-        ? or(like(shipments.orderNo, `%${q}%`), like(shipments.trackingNo, `%${q}%`))
-        : undefined;
+      const where = q ? or(like(shipments.orderNo, `%${q}%`), like(shipments.trackingNo, `%${q}%`)) : undefined;
 
       const rows = await db
         .select()
@@ -702,7 +705,7 @@ export const server = {
         updatedAt: now,
       });
 
-      await logAudit(apiCtx, "create", "shipment", id, input);
+      await logAudit(apiCtx, "create_shipment", "shipment", id, input);
 
       return { success: true, id };
     },
@@ -731,7 +734,7 @@ export const server = {
         .set({ ...input.data, updatedAt: now })
         .where(eq(shipments.id, input.id));
 
-      await logAudit(apiCtx, "update", "shipment", input.id, input.data);
+      await logAudit(apiCtx, "update_shipment", "shipment", input.id, input.data);
 
       return { success: true };
     },
@@ -748,7 +751,7 @@ export const server = {
       const db = getDrizzle(apiCtx);
 
       await db.delete(shipments).where(eq(shipments.id, id));
-      await logAudit(apiCtx, "delete", "shipment", id);
+      await logAudit(apiCtx, "delete_shipment", "shipment", id);
 
       return { success: true };
     },
@@ -791,7 +794,7 @@ export const server = {
         updatedAt: now,
       });
 
-      await logAudit(apiCtx, "create", "shippingRule", id, input);
+      await logAudit(apiCtx, "create_shipping_rule", "shipping_rule", id, input);
 
       return { success: true, id };
     },
@@ -820,7 +823,7 @@ export const server = {
         .set({ ...input.data, updatedAt: now })
         .where(eq(shippingRules.id, input.id));
 
-      await logAudit(apiCtx, "update", "shippingRule", input.id, input.data);
+      await logAudit(apiCtx, "update_shipping_rule", "shipping_rule", input.id, input.data);
 
       return { success: true };
     },
@@ -837,7 +840,7 @@ export const server = {
       const db = getDrizzle(apiCtx);
 
       await db.delete(shippingRules).where(eq(shippingRules.id, id));
-      await logAudit(apiCtx, "delete", "shippingRule", id);
+      await logAudit(apiCtx, "delete_shipping_rule", "shipping_rule", id);
 
       return { success: true };
     },
@@ -887,9 +890,7 @@ export const server = {
       const db = getDrizzle(apiCtx);
       const { q, limit, offset } = input;
 
-      const where = q
-        ? or(like(refunds.orderNo, `%${q}%`), like(refunds.reason, `%${q}%`))
-        : undefined;
+      const where = q ? or(like(refunds.orderNo, `%${q}%`), like(refunds.reason, `%${q}%`)) : undefined;
 
       const rows = await db
         .select()
@@ -899,7 +900,10 @@ export const server = {
         .limit(limit)
         .offset(offset);
 
-      const totalRes = await db.select({ count: sql<number>`count(*)` }).from(refunds).where(where);
+      const totalRes = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(refunds)
+        .where(where);
 
       return { rows, total: totalRes[0]?.count || 0 };
     },
@@ -938,7 +942,7 @@ export const server = {
         updatedAt: now,
       });
 
-      await logAudit(apiCtx, "create", "refund", id, input);
+      await logAudit(apiCtx, "create_refund", "refund", id, input);
 
       return { success: true, id };
     },
@@ -967,7 +971,7 @@ export const server = {
         .set({ ...input.data, updatedAt: now })
         .where(eq(refunds.id, input.id));
 
-      await logAudit(apiCtx, "update", "refund", input.id, input.data);
+      await logAudit(apiCtx, "update_refund", "refund", input.id, input.data);
 
       return { success: true };
     },
@@ -984,6 +988,7 @@ export const server = {
       const db = getDrizzle(apiCtx);
 
       await db.delete(refunds).where(eq(refunds.id, id));
+      await logAudit(apiCtx, "delete_refund", "refund", id);
 
       return { success: true };
     },
@@ -1005,11 +1010,7 @@ export const server = {
       const db = getDrizzle(apiCtx);
       const { q, limit, offset } = input;
       const where = q
-        ? or(
-            like(customers.name, `%${q}%`),
-            like(customers.phone, `%${q}%`),
-            like(customers.email, `%${q}%`),
-          )
+        ? or(like(customers.name, `%${q}%`), like(customers.phone, `%${q}%`), like(customers.email, `%${q}%`))
         : undefined;
 
       const rows = await db
@@ -1047,7 +1048,7 @@ export const server = {
         updatedAt: now,
       };
       await db.insert(customers).values(newCustomer);
-      await logAudit(apiCtx, "create", "customer", id, input);
+      await logAudit(apiCtx, "create_customer", "customer", id, input);
       return newCustomer;
     },
   }),
@@ -1073,7 +1074,7 @@ export const server = {
         .update(customers)
         .set({ ...(input.data as any), updatedAt: now })
         .where(eq(customers.id, input.id));
-      await logAudit(apiCtx, "update", "customer", input.id, input.data);
+      await logAudit(apiCtx, "update_customer", "customer", input.id, input.data);
       return { ok: true };
     },
   }),
@@ -1088,7 +1089,7 @@ export const server = {
       await initDb(apiCtx);
       const db = getDrizzle(apiCtx);
       await db.delete(customers).where(eq(customers.id, id));
-      await logAudit(apiCtx, "delete", "customer", id);
+      await logAudit(apiCtx, "delete_customer", "customer", id);
       return { ok: true };
     },
   }),
@@ -1108,9 +1109,7 @@ export const server = {
       await initDb(apiCtx);
       const db = getDrizzle(apiCtx);
       const { q, limit, offset } = input;
-      const where = q
-        ? or(like(notifications.recipient, `%${q}%`), like(notifications.template, `%${q}%`))
-        : undefined;
+      const where = q ? or(like(notifications.recipient, `%${q}%`), like(notifications.template, `%${q}%`)) : undefined;
 
       const rows = await db
         .select()
@@ -1156,7 +1155,7 @@ export const server = {
         sentAt: null,
         updatedAt: now,
       });
-      await logAudit(apiCtx, "create", "notification", id, input);
+      await logAudit(apiCtx, "create_notification", "notification", id, input);
       return { ok: true, id };
     },
   }),
@@ -1186,7 +1185,7 @@ export const server = {
           updatedAt: new Date().toISOString(),
         })
         .where(eq(notifications.id, input.id));
-      await logAudit(apiCtx, "update", "notification", input.id, input.data);
+      await logAudit(apiCtx, "update_notification", "notification", input.id, input.data);
       return { ok: true };
     },
   }),
@@ -1205,7 +1204,7 @@ export const server = {
         .update(notifications)
         .set({ status: "sent", sentAt: now, updatedAt: now })
         .where(eq(notifications.id, id));
-      await logAudit(apiCtx, "send", "notification", id);
+      await logAudit(apiCtx, "send_notification", "notification", id);
       return { ok: true };
     },
   }),
@@ -1220,7 +1219,7 @@ export const server = {
       await initDb(apiCtx);
       const db = getDrizzle(apiCtx);
       await db.delete(notifications).where(eq(notifications.id, id));
-      await logAudit(apiCtx, "delete", "notification", id);
+      await logAudit(apiCtx, "delete_notification", "notification", id);
       return { ok: true };
     },
   }),
@@ -1265,7 +1264,7 @@ export const server = {
         createdAt: now,
       });
 
-      await logAudit(apiCtx, "create", "admin_user", id, {
+      await logAudit(apiCtx, "create_admin_user", "admin_user", id, {
         email: input.email,
       });
       return { ok: true, id };
@@ -1282,7 +1281,7 @@ export const server = {
       await initDb(apiCtx);
       const db = getDrizzle(apiCtx);
       await db.delete(adminUsers).where(eq(adminUsers.id, id));
-      await logAudit(apiCtx, "delete", "admin_user", id);
+      await logAudit(apiCtx, "delete_admin_user", "admin_user", id);
       return { ok: true };
     },
   }),
@@ -1312,7 +1311,7 @@ export const server = {
 
       if (Object.keys(updateData).length > 0) {
         await db.update(adminUsers).set(updateData).where(eq(adminUsers.id, id));
-        await logAudit(apiCtx, "update", "admin_user", id, { fields: Object.keys(updateData) });
+        await logAudit(apiCtx, "update_admin_user", "admin_user", id, { fields: Object.keys(updateData) });
       }
       return { ok: true };
     },
@@ -1388,7 +1387,7 @@ export const server = {
           });
       }
 
-      await logAudit(apiCtx, "update", "settings", "global", input);
+      await logAudit(apiCtx, "update_settings", "settings", "global", input);
       return { ok: true };
     },
   }),
@@ -1408,9 +1407,7 @@ export const server = {
       await initDb(apiCtx);
       const db = getDrizzle(apiCtx);
       const { q, limit, offset } = input;
-      const where = q
-        ? or(like(cmsPages.title, `%${q}%`), like(cmsPages.slug, `%${q}%`))
-        : undefined;
+      const where = q ? or(like(cmsPages.title, `%${q}%`), like(cmsPages.slug, `%${q}%`)) : undefined;
 
       const rows = await db
         .select()
@@ -1456,7 +1453,7 @@ export const server = {
         updatedAt: now,
       });
 
-      await logAudit(apiCtx, "create", "cms_page", id, { slug: input.slug });
+      await logAudit(apiCtx, "create_cms_page", "cms_page", id, { slug: input.slug });
       return { ok: true, id };
     },
   }),
@@ -1502,7 +1499,7 @@ export const server = {
 
       await db.update(cmsPages).set(updateData).where(eq(cmsPages.id, input.id));
 
-      await logAudit(apiCtx, "update", "cms_page", input.id, input.data);
+      await logAudit(apiCtx, "update_cms_page", "cms_page", input.id, input.data);
       return { ok: true };
     },
   }),
@@ -1517,7 +1514,7 @@ export const server = {
       await initDb(apiCtx);
       const db = getDrizzle(apiCtx);
       await db.delete(cmsPages).where(eq(cmsPages.id, id));
-      await logAudit(apiCtx, "delete", "cms_page", id);
+      await logAudit(apiCtx, "delete_cms_page", "cms_page", id);
       return { ok: true };
     },
   }),
@@ -1559,6 +1556,23 @@ export const server = {
         .where(where);
 
       return { rows, total: totalRes[0]?.count || 0 };
+    },
+  }),
+
+  // --- I18N ---
+  setLanguage: defineAction({
+    input: z.object({
+      lang: z.enum(["id", "en", "ja"]),
+    }),
+    handler: async (input, ctx) => {
+      const apiCtx = ctx as unknown as APIContext;
+      apiCtx.cookies.set("rs_lang", input.lang, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 365, // 1 year
+        httpOnly: false, // Allow client-side access for hydration
+        sameSite: "lax",
+      });
+      return { success: true };
     },
   }),
 };

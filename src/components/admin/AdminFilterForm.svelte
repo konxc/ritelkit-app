@@ -1,11 +1,7 @@
 <script lang="ts">
-import type { Snippet } from "svelte";
+  import type { Snippet } from "svelte";
 
-let {
-  action,
-  method = "get",
-  children,
-}: { action?: string; method?: "get" | "post"; children?: Snippet } = $props();
+  let { action, method = "get", children }: { action?: string; method?: "get" | "post"; children?: Snippet } = $props();
 </script>
 
 <form {action} {method} class="flex items-center gap-2">

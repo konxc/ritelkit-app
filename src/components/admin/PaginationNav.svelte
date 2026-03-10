@@ -1,5 +1,6 @@
 <script lang="ts">
   import Button from "./ui/Button.svelte";
+  import { t } from "../../lib/i18n/store.svelte";
   let {
     page,
     totalPages,
@@ -24,7 +25,8 @@
   <span
     class="rounded-full bg-stone-100/80 px-3 py-1.5 text-[0.75rem] font-semibold text-stone-500 shadow-sm sm:rounded-md sm:bg-stone-100/80 sm:px-3 sm:py-1.5 sm:text-[0.85rem] sm:shadow-none"
   >
-    Halaman <span class="font-bold text-stone-900">{page}</span> dari
+    {t("common.page")} <span class="font-bold text-stone-900">{page}</span>
+    {t("common.of")}
     <span class="font-bold text-stone-900">{totalPages}</span>
   </span>
   <div class="absolute left-1/2 flex -translate-x-1/2 items-center gap-2 sm:static sm:translate-x-0 sm:gap-2">
@@ -47,7 +49,7 @@
         stroke-linecap="round"
         stroke-linejoin="round"><path d="m15 18-6-6 6-6" /></svg
       >
-      <span class="hidden sm:inline">Sebelumnya</span>
+      <span class="hidden sm:inline">{t("common.previous")}</span>
     </Button>
 
     <Button
@@ -58,7 +60,7 @@
       disabled={!nextHref}
       class="!rounded-xl !px-4 sm:!px-3.5"
     >
-      <span class="hidden sm:inline">Selanjutnya</span>
+      <span class="hidden sm:inline">{t("common.next")}</span>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="18"

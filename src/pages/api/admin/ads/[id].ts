@@ -26,7 +26,7 @@ export async function PUT(ctx: APIContext) {
     sql: `UPDATE ads_campaigns SET name = ?, channel = ?, budget = ?, spend = ?, status = ?, updated_at = ? WHERE id = ?`,
     args: [name, channel, budget, spend, status, nowIso(), id],
   });
-  await logAudit(ctx, "update", "ads_campaign", id, {
+  await logAudit(ctx, "update_ads_campaign", "ads_campaign", id, {
     name,
     channel,
     budget,
@@ -55,7 +55,7 @@ export async function DELETE(ctx: APIContext) {
     sql: "DELETE FROM ads_campaigns WHERE id = ?",
     args: [id],
   });
-  await logAudit(ctx, "delete", "ads_campaign", id);
+  await logAudit(ctx, "delete_ads_campaign", "ads_campaign", id);
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { "Content-Type": "application/json" },

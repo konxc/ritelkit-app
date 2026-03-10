@@ -11,10 +11,7 @@ export async function readBody<T extends RequestBody = RequestBody>(ctx: APICont
     }
     return {} as T;
   }
-  if (
-    contentType.includes("application/x-www-form-urlencoded") ||
-    contentType.includes("multipart/form-data")
-  ) {
+  if (contentType.includes("application/x-www-form-urlencoded") || contentType.includes("multipart/form-data")) {
     return Object.fromEntries(await ctx.request.formData()) as T;
   }
   return {} as T;
@@ -31,9 +28,5 @@ export function json(data: unknown, status = 200, headers?: Record<string, strin
 }
 
 export function getRequestId(ctx: APIContext) {
-  return (
-    ctx.request.headers.get("x-request-id") ||
-    ctx.request.headers.get("cf-ray") ||
-    crypto.randomUUID()
-  );
+  return ctx.request.headers.get("x-request-id") || ctx.request.headers.get("cf-ray") || crypto.randomUUID();
 }

@@ -27,38 +27,40 @@ const csrfToken = ensureCsrfToken(Astro);
 const info = Astro.url.searchParams.get("info");
 const error = call?.error?.message || Astro.url.searchParams.get("error");
 const success = Astro.url.searchParams.get("success");
+import { getLang, tServer } from "../../lib/i18n/server";
+const lang = getLang(Astro.cookies);
 ---
 
 <!doctype html>
-<html lang="id">
+<html lang={lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>Masuk Admin</title>
+    <title>{tServer(lang, "auth.login_title")}</title>
   </head>
   <body class="m-0 bg-[#f6f4ef] font-['Outfit',sans-serif]">
     <div class="mx-auto mt-[8vh] max-w-[420px] rounded-2xl bg-white p-8 shadow-[0_20px_40px_rgba(0,0,0,0.08)]">
-      <h1>Masuk Admin</h1>
-      {success === "1" && <p class="mt-4 text-[0.9rem] text-[#6b625a]">Admin berhasil dibuat. Silakan login.</p>}
-      {info === "exists" && <p class="mt-4 text-[0.9rem] text-[#6b625a]">Admin sudah tersedia. Silakan login.</p>}
+      <h1>{tServer(lang, "auth.login_title")}</h1>
+      {success === "1" && <p class="mt-4 text-[0.9rem] text-[#6b625a]">{tServer(lang, "auth.login_success")}</p>}
+      {info === "exists" && <p class="mt-4 text-[0.9rem] text-[#6b625a]">{tServer(lang, "auth.login_exists")}</p>}
       {
         error && (
           <p class="mt-4 text-[0.9rem] font-medium text-red-600">
             {error === "invalid"
-              ? "Invalid email or password."
+              ? tServer(lang, "auth.error_invalid")
               : error === "rate"
-                ? "Too many attempts, try again later."
+                ? tServer(lang, "auth.error_rate")
                 : error === "csrf"
-                  ? "Form session expired, refresh the page."
+                  ? tServer(lang, "auth.error_csrf")
                   : error}
           </p>
         )
       }
       <form method="post" action={actions.adminLogin}>
         <input type="hidden" name="csrf_token" value={csrfToken} />
-        <label>Surel</label>
+        <label>{tServer(lang, "auth.email_label")}</label>
         <input class="my-2 mb-4 w-full rounded-[10px] border border-[#e6dfd3] p-3" name="email" type="email" required />
-        <label>Kata Sandi</label>
+        <label>{tServer(lang, "auth.password_label")}</label>
         <input
           class="my-2 mb-4 w-full rounded-[10px] border border-[#e6dfd3] p-3"
           name="password"
@@ -67,11 +69,12 @@ const success = Astro.url.searchParams.get("success");
         />
         <button
           class="w-full cursor-pointer rounded-[10px] border-none bg-[#c48a3a] p-3 font-semibold text-white"
-          type="submit">Masuk</button
+          type="submit">{tServer(lang, "auth.login_button")}</button
         >
       </form>
       <div class="mt-4 text-[0.9rem] text-[#6b625a]">
-        Token pengaturan: {env.SETUP_TOKEN ? "tersedia" : "belum disetel"}.
+        {tServer(lang, "auth.token_label")}
+        {env.SETUP_TOKEN ? tServer(lang, "auth.token_available") : tServer(lang, "auth.token_not_set")}.
       </div>
     </div>
   </body>

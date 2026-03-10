@@ -1,50 +1,50 @@
 <script lang="ts">
-interface Props {
-  src?: string;
-  alt?: string;
-  initials?: string;
-  size?: "sm" | "md" | "lg" | "xl";
-  status?: "online" | "offline" | "busy" | "away";
-  class?: string;
-  [key: string]: any;
-}
-
-let {
-  src = "",
-  alt = "Avatar Pengguna",
-  initials = "",
-  size = "md",
-  status,
-  class: className = "",
-  ...rest
-}: Props = $props();
-
-let sizeConfig = $derived.by(() => {
-  switch (size) {
-    case "sm":
-      return { wrapper: "w-8 h-8 text-xs", indicator: "w-2.5 h-2.5" };
-    case "lg":
-      return { wrapper: "w-16 h-16 text-xl", indicator: "w-4 h-4" };
-    case "xl":
-      return { wrapper: "w-20 h-20 text-2xl", indicator: "w-5 h-5" };
-    default:
-      return { wrapper: "w-12 h-12 text-sm", indicator: "w-3 h-3" };
+  interface Props {
+    src?: string;
+    alt?: string;
+    initials?: string;
+    size?: "sm" | "md" | "lg" | "xl";
+    status?: "online" | "offline" | "busy" | "away";
+    class?: string;
+    [key: string]: any;
   }
-});
 
-let statusColor = $derived.by(() => {
-  if (!status) return "";
-  switch (status) {
-    case "offline":
-      return "bg-stone-300";
-    case "busy":
-      return "bg-red-500";
-    case "away":
-      return "bg-yellow-500";
-    default:
-      return "bg-green-500";
-  }
-});
+  let {
+    src = "",
+    alt = "Avatar Pengguna",
+    initials = "",
+    size = "md",
+    status,
+    class: className = "",
+    ...rest
+  }: Props = $props();
+
+  let sizeConfig = $derived.by(() => {
+    switch (size) {
+      case "sm":
+        return { wrapper: "w-8 h-8 text-xs", indicator: "w-2.5 h-2.5" };
+      case "lg":
+        return { wrapper: "w-16 h-16 text-xl", indicator: "w-4 h-4" };
+      case "xl":
+        return { wrapper: "w-20 h-20 text-2xl", indicator: "w-5 h-5" };
+      default:
+        return { wrapper: "w-12 h-12 text-sm", indicator: "w-3 h-3" };
+    }
+  });
+
+  let statusColor = $derived.by(() => {
+    if (!status) return "";
+    switch (status) {
+      case "offline":
+        return "bg-stone-300";
+      case "busy":
+        return "bg-red-500";
+      case "away":
+        return "bg-yellow-500";
+      default:
+        return "bg-green-500";
+    }
+  });
 </script>
 
 <div class="relative inline-block {className}" {...rest}>

@@ -9,8 +9,10 @@ const admin = await requireAdmin(Astro);
 if (!admin) {
   return Astro.redirect("/admin/login");
 }
+import { getLang, type LanguageCode, tServer } from "../../lib/i18n/server";
+const lang: LanguageCode = getLang(Astro.cookies);
 ---
 
-<AdminLayout title="Pengaturan">
-  <SettingsPageContent client:load />
+<AdminLayout title={tServer(lang, "nav.settings")}>
+  <SettingsPageContent {lang} client:load />
 </AdminLayout>

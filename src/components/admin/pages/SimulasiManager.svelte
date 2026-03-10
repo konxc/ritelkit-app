@@ -1,133 +1,161 @@
 <script lang="ts">
-// Meniru `actions` dari astro (opsional karena ini file simulasi)
-import { fade, slide } from "svelte/transition";
-import TextInput from "../ui/forms/TextInput.svelte";
-import Button from "../ui/Button.svelte";
+  // Mimic actions from astro (optional because this is a simulation file)
+  import { fade, slide } from "svelte/transition";
+  import Card from "../ui/Card.svelte";
+  import Button from "../ui/Button.svelte";
+  import { t, initI18n, i18n } from "../../../lib/i18n/store.svelte";
+  import { onMount, untrack } from "svelte";
 
-let { initialData = [] } = $props<{
-  initialData?: Array<{ id: string; name: string }>;
-}>();
+  let { initialData = [], lang } = $props<{
+    initialData?: Array<{ id: string; name: string }>;
+    lang?: any;
+  }>();
 
-// 2. RUNES: State Lokal ($state)
-// Kita menjadikan data server sebagai internal state reaktif komponen
-let items = $state<Array<{ id: string; name: string }>>([]);
-let newItemName = $state("");
-let isSubmitting = $state(false);
-let deletingId = $state<string | null>(null);
+  // Root call for SSR and initial hydration (untracked for Svelte 5)
+  initI18n(untrack(() => lang));
 
-// Inisialisasi dari props dengan efek
-$effect(() => {
-  items = initialData;
-});
+  interface SimulationResult {
+    totalRevenue: number;
+    totalOrders: number;
+    avgOrderValue: number;
+    growthRate: number;
+  }
 
-// 3. RUNES: State Turunan ($derived)
-// Mengkalkulasi jumlah item secara otomatis tanpa event tambahan
-let totalItems = $derived(items.length);
+  let scenario = $state({
+    marketingSpend: 1000000,
+    newCustomers: 50,
+    retentionRate: 80,
+  });
 
-// 4. ACTION CALL / MUTASI
-async function handleAdd() {
-  if (!newItemName.trim() || isSubmitting) return;
+  let results = $state<SimulationResult | null>(null);
+  let isSimulating = $state(false);
 
-  isSubmitting = true;
+  async function runSimulation() {
+    isSimulating = true;
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 800));
 
-  try {
-    // [B] Simulasi Network Delay (~800ms) untuk Action Backend RPC
-    await new Promise((res) => setTimeout(res, 800));
-
-    const newDbEntry = {
-      id: crypto.randomUUID(),
-      name: newItemName,
+    results = {
+      totalRevenue: scenario.marketingSpend * (scenario.newCustomers / 10) * (scenario.retentionRate / 100),
+      totalOrders: Math.floor(scenario.newCustomers * 1.5),
+      avgOrderValue: 25000,
+      growthRate: 15.5,
     };
-
-    // Svelte 5 akan mendeteksi `assignment` ini secara native dan merender ulang DOM.
-    items = [...items, newDbEntry];
-
-    // Reset input form
-    newItemName = "";
-  } catch (e) {
-    console.error("Failed to call Astro Action:", e);
-    alert("Failed to call mutation Action.");
-  } finally {
-    isSubmitting = false;
+    isSimulating = false;
   }
-}
 
-async function handleDelete(id: string) {
-  deletingId = id;
-  try {
-    // Simulasi menghapus data di DB Astro Action
-    await new Promise((res) => setTimeout(res, 500));
-
-    // Reaktivitas langsung ter-update di UI
-    items = items.filter((item) => item.id !== id);
-  } finally {
-    deletingId = null;
-  }
-}
-
-function handleReset() {
-  // Mengembalikan array internal kita ke data SSR awal
-  items = initialData;
-}
+  onMount(() => {
+    // Already inited
+  });
 </script>
 
-<div class="max-w-xl overflow-hidden rounded-xl border bg-white shadow-sm">
-  <div class="border-b px-6 py-5">
-    <h2 class="text-xl font-semibold tracking-tight text-slate-900">Manajemen Item (RPC Lokal)</h2>
-    <p class="mt-1 text-sm text-slate-500">
-      Contoh ini menunjukkan efisiensi Astro SSR dan Svelte 5 tanpa beban kognitif tRPC.
-    </p>
-  </div>
-
-  <div class="px-6 py-5">
-    <!-- Penggunaan $derived state -->
-    <p class="mb-4 text-sm font-medium text-slate-700">
-      Total data aktif dalam memory lokal (SSR + Reaktif): {totalItems}
-    </p>
-
-    <div class="mb-6 flex items-center gap-3">
-      <!-- Two-way binding native ($state) -->
-      <div class="flex-1">
-        <TextInput
-          id="newItemName"
-          bind:value={newItemName}
-          placeholder="Nama rute baru..."
-          onkeydown={(e: KeyboardEvent) => e.key === "Enter" && handleAdd()}
-        />
-      </div>
-      <!-- Optimistic disable -->
-      <Button variant="primary" onclick={handleAdd} disabled={isSubmitting}>
-        {isSubmitting ? "Sedang diproses..." : "Jalankan Simulasi"}
-      </Button>
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="font-['Syne',sans-serif] text-2xl font-bold text-stone-900">{t("nav.simulasi")}</h1>
+      <p class="text-sm text-stone-500">{t("common.simulasi_desc")}</p>
     </div>
-
-    <ul class="space-y-2">
-      {#each items as item (item.id)}
-        <li
-          in:slide={{ duration: 250 }}
-          out:fade={{ duration: 200 }}
-          class="flex items-center justify-between rounded-lg border bg-slate-50 p-4"
-        >
-          <div class="flex flex-col">
-            <span class="text-sm font-medium text-slate-900">{item.name}</span>
-            <span class="font-mono text-xs text-slate-500">ID: {item.id.slice(0, 8)}</span>
-          </div>
-
-            <Button variant="danger" size="sm" disabled={deletingId === item.id} onclick={() => handleDelete(item.id)}>
-              {deletingId === item.id ? "Hapus..." : "Hapus"}
-            </Button>
-        </li>
-      {/each}
-
-      {#if items.length === 0}
-        <p class="mt-4 rounded-lg border border-dashed py-8 text-center text-sm text-slate-400 italic">
-          Belum ada data tersedia.
-        </p>
-      {/if}
-    </ul>
   </div>
 
-  <div class="flex justify-end border-t bg-slate-50 px-6 py-4">
-    <Button variant="outline" onclick={handleReset}>Kembalikan Data SSR</Button>
+  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <Card title={t("common.parameters")}>
+      <div class="space-y-4 pt-4">
+        <div>
+          <label class="mb-2 block text-sm font-medium text-stone-700" for="marketing"
+            >{t("common.marketing_spend")}</label
+          >
+          <input
+            id="marketing"
+            type="range"
+            min="500000"
+            max="10000000"
+            step="500000"
+            bind:value={scenario.marketingSpend}
+            class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-stone-200"
+          />
+          <div class="mt-1 text-right text-sm font-bold text-[#c48a3a]">
+            {i18n.f.currency(scenario.marketingSpend)}
+          </div>
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-stone-700" for="customers"
+            >{t("common.new_customers")}</label
+          >
+          <input
+            id="customers"
+            type="number"
+            bind:value={scenario.newCustomers}
+            class="block w-full rounded-xl border-stone-200 bg-stone-50 px-4 py-2.5 text-sm focus:border-[#c48a3a] focus:ring-[#c48a3a]"
+          />
+        </div>
+
+        <div>
+          <label class="mb-2 block text-sm font-medium text-stone-700" for="retention"
+            >{t("common.retention_rate")} (%)</label
+          >
+          <input
+            id="retention"
+            type="number"
+            min="0"
+            max="100"
+            bind:value={scenario.retentionRate}
+            class="block w-full rounded-xl border-stone-200 bg-stone-50 px-4 py-2.5 text-sm focus:border-[#c48a3a] focus:ring-[#c48a3a]"
+          />
+        </div>
+
+        <Button variant="primary" class="w-full" onclick={runSimulation} disabled={isSimulating}>
+          {#if isSimulating}
+            {t("common.simulating")}...
+          {:else}
+            {t("common.run_simulation")}
+          {/if}
+        </Button>
+      </div>
+    </Card>
+
+    {#if results}
+      <div in:fade>
+        <Card title={t("common.results")}>
+          <div class="grid grid-cols-2 gap-4 pt-4">
+            <div class="rounded-2xl bg-stone-50 p-4">
+              <p class="text-xs text-stone-500">{t("common.total_revenue")}</p>
+              <p class="text-lg font-bold text-stone-900">{i18n.f.currency(results.totalRevenue)}</p>
+            </div>
+            <div class="rounded-2xl bg-stone-50 p-4">
+              <p class="text-xs text-stone-500">{t("common.total_orders")}</p>
+              <p class="text-lg font-bold text-stone-900">{results.totalOrders}</p>
+            </div>
+            <div class="rounded-2xl bg-stone-50 p-4">
+              <p class="text-xs text-stone-500">{t("common.avg_order")}</p>
+              <p class="text-lg font-bold text-stone-900">{i18n.f.currency(results.avgOrderValue)}</p>
+            </div>
+            <div class="rounded-2xl bg-[#c48a3a]/10 p-4 text-[#c48a3a]">
+              <p class="text-xs opacity-80">{t("common.growth_rate")}</p>
+              <p class="text-lg font-bold">+{results.growthRate}%</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+    {:else}
+      <div
+        class="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-stone-100 bg-stone-50/50 p-12 text-center"
+      >
+        <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white text-stone-300 shadow-sm">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"><path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-3 3" /></svg
+          >
+        </div>
+        <p class="text-stone-500">{t("common.simulation_placeholder")}</p>
+      </div>
+    {/if}
   </div>
 </div>

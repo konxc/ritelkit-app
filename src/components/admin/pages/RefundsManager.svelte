@@ -2,6 +2,8 @@
   import { trpc } from "../../../lib/trpc";
   import { fade, fly } from "svelte/transition";
   import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+  import { onMount } from "svelte";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
   import CrudInlineForm from "../CrudInlineForm.svelte";
   import RowActions from "../RowActions.svelte";
   import SectionHeader from "../SectionHeader.svelte";
@@ -75,7 +77,7 @@
       const order = availableOrders.find((o: any) => o.orderNo === orderNo);
 
       if (!order) {
-        toastRef?.show("Invalid order number", "error");
+        toastRef?.show(t("refunds.invalid_order"), "error");
         return;
       }
 
@@ -87,11 +89,11 @@
         reason: (formData.get("reason") as string) || undefined,
       });
 
-      toastRef?.show("Pengembalian berhasil ditambah!", "success");
+      toastRef?.show(t("refunds.toast_create"), "success");
       form.reset();
       queryClient.invalidateQueries({ queryKey: ["refunds.list"] });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "An error occurred";
+      const message = error instanceof Error ? error.message : t("common.error_occurred");
       toastRef?.show(message, "error");
     } finally {
       isSubmitting = false;
@@ -101,14 +103,14 @@
   const handleRowAction = async (id: string | number, action: string, rowElement: HTMLElement | null) => {
     const resolvedId = String(id);
     if (action === "delete") {
-      if (confirm("Hapus refund ini?")) {
+      if (confirm(t("refunds.confirm_delete"))) {
         deletingId = resolvedId;
         try {
           await trpc.refunds.delete.mutate(resolvedId);
-          toastRef?.show("Pengembalian dihapus", "success");
+          toastRef?.show(t("refunds.toast_delete"), "success");
           queryClient.invalidateQueries({ queryKey: ["refunds.list"] });
         } catch (error: unknown) {
-          const message = error instanceof Error ? error.message : "An error occurred";
+          const message = error instanceof Error ? error.message : t("common.error_occurred");
           toastRef?.show(message, "error");
         } finally {
           deletingId = null;
@@ -134,10 +136,10 @@
       savingId = resolvedId;
       try {
         await trpc.refunds.update.mutate({ id: resolvedId, data });
-        toastRef?.show("Pengembalian diperbarui", "success");
+        toastRef?.show(t("refunds.toast_update"), "success");
         queryClient.invalidateQueries({ queryKey: ["refunds.list"] });
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "An error occurred";
+        const message = error instanceof Error ? error.message : t("common.error_occurred");
         toastRef?.show(message, "error");
       } finally {
         savingId = null;
@@ -148,42 +150,42 @@
 
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-    <SectionHeader title="Buat Pengembalian" />
+    <SectionHeader title={t("refunds.title_create")} />
     <CrudInlineForm id="refund-form" onsubmit={handleCreate} {isSubmitting}>
       <div class="grid w-full grid-cols-2 gap-4 border-b border-stone-100 pb-5 md:grid-cols-4">
         <div>
           <TextInput
             id="order_no"
             name="order_no"
-            label="No. Pesanan"
+            label={t("refunds.order_no")}
             required
             class="w-full font-bold tabular-nums"
             list="available-orders"
           />
           <datalist id="available-orders">
             {#each availableOrders as order}
-              <option value={order.orderNo}>{order.customerName} - Rp{order.total}</option>
+              <option value={order.orderNo}>{order.customerName} - {t("common.currency_symbol")}{order.total}</option>
             {/each}
           </datalist>
         </div>
         <div>
-          <TextInput id="amount" name="amount" type="number" label="Jumlah (Rp)" required />
+          <TextInput id="amount" name="amount" type="number" label={t("refunds.amount")} required />
         </div>
         <div>
           <SelectInput
             id="status"
             name="status"
-            label="Status Awal"
+            label={t("refunds.initial_status")}
             options={[
-              { value: "pending", label: "⏳ Menunggu" },
-              { value: "processing", label: "🔄 Diproses" },
-              { value: "completed", label: "✅ Selesai" },
-              { value: "failed", label: "❌ Gagal" },
+              { value: "pending", label: `⏳ ${t("status.pending")}` },
+              { value: "processing", label: `🔄 ${t("status.processing")}` },
+              { value: "completed", label: `✅ ${t("status.completed")}` },
+              { value: "failed", label: `❌ ${t("status.failed")}` },
             ]}
           />
         </div>
         <div>
-          <TextInput id="reason" name="reason" label="Alasan" />
+          <TextInput id="reason" name="reason" label={t("refunds.reason")} />
         </div>
       </div>
       <div class="mt-4 flex items-end">
@@ -201,20 +203,29 @@
               ></path></svg
             >
           {/if}
-          Simpan
+          {t("refunds.save")}
         </Button>
       </div>
     </CrudInlineForm>
 
     <div class="-mt-2 mb-4">
-      <Badge text="Dana Keluar" color="red" />
+      <Badge variant="danger" showDot={true}>{t("refunds.badge_out")}</Badge>
     </div>
 
-    <Table headers={["Pesanan", "Jumlah", "Status", "Gateway", "Alasan", "Aksi"]}>
+    <Table
+      headers={[
+        t("refunds.order_no"),
+        t("refunds.amount"),
+        t("common.status"),
+        t("refunds.gateway"),
+        t("refunds.reason"),
+        t("common.actions"),
+      ]}
+    >
       {#if currentRefunds.length === 0}
         <TableRow>
           <TableCell colspan={6} class="py-12 text-center text-sm text-stone-400 italic">
-            {#if isFetching}Memuat data...{:else}Belum ada refund yang sesuai kriteria.{/if}
+            {#if isFetching}{t("common.loading")}{:else}{t("refunds.empty")}{/if}
           </TableCell>
         </TableRow>
       {/if}
@@ -235,7 +246,7 @@
               data-field="amount"
               class="rounded-lg border border-transparent px-3 py-1.5 font-mono font-bold text-stone-800 tabular-nums transition-all outline-none hover:bg-white focus:bg-white"
             >
-              <span class="mr-1 font-sans text-xs text-stone-400">Rp</span>{row.amount}
+              <span class="mr-1 font-sans text-xs text-stone-400">{t("common.currency_symbol")}</span>{row.amount}
             </div>
           </TableCell>
           <TableCell class="py-4">
@@ -243,10 +254,10 @@
               data-field="status"
               class="cursor-pointer rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-xs font-bold uppercase transition-all outline-none hover:bg-white focus:bg-white"
             >
-              <option value="pending" selected={row.status === "pending"}>⏳ Menunggu</option>
-              <option value="processing" selected={row.status === "processing"}>🔄 Proses</option>
-              <option value="completed" selected={row.status === "completed"}>✅ Selesai</option>
-              <option value="failed" selected={row.status === "failed"}>❌ Gagal</option>
+              <option value="pending" selected={row.status === "pending"}>⏳ {t("status.pending")}</option>
+              <option value="processing" selected={row.status === "processing"}>🔄 {t("status.processing")}</option>
+              <option value="completed" selected={row.status === "completed"}>✅ {t("status.completed")}</option>
+              <option value="failed" selected={row.status === "failed"}>❌ {t("status.failed")}</option>
             </select>
           </TableCell>
           <TableCell class="py-4">{row.providerStatus || "-"}</TableCell>

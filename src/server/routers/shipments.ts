@@ -51,10 +51,7 @@ export const shipmentRouter = router({
 
         // 2. If status is 'shipped' or 'delivered', update the order status
         if (input.status === "shipped" || input.status === "delivered") {
-          await tx
-            .update(orders)
-            .set({ status: input.status, updatedAt: now })
-            .where(eq(orders.id, input.orderId));
+          await tx.update(orders).set({ status: input.status, updatedAt: now }).where(eq(orders.id, input.orderId));
 
           await tx.insert(orderStatusHistory).values({
             id: crypto.randomUUID(),

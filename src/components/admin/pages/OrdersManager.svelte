@@ -2,8 +2,9 @@
   import { createQuery } from "@tanstack/svelte-query";
   import { fade, fly } from "svelte/transition";
   import { trpc } from "../../../lib/trpc";
+  import { onMount } from "svelte";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
   import type { Order } from "../../../lib/types";
-  import { formatStatus, formatPaymentStatus } from "../../../lib/admin";
   import RowActions from "../RowActions.svelte";
   import Table from "../ui/Table.svelte";
   import TableRow from "../ui/TableRow.svelte";
@@ -84,11 +85,21 @@
 
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-    <Table headers={["No. Pesanan", "Pelanggan", "Total", "Status", "Pembayaran", "Tanggal", "Aksi"]}>
+    <Table
+      headers={[
+        t("orders.order_no"),
+        t("orders.customer"),
+        t("orders.total"),
+        t("orders.status"),
+        t("orders.payment"),
+        t("orders.date"),
+        t("common.actions"),
+      ]}
+    >
       {#if currentRows.length === 0}
         <TableRow>
           <TableCell colspan={7} class="py-12 text-center text-sm text-stone-400 italic">
-            Belum ada pesanan yang sesuai kriteria.
+            {t("orders.empty")}
           </TableCell>
         </TableRow>
       {/if}
@@ -107,21 +118,23 @@
             </div>
           </TableCell>
           <TableCell class="py-4 font-mono font-bold text-stone-800 tabular-nums">
-            <span class="mr-1 text-xs text-stone-400">Rp</span>{order.total?.toLocaleString("id-ID")}
+            <span class="mr-1 text-xs text-stone-400">{t("common.currency_symbol")}</span>{order.total?.toLocaleString(
+              t("common.lang_code"),
+            )}
           </TableCell>
           <TableCell class="py-4">
             <Badge variant={getStatusType(order.status)}>
-              {formatStatus(order.status)}
+              {t(`orders.statuses.${order.status?.toLowerCase()}`) || order.status}
             </Badge>
           </TableCell>
           <TableCell class="py-4">
             <Badge variant={getPaymentStatusType(order.paymentStatus)}>
-              {formatPaymentStatus(order.paymentStatus)}
+              {t(`orders.payments.${order.paymentStatus?.toLowerCase()}`) || order.paymentStatus}
             </Badge>
           </TableCell>
 
           <TableCell class="py-4 text-sm font-medium text-stone-500">
-            {new Date(order.createdAt).toLocaleDateString("id-ID", {
+            {new Date(order.createdAt).toLocaleDateString(t("common.lang_code"), {
               day: "numeric",
               month: "short",
               year: "numeric",

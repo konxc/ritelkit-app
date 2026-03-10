@@ -52,18 +52,14 @@ export async function GET(ctx: APIContext) {
   doc.moveDown();
 
   doc.fontSize(12).text("Alamat");
-  doc
-    .fontSize(11)
-    .text(`${address.province || ""} ${address.city || ""} ${address.district || ""}`.trim());
+  doc.fontSize(11).text(`${address.province || ""} ${address.city || ""} ${address.district || ""}`.trim());
   doc.text(address.street || "");
   doc.moveDown();
 
   doc.fontSize(12).text("Item");
   doc.moveDown(0.5);
   items.forEach((item: any) => {
-    doc
-      .fontSize(11)
-      .text(`${item.name} x${item.qty} - Rp ${Number(item.total).toLocaleString("id-ID")}`);
+    doc.fontSize(11).text(`${item.name} x${item.qty} - Rp ${Number(item.total).toLocaleString("id-ID")}`);
   });
   doc.moveDown();
   doc.fontSize(12).text(`Total: Rp ${Number(invoice.total).toLocaleString("id-ID")}`, {

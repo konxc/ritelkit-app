@@ -14,7 +14,10 @@ const db = getDrizzle(Astro);
 let redirectUrl = "";
 
 if (!admin) {
-  const result = await db.select({ count: sql<number>`count(*)` }).from(adminUsers).get();
+  const result = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(adminUsers)
+    .get();
   const userCount = Number(result?.count || 0);
   redirectUrl = userCount === 0 ? "/admin/setup" : "/admin/login";
 }
@@ -23,10 +26,12 @@ if (redirectUrl) {
   return Astro.redirect(redirectUrl);
 }
 
+import { getLang, type LanguageCode, tServer } from "../../lib/i18n/server";
 const stats = await getDashboardStats(db);
 const recentOrders = await getRecentOrders(db, 5);
+const lang: LanguageCode = getLang(Astro.cookies);
 ---
 
-<AdminLayout title="Ringkasan">
-  <OverviewApp {stats} {recentOrders} client:load />
+<AdminLayout title={tServer(lang, "nav.overview")}>
+  <OverviewApp {stats} {recentOrders} {lang} client:load />
 </AdminLayout>

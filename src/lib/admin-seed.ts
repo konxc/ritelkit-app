@@ -768,10 +768,7 @@ async function ensureShippingRules(db: Client, now: string) {
 
 async function ensureOrders(
   db: Client,
-  couponMap: Record<
-    string,
-    { id: string; type: string; value: number; max_discount: number | null }
-  >,
+  couponMap: Record<string, { id: string; type: string; value: number; max_discount: number | null }>,
   productMap: Record<string, { id: string; price: number; slug: string; name: string }>,
   customerMap: Record<string, string>,
 ) {
@@ -795,9 +792,7 @@ async function ensureOrders(
     const city = cities[Math.floor(Math.random() * cities.length)];
     const status = statuses[Math.floor(Math.random() * statuses.length)];
     const pStatus =
-      status === "cancelled"
-        ? "unpaid"
-        : paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)];
+      status === "cancelled" ? "unpaid" : paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)];
 
     const randomItems = [];
     const itemNum = Math.floor(Math.random() * 3) + 1;
@@ -837,10 +832,7 @@ async function ensureOrders(
 async function insertOrderFullRelational(
   db: Client,
   fixture: OrderFixture,
-  couponMap: Record<
-    string,
-    { id: string; type: string; value: number; max_discount: number | null }
-  >,
+  couponMap: Record<string, { id: string; type: string; value: number; max_discount: number | null }>,
   productMap: Record<string, { id: string; price: number; slug: string; name: string }>,
   customerMap: Record<string, string>,
 ) {
@@ -850,9 +842,7 @@ async function insertOrderFullRelational(
       if (!product) return null;
       return { product_id: product.id, qty: item.qty, price: product.price, name: product.name };
     })
-    .filter((item): item is { product_id: string; qty: number; price: number; name: string } =>
-      Boolean(item),
-    );
+    .filter((item): item is { product_id: string; qty: number; price: number; name: string } => Boolean(item));
 
   if (items.length === 0) return;
 
@@ -911,8 +901,7 @@ async function insertOrderFullRelational(
   const baseDate = new Date(createdAt).getTime();
 
   for (let i = 0; i < historyLimit; i++) {
-    const status =
-      fixture.status === "cancelled" && i === 1 ? "cancelled" : sequence[i] || fixture.status;
+    const status = fixture.status === "cancelled" && i === 1 ? "cancelled" : sequence[i] || fixture.status;
     await db.execute({
       sql: `INSERT INTO order_status_history (id, order_id, status, notes, created_at) VALUES (?, ?, ?, ?, ?)`,
       args: [
@@ -985,10 +974,7 @@ async function insertOrderFullRelational(
   }
 }
 
-async function ensureRefunds(
-  db: Client,
-  orderMap: Record<string, { id: string; orderNo: string }>,
-) {
+async function ensureRefunds(db: Client, orderMap: Record<string, { id: string; orderNo: string }>) {
   const count = await db.execute("SELECT COUNT(*) as count FROM refunds");
   if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
   for (const fixture of refundFixtures) {
@@ -1016,10 +1002,7 @@ async function ensureRefunds(
 async function ensureNotifications(
   db: Client,
   now: string,
-  orderMap: Record<
-    string,
-    { id: string; orderNo: string; customerEmail: string; customerPhone: string }
-  >,
+  orderMap: Record<string, { id: string; orderNo: string; customerEmail: string; customerPhone: string }>,
 ) {
   const count = await db.execute("SELECT COUNT(*) as count FROM notifications");
   if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
@@ -1028,8 +1011,7 @@ async function ensureNotifications(
     if (!order) continue;
     const createdAt = isoDaysAgo(fixture.sentOffset ?? 0);
     const sentAt = fixture.sentOffset !== null ? isoDaysAgo(fixture.sentOffset) : null;
-    const recipient =
-      fixture.recipientField === "customer_email" ? order.customerEmail : order.customerPhone;
+    const recipient = fixture.recipientField === "customer_email" ? order.customerEmail : order.customerPhone;
     await db.execute({
       sql: `INSERT INTO notifications (id, channel, recipient, template, payload_json, status, created_at, sent_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -1094,15 +1076,7 @@ async function ensureAuditLogs(
     await db.execute({
       sql: `INSERT INTO audit_logs (id, actor_email, action, entity_type, entity_id, data_json, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      args: [
-        crypto.randomUUID(),
-        adminEmail,
-        "seed",
-        ref.entity,
-        ref.id,
-        JSON.stringify({ note: ref.note }),
-        now,
-      ],
+      args: [crypto.randomUUID(), adminEmail, "seed", ref.entity, ref.id, JSON.stringify({ note: ref.note }), now],
     });
   }
 }
@@ -1136,10 +1110,7 @@ async function buildProductMap(db: Client) {
 
 async function buildCouponMap(db: Client) {
   const rows = await db.execute("SELECT id, code, type, value, max_discount FROM coupons");
-  const map: Record<
-    string,
-    { id: string; type: string; value: number; max_discount: number | null }
-  > = {};
+  const map: Record<string, { id: string; type: string; value: number; max_discount: number | null }> = {};
   (rows.rows as Array<Record<string, unknown>>).forEach((row) => {
     if (row.code) {
       map[String(row.code)] = {
@@ -1154,9 +1125,7 @@ async function buildCouponMap(db: Client) {
 }
 
 async function buildOrderMap(db: Client) {
-  const rows = await db.execute(
-    "SELECT id, order_no, created_at, customer_email, customer_phone FROM orders",
-  );
+  const rows = await db.execute("SELECT id, order_no, created_at, customer_email, customer_phone FROM orders");
   const map: Record<
     string,
     {

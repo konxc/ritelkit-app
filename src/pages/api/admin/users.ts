@@ -1,12 +1,6 @@
 import type { APIContext } from "astro";
 import { logAudit } from "../../../lib/admin";
-import {
-  hashPassword,
-  normalizeEmail,
-  requireAdmin,
-  sanitizeText,
-  verifyCsrf,
-} from "../../../lib/auth";
+import { hashPassword, normalizeEmail, requireAdmin, sanitizeText, verifyCsrf } from "../../../lib/auth";
 import { getDb, initDb } from "../../../lib/db";
 import { nowIso } from "../../../lib/utils";
 
@@ -31,7 +25,7 @@ export async function POST(ctx: APIContext) {
     sql: "INSERT INTO admin_users (id, email, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?)",
     args: [id, email, hash, role, nowIso()],
   });
-  await logAudit(ctx, "create", "admin_user", id, { email, role });
+  await logAudit(ctx, "create_admin_user", "admin_user", id, { email, role });
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { "Content-Type": "application/json" },

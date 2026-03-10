@@ -68,28 +68,30 @@ if (tab === "customers") {
 const tabs = [
   {
     id: "customers",
-    label: "Pelanggan",
+    label: "customers.title_list",
     icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
   },
   {
     id: "coupons",
-    label: "Kupon",
+    label: "coupons.title_list",
     icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20a4 4 0 0 0 4-4V8a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v8a4 4 0 0 0 4 4h12Z"/><path d="M2 12h20"/><path d="M6 12v.01"/><path d="M10 12v.01"/><path d="M14 12v.01"/><path d="M18 12v.01"/></svg>',
   },
   {
     id: "ads",
-    label: "Iklan",
+    label: "ads.title_list",
     icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="12" x="3" y="6" rx="2" ry="2"/><path d="M3 10h18"/><path d="M7 6v12"/><path d="M15 13h.01"/></svg>',
   },
 ];
+import { getLang, type LanguageCode, tServer } from "../../lib/i18n/server";
+const lang: LanguageCode = getLang(Astro.cookies);
 ---
 
-<AdminLayout title="Pemasaran">
+<AdminLayout title={tServer(lang, "nav.marketing")}>
   <div slot="header-tabs">
-    <AdminTabs tabs={tabs} activeTab={tab} />
+    <AdminTabs tabs={tabs} activeTab={tab} {lang} />
   </div>
 
-  <PemasaranTabContent {tab} {q} {page} {limit} {initialData} client:load />
+  <PemasaranTabContent {tab} {q} {page} {limit} {initialData} {lang} client:load />
 
   {
     tab === "customers" && (

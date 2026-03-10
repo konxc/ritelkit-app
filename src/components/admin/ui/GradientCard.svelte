@@ -1,19 +1,19 @@
 <script lang="ts">
-import type { Snippet } from "svelte";
+  import type { Snippet } from "svelte";
 
-let {
-  title,
-  icon,
-  description,
-  children,
-  class: className = "",
-}: {
-  title: string;
-  icon?: string;
-  description?: string;
-  children?: Snippet;
-  class?: string;
-} = $props();
+  let {
+    title,
+    icon,
+    description,
+    children,
+    class: className = "",
+  }: {
+    title: string;
+    icon?: string;
+    description?: string;
+    children?: Snippet;
+    class?: string;
+  } = $props();
 </script>
 
 <div

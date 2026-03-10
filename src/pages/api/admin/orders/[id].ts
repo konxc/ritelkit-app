@@ -1,5 +1,6 @@
 import type { APIContext } from "astro";
 import { json, readBody } from "../../../../lib/api";
+import { logAudit } from "../../../../lib/admin";
 import { requireAdmin, sanitizeText, verifyCsrf } from "../../../../lib/auth";
 import { getDb, initDb } from "../../../../lib/db";
 import { validateOrderUpdate } from "../../../../lib/order";
@@ -40,12 +41,7 @@ export async function PUT(ctx: APIContext) {
   if (!current?.status || !current?.payment_status) {
     return new Response("Order not found", { status: 404 });
   }
-  const validation = validateOrderUpdate(
-    current.status,
-    status,
-    current.payment_status,
-    paymentStatus,
-  );
+  const validation = validateOrderUpdate(current.status, status, current.payment_status, paymentStatus);
   if (!validation.ok) {
     return new Response(validation.message || "Invalid transition", {
       status: 400,
@@ -57,13 +53,8 @@ export async function PUT(ctx: APIContext) {
   });
   await db.execute({
     sql: "INSERT INTO order_status_history (id, order_id, status, notes, created_at) VALUES (?, ?, ?, ?, ?)",
-    args: [
-      crypto.randomUUID(),
-      id,
-      status,
-      sanitizeText(String(body.notes || "")) || null,
-      nowIso(),
-    ],
+    args: [crypto.randomUUID(), id, status, sanitizeText(String(body.notes || "")) || null, nowIso()],
   });
+  await logAudit(ctx, "update_order", "order", id, { status, paymentStatus });
   return json({ ok: true });
 }

@@ -1,16 +1,16 @@
 <script lang="ts">
-import type { Snippet } from "svelte";
-import TableRow from "./TableRow.svelte";
-import TableCell from "./TableCell.svelte";
+  import type { Snippet } from "svelte";
+  import TableRow from "./TableRow.svelte";
+  import TableCell from "./TableCell.svelte";
 
-interface Props {
-  title: string;
-  subtitle?: string;
-  colspan: number;
-  icon?: Snippet;
-}
+  interface Props {
+    title: string;
+    subtitle?: string;
+    colspan: number;
+    icon?: Snippet;
+  }
 
-let { title, subtitle = "", colspan, icon }: Props = $props();
+  let { title, subtitle = "", colspan, icon }: Props = $props();
 </script>
 
 <TableRow>

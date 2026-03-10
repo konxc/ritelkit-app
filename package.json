@@ -21,7 +21,8 @@
     "astro": "astro",
     "seed": "tsx scripts/seed-admin.ts",
     "capture:research": "node scripts/capture-research.mjs",
-    "format": "prettier --write ."
+    "format": "prettier --write . && biome check --write .",
+    "format:check": "prettier --check . && biome check ."
   },
   "dependencies": {
     "@astrojs/check": "^0.9.6",
@@ -45,7 +46,6 @@
     "sharp": "^0.34.4",
     "svelte": "^5.53.3",
     "tailwindcss": "^4.2.1",
-    "typescript": "^5.9.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -59,10 +59,11 @@
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-svelte": "^3.5.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
-    "svelte-check": "^4.4.3",
+    "svelte-check": "^4.4.5",
     "svelte-check-rs": "^0.9.5",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
     "wrangler": "^4.67.0"
   }
 }

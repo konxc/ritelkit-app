@@ -1,36 +1,49 @@
 <script lang="ts">
-import { fade, fly } from "svelte/transition";
-import StatCard from "../ui/StatCard.svelte";
-import Button from "../ui/Button.svelte";
-import Table from "../ui/Table.svelte";
-import TableRow from "../ui/TableRow.svelte";
-import TableCell from "../ui/TableCell.svelte";
-import Badge from "../ui/Badge.svelte";
+  import { fade, fly } from "svelte/transition";
+  import StatCard from "../ui/StatCard.svelte";
+  import Button from "../ui/Button.svelte";
+  import Table from "../ui/Table.svelte";
+  import TableRow from "../ui/TableRow.svelte";
+  import TableCell from "../ui/TableCell.svelte";
+  import Badge from "../ui/Badge.svelte";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
+  import { onMount, untrack } from "svelte";
 
-let {
-  stats,
-  recentOrders = [],
-}: {
-  stats: {
-    ordersToday: number;
-    revenueToday: number;
-    activeCoupons: number;
-    activeProducts: number;
-    pendingShipments: number;
-    pendingRefunds: number;
-  };
-  recentOrders?: any[];
-} = $props();
+  let {
+    stats,
+    recentOrders = [],
+    lang,
+  }: {
+    stats: {
+      ordersToday: number;
+      revenueToday: number;
+      activeCoupons: number;
+      activeProducts: number;
+      pendingShipments: number;
+      pendingRefunds: number;
+    };
+    recentOrders?: any[];
+    lang?: any;
+  } = $props();
 
-const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
+  // Optimized SSR & Hydration: Initial call using untrack to avoid Svelte 5 warnings
+  initI18n(untrack(() => lang));
+
+  const formatCurrency = (val: number) => `${t("common.currency_symbol")} ${val.toLocaleString(t("common.lang_code"))}`;
+
+  onMount(() => {
+    // initI18n handled by root and effect
+  });
 </script>
 
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
     <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
       <div>
-        <h1 class="font-['Syne',sans-serif] text-3xl font-extrabold tracking-tight text-stone-900">Ringkasan Bisnis</h1>
-        <p class="mt-1 text-stone-500">Pantau performa harian Roti Sholawat.</p>
+        <h1 class="font-['Syne',sans-serif] text-3xl font-extrabold tracking-tight text-stone-900">
+          {t("dashboard.title")}
+        </h1>
+        <p class="mt-1 text-stone-500">{t("dashboard.subtitle")}</p>
       </div>
       <div class="flex items-center gap-3">
         <Button variant="ghost" size="sm">
@@ -47,7 +60,7 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
             ><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"
             ></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg
           >
-          Ekspor
+          {t("common.export")}
         </Button>
         <Button variant="primary" size="sm">
           <svg
@@ -61,13 +74,13 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
             stroke-linecap="round"
             stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg
           >
-          Pesanan Baru
+          {t("common.new_order")}
         </Button>
       </div>
     </div>
 
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      <StatCard label="Pesanan Hari Ini" value={stats.ordersToday}>
+      <StatCard label={t("dashboard.stats.orders_today")} value={stats.ordersToday}>
         {#snippet icon()}
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -86,7 +99,7 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
           >
         {/snippet}
       </StatCard>
-      <StatCard label="Revenue Hari Ini" value={formatCurrency(stats.revenueToday)}>
+      <StatCard label={t("dashboard.stats.revenue_today")} value={formatCurrency(stats.revenueToday)}>
         {#snippet icon()}
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -103,7 +116,7 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
           >
         {/snippet}
       </StatCard>
-      <StatCard label="Produk Aktif" value={stats.activeProducts}>
+      <StatCard label={t("dashboard.stats.active_products")} value={stats.activeProducts}>
         {#snippet icon()}
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -121,7 +134,7 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
           >
         {/snippet}
       </StatCard>
-      <StatCard label="Pengiriman Aktif" value={stats.pendingShipments}>
+      <StatCard label={t("dashboard.stats.pending_shipments")} value={stats.pendingShipments}>
         {#snippet icon()}
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -139,7 +152,7 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
           >
         {/snippet}
       </StatCard>
-      <StatCard label="Kupon Aktif" value={stats.activeCoupons}>
+      <StatCard label={t("dashboard.stats.active_coupons")} value={stats.activeCoupons}>
         {#snippet icon()}
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -157,7 +170,7 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
           >
         {/snippet}
       </StatCard>
-      <StatCard label="Pengembalian Menunggu" value={stats.pendingRefunds}>
+      <StatCard label={t("dashboard.stats.pending_refunds")} value={stats.pendingRefunds}>
         {#snippet icon()}
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -182,10 +195,10 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
         class="rounded-3xl border border-stone-200/60 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] md:p-8 lg:col-span-2"
       >
         <div class="mb-6 flex items-center justify-between">
-          <h2 class="font-['Syne',sans-serif] text-xl font-bold text-stone-800">Pesanan Masuk Terbaru</h2>
+          <h2 class="font-['Syne',sans-serif] text-xl font-bold text-stone-800">{t("dashboard.recent_orders")}</h2>
           <a
             href="/admin/orders?tab=order"
-            class="text-sm font-bold text-[#c48a3a] transition-colors hover:text-[#a6722d]">Lihat Semua</a
+            class="text-sm font-bold text-[#c48a3a] transition-colors hover:text-[#a6722d]">{t("common.see_all")}</a
           >
         </div>
 
@@ -209,13 +222,16 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
                 ></path></svg
               >
             </div>
-            <h3 class="mb-1 font-bold text-stone-900">Belum ada pesanan hari ini</h3>
+            <h3 class="mb-1 font-bold text-stone-900">{t("common.empty_orders")}</h3>
             <p class="max-w-sm text-sm text-stone-500">
-              Pesanan yang masuk akan otomatis muncul di sini. Anda juga bisa menambah pesanan manual.
+              {t("common.empty_orders_desc")}
             </p>
           </div>
         {:else}
-          <Table headers={["No. Pesanan", "Pelanggan", "Total", "Status"]} class="!rounded-none border-none shadow-none">
+          <Table
+            headers={[t("common.order_no"), t("common.customer"), t("common.total"), t("common.status")]}
+            class="!rounded-none border-none shadow-none"
+          >
             {#each recentOrders as order}
               <TableRow class="group border-b border-stone-100 last:border-0 hover:bg-stone-50/50">
                 <TableCell class="py-4">
@@ -223,7 +239,7 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
                     >{order.orderNo}</span
                   >
                   <div class="mt-0.5 text-[0.7rem] text-stone-400">
-                    {new Date(order.createdAt).toLocaleString("id-ID")}
+                    {new Date(order.createdAt).toLocaleString(t("common.lang_code"))}
                   </div>
                 </TableCell>
                 <TableCell class="py-4">
@@ -239,7 +255,7 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
                 </TableCell>
                 <TableCell class="py-4">
                   <Badge variant={order.paymentStatus === "paid" ? "success" : "warning"}>
-                    {order.paymentStatus.toUpperCase()}
+                    {t("payment." + (order.paymentStatus || "unpaid"))}
                   </Badge>
                 </TableCell>
               </TableRow>
@@ -255,7 +271,9 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
           class="pointer-events-none absolute -top-12 -right-12 h-64 w-64 rounded-full bg-[#c48a3a]/10 blur-3xl transition-all duration-700 group-hover:bg-[#c48a3a]/20"
         ></div>
         <div class="pointer-events-none absolute -bottom-6 -left-6 h-32 w-32 rounded-full bg-white/5 blur-2xl"></div>
-        <h2 class="relative z-10 mb-6 font-['Syne',sans-serif] text-xl font-bold text-white">Tindakan Cepat</h2>
+        <h2 class="relative z-10 mb-6 font-['Syne',sans-serif] text-xl font-bold text-white">
+          {t("dashboard.quick_actions")}
+        </h2>
         <div class="relative z-10 flex flex-col gap-3">
           <a
             href="/admin/catalog?tab=products"
@@ -277,8 +295,8 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
               >
             </div>
             <div>
-              <div class="text-[0.95rem] font-bold">Tambah Produk Baru</div>
-              <div class="text-xs text-stone-400">Pembaruan ke katalog menu</div>
+              <div class="text-[0.95rem] font-bold">{t("dashboard.add_product")}</div>
+              <div class="text-xs text-stone-400">{t("common.add_product_desc")}</div>
             </div>
           </a>
           <a
@@ -304,8 +322,8 @@ const formatCurrency = (val: number) => `Rp ${val.toLocaleString("id-ID")}`;
               >
             </div>
             <div>
-              <div class="text-[0.95rem] font-bold">Cek Pengaturan Toko</div>
-              <div class="text-xs text-stone-400">Buka pengaturan operasional</div>
+              <div class="text-[0.95rem] font-bold">{t("dashboard.check_settings")}</div>
+              <div class="text-xs text-stone-400">{t("common.quick_actions_desc")}</div>
             </div>
           </a>
         </div>

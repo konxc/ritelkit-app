@@ -2,6 +2,7 @@
   import { trpc } from "../../../lib/trpc";
   import { createQuery, useQueryClient } from "@tanstack/svelte-query";
   import { onMount } from "svelte";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
   import type { Product } from "../../../lib/types";
   import Fab from "../ui/Fab.svelte";
   import Drawer from "../ui/overlay/Drawer.svelte";
@@ -24,17 +25,17 @@
   import Textarea from "../ui/forms/Textarea.svelte";
 
   let columns = $state([
-    { id: "foto", label: "Foto", isVisible: true, class: "" },
-    { id: "produk", label: "Produk", isVisible: true, class: "" },
-    { id: "kategori", label: "Kategori", isVisible: true, class: "hidden lg:table-cell" },
-    { id: "harga", label: "Harga", isVisible: true, class: "" },
-    { id: "stok", label: "Stok", isVisible: true, class: "" },
-    { id: "status", label: "Status", isVisible: true, class: "" },
+    { id: "foto", label: t("catalog.products.photo"), isVisible: true, class: "" },
+    { id: "produk", label: t("catalog.products.product"), isVisible: true, class: "" },
+    { id: "kategori", label: t("catalog.products.category"), isVisible: true, class: "hidden lg:table-cell" },
+    { id: "harga", label: t("catalog.products.price"), isVisible: true, class: "" },
+    { id: "stok", label: t("catalog.products.stock"), isVisible: true, class: "" },
+    { id: "status", label: t("common.status"), isVisible: true, class: "" },
   ]);
 
   let activeHeaders = $derived([
     ...columns.filter((c) => c.isVisible).map((c) => ({ label: c.label, class: c.class })),
-    "Aksi",
+    t("common.actions"),
   ]);
 
   type ProductRow = Pick<
@@ -125,7 +126,7 @@
     try {
       await trpc.products.create.mutate(payload);
       queryClient.invalidateQueries({ queryKey: ["products.list"] });
-      toastRef?.show("Produk berhasil ditambahkan!", "success");
+      toastRef?.show(t("catalog.products.toast_add"), "success");
       return true;
     } catch (err: any) {
       toastRef?.show(err.message || "Failed to add product", "error");
@@ -140,7 +141,7 @@
     try {
       await trpc.products.update.mutate({ id, data });
       queryClient.invalidateQueries({ queryKey: ["products.list"] });
-      toastRef?.show("Produk diperbarui", "success");
+      toastRef?.show(t("catalog.products.toast_update"), "success");
     } catch (err: any) {
       toastRef?.show(err.message || "Failed to update product", "error");
     } finally {
@@ -149,12 +150,12 @@
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Hapus produk ini?")) return;
+    if (!confirm(t("catalog.products.confirm_delete"))) return;
     isMutating = true;
     try {
       await trpc.products.delete.mutate(id);
       queryClient.invalidateQueries({ queryKey: ["products.list"] });
-      toastRef?.show("Produk dihapus", "success");
+      toastRef?.show(t("catalog.products.toast_delete"), "success");
     } catch (err: any) {
       toastRef?.show(err.message || "Failed to delete product", "error");
     } finally {
@@ -178,13 +179,13 @@
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
     try {
-      uploadStatus = "Mengupload...";
+      uploadStatus = "Uploading...";
       const urls = await uploadFiles(input.files, csrfToken);
       newImageUrls = [...newImageUrls, ...urls];
       uploadStatus = "";
     } catch (err: any) {
       toastRef?.show(err.message, "error");
-      uploadStatus = "Gagal upload";
+      uploadStatus = "Upload failed";
     }
   };
 
@@ -193,13 +194,13 @@
     const files = event.dataTransfer?.files;
     if (!files?.length) return;
     try {
-      uploadStatus = "Mengupload...";
+      uploadStatus = "Uploading...";
       const urls = await uploadFiles(files, csrfToken);
       newImageUrls = [...newImageUrls, ...urls];
       uploadStatus = "";
     } catch (err: any) {
       toastRef?.show(err.message, "error");
-      uploadStatus = "Gagal upload";
+      uploadStatus = "Upload failed";
     }
   };
 
@@ -265,10 +266,10 @@
 </script>
 
 <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
-  <SectionHeader title="Daftar Produk" muted="Kelola produk, edit harga, dan perbarui stok." />
+  <SectionHeader title={t("catalog.products.title")} muted={t("catalog.products.subtitle")} />
   <div class="hidden lg:flex lg:items-center lg:gap-3">
     <div class="mr-2">
-      <CatalogHeaderFilters tab="products" categoryOptions={currentCategories} columns={columns} />
+      <CatalogHeaderFilters tab="products" categoryOptions={currentCategories} {columns} />
     </div>
 
     <ColumnVisibilityToggle bind:columns />
@@ -297,7 +298,7 @@
         <polyline points="7 10 12 15 17 10" />
         <line x1="12" y1="15" x2="12" y2="3" />
       </svg>
-      <span class="font-bold">Ekspor</span>
+      <span class="font-bold">{t("common.export")}</span>
     </Button>
 
     <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
@@ -313,13 +314,13 @@
           stroke-linecap="round"
           stroke-linejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg
         >
-        Tambah Produk
+        {t("catalog.products.add")}
       </div>
     </Button>
   </div>
 </div>
 
-<Fab onclick={() => (isDrawerOpen = true)} label="Tambah Produk" />
+<Fab onclick={() => (isDrawerOpen = true)} label={t("catalog.products.add")} />
 
 {#snippet productIcon()}
   <svg
@@ -345,7 +346,7 @@
       class="h-11 flex-1 rounded-2xl border border-stone-200 bg-white text-[0.7rem] font-black tracking-widest text-stone-400 uppercase transition-all hover:bg-stone-50 hover:text-stone-600 focus:outline-none active:scale-95 lg:h-[52px]"
       onclick={() => (isDrawerOpen = false)}
     >
-      Batalkan
+      {t("common.cancel")}
     </button>
     <Button
       type="submit"
@@ -364,7 +365,7 @@
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <span class="text-xs">Menyimpan...</span>
+          <span class="text-xs">{t("common.saving")}</span>
         </div>
       {:else}
         <div class="flex items-center gap-3">
@@ -379,7 +380,7 @@
             stroke-linecap="round"
             stroke-linejoin="round"><path d="M12 5v14" /><path d="M5 12h14" /></svg
           >
-          <span class="text-[0.75rem] tracking-tight">SIMPAN PRODUK BARU</span>
+          <span class="text-[0.75rem] tracking-tight uppercase">{t("catalog.products.add")}</span>
         </div>
       {/if}
     </Button>
@@ -388,8 +389,8 @@
 
 <Drawer
   bind:isOpen={isDrawerOpen}
-  title="Tambah Produk"
-  subtitle="Input Katalog Produk Baru"
+  title={t("catalog.products.add")}
+  subtitle={t("catalog.products.subtitle")}
   icon={productIcon}
   footer={drawerFooter}
   maxWidth="xl"
@@ -404,17 +405,17 @@
       <div class="flex flex-1 flex-col space-y-6 lg:space-y-10">
         <div class="space-y-6">
           <h4 class="border-b border-[#c48a3a]/20 pb-2 text-xs font-bold tracking-widest text-[#c48a3a] uppercase">
-            Informasi Dasar
+            {t("catalog.products.basic_info")}
           </h4>
           <div class="grid grid-cols-2 gap-4 lg:grid-cols-2 lg:gap-5">
             <div class="col-span-2">
               <TextInput
                 id="name"
                 name="name"
-                label="Nama Produk"
+                label={t("catalog.products.name")}
                 required
                 bind:value={newName}
-                placeholder="Masukkan nama produk yang menarik (misal: Roti Sisir Mentega)..."
+                placeholder={t("catalog.products.name_placeholder")}
                 class="ring-stone-100/50"
               />
             </div>
@@ -422,8 +423,8 @@
               <TextInput
                 id="sku"
                 name="sku"
-                label="SKU (Opsional)"
-                placeholder="PROD-RT001"
+                label={t("catalog.products.sku")}
+                placeholder={t("catalog.products.sku_placeholder")}
                 class="font-mono text-xs text-stone-600 ring-stone-100/50"
               />
             </div>
@@ -431,12 +432,12 @@
               <SelectInput
                 id="category_id"
                 name="categoryId"
-                label="Kategori"
+                label={t("catalog.products.category")}
                 options={currentCategories.map((c) => ({
                   label: c.name,
                   value: c.id,
                 }))}
-                placeholder="-- Pilih Kategori --"
+                placeholder={t("common.loading")}
                 class="ring-stone-100/50"
               />
             </div>
@@ -445,8 +446,8 @@
             <Textarea
               id="description"
               name="description"
-              label="Deskripsi"
-              placeholder="Jelaskan detail produk, rasa, tekstur, atau keunggulan lainnya agar menarik pembeli..."
+              label={t("catalog.products.description")}
+              placeholder={t("catalog.products.description_placeholder")}
               class="flex-1 ring-stone-100/50"
             />
           </div>
@@ -454,20 +455,22 @@
 
         <div class="space-y-6">
           <h4 class="border-b border-[#c48a3a]/20 pb-2 text-xs font-bold tracking-widest text-[#c48a3a] uppercase">
-            Penetapan Harga & Stok
+            {t("catalog.products.pricing_stock")}
           </h4>
           <div class="grid grid-cols-2 gap-4 lg:grid-cols-3 lg:gap-5">
             <div class="relative space-y-1 lg:space-y-1.5">
               <label for="price" class="block text-[0.75rem] font-bold tracking-wider text-stone-500 uppercase"
-                >Harga</label
+                >{t("catalog.products.price")}</label
               >
               <div class="relative">
-                <span class="absolute top-1/2 left-3 z-10 -translate-y-1/2 text-xs font-bold text-stone-400">Rp</span>
+                <span class="absolute top-1/2 left-3 z-10 -translate-y-1/2 text-xs font-bold text-stone-400"
+                  >{t("common.currency_symbol")}</span
+                >
                 <TextInput
                   id="price"
                   name="price"
                   type="number"
-                  placeholder="15.000"
+                  placeholder={t("catalog.products.price_placeholder")}
                   required
                   class="pl-9 font-bold text-stone-800 tabular-nums ring-stone-100/50"
                 />
@@ -478,8 +481,8 @@
                 id="stock"
                 name="stock"
                 type="number"
-                label="Stok Awal"
-                placeholder="Jumlah sedia"
+                label={t("catalog.products.initial_stock")}
+                placeholder={t("catalog.products.stock_placeholder")}
                 class="text-center font-bold tabular-nums ring-stone-100/50"
               />
             </div>
@@ -487,11 +490,11 @@
               <SelectInput
                 id="isActive"
                 name="isActive"
-                label="Visibilitas"
-                placeholder="-- Status --"
+                label={t("catalog.products.visibility")}
+                placeholder={t("common.loading")}
                 options={[
-                  { label: "🟢 Publik / Aktif", value: "true" },
-                  { label: "🔴 Draf / Tersembunyi", value: "false" },
+                  { label: t("catalog.products.active_pub"), value: "true" },
+                  { label: t("catalog.products.draft_hide"), value: "false" },
                 ]}
                 class="ring-stone-100/50"
               />
@@ -501,13 +504,13 @@
 
         <div class="space-y-6">
           <h4 class="border-b border-[#c48a3a]/20 pb-2 text-xs font-bold tracking-widest text-[#c48a3a] uppercase">
-            Media & Visual
+            {t("catalog.products.media_visual")}
           </h4>
           <div
             class="relative flex w-full flex-col gap-2 space-y-1 self-start rounded-3xl border border-stone-100 bg-stone-50/50 p-6 shadow-sm"
           >
             <label for="file-input" class="block text-[0.7rem] font-bold tracking-wider text-stone-500 uppercase"
-              >Upload Foto Utama dan Galeri</label
+              >{t("catalog.products.upload_title")}</label
             >
             <div
               class="group relative mt-2 flex min-h-[160px] flex-1 cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed border-stone-200/80 bg-white p-6 text-center shadow-inner transition-colors hover:border-[#c48a3a]/40 hover:bg-stone-50"
@@ -548,8 +551,10 @@
                   >
                 </div>
                 <div>
-                  <span class="mb-0.5 block text-sm font-bold text-stone-700">Tarik Foto ke Sini</span>
-                  <p class="text-[0.65rem] font-semibold tracking-wide text-stone-400 uppercase">atau klik area ini</p>
+                  <span class="mb-0.5 block text-sm font-bold text-stone-700">{t("catalog.products.upload_drag")}</span>
+                  <p class="text-[0.65rem] font-semibold tracking-wide text-stone-400 uppercase">
+                    {t("catalog.products.upload_click")}
+                  </p>
                 </div>
               </div>
             </div>
@@ -570,8 +575,8 @@
 <Table headers={activeHeaders}>
   {#if currentRows.length === 0}
     <TableEmptyState
-      title="Daftar Produk Kosong"
-      subtitle="Belum ada produk yang dibuat. Gunakan form di atas untuk menambahkannya."
+      title={t("catalog.products.empty")}
+      subtitle={t("catalog.products.empty_desc")}
       colspan={activeHeaders.length}
     />
   {/if}
@@ -602,26 +607,27 @@
             <InlineEditableField
               value={row.name}
               field="name"
-              ariaLabel="Nama Produk"
+              ariaLabel={t("catalog.products.name")}
               title={row.name}
               class="w-full truncate text-[0.85rem] leading-tight lg:text-[0.95rem]"
             />
             <div class="flex items-center gap-1.5 lg:ml-3">
               <span
                 class="px-1.2 rounded bg-stone-100 py-0.5 text-[0.55rem] font-bold tracking-wider text-stone-400 uppercase lg:px-1.5 lg:text-[0.6rem]"
-                >SKU</span
+                >{t("catalog.products.label_sku")}</span
               >
               <InlineEditableField
                 value={row.sku || "-"}
                 field="sku"
-                ariaLabel="SKU Produk"
+                ariaLabel={t("catalog.products.sku")}
                 class="w-full truncate px-2 py-0.5 font-mono text-[0.65rem] font-normal text-stone-500 shadow-sm lg:text-[0.7rem]"
               />
             </div>
             <!-- Mobile Category Badge -->
             <div class="mt-0.5 lg:hidden">
               <span class="text-[0.65rem] font-bold tracking-wide text-[#c48a3a] uppercase">
-                {categories.find((c) => String(c.id) === String(row.categoryId))?.name || "Tanpa Kategori"}
+                {categories.find((c) => String(c.id) === String(row.categoryId))?.name ||
+                  t("catalog.products.no_category")}
               </span>
             </div>
           </div>
@@ -633,7 +639,7 @@
             data-field="categoryId"
             class="w-[140px] cursor-pointer truncate rounded-xl border border-stone-200/50 bg-stone-100/60 px-3 py-2 text-sm font-semibold text-stone-700 shadow-sm transition-all outline-none hover:bg-white focus:border-[#c48a3a] focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
           >
-            <option value="">Tanpa Kategori</option>
+            <option value="">{t("catalog.products.no_category")}</option>
             {#each categories as cat}
               <option value={cat.id} selected={cat.id === row.categoryId}>
                 {cat.name}
@@ -645,11 +651,11 @@
       {#if columns[3].isVisible}
         <TableCell class="py-4">
           <div class="flex items-center">
-            <span class="mr-1.5 pl-3 text-xs font-bold text-stone-400">Rp</span>
+            <span class="mr-1.5 pl-3 text-xs font-bold text-stone-400">{t("common.currency_symbol")}</span>
             <InlineEditableField
               value={row.price}
               field="price"
-              ariaLabel="Harga Produk"
+              ariaLabel={t("catalog.products.price")}
               class="w-auto text-stone-800 tabular-nums"
             />
           </div>
@@ -661,7 +667,7 @@
             <InlineEditableField
               value={row.stock ?? ""}
               field="stock"
-              ariaLabel="Stok Produk"
+              ariaLabel={t("catalog.products.stock")}
               class="w-20 text-center text-[1rem] tabular-nums"
             />
           </div>
@@ -673,8 +679,8 @@
             data-field="isActive"
             class="cursor-pointer rounded-full border border-stone-200/50 bg-stone-100/60 px-3 py-1.5 text-[0.75rem] font-bold tracking-wider text-stone-700 uppercase transition-all outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
           >
-            <option value="true" selected={row.isActive === 1}>🟢 AKTIF</option>
-            <option value="false" selected={row.isActive === 0}>🔴 DRAF</option>
+            <option value="true" selected={row.isActive === 1}>{t("catalog.products.active_pub")}</option>
+            <option value="false" selected={row.isActive === 0}>{t("catalog.products.draft_hide")}</option>
           </select>
         </TableCell>
       {/if}

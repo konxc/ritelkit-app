@@ -30,21 +30,9 @@ export async function POST(ctx: APIContext) {
   await db.execute({
     sql: `INSERT INTO ads_campaigns (id, name, channel, budget, spend, status, start_at, end_at, notes, created_at, updated_at)
               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    args: [
-      id,
-      name,
-      channel,
-      budget,
-      0,
-      status,
-      startAt || null,
-      endAt || null,
-      notes || null,
-      now,
-      now,
-    ],
+    args: [id, name, channel, budget, 0, status, startAt || null, endAt || null, notes || null, now, now],
   });
-  await logAudit(ctx, "create", "ads_campaign", id, { name, channel, budget });
+  await logAudit(ctx, "create_ads_campaign", "ads_campaign", id, { name, channel, budget });
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { "Content-Type": "application/json" },

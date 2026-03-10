@@ -47,7 +47,7 @@ export async function PUT(ctx: APIContext) {
     sql: "UPDATE cms_pages SET title = ?, slug = ?, content_md = ?, is_active = ?, updated_at = ? WHERE id = ?",
     args: [title, slug, content, isActive ? 1 : 0, nowIso(), id],
   });
-  await logAudit(ctx, "update", "cms_page", id, { slug, title });
+  await logAudit(ctx, "update_cms_page", "cms_page", id, { slug, title });
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { "Content-Type": "application/json" },
@@ -67,7 +67,7 @@ export async function DELETE(ctx: APIContext) {
   const id = ctx.params.id || "";
   const db = getDb(ctx);
   await db.execute({ sql: "DELETE FROM cms_pages WHERE id = ?", args: [id] });
-  await logAudit(ctx, "delete", "cms_page", id);
+  await logAudit(ctx, "delete_cms_page", "cms_page", id);
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { "Content-Type": "application/json" },

@@ -1,5 +1,6 @@
 import type { APIContext } from "astro";
 import { json, readBody } from "../../../../lib/api";
+import { logAudit } from "../../../../lib/admin";
 import { requireAdmin, sanitizeText, verifyCsrf } from "../../../../lib/auth";
 import { getDb, initDb } from "../../../../lib/db";
 import { asInt, nowIso } from "../../../../lib/utils";
@@ -48,6 +49,7 @@ export async function PUT(ctx: APIContext) {
       id,
     ],
   });
+  await logAudit(ctx, "update_coupon", "coupon", id, { code });
   return json({ ok: true });
 }
 
@@ -62,5 +64,6 @@ export async function DELETE(ctx: APIContext) {
   if (!id) return new Response("Invalid ID", { status: 400 });
   const db = getDb(ctx);
   await db.execute({ sql: "DELETE FROM coupons WHERE id = ?", args: [id] });
+  await logAudit(ctx, "delete_coupon", "coupon", id);
   return json({ ok: true });
 }

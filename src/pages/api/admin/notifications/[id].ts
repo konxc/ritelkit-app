@@ -24,7 +24,7 @@ export async function PUT(ctx: APIContext) {
     sql: `UPDATE notifications SET channel = ?, recipient = ?, status = ?, updated_at = ? WHERE id = ?`,
     args: [channel, recipient, status || "pending", nowIso(), id],
   });
-  await logAudit(ctx, "update", "notification", id, {
+  await logAudit(ctx, "update_notification", "notification", id, {
     channel,
     recipient,
     status,
@@ -51,7 +51,7 @@ export async function DELETE(ctx: APIContext) {
     sql: "DELETE FROM notifications WHERE id = ?",
     args: [id],
   });
-  await logAudit(ctx, "delete", "notification", id);
+  await logAudit(ctx, "delete_notification", "notification", id);
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { "Content-Type": "application/json" },

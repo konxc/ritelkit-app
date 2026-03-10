@@ -44,9 +44,7 @@ export async function PUT(ctx: APIContext) {
     const midtransOrderId = String(orderRow?.midtrans_order_id || "");
     if (midtransOrderId) {
       const env = getEnv(ctx);
-      const base = isProduction(ctx)
-        ? "https://api.midtrans.com"
-        : "https://api.sandbox.midtrans.com";
+      const base = isProduction(ctx) ? "https://api.midtrans.com" : "https://api.sandbox.midtrans.com";
       const auth = btoa(`${env.MIDTRANS_SERVER_KEY}:`);
       try {
         const res = await fetch(`${base}/v2/${midtransOrderId}/refund`, {
@@ -71,7 +69,7 @@ export async function PUT(ctx: APIContext) {
       }
     }
   }
-  await logAudit(ctx, "update", "refund", id, {
+  await logAudit(ctx, "update_refund", "refund", id, {
     order_no: orderNo,
     amount,
     status,
@@ -95,7 +93,7 @@ export async function DELETE(ctx: APIContext) {
   const id = ctx.params.id || "";
   const db = getDb(ctx);
   await db.execute({ sql: "DELETE FROM refunds WHERE id = ?", args: [id] });
-  await logAudit(ctx, "delete", "refund", id);
+  await logAudit(ctx, "delete_refund", "refund", id);
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { "Content-Type": "application/json" },

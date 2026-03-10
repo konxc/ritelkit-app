@@ -70,9 +70,6 @@ importers:
       tailwindcss:
         specifier: ^4.2.1
         version: 4.2.1
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
       zod:
         specifier: ^4.3.6
         version: 4.3.6
@@ -108,8 +105,8 @@ importers:
         specifier: ^0.7.2
         version: 0.7.2(prettier-plugin-astro@0.14.1)(prettier-plugin-svelte@3.5.1(prettier@3.8.1)(svelte@5.53.3))(prettier@3.8.1)
       svelte-check:
-        specifier: ^4.4.3
-        version: 4.4.3(picomatch@4.0.3)(svelte@5.53.3)(typescript@5.9.3)
+        specifier: ^4.4.5
+        version: 4.4.5(picomatch@4.0.3)(svelte@5.53.3)(typescript@5.9.3)
       svelte-check-rs:
         specifier: ^0.9.5
         version: 0.9.5(@typescript/native-preview@7.0.0-dev.20260224.1)
@@ -119,6 +116,9 @@ importers:
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
       wrangler:
         specifier: ^4.67.0
         version: 4.67.0(@cloudflare/workers-types@4.20260228.0)
@@ -4478,9 +4478,9 @@ packages:
     peerDependencies:
       "@typescript/native-preview": ">=7.0.0-dev.0"
 
-  svelte-check@4.4.3:
+  svelte-check@4.4.5:
     resolution:
-      { integrity: sha512-4HtdEv2hOoLCEsSXI+RDELk9okP/4sImWa7X02OjMFFOWeSdFF3NFy3vqpw0z+eH9C88J9vxZfUXz/Uv2A1ANw== }
+      { integrity: sha512-1bSwIRCvvmSHrlK52fOlZmVtUZgil43jNL/2H18pRpa+eQjzGt6e3zayxhp1S7GajPFKNM/2PMCG+DZFHlG9fw== }
     engines: { node: ">= 18.0.0" }
     hasBin: true
     peerDependencies:
@@ -8963,7 +8963,7 @@ snapshots:
       "@svelte-check-rs/linux-x64": 0.9.5
       "@svelte-check-rs/win32-x64": 0.9.5
 
-  svelte-check@4.4.3(picomatch@4.0.3)(svelte@5.53.3)(typescript@5.9.3):
+  svelte-check@4.4.5(picomatch@4.0.3)(svelte@5.53.3)(typescript@5.9.3):
     dependencies:
       "@jridgewell/trace-mapping": 0.3.31
       chokidar: 4.0.3

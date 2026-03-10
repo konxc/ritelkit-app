@@ -12,7 +12,8 @@
   import TextInput from "../ui/forms/TextInput.svelte";
   import SelectInput from "../ui/forms/SelectInput.svelte";
   import Textarea from "../ui/forms/Textarea.svelte";
-  import { formatStatus } from "../../../lib/admin";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
+  import { onMount } from "svelte";
 
   let {
     initialRows = [],
@@ -70,7 +71,7 @@
     if (error) {
       toastRef?.show(error.message, "error");
     } else {
-      toastRef?.show("Notifikasi disimpan", "success");
+      toastRef?.show(t("notifications.toast_save"), "success");
       form.reset();
       refreshData();
     }
@@ -78,7 +79,7 @@
 
   const handleRowAction = async (id: string, action: string, rowEl: HTMLElement | null) => {
     if (action === "delete") {
-      if (!confirm("Hapus notifikasi ini?")) return;
+      if (!confirm(t("notifications.confirm_delete"))) return;
       deletingId = id;
       const { error } = await actions.deleteNotification(id);
       deletingId = null;
@@ -86,7 +87,7 @@
       if (error) {
         toastRef?.show(error.message, "error");
       } else {
-        toastRef?.show("Notifikasi dihapus", "success");
+        toastRef?.show(t("notifications.toast_delete"), "success");
         refreshData();
       }
       return;
@@ -100,7 +101,7 @@
       if (error) {
         toastRef?.show(error.message, "error");
       } else {
-        toastRef?.show("Notifikasi dikirim", "success");
+        toastRef?.show(t("notifications.toast_send"), "success");
         refreshData();
       }
       return;
@@ -128,14 +129,14 @@
       if (error) {
         toastRef?.show(error.message, "error");
       } else {
-        toastRef?.show("Notifikasi diperbarui", "success");
+        toastRef?.show(t("notifications.toast_update"), "success");
         refreshData();
       }
     }
   };
 </script>
 
-<SectionHeader title="Buat Notifikasi" badge="Kirim Manual" />
+<SectionHeader title={t("notifications.title_create")} badge={t("notifications.badge_manual")} />
 <CrudInlineForm id="notif-form" onsubmit={handleCreate} {isSubmitting}>
   <div class="mb-4 w-full space-y-4 border-b border-stone-100 pb-8">
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -143,7 +144,7 @@
         <SelectInput
           id="channel"
           name="channel"
-          label="Kanal"
+          label={t("notifications.label_channel")}
           options={[
             { value: "whatsapp", label: "WhatsApp" },
             { value: "email", label: "Email" },
@@ -151,18 +152,23 @@
         />
       </div>
       <div>
-        <TextInput id="recipient" name="recipient" label="Penerima" required />
+        <TextInput id="recipient" name="recipient" label={t("notifications.label_recipient")} required />
       </div>
       <div>
-        <TextInput id="template" name="template" label="Template" placeholder="opsional" />
+        <TextInput
+          id="template"
+          name="template"
+          label={t("notifications.label_template")}
+          placeholder={t("notifications.placeholder_template")}
+        />
       </div>
       <div class="col-span-1 md:col-span-2">
         <Textarea
           id="payload_json"
           name="payload_json"
-          label="Muatan (JSON)"
+          label={t("notifications.label_payload")}
           rows={3}
-          placeholder="Isi JSON payload"
+          placeholder={t("notifications.placeholder_payload")}
           class="font-mono text-sm"
         />
       </div>
@@ -181,20 +187,29 @@
           ></path></svg
         >
       {/if}
-      Simpan Notifikasi
+      {t("notifications.button_save")}
     </Button>
   </div>
 </CrudInlineForm>
 
 <div class="mt-6">
-  <SectionHeader title="Log Notifikasi" />
+  <SectionHeader title={t("notifications.title_log")} />
 </div>
 <div class="mt-2">
-  <Table headers={["Kanal", "Penerima", "Status", "Dibuat", "Terkirim", "Aksi"]}>
+  <Table
+    headers={[
+      t("notifications.label_channel"),
+      t("notifications.label_recipient"),
+      t("common.status"),
+      t("notifications.header_created"),
+      t("notifications.header_sent"),
+      t("common.actions"),
+    ]}
+  >
     {#if rows.length === 0}
       <TableRow>
         <TableCell colspan={6} class="py-12 text-center text-sm text-stone-400 italic">
-          Belum ada log notifikasi.
+          {t("notifications.empty_log")}
         </TableCell>
       </TableRow>
     {/if}
@@ -227,7 +242,7 @@
             data-field="status"
             class="rounded-lg border border-transparent px-3 py-1.5 text-sm font-semibold text-stone-500 transition-all outline-none hover:bg-white focus:border-[#c48a3a] focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
           >
-            {formatStatus(row.status)}
+            {t("status." + row.status) || row.status}
           </div>
         </TableCell>
         <TableCell class="px-3 py-1.5 py-4 font-mono text-sm text-stone-500"

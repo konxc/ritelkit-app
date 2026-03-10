@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { onMount } from "svelte";
+  import { t } from "../../lib/i18n/store.svelte";
 
   let {
     title,
@@ -42,7 +43,6 @@
     const storageKey = `catalog_toolbar_${title.toLowerCase().replace(/\s+/g, "_")}`;
     localStorage.setItem(storageKey, String(isVisible));
   }
-
 </script>
 
 <div
@@ -61,7 +61,7 @@
       type="button"
       onclick={toggle}
       class="hidden h-8 w-8 items-center justify-center rounded-full bg-stone-50 text-stone-400 transition-all hover:bg-stone-100 hover:text-stone-600 active:scale-90 lg:flex"
-      title={isVisible ? "Sembunyikan Filter" : "Tampilkan Filter"}
+      title={isVisible ? t("nav.hide_filter") : t("nav.show_filter")}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -99,7 +99,7 @@
       type="button"
       onclick={toggle}
       class="flex h-14 w-14 flex-col items-center justify-center rounded-2xl border border-stone-200 bg-white shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition-all active:scale-95"
-      title={isVisible ? "Sembunyikan Panel" : "Tampilkan Panel"}
+      title={isVisible ? t("nav.hide_panel") : t("nav.show_panel")}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -120,7 +120,7 @@
           ? 'text-[#c48a3a]'
           : 'text-stone-400'}"
       >
-        Panel Filter
+        {t("nav.panel_filter")}
       </span>
     </button>
   </div>

@@ -1,31 +1,33 @@
 <script module lang="ts">
-export type AdRow = {
-  id: string | number;
-  name: string;
-  channel: string;
-  budget: number;
-  spend: number;
-  status: string;
-};
+  export type AdRow = {
+    id: string | number;
+    name: string;
+    channel: string;
+    budget: number;
+    spend: number;
+    status: string;
+  };
 
-type AdStatus = "draft" | "active" | "paused" | "completed";
+  type AdStatus = "draft" | "active" | "paused" | "completed";
 
-type AdMutationInput = {
-  name: string;
-  channel: string;
-  budget: number;
-  spend: number;
-  status: AdStatus;
-  startAt?: string | null;
-  endAt?: string | null;
-  notes?: string | null;
-};
+  type AdMutationInput = {
+    name: string;
+    channel: string;
+    budget: number;
+    spend: number;
+    status: AdStatus;
+    startAt?: string | null;
+    endAt?: string | null;
+    notes?: string | null;
+  };
 </script>
 
 <script lang="ts">
   import { trpc } from "../../../lib/trpc";
   import { fade, fly } from "svelte/transition";
   import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+  import { onMount } from "svelte";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
   import CrudInlineForm from "../CrudInlineForm.svelte";
   import RowActions from "../RowActions.svelte";
   import SectionHeader from "../SectionHeader.svelte";
@@ -75,7 +77,7 @@ type AdMutationInput = {
     isSubmitting = true;
     try {
       await trpc.ads.create.mutate(data);
-      toastRef?.show("Kampanye berhasil dibuat!", "success");
+      toastRef?.show(t("ads.toast_create"), "success");
       form.reset();
       queryClient.invalidateQueries({ queryKey: ["ads.list"] });
     } catch (error: unknown) {
@@ -89,11 +91,11 @@ type AdMutationInput = {
   const handleRowAction = async (id: string | number, action: string, rowElement: HTMLElement | null) => {
     const resolvedId = String(id);
     if (action === "delete") {
-      if (confirm("Hapus campaign ini?")) {
+      if (confirm(t("ads.confirm_delete"))) {
         deletingId = resolvedId;
         try {
           await trpc.ads.delete.mutate(resolvedId);
-          toastRef?.show("Kampanye dihapus", "success");
+          toastRef?.show(t("ads.toast_delete"), "success");
           queryClient.invalidateQueries({ queryKey: ["ads.list"] });
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : "Failed to delete campaign";
@@ -124,7 +126,7 @@ type AdMutationInput = {
       savingId = resolvedId;
       try {
         await trpc.ads.update.mutate({ id: resolvedId, data });
-        toastRef?.show("Kampanye diperbarui", "success");
+        toastRef?.show(t("ads.toast_update"), "success");
         queryClient.invalidateQueries({ queryKey: ["ads.list"] });
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Failed to update campaign";
@@ -138,7 +140,7 @@ type AdMutationInput = {
 
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-    <SectionHeader title="Buat Kampanye" badge="Iklan" />
+    <SectionHeader title={t("ads.title_create")} badge={t("ads.badge_ads")} />
     <CrudInlineForm id="ads-form" onsubmit={handleCreate} {isSubmitting}>
       <div class="mb-8 space-y-6 border-b border-stone-100 pb-8">
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -146,9 +148,9 @@ type AdMutationInput = {
             <TextInput
               id="name"
               name="name"
-              label="Nama Kampanye"
+              label={t("ads.campaign_name")}
               required
-              placeholder="Cth: Promo Ramadhan"
+              placeholder={t("ads.name_placeholder")}
               class="font-bold"
             />
           </div>
@@ -156,8 +158,8 @@ type AdMutationInput = {
             <TextInput
               id="channel"
               name="channel"
-              label="Kanal / Platform"
-              placeholder="IG / FB / Google Ads"
+              label={t("ads.channel")}
+              placeholder={t("ads.channel_placeholder")}
               required
             />
           </div>
@@ -166,7 +168,7 @@ type AdMutationInput = {
               id="budget"
               name="budget"
               type="number"
-              label="Total Anggaran (Rp)"
+              label={t("ads.budget")}
               required
               placeholder="0"
               class="font-bold tabular-nums"
@@ -176,28 +178,23 @@ type AdMutationInput = {
             <SelectInput
               id="status"
               name="status"
-              label="Status Awal"
+              label={t("ads.initial_status")}
               options={[
-                { value: "draft", label: "Draf" },
-                { value: "active", label: "Aktif" },
-                { value: "paused", label: "Jeda" },
-                { value: "completed", label: "Selesai" },
+                { value: "draft", label: t("ads.status_draft") },
+                { value: "active", label: t("ads.status_active") },
+                { value: "paused", label: t("ads.status_paused") },
+                { value: "completed", label: t("ads.status_completed") },
               ]}
             />
           </div>
           <div>
-            <TextInput id="start_at" name="start_at" type="date" label="Tanggal Mulai" />
+            <TextInput id="start_at" name="start_at" type="date" label={t("ads.start_date")} />
           </div>
           <div>
-            <TextInput id="end_at" name="end_at" type="date" label="Tanggal Selesai" />
+            <TextInput id="end_at" name="end_at" type="date" label={t("ads.end_date")} />
           </div>
           <div class="col-span-1 md:col-span-2">
-            <TextInput
-              id="notes"
-              name="notes"
-              label="Catatan Kampanye"
-              placeholder="Tujuan kampanye, link kreatif, dll..."
-            />
+            <TextInput id="notes" name="notes" label={t("ads.notes")} placeholder={t("ads.notes_placeholder")} />
           </div>
         </div>
       </div>
@@ -216,22 +213,31 @@ type AdMutationInput = {
               ></path></svg
             >
           {/if}
-          Luncurkan Kampanye
+          {t("ads.launch_campaign")}
         </Button>
       </div>
     </CrudInlineForm>
 
     <div class="mt-6">
-      <SectionHeader title="Daftar Kampanye" />
+      <SectionHeader title={t("ads.title_list")} />
     </div>
 
-    <Table headers={["Nama", "Kanal", "Anggaran", "Pengeluaran", "Status", "Aksi"]}>
+    <Table
+      headers={[
+        t("common.name"),
+        t("ads.channel"),
+        t("ads.budget"),
+        t("ads.spend"),
+        t("common.status"),
+        t("common.actions"),
+      ]}
+    >
       {#if rows.length === 0}
         <TableRow>
           <TableCell colspan={6} class="border-0 p-0">
             <EmptyState
-              title="Belum Ada Kampanye"
-              description="Belum ada campaign beriklan berjalan."
+              title={t("ads.empty_title")}
+              description={t("ads.empty_description")}
               class="!rounded-none !border-0 !bg-transparent py-16 !shadow-none"
             />
           </TableCell>
@@ -281,10 +287,10 @@ type AdMutationInput = {
               data-field="status"
               class="cursor-pointer rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-xs font-bold uppercase transition-all outline-none hover:bg-white focus:bg-white"
             >
-              <option value="draft" selected={row.status === "draft"}>Draf</option>
-              <option value="active" selected={row.status === "active"}>🟢 Aktif</option>
-              <option value="paused" selected={row.status === "paused"}>🟡 Jeda</option>
-              <option value="completed" selected={row.status === "completed"}>⚪ Selesai</option>
+              <option value="draft" selected={row.status === "draft"}>{t("ads.status_draft")}</option>
+              <option value="active" selected={row.status === "active"}>🟢 {t("ads.status_active")}</option>
+              <option value="paused" selected={row.status === "paused"}>🟡 {t("ads.status_paused")}</option>
+              <option value="completed" selected={row.status === "completed"}>⚪ {t("ads.status_completed")}</option>
             </select>
           </TableCell>
           <TableCell class="py-4">

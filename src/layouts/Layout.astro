@@ -14,8 +14,7 @@ const {
   hideFooter = false,
 } = Astro.props;
 
-const waLink =
-  "https://wa.me/6281314537475?text=Halo%20Roti%20Sholawat%2C%20saya%20mau%20konsultasi%20pemesanan.";
+const waLink = "https://wa.me/6281314537475?text=Halo%20Roti%20Sholawat%2C%20saya%20mau%20konsultasi%20pemesanan.";
 ---
 
 <!doctype html>
@@ -58,6 +57,21 @@ const waLink =
       href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <style is:global>
+      /* Failsafe to prevent font flicker */
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+      }
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      .font-fraunces {
+        font-family: "Fraunces", serif;
+      }
+    </style>
   </head>
   <body class="flex min-h-screen flex-col overflow-x-hidden bg-[var(--color-bg)] pb-[70px] lg:pb-0">
     <header class="border-primary/10 sticky top-0 z-50 border-b bg-[#f6fffd]/95 py-1.5 backdrop-blur-xl">

@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { trpc } from "../../../lib/trpc";
   import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
   import CrudInlineForm from "../CrudInlineForm.svelte";
   import SectionHeader from "../SectionHeader.svelte";
   import ToastNotification from "../ToastNotification.svelte";
@@ -23,19 +24,19 @@
   import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
 
   let stockColumns = $state([
-    { id: "produk", label: "Produk", isVisible: true, class: "" },
-    { id: "sku", label: "SKU Code", isVisible: true, class: "" },
-    { id: "stok", label: "Ketersediaan Stok", isVisible: true, class: "" },
-    { id: "harga", label: "Harga Aktual", isVisible: true, class: "" },
+    { id: "produk", label: t("catalog.products.product"), isVisible: true, class: "" },
+    { id: "sku", label: t("catalog.inventory.sku_label"), isVisible: true, class: "" },
+    { id: "stok", label: t("catalog.inventory.avail_stock"), isVisible: true, class: "" },
+    { id: "harga", label: t("catalog.inventory.actual_price"), isVisible: true, class: "" },
   ]);
 
   let logColumns = $state([
-    { id: "produk", label: "Produk", isVisible: true, class: "" },
-    { id: "tipe", label: "Aktivitas", isVisible: true, class: "" },
-    { id: "qty", label: "Qty", isVisible: true, class: "" },
-    { id: "ref", label: "Ref", isVisible: true, class: "hidden lg:table-cell" },
-    { id: "catatan", label: "Catatan", isVisible: true, class: "hidden lg:table-cell" },
-    { id: "waktu", label: "Waktu", isVisible: true, class: "" },
+    { id: "produk", label: t("catalog.products.product"), isVisible: true, class: "" },
+    { id: "tipe", label: t("catalog.inventory.activity"), isVisible: true, class: "" },
+    { id: "qty", label: t("catalog.inventory.qty"), isVisible: true, class: "" },
+    { id: "ref", label: t("catalog.inventory.ref"), isVisible: true, class: "hidden lg:table-cell" },
+    { id: "catatan", label: t("catalog.inventory.notes"), isVisible: true, class: "hidden lg:table-cell" },
+    { id: "waktu", label: t("catalog.inventory.time"), isVisible: true, class: "" },
   ]);
 
   let activeStockHeaders = $derived(
@@ -162,11 +163,11 @@
       queryClient.invalidateQueries({ queryKey: ["inventory.products.list"] });
       queryClient.invalidateQueries({ queryKey: ["inventory.movements.list"] });
 
-      toastRef?.show("Stok berhasil diperbarui!", "success");
+      toastRef?.show(t("catalog.inventory.toast_add"), "success");
       form.reset();
       isDrawerOpen = false;
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "An error occurred";
+      const message = error instanceof Error ? error.message : t("common.error_occurred");
       toastRef?.show(message, "error");
     } finally {
       isSubmitting = false;
@@ -176,7 +177,7 @@
   const handleUpdateStock = async (id: string, newStockRaw: string) => {
     const qty = Number(newStockRaw.trim());
     if (Number.isNaN(qty)) {
-      toastRef?.show("Stock must be a number", "error");
+      toastRef?.show(t("catalog.inventory.toast_error_nan"), "error");
       return;
     }
 
@@ -185,14 +186,14 @@
         productId: id,
         type: "adjustment",
         qty: qty,
-        notes: "Penyesuaian stok manual via tabel",
+        notes: t("catalog.inventory.notes_manual_adj"),
       });
 
       queryClient.invalidateQueries({ queryKey: ["inventory.products.list"] });
       queryClient.invalidateQueries({ queryKey: ["inventory.movements.list"] });
-      toastRef?.show("Stok berhasil di-update", "success");
+      toastRef?.show(t("catalog.inventory.toast_update"), "success");
     } catch (error: unknown) {
-      toastRef?.show("Failed to update stock", "error");
+      toastRef?.show(t("catalog.inventory.toast_error_update"), "error");
     }
   };
 
@@ -207,10 +208,8 @@
 <div class="mt-2 mb-6 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
   <div>
     <SectionHeader
-      title={activeSubTab === "stock" ? "Stok Produk Aktual" : "Log Mutasi Terakhir"}
-      muted={activeSubTab === "stock"
-        ? "Klik nominal stok untuk edit & Enter/Blur untuk simpan"
-        : "30 riwayat stok terbaru"}
+      title={activeSubTab === "stock" ? t("catalog.inventory.stock_title") : t("catalog.inventory.log_title")}
+      muted={activeSubTab === "stock" ? t("catalog.inventory.stock_muted") : t("catalog.inventory.log_muted")}
     />
 
     <!-- Sub-Tabs Navigation -->
@@ -242,7 +241,7 @@
             d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"
           /><path d="m3.3 7 8.7 5 8.7-5" /><path d="M12 22V12" /></svg
         >
-        Stok Produk
+        {t("catalog.inventory.stock_tab")}
       </button>
       <button
         onclick={() => {
@@ -268,7 +267,7 @@
           stroke-linecap="round"
           stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg
         >
-        Log Mutasi
+        {t("catalog.inventory.log_tab")}
       </button>
     </div>
   </div>
@@ -311,7 +310,7 @@
         <polyline points="7 10 12 15 17 10" />
         <line x1="12" y1="15" x2="12" y2="3" />
       </svg>
-      <span class="font-bold">Ekspor</span>
+      <span class="font-bold">{t("common.export")}</span>
     </Button>
 
     <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2.5">
@@ -331,14 +330,14 @@
         >
       </div>
       <span class="flex flex-col items-start leading-none">
-        <span class="text-[0.6rem] font-bold tracking-wider text-white/70 uppercase">Perbarui</span>
-        <span class="text-[0.85rem] font-bold">Mutasi Stok</span>
+        <span class="text-[0.6rem] font-bold tracking-wider text-white/70 uppercase">{t("common.update")}</span>
+        <span class="text-[0.85rem] font-bold">{t("catalog.inventory.form_title")}</span>
       </span>
     </Button>
   </div>
 </div>
 
-<Fab onclick={() => (isDrawerOpen = true)} label="Mutasi Stok">
+<Fab onclick={() => (isDrawerOpen = true)} label={t("catalog.inventory.form_title")}>
   {#snippet icon()}
     <div class="flex flex-col items-center">
       <svg
@@ -355,7 +354,7 @@
         <path d="M5 12h14" />
         <path d="M12 5v14" />
       </svg>
-      <span class="mt-0.5 text-[0.55rem] leading-none font-black">MUTASI</span>
+      <span class="mt-0.5 text-[0.55rem] leading-none font-black">{t("catalog.inventory.mutation_short")}</span>
     </div>
   {/snippet}
 </Fab>
@@ -384,7 +383,7 @@
       class="h-11 flex-1 rounded-2xl border border-stone-200 bg-white text-[0.7rem] font-black tracking-widest text-stone-400 uppercase transition-all hover:bg-stone-50 hover:text-stone-600 focus:outline-none active:scale-95 lg:h-[52px]"
       onclick={() => (isDrawerOpen = false)}
     >
-      Batalkan
+      {t("common.cancel")}
     </button>
     <Button
       type="submit"
@@ -403,7 +402,7 @@
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <span class="text-xs">Memproses...</span>
+          <span class="text-xs">{t("catalog.inventory.processing")}</span>
         </div>
       {:else}
         <div class="flex items-center gap-3">
@@ -418,7 +417,7 @@
             stroke-linecap="round"
             stroke-linejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg
           >
-          <span class="text-[0.75rem] tracking-tight uppercase">Proses Mutasi Stok</span>
+          <span class="text-[0.75rem] tracking-tight uppercase">{t("catalog.inventory.process_mutation")}</span>
         </div>
       {/if}
     </Button>
@@ -427,8 +426,8 @@
 
 <Drawer
   bind:isOpen={isDrawerOpen}
-  title="Mutasi Stok"
-  subtitle="Input History Stok Aktual"
+  title={t("catalog.inventory.form_title")}
+  subtitle={t("catalog.inventory.form_subtitle")}
   icon={inventoryIcon}
   footer={drawerFooter}
   maxWidth="md"
@@ -440,9 +439,9 @@
           <SelectInput
             id={fieldIds.product}
             name="product_id"
-            label="Produk Target"
+            label={t("catalog.inventory.target_product")}
             required
-            placeholder="-- Pilih Produk dari Katalog --"
+            placeholder={t("common.loading")}
             options={currentProducts.map((p) => ({
               value: p.id,
               label: p.name,
@@ -456,12 +455,12 @@
             <SelectInput
               id={fieldIds.type}
               name="type"
-              label="Tipe Mutasi"
-              placeholder="-- Pilih Tipe --"
+              label={t("catalog.inventory.mutation_type")}
+              placeholder={t("common.loading")}
               options={[
-                { value: "in", label: "🟢 Masuk" },
-                { value: "out", label: "🔴 Keluar" },
-                { value: "adjustment", label: "🟤 Set" },
+                { value: "in", label: t("catalog.inventory.type_in") },
+                { value: "out", label: t("catalog.inventory.type_out") },
+                { value: "adjustment", label: t("catalog.inventory.type_adj") },
               ]}
               class="ring-stone-100/50"
             />
@@ -471,9 +470,9 @@
               id={fieldIds.qty}
               name="qty"
               type="number"
-              label="Jumlah Qty"
+              label={t("catalog.inventory.qty")}
               required
-              placeholder="Cth: 24"
+              placeholder={`${t("common.example")}: 24`}
               min="1"
               class="text-center font-bold tabular-nums ring-stone-100/50"
             />
@@ -484,8 +483,8 @@
           <Textarea
             id={fieldIds.notes}
             name="notes"
-            label="Catatan / Alasan"
-            placeholder="Tuliskan alasan mutasi atau sumber stok (misal: Restock via Supplier ABC)..."
+            label={t("catalog.inventory.notes")}
+            placeholder={t("catalog.inventory.notes_placeholder")}
             class="flex-1 ring-stone-100/50"
           />
         </div>
@@ -498,7 +497,7 @@
   <div in:fly={{ y: 10, duration: 400 }}>
     <Table headers={activeStockHeaders}>
       {#if currentProducts.length === 0}
-        <TableEmptyState title="Daftar Produk Kosong" colspan={activeStockHeaders.length}>
+        <TableEmptyState title={t("catalog.inventory.empty_stock")} colspan={activeStockHeaders.length}>
           {#snippet icon()}
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -536,7 +535,7 @@
               <InlineEditableField
                 value={product.stock ?? 0}
                 field="stock"
-                ariaLabel="Ubah Stok"
+                ariaLabel={t("catalog.inventory.avail_stock")}
                 class="w-full px-4 text-left font-bold text-stone-700 tabular-nums shadow-inner"
                 onblur={(e: any) => handleUpdateStock(product.id, e.currentTarget.textContent || "0")}
                 onkeydown={(e: any) => e.key === "Enter" && (e.preventDefault(), e.currentTarget.blur())}
@@ -545,8 +544,8 @@
           {/if}
           {#if stockColumns[3].isVisible}
             <TableCell class="py-4 pr-6 font-bold text-stone-600 tabular-nums"
-              ><span class="mr-1 text-[0.6rem] text-stone-400">Rp</span>
-              {Number(product.price ?? 0).toLocaleString("id-ID")}</TableCell
+              ><span class="mr-1 text-[0.6rem] text-stone-400">{t("common.currency_symbol")}</span>
+              {Number(product.price ?? 0).toLocaleString(t("common.lang_code"))}</TableCell
             >
           {/if}
         </TableRow>
@@ -557,7 +556,7 @@
   <div in:fly={{ y: 10, duration: 400 }}>
     <Table headers={activeLogHeaders}>
       {#if currentMovements.length === 0}
-        <TableEmptyState title="Riwayat Log Kosong" colspan={activeLogHeaders.length}>
+        <TableEmptyState title={t("catalog.inventory.empty_log")} colspan={activeLogHeaders.length}>
           {#snippet icon()}
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -591,7 +590,11 @@
                 variant={movement.type === "in" ? "success" : movement.type === "out" ? "danger" : "default"}
                 showDot
               >
-                {movement.type === "in" ? "Masuk (+)" : movement.type === "out" ? "Keluar (-)" : "Set (Adj)"}
+                {movement.type === "in"
+                  ? t("catalog.inventory.type_in")
+                  : movement.type === "out"
+                    ? t("catalog.inventory.type_out")
+                    : t("catalog.inventory.type_adj")}
               </Badge>
             </TableCell>
           {/if}

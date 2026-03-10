@@ -46,7 +46,7 @@ export async function POST(ctx: APIContext) {
     sql: "UPDATE products SET stock = CASE WHEN stock IS NULL THEN NULL ELSE MAX(stock + ?, 0) END WHERE id = ?",
     args: [signedQty, productId],
   });
-  await logAudit(ctx, "create", "inventory_movement", productId, {
+  await logAudit(ctx, "create_inventory_movement", "inventory_movement", productId, {
     type,
     qty: signedQty,
   });

@@ -1,9 +1,16 @@
 <script lang="ts">
-interface Props {
-  title: string;
-  logoText?: string;
-}
-let { title, logoText = "SHOLAWAT" }: Props = $props();
+  import { onMount, untrack } from "svelte";
+  import LanguageSwitcher from "./LanguageSwitcher.svelte";
+  import { t, initI18n } from "../../../../lib/i18n/store.svelte";
+  interface Props {
+    title: string;
+    logoText?: string;
+    lang?: any;
+  }
+  let { title, logoText = "SHOLAWAT", lang }: Props = $props();
+
+  // Root call for SSR and initial hydration (untracked for Svelte 5)
+  initI18n(untrack(() => lang));
 </script>
 
 <header
@@ -13,15 +20,16 @@ let { title, logoText = "SHOLAWAT" }: Props = $props();
     <h1
       class="mb-1 bg-gradient-to-br from-stone-900 to-stone-600 bg-clip-text font-['Syne',sans-serif] text-[1.35rem] leading-none font-extrabold tracking-tight text-transparent"
     >
-      {title}
+      {t(title)}
     </h1>
-    <p class="text-[0.65rem] font-bold tracking-wider text-stone-400 uppercase">Dasbor Admin</p>
+    <p class="text-[0.65rem] font-bold tracking-wider text-stone-400 uppercase">{t("nav.admin_dashboard")}</p>
   </div>
 
-  <div class="flex items-center gap-3">
+  <div class="flex items-center gap-2">
+    <LanguageSwitcher {lang} />
     <a
       href="/admin/overview"
-      class="flex items-center gap-1.5 font-['Syne',sans-serif] text-[0.95rem] font-extrabold tracking-tight text-stone-900 no-underline before:block before:h-[10px] before:w-[10px] before:shrink-0 before:rotate-45 before:rounded-[2px] before:bg-[#c48a3a] before:content-['']"
+      class="hidden items-center gap-1.5 font-['Syne',sans-serif] text-[0.8rem] font-extrabold tracking-tight text-stone-900 no-underline before:block before:h-[8px] before:w-[8px] before:shrink-0 before:rotate-45 before:rounded-[1px] before:bg-[#c48a3a] before:content-[''] sm:flex"
     >
       {logoText}
     </a>
@@ -29,7 +37,7 @@ let { title, logoText = "SHOLAWAT" }: Props = $props();
     <a
       href="/admin/profile"
       class="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-stone-200/80 bg-gradient-to-br from-stone-50 to-stone-100 text-[#c48a3a] shadow-inner transition-colors hover:border-[#c48a3a]/30 hover:bg-stone-50"
-      aria-label="Lihat Profil"
+      aria-label={t("nav.view_profile")}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

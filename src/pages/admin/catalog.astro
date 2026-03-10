@@ -27,21 +27,11 @@ const rawSubtab = Astro.url.searchParams.get("subtab");
 const tab = normalizeTab(rawTab, {
   allowed: TAB_IDS,
   defaultTab: "products",
-  aliases: {
-    product: "products",
-    category: "categories",
-    categories: "categories",
-  },
 });
 
 const subtab = normalizeTab(rawSubtab, {
   allowed: SUBTAB_IDS,
   defaultTab: "stock",
-  aliases: {
-    stocks: "stock",
-    logs: "log",
-    history: "log",
-  },
 });
 
 if ((rawTab && rawTab !== tab) || (rawSubtab && rawSubtab !== subtab)) {
@@ -69,10 +59,7 @@ const initialData = {
 };
 
 // Common: Always fetch ALL categories for dropdowns in other tabs
-const categoryOptions = await db
-  .select()
-  .from(categories)
-  .orderBy(asc(categories.sortOrder), asc(categories.name));
+const categoryOptions = await db.select().from(categories).orderBy(asc(categories.sortOrder), asc(categories.name));
 
 const caller = appRouter.createCaller({ db, admin, ctx: Astro as any });
 
@@ -89,7 +76,7 @@ if (tab === "categories") {
     categoryId: categoryId || undefined,
     status: statusFilter || undefined,
   });
-  
+
   initialData.products = result.data;
   initialData.productsTotal = result.total;
   totalPages = Math.max(1, Math.ceil(result.total / limit));
@@ -131,37 +118,39 @@ if (tab === "categories") {
 const tabs = [
   {
     id: "products",
-    label: "Produk",
+    label: "catalog.products.title",
     icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>',
   },
   {
     id: "categories",
-    label: "Kategori",
+    label: "catalog.categories.title",
     icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
   },
   {
     id: "inventory",
-    label: "Inventori",
+    label: "catalog.inventory.title",
     icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>',
   },
 ];
+import { getLang, type LanguageCode, tServer } from "../../lib/i18n/server";
+const lang: LanguageCode = getLang(Astro.cookies);
 ---
 
-<AdminLayout title="Katalog">
+<AdminLayout title={tServer(lang, "nav.catalog")}>
   <div slot="header-tabs">
-    <AdminTabs tabs={tabs} activeTab={tab} />
+    <AdminTabs tabs={tabs} activeTab={tab} {lang} />
   </div>
 
   {
     tab === "categories" && (
       <>
         <AdminToolbar
-          title="Data Kategori"
+          title={tServer(lang, "catalog.categories.title")}
           class="sticky top-0 z-20 sm:top-2 md:top-4 lg:hidden"
           showMobileFloat={true}
           client:load
         >
-          <CatalogHeaderFilters tab="categories" q={q} client:load />
+          <CatalogHeaderFilters tab="categories" q={q} lang={lang} client:load />
         </AdminToolbar>
       </>
     )
@@ -171,7 +160,7 @@ const tabs = [
     tab === "products" && (
       <>
         <AdminToolbar
-          title="Filter Produk"
+          title={tServer(lang, "common.filter")}
           class="sticky top-0 z-20 sm:top-2 md:top-4 lg:hidden"
           showMobileFloat={true}
           client:load
@@ -182,6 +171,7 @@ const tabs = [
             categoryId={categoryId || ""}
             status={statusFilter || ""}
             categoryOptions={categoryOptions}
+            lang={lang}
             client:load
           />
         </AdminToolbar>
@@ -193,7 +183,7 @@ const tabs = [
     tab === "inventory" && (
       <>
         <AdminToolbar
-          title="Data Inventori"
+          title={tServer(lang, "catalog.inventory.stock_title")}
           class="sticky top-0 z-20 sm:top-2 md:top-4 lg:hidden"
           showMobileFloat={true}
           client:load
@@ -203,6 +193,7 @@ const tabs = [
             q={q}
             categoryId={categoryId || ""}
             categoryOptions={categoryOptions}
+            lang={lang}
             client:load
           />
         </AdminToolbar>
@@ -210,7 +201,7 @@ const tabs = [
     )
   }
 
-  <KatalogTabContent {tab} {q} {page} {limit} {initialData} client:load />
+  <KatalogTabContent {tab} {q} {page} {limit} {initialData} {lang} client:load />
 
   <PaginationNav
     page={page}

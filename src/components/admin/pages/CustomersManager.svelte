@@ -1,17 +1,19 @@
 <script module lang="ts">
-export type CustomerRow = {
-  id: string | number;
-  name: string;
-  phone: string;
-  email?: string | null;
-  notes?: string | null;
-};
+  export type CustomerRow = {
+    id: string | number;
+    name: string;
+    phone: string;
+    email?: string | null;
+    notes?: string | null;
+  };
 </script>
 
 <script lang="ts">
   import { trpc } from "../../../lib/trpc";
   import { fade, fly } from "svelte/transition";
   import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+  import { onMount } from "svelte";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
   import CrudInlineForm from "../CrudInlineForm.svelte";
   import SectionHeader from "../SectionHeader.svelte";
   import RowActions from "../RowActions.svelte";
@@ -79,7 +81,7 @@ export type CustomerRow = {
     isSubmitting = true;
     try {
       await trpc.customers.create.mutate(data);
-      toastRef?.show("Pelanggan berhasil ditambahkan!", "success");
+      toastRef?.show(t("customers.toast_add"), "success");
       form.reset();
       queryClient.invalidateQueries({ queryKey: ["customers.list"] });
     } catch (error: unknown) {
@@ -93,11 +95,11 @@ export type CustomerRow = {
   const handleRowAction = async (id: string | number, action: string, rowElement: HTMLElement | null) => {
     const resolvedId = String(id);
     if (action === "delete") {
-      if (confirm("Hapus pelanggan ini?")) {
+      if (confirm(t("customers.confirm_delete"))) {
         deletingId = resolvedId;
         try {
           await trpc.customers.delete.mutate(resolvedId);
-          toastRef?.show("Pelanggan dihapus", "success");
+          toastRef?.show(t("customers.toast_delete"), "success");
           queryClient.invalidateQueries({
             queryKey: ["customers.list"],
           });
@@ -129,7 +131,7 @@ export type CustomerRow = {
       savingId = resolvedId;
       try {
         await trpc.customers.update.mutate({ id: resolvedId, data });
-        toastRef?.show("Data pelanggan diperbarui!", "success");
+        toastRef?.show(t("customers.toast_update"), "success");
         queryClient.invalidateQueries({ queryKey: ["customers.list"] });
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Failed to update customer";
@@ -143,7 +145,7 @@ export type CustomerRow = {
 
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-    <SectionHeader title="Tambah Pelanggan" badge="CRM" />
+    <SectionHeader title={t("customers.title_add")} badge="CRM" />
     <CrudInlineForm id="customer-form" onsubmit={handleCreate} {isSubmitting}>
       <div
         class="mb-8 flex w-full flex-col flex-wrap items-end gap-4 border-b border-stone-100 pb-8 md:flex-row xl:gap-6"
@@ -152,20 +154,38 @@ export type CustomerRow = {
           <TextInput
             id="name"
             name="name"
-            label="Nama Lengkap"
+            label={t("customers.full_name")}
             required
-            placeholder="Cth: Budi Santoso"
+            placeholder={t("customers.name_placeholder")}
             class="font-bold"
           />
         </div>
         <div class="w-full md:w-48">
-          <TextInput id="phone" name="phone" label="No. WhatsApp" required placeholder="0812..." class="font-mono" />
+          <TextInput
+            id="phone"
+            name="phone"
+            label={t("customers.phone")}
+            required
+            placeholder={t("customers.phone_placeholder")}
+            class="font-mono"
+          />
         </div>
         <div class="w-full md:w-64">
-          <TextInput id="email" name="email" type="email" label="Email (Opsional)" placeholder="budi@email.com" />
+          <TextInput
+            id="email"
+            name="email"
+            type="email"
+            label={t("customers.email_optional")}
+            placeholder={t("customers.email_placeholder")}
+          />
         </div>
         <div class="w-full md:flex-1">
-          <TextInput id="notes" name="notes" label="Catatan" placeholder="Informasi tambahan pelanggan..." />
+          <TextInput
+            id="notes"
+            name="notes"
+            label={t("customers.notes")}
+            placeholder={t("customers.notes_placeholder")}
+          />
         </div>
         <Button type="submit" variant="primary" class="h-[42px] w-full px-8 md:w-auto" disabled={isSubmitting}>
           {#if isSubmitting}
@@ -181,20 +201,22 @@ export type CustomerRow = {
               ></path></svg
             >
           {/if}
-          Tambah Data
+          {t("customers.add_data")}
         </Button>
       </div>
     </CrudInlineForm>
 
     <div class="mt-6">
-      <SectionHeader title="Daftar Pelanggan" muted="Cari detail lalu klik" />
+      <SectionHeader title={t("customers.title_list")} muted={t("customers.muted_list")} />
     </div>
 
-    <Table headers={["Nama", "Telepon", "Email", "Catatan", "Aksi"]}>
+    <Table
+      headers={[t("common.name"), t("customers.phone"), t("common.email"), t("customers.notes"), t("common.actions")]}
+    >
       {#if rows.length === 0}
         <TableRow>
           <TableCell colspan={5} class="py-12 text-center text-sm text-stone-400 italic"
-            >Belum ada data pelanggan.</TableCell
+            >{t("customers.empty")}</TableCell
           >
         </TableRow>
       {/if}

@@ -8,15 +8,11 @@ await initDb(Astro);
 const db = getDb(Astro);
 
 // Fetch stats for realistic feel
-const ordersToday = await db.execute(
-  "SELECT COUNT(*) as count FROM orders WHERE date(created_at) = date('now')",
-);
+const ordersToday = await db.execute("SELECT COUNT(*) as count FROM orders WHERE date(created_at) = date('now')");
 const revenueToday = await db.execute(
   "SELECT COALESCE(SUM(total),0) as total FROM orders WHERE date(created_at) = date('now')",
 );
-const activeProducts = await db.execute(
-  "SELECT COUNT(*) as count FROM products WHERE is_active = 1",
-);
+const activeProducts = await db.execute("SELECT COUNT(*) as count FROM products WHERE is_active = 1");
 const pendingShipments = await db.execute(
   "SELECT COUNT(*) as count FROM shipments WHERE status IN ('packing','shipped')",
 );

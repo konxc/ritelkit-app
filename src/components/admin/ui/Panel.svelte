@@ -1,17 +1,17 @@
 <script lang="ts">
-import type { Snippet } from "svelte";
+  import type { Snippet } from "svelte";
 
-let {
-  title,
-  action,
-  children,
-  class: className = "",
-}: {
-  title?: string;
-  action?: Snippet;
-  children?: Snippet;
-  class?: string;
-} = $props();
+  let {
+    title,
+    action,
+    children,
+    class: className = "",
+  }: {
+    title?: string;
+    action?: Snippet;
+    children?: Snippet;
+    class?: string;
+  } = $props();
 </script>
 
 <div class="rounded-[1.5rem] border border-stone-200/60 bg-white p-6 shadow-[0_4px_24px_rgba(0,0,0,0.02)] {className}">

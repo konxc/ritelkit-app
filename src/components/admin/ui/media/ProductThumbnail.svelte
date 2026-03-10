@@ -1,19 +1,20 @@
 <script lang="ts">
-interface Props {
-  src?: string;
-  alt?: string;
-  isEmpty?: boolean;
-  class?: string;
-  [key: string]: any;
-}
+  import { t } from "../../../../lib/i18n/store.svelte";
+  interface Props {
+    src?: string;
+    alt?: string;
+    isEmpty?: boolean;
+    class?: string;
+    [key: string]: any;
+  }
 
-let {
-  src = "",
-  alt = "Thumbnail Produk",
-  isEmpty = false,
-  class: className = "",
-  ...rest
-}: Props = $props();
+  let {
+    src = "",
+    alt = t("catalog.products.photo"),
+    isEmpty = false,
+    class: className = "",
+    ...rest
+  }: Props = $props();
 </script>
 
 <div
@@ -39,7 +40,7 @@ let {
       <circle cx="9" cy="9" r="2"></circle>
       <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
     </svg>
-    <span class="text-xs font-medium">Unggah Foto</span>
+    <span class="text-xs font-medium">{t("catalog.products.upload_photo")}</span>
   {:else if src}
     <img {src} {alt} class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
     <div class="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/10">

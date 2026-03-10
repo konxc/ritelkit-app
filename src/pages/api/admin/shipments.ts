@@ -61,9 +61,9 @@ export async function POST(ctx: APIContext) {
   });
   await db.execute({
     sql: "INSERT INTO order_status_history (id, order_id, status, notes, created_at) VALUES (?, (SELECT id FROM orders WHERE order_no = ?), ?, ?, ?)",
-    args: [crypto.randomUUID(), orderNo, orderStatus, "Pembaruan dari fulfillment", nowIso()],
+    args: [crypto.randomUUID(), orderNo, orderStatus, "Updated from fulfillment", nowIso()],
   });
-  await logAudit(ctx, "create", "shipment", id, { order_no: orderNo, status });
+  await logAudit(ctx, "create_shipment", "shipment", id, { order_no: orderNo, status });
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { "Content-Type": "application/json" },

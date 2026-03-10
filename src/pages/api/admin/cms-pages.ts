@@ -32,7 +32,7 @@ export async function POST(ctx: APIContext) {
               VALUES (?, ?, ?, ?, ?, ?, ?)`,
     args: [id, slug, title, content, isActive ? 1 : 0, now, now],
   });
-  await logAudit(ctx, "create", "cms_page", id, { slug, title });
+  await logAudit(ctx, "create_cms_page", "cms_page", id, { slug, title });
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { "Content-Type": "application/json" },

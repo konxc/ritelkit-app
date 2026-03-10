@@ -1,62 +1,55 @@
 <script lang="ts">
-interface Props {
-  variant?: "success" | "warning" | "error" | "info";
-  title?: string;
-  message?: string;
-  class?: string;
-  children?: import("svelte").Snippet;
-  [key: string]: any;
-}
-
-let {
-  variant = "info",
-  title = "",
-  message = "",
-  class: className = "",
-  children,
-  ...rest
-}: Props = $props();
-
-let alertConfig = $derived.by(() => {
-  switch (variant) {
-    case "success":
-      return {
-        bg: "bg-green-50",
-        border: "border-green-100",
-        text: "text-green-900",
-        iconColor: "text-green-500",
-        descText: "text-green-800/80",
-        icon: `<circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path>`,
-      };
-    case "warning":
-      return {
-        bg: "bg-yellow-50",
-        border: "border-yellow-100",
-        text: "text-yellow-900",
-        iconColor: "text-yellow-600",
-        descText: "text-yellow-800/80",
-        icon: `<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path>`,
-      };
-    case "error":
-      return {
-        bg: "bg-red-50",
-        border: "border-red-100",
-        text: "text-red-900",
-        iconColor: "text-red-500",
-        descText: "text-red-800/80",
-        icon: `<circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path>`,
-      };
-    default:
-      return {
-        bg: "bg-blue-50",
-        border: "border-blue-100",
-        text: "text-blue-900",
-        iconColor: "text-blue-500",
-        descText: "text-blue-800/80",
-        icon: `<circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path>`,
-      };
+  interface Props {
+    variant?: "success" | "warning" | "error" | "info";
+    title?: string;
+    message?: string;
+    class?: string;
+    children?: import("svelte").Snippet;
+    [key: string]: any;
   }
-});
+
+  let { variant = "info", title = "", message = "", class: className = "", children, ...rest }: Props = $props();
+
+  let alertConfig = $derived.by(() => {
+    switch (variant) {
+      case "success":
+        return {
+          bg: "bg-green-50",
+          border: "border-green-100",
+          text: "text-green-900",
+          iconColor: "text-green-500",
+          descText: "text-green-800/80",
+          icon: `<circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path>`,
+        };
+      case "warning":
+        return {
+          bg: "bg-yellow-50",
+          border: "border-yellow-100",
+          text: "text-yellow-900",
+          iconColor: "text-yellow-600",
+          descText: "text-yellow-800/80",
+          icon: `<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path>`,
+        };
+      case "error":
+        return {
+          bg: "bg-red-50",
+          border: "border-red-100",
+          text: "text-red-900",
+          iconColor: "text-red-500",
+          descText: "text-red-800/80",
+          icon: `<circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path>`,
+        };
+      default:
+        return {
+          bg: "bg-blue-50",
+          border: "border-blue-100",
+          text: "text-blue-900",
+          iconColor: "text-blue-500",
+          descText: "text-blue-800/80",
+          icon: `<circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path>`,
+        };
+    }
+  });
 </script>
 
 <div

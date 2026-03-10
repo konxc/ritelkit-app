@@ -1,77 +1,92 @@
 <script lang="ts">
-import { onMount } from "svelte";
+  import { onMount } from "svelte";
 
-interface TocItem {
-  id: string;
-  label: string;
-}
+  interface TocItem {
+    id: string;
+    label: string;
+  }
 
-interface Props {
-  items: TocItem[];
-  activeId?: string;
-  class?: string;
-  onItemClick?: () => void;
-}
+  interface Props {
+    items: TocItem[];
+    activeId?: string;
+    class?: string;
+    onItemClick?: () => void;
+  }
 
-let { items, activeId = $bindable(""), class: className = "", onItemClick }: Props = $props();
+  let { items, activeId = $bindable(""), class: className = "", onItemClick }: Props = $props();
 
-onMount(() => {
-  const sections = items
-    .map((item) => document.getElementById(item.id))
-    .filter(Boolean) as HTMLElement[];
+  onMount(() => {
+    const sections = items.map((item) => document.getElementById(item.id)).filter(Boolean) as HTMLElement[];
 
-  if (sections.length === 0) return;
+    if (sections.length === 0) return;
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      // Find the first entry that is intersecting
-      const visibleEntry = entries.find((entry) => entry.isIntersecting);
-      if (visibleEntry) {
-        activeId = visibleEntry.target.id;
-      }
-    },
-    {
-      rootMargin: "-100px 0px -40% 0px",
-      threshold: 0.1,
-    },
-  );
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Find the first entry that is intersecting
+        const visibleEntry = entries.find((entry) => entry.isIntersecting);
+        if (visibleEntry) {
+          activeId = visibleEntry.target.id;
+        }
+      },
+      {
+        rootMargin: "-100px 0px -40% 0px",
+        threshold: 0.1,
+      },
+    );
 
-  sections.forEach((section) => {
-    observer.observe(section);
+    sections.forEach((section) => {
+      observer.observe(section);
+    });
+
+    return () => {
+      sections.forEach((section) => {
+        observer.unobserve(section);
+      });
+    };
   });
 
-  return () => {
-    sections.forEach((section) => {
-      observer.unobserve(section);
-    });
-  };
-});
+  function handleClick(e: MouseEvent, id: string) {
+    if (onItemClick) onItemClick();
 
-function handleClick(e: MouseEvent, id: string) {
-  if (onItemClick) onItemClick();
+    const target = document.getElementById(id);
+    if (target) {
+      // Find the scroll container (in AdminLayout it's the main tag)
+      const scrollContainer = target.closest("main") || document.querySelector("main") || window;
 
-  // Smooth scroll is handled by CSS usually, but we want to ensure focus if needed
-  const target = document.getElementById(id);
-  if (target) {
-    // Offset scroll if header is sticky
-    const offset = 100; // Adjust based on header height
-    const bodyRect = document.body.getBoundingClientRect().top;
-    const elementRect = target.getBoundingClientRect().top;
-    const elementPosition = elementRect - bodyRect;
-    const offsetPosition = elementPosition - offset;
+      const offset = 0; // The main scroll container's viewport starts below the header, so no offset is needed
 
-    window.scrollTo({
-      top: offsetPosition,
-      behavior: "smooth",
-    });
+      if (scrollContainer instanceof HTMLElement) {
+        // Calculate position relative to container
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        const relativeTop = targetRect.top - containerRect.top;
+        const scrollTarget = scrollContainer.scrollTop + relativeTop - offset;
 
-    // Update active state immediately for better response
-    activeId = id;
+        scrollContainer.scrollTo({
+          top: scrollTarget,
+          behavior: "smooth",
+        });
+      } else {
+        // Fallback to window scroll
+        const bodyRect = document.body.getBoundingClientRect().top;
+        const elementRect = target.getBoundingClientRect().top;
+        const offsetPosition = elementRect - bodyRect - offset;
 
-    // Prevent original anchor jump to handle offset
-    e.preventDefault();
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth",
+        });
+      }
+
+      // Update active state after a small delay to let smooth scroll settle
+      setTimeout(() => {
+        activeId = id;
+      }, 100);
+
+      // Prevent original anchor jump
+      e.preventDefault();
+    }
   }
-}
 </script>
 
 <nav class="flex flex-col gap-1.5 {className}">

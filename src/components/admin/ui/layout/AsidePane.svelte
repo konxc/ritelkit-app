@@ -1,61 +1,61 @@
 <script lang="ts">
-import { fade, fly } from "svelte/transition";
-import Button from "../Button.svelte";
+  import { fade, fly } from "svelte/transition";
+  import Button from "../Button.svelte";
 
-interface Props {
-  title?: string;
-  side?: "left" | "right";
-  children?: import("svelte").Snippet;
-  /** Optional custom trigger snippet. If not provided, a default FAB will be rendered on mobile. */
-  trigger?: import("svelte").Snippet<[{ toggle: () => void; isOpen: boolean }]>;
-  /** Desktop width */
-  width?: string;
-  /** Sticky top offset */
-  top?: string;
-  /** Class for the desktop container */
-  class?: string;
-  isOpen?: boolean;
-}
-
-let {
-  title = "Navigasi",
-  side = "right",
-  children,
-  trigger,
-  width = "240px",
-  top = "2.5rem",
-  class: className = "",
-  isOpen = $bindable(false),
-}: Props = $props();
-
-function toggle() {
-  isOpen = !isOpen;
-}
-
-$effect(() => {
-  if (isOpen) {
-    document.body.style.overflow = "hidden";
-  } else {
-    document.body.style.overflow = "";
+  interface Props {
+    title?: string;
+    side?: "left" | "right";
+    children?: import("svelte").Snippet;
+    /** Optional custom trigger snippet. If not provided, a default FAB will be rendered on mobile. */
+    trigger?: import("svelte").Snippet<[{ toggle: () => void; isOpen: boolean }]>;
+    /** Desktop width */
+    width?: string;
+    /** Sticky top offset */
+    top?: string;
+    /** Class for the desktop container */
+    class?: string;
+    isOpen?: boolean;
   }
-  return () => {
-    document.body.style.overflow = "";
-  };
-});
 
-function portal(node: HTMLElement) {
-  document.body.appendChild(node);
-  return {
-    destroy() {
-      if (node.parentNode) {
-        node.parentNode.removeChild(node);
-      }
-    },
-  };
-}
+  let {
+    title = "Navigasi",
+    side = "right",
+    children,
+    trigger,
+    width = "240px",
+    top = "2.5rem",
+    class: className = "",
+    isOpen = $bindable(false),
+  }: Props = $props();
 
-const sideClasses = $derived(side === "right" ? "right-0" : "left-0");
-const flyOffset = $derived(side === "right" ? 300 : -300);
+  function toggle() {
+    isOpen = !isOpen;
+  }
+
+  $effect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  });
+
+  function portal(node: HTMLElement) {
+    document.body.appendChild(node);
+    return {
+      destroy() {
+        if (node.parentNode) {
+          node.parentNode.removeChild(node);
+        }
+      },
+    };
+  }
+
+  const sideClasses = $derived(side === "right" ? "right-0" : "left-0");
+  const flyOffset = $derived(side === "right" ? 300 : -300);
 </script>
 
 <!-- Desktop View: Sticky Sidebar -->

@@ -1,38 +1,44 @@
 <script lang="ts">
-import { onMount } from "svelte";
-import { fade, scale } from "svelte/transition";
-import Avatar from "../media/Avatar.svelte";
+  import { onMount, untrack } from "svelte";
+  import { fade, scale } from "svelte/transition";
+  import { t, initI18n } from "../../../../lib/i18n/store.svelte";
+  import Avatar from "../media/Avatar.svelte";
 
-interface Props {
-  email?: string;
-  name?: string;
-  role?: string;
-  logoutAction?: string;
-}
-
-let {
-  email = "admin@rotisholawat.com",
-  name = "Admin",
-  role = "Administrator",
-  logoutAction = "",
-}: Props = $props();
-
-let isOpen = $state(false);
-
-function toggle() {
-  isOpen = !isOpen;
-}
-
-const closeOnOutsideClick = (_e: MouseEvent) => {
-  if (isOpen) {
-    isOpen = false;
+  interface Props {
+    email?: string;
+    name?: string;
+    role?: string;
+    logoutAction?: string;
+    lang?: any;
   }
-};
 
-onMount(() => {
-  window.addEventListener("click", closeOnOutsideClick);
-  return () => window.removeEventListener("click", closeOnOutsideClick);
-});
+  let {
+    email = "admin@rotisholawat.com",
+    name = "Admin",
+    role = "Administrator",
+    logoutAction = "",
+    lang,
+  }: Props = $props();
+
+  // Root call for SSR and initial hydration (untracked for Svelte 5)
+  initI18n(untrack(() => lang));
+
+  let isOpen = $state(false);
+
+  function toggle() {
+    isOpen = !isOpen;
+  }
+
+  const closeOnOutsideClick = (_e: MouseEvent) => {
+    if (isOpen) {
+      isOpen = false;
+    }
+  };
+
+  onMount(() => {
+    window.addEventListener("click", closeOnOutsideClick);
+    return () => window.removeEventListener("click", closeOnOutsideClick);
+  });
 </script>
 
 <div class="relative shrink-0">
@@ -61,7 +67,9 @@ onMount(() => {
     </div>
     <div class="flex flex-col text-left">
       <span class="text-[0.85rem] leading-tight font-bold text-stone-900">{name}</span>
-      <span class="text-[0.65rem] leading-tight font-semibold text-stone-400">{role}</span>
+      <span class="text-[0.65rem] leading-tight font-semibold text-stone-400"
+        >{role || t("auth.role_administrator")}</span
+      >
     </div>
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -86,7 +94,7 @@ onMount(() => {
       class="absolute top-full right-0 z-50 mt-3 w-64 overflow-hidden rounded-2xl border border-stone-200/60 bg-white/95 shadow-[0_12px_40px_rgba(0,0,0,0.08)] backdrop-blur-xl"
     >
       <div class="border-b border-stone-100 bg-gradient-to-b from-stone-50/80 to-transparent p-5">
-        <p class="mb-0.5 text-xs font-semibold tracking-wide text-stone-400">Signed in as</p>
+        <p class="mb-0.5 text-xs font-semibold tracking-wide text-stone-400">{t("common.signed_in_as")}</p>
         <p class="truncate text-sm font-bold text-stone-900">{email}</p>
       </div>
       <div class="flex flex-col gap-1.5 border-b border-stone-100 px-3 pt-3 pb-2">
@@ -107,7 +115,7 @@ onMount(() => {
             class="text-stone-400 transition-colors duration-300 group-hover:text-[#c48a3a]"
             ><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg
           >
-          Profil Saya
+          {t("nav.my_profile")}
         </a>
         <a
           href="/admin/settings"
@@ -128,7 +136,7 @@ onMount(() => {
               d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
             /><circle cx="12" cy="12" r="3" /></svg
           >
-          Pengaturan Toko
+          {t("nav.store_settings")}
         </a>
         <a
           href="https://wa.me/6287825228548"
@@ -151,7 +159,7 @@ onMount(() => {
               d="M12 17h.01"
             /></svg
           >
-          Pusat Bantuan
+          {t("nav.help_center")}
         </a>
       </div>
       <div class="px-3 pt-2 pb-3">
@@ -177,7 +185,7 @@ onMount(() => {
                 y2="12"
               /></svg
             >
-            Keluar Sesi
+            {t("nav.logout")}
           </button>
         </form>
       </div>

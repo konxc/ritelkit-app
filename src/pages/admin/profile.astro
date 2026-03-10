@@ -16,9 +16,11 @@ if (!admin) {
   return Astro.redirect("/admin/login");
 }
 ensureCsrfToken(Astro);
+import { getLang, type LanguageCode, tServer } from "../../lib/i18n/server";
+const lang: LanguageCode = getLang(Astro.cookies);
 ---
 
-<AdminLayout title="Profil Admin">
+<AdminLayout title={tServer(lang, "profile.title")}>
   <div class="animate-fade-in-up mx-auto w-full max-w-md pt-4 sm:pt-8">
     <!-- Profile Card -->
     <div
@@ -44,14 +46,16 @@ ensureCsrfToken(Astro);
         >
       </div>
 
-      <h2 class="relative z-10 mb-2 font-['Syne',sans-serif] text-2xl font-bold text-stone-900">Admin Roti Sholawat</h2>
+      <h2 class="relative z-10 mb-2 font-['Syne',sans-serif] text-2xl font-bold text-stone-900">
+        {tServer(lang, "profile.admin_name")}
+      </h2>
       <p class="relative z-10 rounded-full bg-stone-100 px-4 py-1.5 text-sm font-semibold text-stone-500">
         {admin.email}
       </p>
     </div>
 
     <div class="flex flex-col gap-3">
-      <h3 class="mb-2 pl-2 font-bold text-stone-900">Menu Profil</h3>
+      <h3 class="mb-2 pl-2 font-bold text-stone-900">{tServer(lang, "profile.menu")}</h3>
 
       <a
         href="/admin/settings"
@@ -78,9 +82,9 @@ ensureCsrfToken(Astro);
           </div>
           <div>
             <div class="text-[0.95rem] font-bold text-stone-900 transition-colors group-hover:text-[#c48a3a]">
-              Pengaturan Lengkap
+              {tServer(lang, "profile.settings")}
             </div>
-            <div class="text-[0.8rem] font-medium text-stone-500">Kelola website, SEO, & banner</div>
+            <div class="text-[0.8rem] font-medium text-stone-500">{tServer(lang, "profile.settings_desc")}</div>
           </div>
         </div>
         <svg
@@ -116,7 +120,7 @@ ensureCsrfToken(Astro);
             ><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"
             ></polyline><line x1="21" x2="9" y1="12" y2="12"></line></svg
           >
-          Keluar Sesi
+          {tServer(lang, "nav.logout")}
         </button>
       </form>
     </div>

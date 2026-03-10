@@ -1,12 +1,12 @@
 <script module lang="ts">
-export type CmsPageRow = {
-  id: string;
-  slug: string;
-  title: string;
-  contentMd?: string;
-  isActive?: number;
-  updatedAt?: string | Date;
-};
+  export type CmsPageRow = {
+    id: string;
+    slug: string;
+    title: string;
+    contentMd?: string;
+    isActive?: number;
+    updatedAt?: string | Date;
+  };
 </script>
 
 <script lang="ts">
@@ -23,6 +23,8 @@ export type CmsPageRow = {
   import TextInput from "../ui/forms/TextInput.svelte";
   import SelectInput from "../ui/forms/SelectInput.svelte";
   import Textarea from "../ui/forms/Textarea.svelte";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
+  import { onMount } from "svelte";
   import { actions } from "astro:actions";
 
   let {
@@ -96,7 +98,7 @@ export type CmsPageRow = {
     if (error) {
       toastRef?.show(error.message, "error");
     } else {
-      toastRef?.show(pageId ? "Halaman diperbarui!" : "Halaman dibuat!", "success");
+      toastRef?.show(pageId ? t("cms.toast_update") : t("cms.toast_create"), "success");
       resetForm();
       await refreshData();
     }
@@ -122,38 +124,40 @@ export type CmsPageRow = {
     rowStates[id] = { ...rowStates[id], isEditing: false };
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Hapus halaman ini?")) return;
+  const handleRowAction = async (id: string, action: string) => {
+    if (action === "delete") {
+      if (!confirm(t("cms.confirm_delete"))) return;
+      rowStates[id] = { ...rowStates[id], isDeleting: true };
+      const { error } = await actions.deleteCmsPage(id);
+      rowStates[id] = { ...rowStates[id], isDeleting: false };
 
-    rowStates[id] = { ...rowStates[id], isDeleting: true };
-    const { error } = await actions.deleteCmsPage(id);
-
-    if (error) {
-      toastRef?.show(error.message, "error");
-    } else {
-      toastRef?.show("Halaman dihapus", "success");
-      await refreshData();
+      if (error) {
+        toastRef?.show(error.message, "error");
+      } else {
+        toastRef?.show(t("cms.toast_delete"), "success");
+        refreshData();
+      }
+      return;
     }
-    rowStates[id] = { ...rowStates[id], isDeleting: false };
   };
 </script>
 
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-    <SectionHeader title="Buat Halaman" badge="Brand Awareness" />
+    <SectionHeader title={t("cms.title_create")} badge={t("cms.badge_brand_awareness")} />
     <CrudInlineForm id="cms-form" onsubmit={handleSubmit} {isSubmitting}>
       <input type="hidden" name="page_id" value={pageId} />
       <div class="space-y-4 border-b border-stone-100 pb-5">
         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div class="md:col-span-1">
-            <TextInput id="title" name="title" label="Judul" bind:value={title} required />
+            <TextInput id="title" name="title" label={t("cms.label_title")} bind:value={title} required />
           </div>
           <div class="md:col-span-1">
             <TextInput
               id="slug"
               name="slug"
-              label="Slug"
-              placeholder="contoh: semesta-bersholawat"
+              label={t("cms.label_slug")}
+              placeholder={t("cms.placeholder_slug")}
               bind:value={slug}
               required
             />
@@ -162,11 +166,11 @@ export type CmsPageRow = {
             <SelectInput
               id="is_active"
               name="is_active"
-              label="Status"
+              label={t("cms.label_status")}
               bind:value={isActive}
               options={[
-                { value: "true", label: "Aktif" },
-                { value: "false", label: "Draf" },
+                { value: "true", label: t("common.active_status") },
+                { value: "false", label: t("common.draft_status") },
               ]}
             />
           </div>
@@ -175,7 +179,7 @@ export type CmsPageRow = {
           <Textarea
             id="content_md"
             name="content_md"
-            label="Konten (Markdown)"
+            label={t("cms.label_content_markdown")}
             rows={8}
             bind:value={contentMd}
             required
@@ -199,15 +203,26 @@ export type CmsPageRow = {
                 ></path></svg
               >
             {/if}
-            Simpan
+            {t("cms.button_save")}
           </Button>
-          <Button type="button" variant="secondary" class="h-[38px] px-6" onclick={handleClear}>Bersihkan</Button>
+          <Button type="button" variant="secondary" class="h-[38px] px-6" onclick={handleClear}
+            >{t("cms.button_clear")}</Button
+          >
         </ActionGroup>
       </div>
     </CrudInlineForm>
 
     <div class="mt-6">
-      <Table headers={["Judul", "Slug", "Status", "Pembaruan", "Aksi"]}>
+      <SectionHeader title={t("cms.title_list")} />
+      <Table
+        headers={[
+          t("cms.label_title"),
+          t("cms.label_slug"),
+          t("cms.label_status"),
+          t("cms.label_updated_at"),
+          t("common.actions"),
+        ]}
+      >
         {#each rows as p (p.id)}
           <TableRow data-id={p.id}>
             <TableCell data-field="title" class="px-4 py-3">{p.title}</TableCell>
@@ -216,7 +231,7 @@ export type CmsPageRow = {
               <span
                 class={`rounded-md px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase ${p.isActive === 1 ? "border border-emerald-100 bg-emerald-50 text-emerald-600" : "border border-stone-200 bg-stone-100 text-stone-500"}`}
               >
-              {p.isActive === 1 ? "Aktif" : "Draf"}
+                {p.isActive === 1 ? t("common.active_status") : t("common.draft_status")}
               </span>
             </TableCell>
             <TableCell class="px-4 py-3 text-xs text-stone-500 tabular-nums"
@@ -227,7 +242,7 @@ export type CmsPageRow = {
                 viewHref={`/content/${p.slug}`}
                 showEdit={true}
                 onEdit={() => handleEdit(p.id)}
-                onDelete={() => handleDelete(p.id)}
+                onDelete={() => handleRowAction(p.id, "delete")}
                 isDeleting={rowStates[p.id]?.isDeleting}
                 isSaving={rowStates[p.id]?.isEditing}
               />

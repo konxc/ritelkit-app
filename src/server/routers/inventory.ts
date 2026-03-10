@@ -2,22 +2,25 @@ import { z } from "zod";
 import { router, adminProcedure } from "../trpc";
 import { inventoryMovements, products } from "../../db/schema";
 import { eq, desc, or, like, sql, and } from "drizzle-orm";
+import { logAudit } from "../../lib/admin";
 
 export const inventoryRouter = router({
   listMovements: adminProcedure
     .input(
-      z.object({
-        q: z.string().optional(),
-        page: z.number().optional().default(1),
-        limit: z.number().optional().default(50),
-      }).optional()
+      z
+        .object({
+          q: z.string().optional(),
+          page: z.number().optional().default(1),
+          limit: z.number().optional().default(50),
+        })
+        .optional(),
     )
     .query(async ({ ctx, input }) => {
       const { q, page = 1, limit = 50 } = input || {};
       const offset = (page - 1) * limit;
 
       // Note: We might want to filter by product name if 'q' is provided, but since we retrieve movements, we need to join products and then filter
-      let whereClause: any = undefined;
+      let whereClause: any;
       if (q) {
         // If searching across movements, maybe filter by product name or sku? We'll search product name and sku.
         whereClause = or(like(products.name, `%${q}%`), like(products.sku, `%${q}%`));
@@ -55,12 +58,14 @@ export const inventoryRouter = router({
 
   listProducts: adminProcedure
     .input(
-      z.object({
-        q: z.string().optional(),
-        categoryId: z.string().optional(),
-        page: z.number().optional().default(1),
-        limit: z.number().optional().default(50),
-      }).optional()
+      z
+        .object({
+          q: z.string().optional(),
+          categoryId: z.string().optional(),
+          page: z.number().optional().default(1),
+          limit: z.number().optional().default(50),
+        })
+        .optional(),
     )
     .query(async ({ ctx, input }) => {
       const { q, categoryId, page = 1, limit = 50 } = input || {};
@@ -128,11 +133,7 @@ export const inventoryRouter = router({
           .run();
 
         // 2. Update product stock
-        const product = await tx
-          .select()
-          .from(products)
-          .where(eq(products.id, input.productId))
-          .get();
+        const product = await tx.select().from(products).where(eq(products.id, input.productId)).get();
         if (!product) throw new Error("Product not found");
 
         let newStock = product.stock || 0;
@@ -145,6 +146,11 @@ export const inventoryRouter = router({
           .set({ stock: newStock, updatedAt: now })
           .where(eq(products.id, input.productId))
           .run();
+      });
+
+      await logAudit(ctx.ctx, "create_inventory_movement", "inventory_movement", input.productId, {
+        type: input.type,
+        qty: input.qty,
       });
 
       return { success: true };

@@ -1,14 +1,14 @@
 <script lang="ts">
-import type { Snippet } from "svelte";
+  import type { Snippet } from "svelte";
 
-interface Props {
-  headers: (string | { label: string; class?: string })[];
-  children?: Snippet;
-  class?: string;
-  [key: string]: any;
-}
+  interface Props {
+    headers: (string | { label: string; class?: string })[];
+    children?: Snippet;
+    class?: string;
+    [key: string]: any;
+  }
 
-let { headers = [], children, class: className = "", ...rest }: Props = $props();
+  let { headers = [], children, class: className = "", ...rest }: Props = $props();
 </script>
 
 <div

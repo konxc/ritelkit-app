@@ -1,4 +1,5 @@
 import type { APIContext } from "astro";
+import { logAudit } from "../../../lib/admin";
 import { hashPassword, normalizeEmail, sanitizeText, verifyCsrf } from "../../../lib/auth";
 import { getDb, initDb } from "../../../lib/db";
 import { getEnv } from "../../../lib/env";
@@ -85,10 +86,12 @@ export async function POST(ctx: APIContext) {
   }
 
   const passwordHash = await hashPassword(password);
+  const id = crypto.randomUUID();
   await db.execute({
     sql: "INSERT INTO admin_users (id, email, password_hash, created_at) VALUES (?, ?, ?, ?)",
-    args: [crypto.randomUUID(), email, passwordHash, nowIso()],
+    args: [id, email, passwordHash, nowIso()],
   });
+  await logAudit(ctx, "setup_admin", "admin_user", id, { email });
 
   if (isJson) {
     return new Response(JSON.stringify({ ok: true }), {

@@ -1,5 +1,6 @@
 import type { APIContext } from "astro";
 import { json, readBody } from "../../../../lib/api";
+import { logAudit } from "../../../../lib/admin";
 import { requireAdmin, sanitizeText, verifyCsrf } from "../../../../lib/auth";
 import { getDb, initDb } from "../../../../lib/db";
 import { asInt, nowIso } from "../../../../lib/utils";
@@ -34,6 +35,7 @@ export async function PUT(ctx: APIContext) {
       id,
     ],
   });
+  await logAudit(ctx, "update_shipping_rule", "shipping_rule", id, { name, type });
   return json({ ok: true });
 }
 
@@ -51,5 +53,6 @@ export async function DELETE(ctx: APIContext) {
     sql: "DELETE FROM shipping_rules WHERE id = ?",
     args: [id],
   });
+  await logAudit(ctx, "delete_shipping_rule", "shipping_rule", id);
   return json({ ok: true });
 }

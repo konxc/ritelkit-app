@@ -1,13 +1,13 @@
 <script lang="ts">
-import Popover from "./overlay/Popover.svelte";
+  import Popover from "./overlay/Popover.svelte";
 
-interface Column {
-  id: string;
-  label: string;
-  isVisible: boolean;
-}
+  interface Column {
+    id: string;
+    label: string;
+    isVisible: boolean;
+  }
 
-let { columns = $bindable() }: { columns: Column[] } = $props();
+  let { columns = $bindable() }: { columns: Column[] } = $props();
 </script>
 
 <Popover>

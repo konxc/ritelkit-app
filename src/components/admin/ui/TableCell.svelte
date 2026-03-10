@@ -1,26 +1,26 @@
 <script lang="ts">
-import type { Snippet } from "svelte";
+  import type { Snippet } from "svelte";
 
-interface Props {
-  children?: Snippet;
-  align?: "left" | "center" | "right";
-  bold?: boolean;
-  class?: string;
-  [key: string]: any;
-}
-
-let { children, align = "left", bold = false, class: className = "", ...rest }: Props = $props();
-
-let alignClass = $derived.by(() => {
-  switch (align) {
-    case "center":
-      return "text-center";
-    case "right":
-      return "text-right";
-    default:
-      return "text-left";
+  interface Props {
+    children?: Snippet;
+    align?: "left" | "center" | "right";
+    bold?: boolean;
+    class?: string;
+    [key: string]: any;
   }
-});
+
+  let { children, align = "left", bold = false, class: className = "", ...rest }: Props = $props();
+
+  let alignClass = $derived.by(() => {
+    switch (align) {
+      case "center":
+        return "text-center";
+      case "right":
+        return "text-right";
+      default:
+        return "text-left";
+    }
+  });
 </script>
 
 <td

@@ -13,13 +13,13 @@ const initialDataFromServer = [
   { id: "2", name: "Data SSR 2 (Diambil via Drizzle)" },
   { id: "3", name: "Astro merender ini di HTML langsung!" },
 ];
+
+import { getLang, type LanguageCode, tServer } from "../../lib/i18n/server";
+const lang: LanguageCode = getLang(Astro.cookies);
 ---
 
-<AdminLayout title="Simulasi Arsitektur">
+<AdminLayout title={tServer(lang, "nav.simulasi") || "Simulasi"}>
   <div class="p-6">
-    <!-- 2. HYDRATION (Client:load) -->
-    <!-- Kita melempar data server sebagai `initial state` ke komponen Svelte -->
-    <!-- Komponen ini akan tampil instan di browser (SEO friendly & No Loading Spinner) -->
-    <SimulasiManager client:load initialData={initialDataFromServer} />
+    <SimulasiManager client:load initialData={initialDataFromServer} {lang} />
   </div>
 </AdminLayout>

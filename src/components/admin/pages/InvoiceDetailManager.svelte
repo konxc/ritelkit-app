@@ -1,84 +1,88 @@
 <script lang="ts">
-import { actions } from "astro:actions";
-import CrudInlineForm from "../CrudInlineForm.svelte";
-import PanelCard from "../PanelCard.svelte";
-import Badge from "../ui/Badge.svelte";
-import ToastNotification from "../ToastNotification.svelte";
-import Table from "../ui/Table.svelte";
-import TableRow from "../ui/TableRow.svelte";
-import TableCell from "../ui/TableCell.svelte";
-import Button from "../ui/Button.svelte";
-import SelectInput from "../ui/forms/SelectInput.svelte";
-import TextInput from "../ui/forms/TextInput.svelte";
+  import { actions } from "astro:actions";
+  import CrudInlineForm from "../CrudInlineForm.svelte";
+  import PanelCard from "../PanelCard.svelte";
+  import Badge from "../ui/Badge.svelte";
+  import ToastNotification from "../ToastNotification.svelte";
+  import Table from "../ui/Table.svelte";
+  import TableRow from "../ui/TableRow.svelte";
+  import TableCell from "../ui/TableCell.svelte";
+  import Button from "../ui/Button.svelte";
+  import SelectInput from "../ui/forms/SelectInput.svelte";
+  import TextInput from "../ui/forms/TextInput.svelte";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
+  import { onMount, untrack } from "svelte";
 
-type InvoiceItem = {
-  name: string;
-  qty: number;
-  price: number;
-  total: number;
-};
-type InvoiceDetail = {
-  id: string;
-  invoiceNo: string;
-  orderNo: string;
-  customerName: string;
-  customerPhone: string;
-  total: number;
-  status: string;
-  dueAt?: string | null;
-  parsedItems: InvoiceItem[];
-  shippingAddressJson?: {
-    province?: string;
-    city?: string;
-    district?: string;
+  type InvoiceItem = {
+    name: string;
+    qty: number;
+    price: number;
+    total: number;
   };
-};
-
-let { invoice: initialInvoice }: { invoice: InvoiceDetail } = $props();
-
-let invoice = $state<InvoiceDetail>({} as InvoiceDetail);
-$effect(() => {
-  invoice = initialInvoice;
-});
-let toastRef = $state<ToastNotification>();
-let isSubmitting = $state(false);
-
-// Sync with initialInvoice from SSR
-$effect(() => {
-  invoice = initialInvoice;
-});
-
-const handleSubmit = async (event: SubmitEvent) => {
-  event.preventDefault();
-  const form = event.currentTarget as HTMLFormElement;
-  const formData = new FormData(form);
-  const data = {
-    status: String(formData.get("status") || ""),
-    dueAt: (String(formData.get("dueAt") || "") || null) as string | null,
-  };
-
-  isSubmitting = true;
-  const { error } = await actions.updateInvoice({
-    id: invoice.id,
-    data,
-  });
-  isSubmitting = false;
-
-  if (error) {
-    toastRef?.show(error.message, "error");
-  } else {
-    invoice = {
-      ...invoice,
-      ...data,
+  type InvoiceDetail = {
+    id: string;
+    invoiceNo: string;
+    orderNo: string;
+    customerName: string;
+    customerPhone: string;
+    total: number;
+    status: string;
+    dueAt?: string | null;
+    parsedItems: InvoiceItem[];
+    shippingAddressJson?: {
+      province?: string;
+      city?: string;
+      district?: string;
     };
-    toastRef?.show("Faktur diperbarui", "success");
-  }
-};
+  };
+
+  let { invoice: initialInvoice, lang }: { invoice: InvoiceDetail; lang?: any } = $props();
+
+  // Root call for SSR and initial hydration (untracked for Svelte 5)
+  initI18n(untrack(() => lang));
+
+  let invoice = $state<InvoiceDetail>({} as InvoiceDetail);
+  $effect(() => {
+    if (initialInvoice) invoice = initialInvoice;
+  });
+  let toastRef = $state<ToastNotification>();
+  let isSubmitting = $state(false);
+
+  onMount(() => {
+    // initI18n handled by $effect
+  });
+
+  const handleSubmit = async (event: SubmitEvent) => {
+    event.preventDefault();
+    const form = event.currentTarget as HTMLFormElement;
+    const formData = new FormData(form);
+    const data = {
+      status: String(formData.get("status") || ""),
+      dueAt: (String(formData.get("dueAt") || "") || null) as string | null,
+    };
+
+    isSubmitting = true;
+    const { error } = await actions.updateInvoice({
+      id: invoice.id,
+      data,
+    });
+    isSubmitting = false;
+
+    if (error) {
+      toastRef?.show(error.message, "error");
+    } else {
+      invoice = {
+        ...invoice,
+        ...data,
+      };
+      toastRef?.show(t("invoices.toast_update"), "success");
+    }
+  };
 </script>
 
 <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
   <PanelCard>
-    <strong>Pesanan</strong>
+    <strong>{t("invoices.detail_order")}</strong>
     <p class="mb-2 text-xl font-bold text-[#c48a3a]">{invoice.orderNo}</p>
     <div class="space-y-1">
       <p class="font-bold text-stone-900">{invoice.customerName}</p>
@@ -87,21 +91,22 @@ const handleSubmit = async (event: SubmitEvent) => {
   </PanelCard>
 
   <PanelCard>
-    <strong>Status & Pembayaran</strong>
+    <strong>{t("invoices.status_payment")}</strong>
     <div class="mt-2 flex items-center gap-3">
       <Badge
-        text={invoice.status.toUpperCase()}
+        text={t(`invoices.status_${invoice.status}`).toUpperCase()}
         color={invoice.status === "paid" ? "green" : invoice.status === "overdue" ? "red" : "gray"}
       />
     </div>
     <p class="mt-4 text-xl font-bold text-stone-800 tabular-nums">
-      Total: Rp {Number(invoice.total).toLocaleString("id-ID")}
+      {t("common.total")}: {t("common.currency_symbol")}
+      {Number(invoice.total).toLocaleString(t("common.lang_code"))}
     </p>
   </PanelCard>
 </div>
 
-<PanelCard className="mb-6">
-  <strong>Alamat Pengiriman</strong>
+<PanelCard class="mb-6">
+  <strong>{t("invoices.shipping_address")}</strong>
   <p class="mt-2 font-medium text-stone-800">
     {invoice.shippingAddressJson?.province ?? "-"} › {invoice.shippingAddressJson?.city ?? "-"}
   </p>
@@ -110,19 +115,21 @@ const handleSubmit = async (event: SubmitEvent) => {
 
 <div class="mb-10 overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
   <div class="border-b border-stone-200 bg-stone-50 px-6 py-4">
-    <strong class="text-xs tracking-widest text-stone-900 uppercase">Rincian Item</strong>
+    <strong class="text-xs tracking-widest text-stone-900 uppercase">{t("orders.item_details")}</strong>
   </div>
   <div>
-    <Table headers={["Produk", "Qty", "Harga", "Total"]}>
+    <Table headers={[t("orders.product"), t("orders.qty"), t("orders.price"), t("orders.total")]}>
       {#each invoice.parsedItems as item (item.name)}
         <TableRow class="group transition-colors hover:bg-stone-50/30">
           <TableCell class="px-6 py-4 text-sm font-bold text-stone-900">{item.name}</TableCell>
           <TableCell class="px-6 py-4 text-center font-mono text-sm text-stone-600">{item.qty}</TableCell>
           <TableCell class="px-6 py-4 text-right text-sm text-stone-500 tabular-nums">
-            Rp {Number(item.price).toLocaleString("id-ID")}
+            {t("common.currency_symbol")}
+            {Number(item.price).toLocaleString(t("common.lang_code"))}
           </TableCell>
           <TableCell class="px-6 py-4 text-right text-sm font-bold text-stone-800 tabular-nums">
-            Rp {Number(item.total).toLocaleString("id-ID")}
+            {t("common.currency_symbol")}
+            {Number(item.total).toLocaleString(t("common.lang_code"))}
           </TableCell>
         </TableRow>
       {/each}
@@ -130,21 +137,21 @@ const handleSubmit = async (event: SubmitEvent) => {
   </div>
 </div>
 
-<PanelCard className="border-t-4 border-t-[#c48a3a]">
-  <strong class="mb-6 block text-xs tracking-widest text-stone-500 uppercase">Perbarui Detail Faktur</strong>
+<PanelCard class="border-t-4 border-t-[#c48a3a]">
+  <strong class="mb-6 block text-xs tracking-widest text-stone-500 uppercase">{t("invoices.update_details")}</strong>
   <CrudInlineForm id="invoice-form" data-invoice={invoice.invoiceNo} onsubmit={handleSubmit} {isSubmitting}>
     <div class="flex flex-col items-end gap-6 md:flex-row">
       <div class="w-full md:w-64">
         <SelectInput
           id="status"
           name="status"
-          label="Status"
+          label={t("common.status")}
           value={invoice.status}
           options={[
-            { value: "issued", label: "Issued" },
-            { value: "paid", label: "Dibayar" },
-            { value: "overdue", label: "Overdue" },
-            { value: "void", label: "Void" },
+            { value: "issued", label: t("invoices.status_issued") },
+            { value: "paid", label: t("invoices.status_paid") },
+            { value: "overdue", label: t("invoices.status_overdue") },
+            { value: "void", label: t("invoices.status_void") },
           ]}
         />
       </div>
@@ -153,7 +160,7 @@ const handleSubmit = async (event: SubmitEvent) => {
           id="dueAt"
           name="dueAt"
           type="date"
-          label="Jatuh Tempo"
+          label={t("invoices.due_date")}
           value={invoice.dueAt ? String(invoice.dueAt).split("T")[0] : ""}
         />
       </div>
@@ -173,7 +180,7 @@ const handleSubmit = async (event: SubmitEvent) => {
             ></path>
           </svg>
         {/if}
-        Simpan Perubahan
+        {t("orders.save_changes")}
       </Button>
     </div>
   </CrudInlineForm>

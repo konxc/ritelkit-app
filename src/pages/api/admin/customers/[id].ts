@@ -26,7 +26,7 @@ export async function PUT(ctx: APIContext) {
     sql: "UPDATE customers SET name = ?, phone = ?, email = ?, notes = ?, updated_at = ? WHERE id = ?",
     args: [name, phone, email || null, notes || null, nowIso(), id],
   });
-  await logAudit(ctx, "update", "customer", id, { name, phone });
+  await logAudit(ctx, "update_customer", "customer", id, { name, phone });
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { "Content-Type": "application/json" },
@@ -46,7 +46,7 @@ export async function DELETE(ctx: APIContext) {
   const id = ctx.params.id || "";
   const db = getDb(ctx);
   await db.execute({ sql: "DELETE FROM customers WHERE id = ?", args: [id] });
-  await logAudit(ctx, "delete", "customer", id);
+  await logAudit(ctx, "delete_customer", "customer", id);
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { "Content-Type": "application/json" },

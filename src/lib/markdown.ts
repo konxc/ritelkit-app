@@ -1,6 +1,5 @@
 export function renderMarkdown(input: string) {
-  const escapeHtml = (val: string) =>
-    val.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const escapeHtml = (val: string) => val.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
   const lines = input.split("\n");
   const blocks: string[] = [];

@@ -19,7 +19,7 @@ export async function POST(ctx: APIContext) {
     sql: "UPDATE notifications SET status = ?, sent_at = ?, updated_at = ? WHERE id = ?",
     args: ["sent", nowIso(), nowIso(), id],
   });
-  await logAudit(ctx, "send", "notification", id);
+  await logAudit(ctx, "send_notification", "notification", id);
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: { "Content-Type": "application/json" },

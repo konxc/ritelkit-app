@@ -3,8 +3,11 @@ import "../styles/admin.css";
 import { actions } from "astro:actions";
 import { ClientRouter } from "astro:transitions";
 import { ensureCsrfToken } from "../lib/auth";
+import { getLang, tServer } from "../lib/i18n/server";
+import { initI18n } from "../lib/i18n/store.svelte";
 
-const { title = "Dasbor Admin" } = Astro.props;
+const lang = getLang(Astro.cookies);
+const { title = tServer(lang, "nav.admin_dashboard") } = Astro.props;
 const currentPath = Astro.url.pathname;
 const csrfToken = ensureCsrfToken(Astro);
 
@@ -13,29 +16,32 @@ if (logoutRes && !logoutRes.error) {
   return Astro.redirect("/admin/login");
 }
 
+initI18n(lang); // Seed store for SSR components
+const isSidebarCollapsed = Astro.cookies.get("sidebar_collapsed")?.value === "true";
+
 const navGroups = [
   {
-    title: "Menu Utama",
+    title: "nav.group_main",
     items: [
-      { name: "Ringkasan", path: "/admin/overview", icon: "overview" },
-      { name: "Laporan", path: "/admin/reports", icon: "reports" },
+      { name: "nav.overview", path: "/admin/overview", icon: "overview" },
+      { name: "nav.reports", path: "/admin/reports", icon: "reports" },
     ],
   },
   {
-    title: "Manajemen",
+    title: "nav.group_management",
     items: [
-      { name: "Katalog", path: "/admin/catalog", icon: "katalog" },
-      { name: "Pesanan", path: "/admin/orders", icon: "pesanan" },
-      { name: "Pemasaran", path: "/admin/marketing", icon: "pemasaran" },
-      { name: "Sistem", path: "/admin/system", icon: "sistem" },
+      { name: "nav.catalog", path: "/admin/catalog", icon: "katalog" },
+      { name: "nav.orders", path: "/admin/orders", icon: "pesanan" },
+      { name: "nav.marketing", path: "/admin/marketing", icon: "pemasaran" },
+      { name: "nav.system", path: "/admin/system", icon: "sistem" },
     ],
   },
   {
-    title: "Lainnya",
+    title: "nav.group_others",
     items: [
-      { name: "Profil", path: "/admin/profile", icon: "user" },
-      { name: "Pengaturan", path: "/admin/settings", icon: "settings" },
-      { name: "Sistem UI", path: "/admin/design-system", icon: "layout" },
+      { name: "nav.profile", path: "/admin/profile", icon: "user" },
+      { name: "nav.settings", path: "/admin/settings", icon: "settings" },
+      { name: "nav.design_system", path: "/admin/design-system", icon: "layout" },
     ],
   },
 ];
@@ -44,31 +50,48 @@ import MainSidebar from "../components/admin/ui/layout/MainSidebar.svelte";
 import ProfileDropdown from "../components/admin/ui/layout/ProfileDropdown.svelte";
 import MobileNavbar from "../components/admin/ui/layout/MobileNavbar.svelte";
 import MobileHeader from "../components/admin/ui/layout/MobileHeader.svelte";
+import LanguageSwitcher from "../components/admin/ui/layout/LanguageSwitcher.svelte";
 ---
 
 <!doctype html>
-<html lang="id">
+<html lang={lang} class={isSidebarCollapsed ? "sidebar-collapsed" : ""}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>{title} - Roti Sholawat Admin</title>
     <meta name="csrf-token" content={csrfToken} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Work+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap"
       rel="stylesheet"
     />
     <ClientRouter />
+    <style is:inline>
+      /* Base fonts to prevent jump */
+      body {
+        font-family: "Work Sans", sans-serif;
+      }
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        font-family: "Syne", sans-serif;
+      }
+    </style>
   </head>
   <body
-    class="m-0 overflow-hidden bg-[#fdfcf9] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSI+PGVsbGlwc2UgY3g9IjEyIiBjeT0iMTIiIHJ4PSI0IiByeT0iNCIgZmlsbD0icmdiYSgxOTYsMTM4LDU4LDAuMDUpIi8+PC9zdmc+')] bg-fixed bg-repeat font-['Plus_Jakarta_Sans',sans-serif] text-stone-900 antialiased"
+    class="m-0 overflow-hidden bg-[#fdfcf9] bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgZmlsbD0ibm9uZSI+PGVsbGlwc2UgY3g9IjEyIiBjeT0iMTIiIHJ4PSI0IiByeT0iNCIgZmlsbD0icmdiYSgxOTYsMTM4LDU4LDAuMDUpIi8+PC9zdmc+')] bg-fixed bg-repeat text-stone-900 antialiased"
   >
     <div class="relative flex h-[100dvh] w-full flex-col lg:flex-row">
       <!-- Sidebar (Desktop Modular Component) -->
-      <MainSidebar {navGroups} {currentPath} client:load />
+      <MainSidebar client:load {navGroups} {currentPath} lang={lang} isCollapsed={isSidebarCollapsed} />
 
       <div class="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden">
         <!-- Mobile Header (Modular Component) -->
-        <MobileHeader {title} client:load />
+        <MobileHeader {title} lang={lang} client:load />
 
         <!-- Desktop Header -->
         <header
@@ -84,7 +107,10 @@ import MobileHeader from "../components/admin/ui/layout/MobileHeader.svelte";
           </div>
 
           <!-- Profile Dropdown (Modular Component) -->
-          <ProfileDropdown logoutAction={String(actions.adminLogout)} client:load />
+          <div class="flex items-center gap-6">
+            <LanguageSwitcher {lang} client:load />
+            <ProfileDropdown logoutAction={String(actions.adminLogout)} {lang} client:load />
+          </div>
         </header>
 
         <!-- Mobile Sub-Header for Tabs -->
@@ -108,7 +134,7 @@ import MobileHeader from "../components/admin/ui/layout/MobileHeader.svelte";
       </div>
 
       <!-- Mobile Navbar Dock (Modular Component) -->
-      <MobileNavbar {currentPath} client:load />
+      <MobileNavbar {currentPath} {lang} client:load />
     </div>
 
     <style is:global>
@@ -143,14 +169,5 @@ import MobileHeader from "../components/admin/ui/layout/MobileHeader.svelte";
       }
     </style>
     <div class="relative z-[100]"><slot name="modals" /></div>
-  </body><script is:inline>
-    // Synchronous check to prevent FOUC (Flash of Unstyled Content) before rendering
-    (function () {
-      const isCollapsed = localStorage.getItem("sidebarState") === "collapsed";
-      if (isCollapsed) {
-        document.documentElement.classList.add("sidebar-collapsed");
-        document.body?.classList.add("sidebar-collapsed");
-      }
-    })();
-  </script>
+  </body>
 </html>

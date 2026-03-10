@@ -1,5 +1,6 @@
 import type { APIContext } from "astro";
 import { json, readBody } from "../../../lib/api";
+import { logAudit } from "../../../lib/admin";
 import { requireAdmin, verifyCsrf } from "../../../lib/auth";
 import { getDb, initDb } from "../../../lib/db";
 import { nowIso } from "../../../lib/utils";
@@ -33,5 +34,6 @@ export async function POST(ctx: APIContext) {
       args: [key, JSON.stringify(value), now],
     });
   }
+  await logAudit(ctx, "update_settings", "settings", "global", body);
   return json({ ok: true });
 }

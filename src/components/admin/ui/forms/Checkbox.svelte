@@ -1,25 +1,25 @@
 <script lang="ts">
-interface Props {
-  checked?: boolean;
-  label?: string;
-  id?: string;
-  name?: string;
-  class?: string;
-  disabled?: boolean;
-  children?: import("svelte").Snippet;
-  [key: string]: any;
-}
+  interface Props {
+    checked?: boolean;
+    label?: string;
+    id?: string;
+    name?: string;
+    class?: string;
+    disabled?: boolean;
+    children?: import("svelte").Snippet;
+    [key: string]: any;
+  }
 
-let {
-  checked = $bindable(false),
-  label = "",
-  id = "",
-  name = "",
-  class: className = "",
-  disabled = false,
-  children,
-  ...rest
-}: Props = $props();
+  let {
+    checked = $bindable(false),
+    label = "",
+    id = "",
+    name = "",
+    class: className = "",
+    disabled = false,
+    children,
+    ...rest
+  }: Props = $props();
 </script>
 
 <div class="flex w-full items-start gap-3">

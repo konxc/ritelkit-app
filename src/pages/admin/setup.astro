@@ -14,35 +14,37 @@ if (adminCount > 0) {
 }
 const csrfToken = ensureCsrfToken(Astro);
 const error = Astro.url.searchParams.get("error");
+import { getLang, tServer } from "../../lib/i18n/server";
+const lang = getLang(Astro.cookies);
 ---
 
 <!doctype html>
-<html lang="id">
+<html lang={lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>Pengaturan Admin</title>
+    <title>{tServer(lang, "auth.setup_title")}</title>
   </head>
   <body class="m-0 bg-[#f6f4ef] font-['Outfit',sans-serif]">
     <div class="mx-auto mt-[8vh] max-w-[440px] rounded-2xl bg-white p-8 shadow-[0_20px_40px_rgba(0,0,0,0.08)]">
-      <h1>Pengaturan Admin</h1>
-      <p class="text-[0.9rem] text-[#6b625a]">Halaman ini hanya untuk pertama kali membuat admin.</p>
-      {error === "token" && <p class="text-[0.9rem] text-[#6b625a]">Invalid setup token.</p>}
-      {error === "csrf" && <p class="text-[0.9rem] text-[#6b625a]">Form session expired, refresh the page.</p>}
-      {error === "invalid" && <p class="text-[0.9rem] text-[#6b625a]">Invalid email or password.</p>}
-      {error === "missing" && <p class="text-[0.9rem] text-[#6b625a]">SETUP_TOKEN is not set in env.</p>}
+      <h1>{tServer(lang, "auth.setup_title")}</h1>
+      <p class="text-[0.9rem] text-[#6b625a]">{tServer(lang, "auth.setup_desc")}</p>
+      {error === "token" && <p class="text-[0.9rem] text-[#6b625a]">{tServer(lang, "auth.error_token")}</p>}
+      {error === "csrf" && <p class="text-[0.9rem] text-[#6b625a]">{tServer(lang, "auth.error_csrf")}</p>}
+      {error === "invalid" && <p class="text-[0.9rem] text-[#6b625a]">{tServer(lang, "auth.error_invalid")}</p>}
+      {error === "missing" && <p class="text-[0.9rem] text-[#6b625a]">{tServer(lang, "auth.error_missing_token")}</p>}
       <form method="post" action="/api/admin/setup">
         <input type="hidden" name="csrf_token" value={csrfToken} />
-        <label>Token Pengaturan</label>
+        <label>{tServer(lang, "auth.setup_token_label")}</label>
         <input
           class="my-2 mb-4 w-full rounded-[10px] border border-[#e6dfd3] p-3"
           name="setup_token"
           type="password"
           required
         />
-        <label>Surel Admin</label>
+        <label>{tServer(lang, "auth.email_label")}</label>
         <input class="my-2 mb-4 w-full rounded-[10px] border border-[#e6dfd3] p-3" name="email" type="email" required />
-        <label>Kata Sandi</label>
+        <label>{tServer(lang, "auth.password_label")}</label>
         <input
           class="my-2 mb-4 w-full rounded-[10px] border border-[#e6dfd3] p-3"
           name="password"
@@ -52,11 +54,12 @@ const error = Astro.url.searchParams.get("error");
         />
         <button
           class="w-full cursor-pointer rounded-[10px] border-none bg-[#c48a3a] p-3 font-semibold text-white"
-          type="submit">Buat Admin</button
+          type="submit">{tServer(lang, "auth.setup_button")}</button
         >
       </form>
       <p class="text-[0.9rem] text-[#6b625a]">
-        Env SETUP_TOKEN: {env.SETUP_TOKEN ? "tersedia" : "belum disetel"}.
+        {tServer(lang, "auth.env_token_label")}
+        {env.SETUP_TOKEN ? tServer(lang, "auth.token_available") : tServer(lang, "auth.token_not_set")}.
       </p>
     </div>
   </body>
