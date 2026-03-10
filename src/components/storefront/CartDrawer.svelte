@@ -1,32 +1,33 @@
 <script lang="ts">
-import CheckoutForm from "./CheckoutForm.svelte";
+  import CheckoutForm from "./CheckoutForm.svelte";
+  import { t, i18n } from "../../lib/i18n/store.svelte";
 
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  qty: number;
-}
+  interface CartItem {
+    id: string;
+    name: string;
+    price: number;
+    qty: number;
+  }
 
-let {
-  isOpen = $bindable(false),
-  cart,
-  totalQty,
-  totalPrice,
-  updateQty,
-  env,
-} = $props<{
-  isOpen: boolean;
-  cart: Map<string, CartItem>;
-  totalQty: number;
-  totalPrice: number;
-  updateQty: (id: string, delta: number) => void;
-  env: any;
-}>();
+  let {
+    isOpen = $bindable(false),
+    cart,
+    totalQty,
+    totalPrice,
+    updateQty,
+    env,
+  } = $props<{
+    isOpen: boolean;
+    cart: Map<string, CartItem>;
+    totalQty: number;
+    totalPrice: number;
+    updateQty: (id: string, delta: number) => void;
+    env: any;
+  }>();
 
-const format = (value: number) => `Rp ${value.toLocaleString("id-ID")}`;
+  const format = (value: number) => i18n.f.currency(value);
 
-let cartItems = $derived(Array.from(cart.values()) as CartItem[]);
+  let cartItems = $derived(Array.from(cart.values()) as CartItem[]);
 </script>
 
 <aside
@@ -38,7 +39,7 @@ let cartItems = $derived(Array.from(cart.values()) as CartItem[]);
   <button
     type="button"
     onclick={() => (isOpen = !isOpen)}
-    aria-label="Tutup Keranjang"
+    aria-label={t("common.close_cart")}
     class="absolute inset-x-0 top-0 z-40 flex h-6 w-full cursor-grab touch-none items-center justify-center border-none bg-transparent p-0 active:cursor-grabbing lg:hidden"
   >
     <div class="bg-border pointer-events-none h-1.5 w-12 rounded-full"></div>
@@ -48,7 +49,7 @@ let cartItems = $derived(Array.from(cart.values()) as CartItem[]);
   <button
     type="button"
     onclick={() => (isOpen = true)}
-    aria-label="Buka Keranjang"
+    aria-label={t("common.open_cart")}
     class="flex h-[76px] w-full shrink-0 cursor-pointer items-center justify-between border-none bg-transparent px-6 pt-2 text-left transition-opacity lg:hidden"
     class:opacity-0={isOpen}
     class:pointer-events-none={isOpen}
@@ -78,7 +79,9 @@ let cartItems = $derived(Array.from(cart.values()) as CartItem[]);
         {/if}
       </div>
       <div>
-        <p class="text-text-muted mb-0.5 text-[0.7rem] font-bold tracking-wider uppercase">Total Belanja</p>
+        <p class="text-text-muted mb-0.5 text-[0.7rem] font-bold tracking-wider uppercase">
+          {t("common.total_checkout")}
+        </p>
         <strong class="text-primary-dark text-lg">{totalQty > 0 ? format(totalPrice) : "-"}</strong>
       </div>
     </div>
@@ -106,8 +109,10 @@ let cartItems = $derived(Array.from(cart.values()) as CartItem[]);
     <div
       class="border-border/60 bg-surface/30 hidden shrink-0 items-center justify-between border-b px-6 py-4 lg:flex lg:py-5"
     >
-      <h2 class="text-primary-dark text-lg font-bold">Keranjang & Pembayaran</h2>
-      <span class="bg-primary/10 text-primary rounded-full px-3 py-1 text-xs font-bold">{totalQty} item</span>
+      <h2 class="text-primary-dark text-lg font-bold">{t("common.cart_title")}</h2>
+      <span class="bg-primary/10 text-primary rounded-full px-3 py-1 text-xs font-bold"
+        >{t("common.item_count", { count: totalQty })}</span
+      >
     </div>
 
     <!-- Scrollable Form/Cart Section -->
@@ -133,8 +138,8 @@ let cartItems = $derived(Array.from(cart.values()) as CartItem[]);
                 /></svg
               >
             </div>
-            <p class="text-primary-dark text-[0.95rem] font-bold">Keranjang Kosong</p>
-            <p class="text-text-muted mt-1 text-sm">Silakan pilih roti kesukaanmu.</p>
+            <p class="text-primary-dark text-[0.95rem] font-bold">{t("common.cart_empty")}</p>
+            <p class="text-text-muted mt-1 text-sm">{t("common.select_bread")}</p>
           </div>
         {:else}
           {#each cartItems as item (item.id)}
@@ -142,7 +147,7 @@ let cartItems = $derived(Array.from(cart.values()) as CartItem[]);
               <div class="flex-1 pr-3">
                 <strong class="text-primary-dark block text-[0.95rem] leading-snug">{item.name}</strong>
                 <div class="text-primary mt-1 text-[0.85rem] font-bold">
-                  Rp {item.price.toLocaleString("id-ID")}
+                  {i18n.f.currency(item.price)}
                 </div>
               </div>
               <div
@@ -151,7 +156,7 @@ let cartItems = $derived(Array.from(cart.values()) as CartItem[]);
                 <button
                   type="button"
                   onclick={() => updateQty(item.id, -1)}
-                  aria-label="Kurangi jumlah"
+                  aria-label={t("common.decrease_qty")}
                   class="text-text-muted flex h-8 w-8 cursor-pointer items-center justify-center rounded-[10px] bg-transparent transition-colors hover:bg-black/5 hover:text-red-500 active:scale-95"
                 >
                   {#if item.qty === 1}
@@ -187,7 +192,7 @@ let cartItems = $derived(Array.from(cart.values()) as CartItem[]);
                 <button
                   type="button"
                   onclick={() => updateQty(item.id, 1)}
-                  aria-label="Tambah jumlah"
+                  aria-label={t("common.increase_qty")}
                   class="bg-primary/10 text-primary hover:bg-primary flex h-8 w-8 cursor-pointer items-center justify-center rounded-[10px] transition-colors hover:text-white active:scale-95"
                 >
                   <svg
@@ -216,7 +221,7 @@ let cartItems = $derived(Array.from(cart.values()) as CartItem[]);
     <!-- Bottom Action Bar -->
     <div class="border-border/60 mt-auto shrink-0 border-t bg-white/95 px-6 py-4 backdrop-blur-xl lg:py-5">
       <div class="mb-3 flex items-center justify-between text-[0.95rem]">
-        <span class="text-text-muted font-medium">Total Pembayaran</span>
+        <span class="text-text-muted font-medium">{t("common.total_payment")}</span>
         <strong class="text-primary-dark text-xl font-bold">{format(totalPrice)}</strong>
       </div>
       <!-- The real submit button is inside CheckoutForm component, we use a proxy or event here -->

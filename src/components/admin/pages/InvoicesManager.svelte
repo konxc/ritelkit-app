@@ -12,7 +12,8 @@
   import Button from "../ui/Button.svelte";
   import TextInput from "../ui/forms/TextInput.svelte";
   import Badge from "../ui/Badge.svelte";
-  import { formatStatus } from "../../../lib/admin";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
+  import { onMount } from "svelte";
 
   export type InvoiceRow = {
     id: string;
@@ -28,12 +29,13 @@
     rows: initialRows = [],
     page = 1,
     limit = 20,
+    lang,
   }: {
     rows?: InvoiceRow[];
     page?: number;
     limit?: number;
+    lang?: any;
   } = $props();
-
   const offset = $derived((page - 1) * limit);
 
   const invoicesQuery = createQuery(() => ({
@@ -50,10 +52,10 @@
   let orderNo = $state("");
   let toastRef = $state<ToastNotification>();
 
-  const badgeTone = (status: string): "green" | "red" | "gray" => {
-    if (status === "paid") return "green";
-    if (status === "void") return "red";
-    return "gray";
+  const badgeTone = (status: string): "success" | "danger" | "default" => {
+    if (status === "paid") return "success";
+    if (status === "void") return "danger";
+    return "default";
   };
 
   const handleSubmit = async (event: SubmitEvent) => {
@@ -64,7 +66,7 @@
       if (error) {
         toastRef?.show(error.message, "error");
       } else {
-        toastRef?.show("Faktur berhasil dibuat", "success");
+        toastRef?.show(t("invoices.toast_create"), "success");
         orderNo = "";
         invoicesQuery.refetch();
       }
@@ -76,17 +78,17 @@
 
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
-    <SectionHeader title="Buat Faktur" badge="Manual" />
+    <SectionHeader title={t("invoices.title_create")} badge={t("invoices.badge_manual")} />
     <CrudInlineForm id="invoice-form" onsubmit={handleSubmit} {isSubmitting}>
       <div class="mb-8 flex w-full flex-col items-end gap-4 border-b border-stone-100 pb-8 md:flex-row xl:gap-6">
         <div class="w-full md:w-80">
           <TextInput
             id="order_no"
             name="order_no"
-            label="Nomor Pesanan"
+            label={t("invoices.order_no")}
             bind:value={orderNo}
             required
-            placeholder="Cth: ORD-20240226-001"
+            placeholder={t("invoices.order_no_placeholder")}
             class="w-full font-mono"
           />
         </div>
@@ -109,20 +111,28 @@
               ></path></svg
             >
           {/if}
-          Terbitkan Faktur
+          {t("invoices.generate")}
         </Button>
       </div>
     </CrudInlineForm>
 
     <div class="mt-6">
-      <SectionHeader title="Daftar Faktur" muted="Auto update status di tahap berikutnya" />
+      <SectionHeader title={t("invoices.title_list")} muted={t("invoices.subtitle_list")} />
     </div>
     <div class="mt-4">
-      <Table headers={["Faktur", "Pesanan", "Total", "Status", "Tanggal"]}>
+      <Table
+        headers={[
+          t("invoices.invoice_no"),
+          t("common.order_no"),
+          t("common.total"),
+          t("common.status"),
+          t("common.date"),
+        ]}
+      >
         {#if currentInvoices.length === 0}
           <TableRow>
             <TableCell colspan={5} class="py-12 text-center text-sm text-stone-400 italic">
-              Belum ada invoice yang diterbitkan.
+              {t("invoices.empty")}
             </TableCell>
           </TableRow>
         {/if}
@@ -135,13 +145,16 @@
               {row.orderNo}
             </TableCell>
             <TableCell class="px-3 py-4 font-mono font-bold text-stone-800 tabular-nums">
-              <span class="mr-1 font-sans text-xs text-stone-400">Rp</span>{row.total?.toLocaleString("id-ID")}
+              <span class="mr-1 font-sans text-xs text-stone-400">{t("common.currency_symbol")}</span
+              >{row.total?.toLocaleString(t("common.lang_code"))}
             </TableCell>
             <TableCell class="px-3 py-4">
-              <Badge text={formatStatus(row.status)} color={badgeTone(row.status)} />
+              <Badge variant={badgeTone(row.status)} showDot={true}>
+                {t("status." + row.status) || row.status}
+              </Badge>
             </TableCell>
             <TableCell class="px-3 py-4 text-sm font-medium text-stone-500">
-              {new Date(row.issuedAt).toLocaleDateString("id-ID", {
+              {new Date(row.issuedAt).toLocaleDateString(t("common.lang_code"), {
                 day: "numeric",
                 month: "short",
                 year: "numeric",
