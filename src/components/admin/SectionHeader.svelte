@@ -1,13 +1,13 @@
 <script lang="ts">
-let {
-  title,
-  badge,
-  muted,
-}: {
-  title: string;
-  badge?: string;
-  muted?: string;
-} = $props();
+  let {
+    title,
+    badge,
+    muted,
+  }: {
+    title: string;
+    badge?: string;
+    muted?: string;
+  } = $props();
 </script>
 
 <div class="mb-2 flex flex-col gap-1.5">
@@ -21,6 +21,8 @@ let {
     {/if}
   </div>
   {#if muted && !badge}
-    <p class="max-w-2xl text-[0.85rem] font-medium text-stone-500">{muted}</p>
+    <p class="max-w-2xl text-[0.85rem] font-medium text-stone-500">
+      {@html muted.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}
+    </p>
   {/if}
 </div>

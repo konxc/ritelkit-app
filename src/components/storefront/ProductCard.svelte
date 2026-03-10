@@ -1,24 +1,26 @@
 <script lang="ts">
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-  image: string;
-  stock: number;
-}
+  interface Product {
+    id: string;
+    name: string;
+    price: number;
+    description: string;
+    image: string;
+    stock: number;
+  }
 
-let { product, onAdd } = $props<{ product: Product; onAdd: () => void }>();
+  import { t, i18n } from "../../lib/i18n/store.svelte";
 
-let isAdded = $state(false);
+  let { product, onAdd } = $props<{ product: Product; onAdd: () => void }>();
 
-function handleClick() {
-  onAdd();
-  isAdded = true;
-  setTimeout(() => {
-    isAdded = false;
-  }, 600);
-}
+  let isAdded = $state(false);
+
+  function handleClick() {
+    onAdd();
+    isAdded = true;
+    setTimeout(() => {
+      isAdded = false;
+    }, 600);
+  }
 </script>
 
 <div
@@ -63,14 +65,14 @@ function handleClick() {
     </div>
     <div class="mt-3 flex items-center justify-between gap-2">
       <span class="text-primary text-[0.95rem] font-bold md:text-[1.05rem]">
-        Rp {Number(product.price).toLocaleString("id-ID")}
+        {i18n.f.currency(product.price)}
       </span>
       <button
         onclick={handleClick}
         class="flex h-8 w-8 items-center justify-center rounded-xl transition-all active:scale-95 md:h-9 md:w-9 {isAdded
           ? 'bg-primary text-white'
           : 'bg-primary/10 text-primary'}"
-        aria-label="Tambah item"
+        aria-label={t("common.add_item")}
       >
         {#if isAdded}
           <svg

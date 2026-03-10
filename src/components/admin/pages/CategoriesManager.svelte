@@ -2,6 +2,7 @@
   import { trpc } from "../../../lib/trpc";
   import { createQuery, useQueryClient } from "@tanstack/svelte-query";
   import { onMount } from "svelte";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
   import type { Category } from "../../../lib/types";
   import CrudInlineForm from "../CrudInlineForm.svelte";
   import RowActions from "../RowActions.svelte";
@@ -21,15 +22,15 @@
   import Drawer from "../ui/overlay/Drawer.svelte";
 
   let columns = $state([
-    { id: "kategori", label: "Kategori", isVisible: true, class: "" },
-    { id: "slug", label: "URL Slug", isVisible: true, class: "hidden lg:table-cell" },
-    { id: "urut", label: "Urut", isVisible: true, class: "" },
-    { id: "status", label: "Status", isVisible: true, class: "" },
+    { id: "kategori", label: t("catalog.categories.name"), isVisible: true, class: "" },
+    { id: "slug", label: t("catalog.categories.slug"), isVisible: true, class: "hidden lg:table-cell" },
+    { id: "urut", label: t("catalog.categories.sort_order"), isVisible: true, class: "" },
+    { id: "status", label: t("common.status"), isVisible: true, class: "" },
   ]);
 
   let activeHeaders = $derived([
     ...columns.filter((c) => c.isVisible).map((c) => ({ label: c.label, class: c.class })),
-    "Aksi",
+    t("common.actions"),
   ]);
 
   type CategoryMutationInput = {
@@ -103,7 +104,7 @@
     try {
       await trpc.categories.create.mutate(payload);
       queryClient.invalidateQueries({ queryKey: ["categories.list"] });
-      toastRef?.show("Kategori ditambahkan", "success");
+      toastRef?.show(t("catalog.categories.toast_add"), "success");
       form.reset();
       newName = "";
       newSlug = "";
@@ -118,12 +119,12 @@
 
   const handleRowAction = async (id: string, action: "save" | "delete", rowEl: HTMLElement | null) => {
     if (action === "delete") {
-      if (!confirm("Hapus kategori ini?")) return;
+      if (!confirm(t("catalog.categories.confirm_delete"))) return;
       processingId = id;
       try {
         await trpc.categories.delete.mutate(id);
         queryClient.invalidateQueries({ queryKey: ["categories.list"] });
-        toastRef?.show("Kategori dihapus", "success");
+        toastRef?.show(t("catalog.categories.toast_delete"), "success");
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Failed to delete category";
         toastRef?.show(message, "error");
@@ -158,7 +159,7 @@
           data: payload as Partial<CategoryMutationInput>,
         });
         queryClient.invalidateQueries({ queryKey: ["categories.list"] });
-        toastRef?.show("Kategori diperbarui", "success");
+        toastRef?.show(t("catalog.categories.toast_update"), "success");
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Failed to update category";
         toastRef?.show(message, "error");
@@ -170,10 +171,10 @@
 </script>
 
 <div class="mt-2 mb-8 flex items-center justify-between">
-  <SectionHeader title="Daftar Kategori" muted="Kelola dan edit kategori produk" />
+  <SectionHeader title={t("catalog.categories.title")} muted={t("catalog.categories.subtitle")} />
   <div class="hidden lg:flex lg:items-center lg:gap-3">
     <div class="mr-2">
-      <CatalogHeaderFilters tab="categories" columns={columns} />
+      <CatalogHeaderFilters tab="categories" {columns} />
     </div>
     <ColumnVisibilityToggle bind:columns />
     <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
@@ -192,12 +193,12 @@
           stroke-linejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg
         >
       </div>
-      Tambah Kategori
+      {t("catalog.categories.add")}
     </Button>
   </div>
 </div>
 
-<Fab onclick={() => (isDrawerOpen = true)} label="Tambah Kategori" />
+<Fab onclick={() => (isDrawerOpen = true)} label={t("catalog.categories.add")} />
 
 {#snippet categoryIcon()}
   <svg
@@ -223,7 +224,7 @@
       class="h-11 flex-1 rounded-2xl border border-stone-200 bg-white text-[0.7rem] font-black tracking-widest text-stone-400 uppercase transition-all hover:bg-stone-50 hover:text-stone-600 focus:outline-none active:scale-95 lg:h-[52px]"
       onclick={() => (isDrawerOpen = false)}
     >
-      Batalkan
+      {t("common.cancel")}
     </button>
     <Button
       type="submit"
@@ -242,7 +243,7 @@
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             ></path>
           </svg>
-          <span class="text-xs">Menyimpan...</span>
+          <span class="text-xs">{t("common.saving")}</span>
         </div>
       {:else}
         <div class="flex items-center gap-3">
@@ -260,7 +261,7 @@
               points="17 21 17 13 7 13 7 21"
             /><polyline points="7 3 7 8 15 8" /></svg
           >
-          <span class="text-[0.75rem] tracking-tight">SIMPAN KATEGORI</span>
+          <span class="text-[0.75rem] tracking-tight uppercase">{t("catalog.categories.add")}</span>
         </div>
       {/if}
     </Button>
@@ -269,8 +270,8 @@
 
 <Drawer
   bind:isOpen={isDrawerOpen}
-  title="Tambah Kategori"
-  subtitle="Input Data Organisasi Produk"
+  title={t("catalog.categories.add")}
+  subtitle={t("catalog.categories.subtitle")}
   icon={categoryIcon}
   footer={drawerFooter}
   maxWidth="md"
@@ -295,18 +296,18 @@
                 d="M3 9V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4"
               /></svg
             >
-            <label for="name" class="text-[0.8rem] font-bold text-stone-600">Nama Kategori</label>
+            <label for="name" class="text-[0.8rem] font-bold text-stone-600">{t("catalog.categories.name")}</label>
           </div>
           <TextInput
             name="name"
             id="name"
             required
             bind:value={newName}
-            placeholder="Masukkan Nama Kategori (misal: Roti Asin)..."
+            placeholder={t("catalog.categories.name_placeholder")}
             class="ring-stone-100/50"
           />
           <p class="mt-1 px-1 text-[0.65rem] font-medium text-stone-400 italic">
-            Gunakan nama yang jelas untuk mempermudah navigasi pembeli.
+            {t("catalog.categories.name_help")}
           </p>
         </div>
 
@@ -327,13 +328,13 @@
                 d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
               /></svg
             >
-            <label for="slug" class="text-[0.8rem] font-bold text-stone-600">URL Slug (Otomatis)</label>
+            <label for="slug" class="text-[0.8rem] font-bold text-stone-600">{t("catalog.categories.slug")}</label>
           </div>
           <TextInput
             name="slug"
             id="slug"
             bind:value={newSlug}
-            placeholder="roti-asin (terisi otomatis)"
+            placeholder={t("catalog.categories.slug_placeholder")}
             class="bg-stone-50/50 font-mono text-[0.85rem] ring-stone-100/50"
           />
         </div>
@@ -354,7 +355,9 @@
                 class="text-stone-400"
                 ><path d="m3 16 4 4 4-4" /><path d="M7 20V4" /><path d="m21 8-4-4-4 4" /><path d="M17 4v16" /></svg
               >
-              <label for="sort_order" class="text-[0.8rem] font-bold text-stone-600">Urutan</label>
+              <label for="sort_order" class="text-[0.8rem] font-bold text-stone-600"
+                >{t("catalog.categories.sort_order")}</label
+              >
             </div>
             <TextInput
               name="sort_order"
@@ -382,15 +385,17 @@
                   d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0z"
                 /><circle cx="12" cy="12" r="3" /></svg
               >
-              <label for="isActive" class="text-[0.8rem] font-bold text-stone-600">Visibilitas</label>
+              <label for="isActive" class="text-[0.8rem] font-bold text-stone-600"
+                >{t("catalog.categories.visibility")}</label
+              >
             </div>
             <SelectInput
               name="isActive"
               id="isActive"
-              placeholder="-- Pilih Status --"
+              placeholder={t("common.loading")}
               options={[
-                { label: "🟢 Aktif", value: "true" },
-                { label: "🔴 Draf", value: "false" },
+                { label: t("catalog.categories.active"), value: "true" },
+                { label: t("catalog.categories.draft"), value: "false" },
               ]}
               class="ring-stone-100/50"
             />
@@ -412,10 +417,9 @@
               class="mt-1 shrink-0"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg
             >
             <div>
-              <h4 class="text-[0.75rem] font-black tracking-wider uppercase">Tips Navigasi</h4>
+              <h4 class="text-[0.75rem] font-black tracking-wider uppercase">{t("catalog.categories.tips_title")}</h4>
               <p class="mt-1 text-[0.8rem] leading-relaxed font-medium">
-                Kategori ini akan tampil sebagai filter utama di halaman menu pembeli. Pastikan **Urutan** diisi (angka
-                1 = tampil paling awal).
+                {@html t("catalog.categories.tips_desc").replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}
               </p>
             </div>
           </div>
@@ -428,8 +432,8 @@
 <Table headers={activeHeaders}>
   {#if categories.length === 0}
     <TableEmptyState
-      title="Daftar Kategori Kosong"
-      subtitle="Belum ada kategori yang dibuat. Gunakan form di atas untuk menambahkannya."
+      title={t("catalog.categories.empty")}
+      subtitle={t("catalog.categories.empty_desc")}
       colspan={activeHeaders.length}
     />
   {/if}
@@ -441,7 +445,12 @@
       {#if columns[0].isVisible}
         <TableCell class="py-4">
           <div class="flex flex-col gap-1">
-            <InlineEditableField value={row.name} field="name" ariaLabel="Nama Kategori" class="min-w-[120px]" />
+            <InlineEditableField
+              value={row.name}
+              field="name"
+              ariaLabel={t("catalog.categories.name")}
+              class="min-w-[120px]"
+            />
             <div class="font-mono text-[0.65rem] text-stone-400 lg:hidden">/{row.slug}</div>
           </div>
         </TableCell>
@@ -451,7 +460,7 @@
           <InlineEditableField
             value={row.slug || ""}
             field="slug"
-            ariaLabel="URL Slug"
+            ariaLabel={t("catalog.categories.slug")}
             class="min-w-[120px] font-mono text-[0.8rem] font-normal text-stone-500"
           />
         </TableCell>
@@ -461,7 +470,7 @@
           <InlineEditableField
             value={row.sortOrder}
             field="sortOrder"
-            ariaLabel="Urutan"
+            ariaLabel={t("catalog.categories.sort_order")}
             class="w-16 text-center text-stone-600 tabular-nums"
           />
         </TableCell>
@@ -472,8 +481,8 @@
             data-field="isActive"
             class="cursor-pointer rounded-lg border border-stone-200/50 bg-stone-100/60 px-3 py-1.5 text-[0.7rem] font-bold tracking-wider text-stone-700 uppercase transition-all outline-none hover:border-[#c48a3a]/30 hover:bg-white focus:bg-white"
           >
-            <option value="true" selected={row.isActive === 1}>🟢 AKTIF</option>
-            <option value="false" selected={row.isActive === 0}>🔴 DRAF</option>
+            <option value="true" selected={row.isActive === 1}>{t("catalog.categories.active")}</option>
+            <option value="false" selected={row.isActive === 0}>{t("catalog.categories.draft")}</option>
           </select>
         </TableCell>
       {/if}

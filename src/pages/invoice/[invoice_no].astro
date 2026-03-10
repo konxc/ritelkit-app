@@ -2,6 +2,7 @@
 import { requireAdmin } from "../../lib/auth";
 import { getDb, initDb } from "../../lib/db";
 import "../../styles/global.css";
+import { getLang, tServer, fServer } from "../../lib/i18n/server";
 
 await initDb(Astro);
 const invoiceNo = Astro.params.invoice_no;
@@ -29,14 +30,16 @@ if (!admin) {
 
 const items = JSON.parse(String(invoice.items_json || "[]"));
 const address = JSON.parse(String(invoice.shipping_address_json || "{}"));
+const lang = getLang(Astro.cookies);
+const f = fServer(lang);
 ---
 
 <!doctype html>
-<html lang="id">
+<html lang={lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>Faktur {invoice.invoice_no}</title>
+    <title>{tServer(lang, "invoice.title")} {invoice.invoice_no}</title>
   </head>
   <body class="m-6 text-[#1f1b16]">
     <div class="flex items-center justify-between">
@@ -45,22 +48,22 @@ const address = JSON.parse(String(invoice.shipping_address_json || "{}"));
         <div class="muted text-[#6b625a]">Semesta Bersholawat</div>
       </div>
       <div>
-        <div>Faktur: {invoice.invoice_no}</div>
-        <div class="muted text-[#6b625a]">Pesanan: {invoice.order_no}</div>
+        <div>{tServer(lang, "invoice.title")}: {invoice.invoice_no}</div>
+        <div class="muted text-[#6b625a]">{tServer(lang, "orders.order_no")}: {invoice.order_no}</div>
         <div class="muted text-[#6b625a]">
-          Tanggal: {String(invoice.issued_at).split("T")[0]}
+          {tServer(lang, "orders.date")}: {f.date(invoice.issued_at)}
         </div>
       </div>
     </div>
 
     <div class="mt-4">
-      <strong>Pelanggan</strong>
+      <strong>{tServer(lang, "orders.customer")}</strong>
       <div>{invoice.customer_name}</div>
       <div class="muted text-[#6b625a]">{invoice.customer_phone}</div>
     </div>
 
     <div class="mt-3">
-      <strong>Alamat</strong>
+      <strong>{tServer(lang, "orders.shipping_info")}</strong>
       <div>{address.province} - {address.city} - {address.district}</div>
       <div class="muted text-[#6b625a]">{address.street || ""}</div>
     </div>
@@ -68,10 +71,10 @@ const address = JSON.parse(String(invoice.shipping_address_json || "{}"));
     <table class="mt-4 w-full border-collapse">
       <thead>
         <tr>
-          <th class="border-b border-[#e6dfd3] py-2 text-left">Produk</th>
-          <th class="border-b border-[#e6dfd3] py-2 text-left">Qty</th>
-          <th class="border-b border-[#e6dfd3] py-2 text-left">Harga</th>
-          <th class="border-b border-[#e6dfd3] py-2 text-left">Total</th>
+          <th class="border-b border-[#e6dfd3] py-2 text-left">{tServer(lang, "orders.product")}</th>
+          <th class="border-b border-[#e6dfd3] py-2 text-left">{tServer(lang, "orders.qty")}</th>
+          <th class="border-b border-[#e6dfd3] py-2 text-left">{tServer(lang, "orders.price")}</th>
+          <th class="border-b border-[#e6dfd3] py-2 text-left">{tServer(lang, "orders.total")}</th>
         </tr>
       </thead>
       <tbody>
@@ -80,8 +83,8 @@ const address = JSON.parse(String(invoice.shipping_address_json || "{}"));
             <tr>
               <td class="border-b border-[#e6dfd3] py-2">{item.name}</td>
               <td class="border-b border-[#e6dfd3] py-2">{item.qty}</td>
-              <td class="border-b border-[#e6dfd3] py-2">Rp {Number(item.price).toLocaleString("id-ID")}</td>
-              <td class="border-b border-[#e6dfd3] py-2">Rp {Number(item.total).toLocaleString("id-ID")}</td>
+              <td class="border-b border-[#e6dfd3] py-2">{f.currency(item.price)}</td>
+              <td class="border-b border-[#e6dfd3] py-2">{f.currency(item.total)}</td>
             </tr>
           ))
         }
@@ -89,9 +92,9 @@ const address = JSON.parse(String(invoice.shipping_address_json || "{}"));
     </table>
 
     <div class="mt-3 text-right font-semibold">
-      Total: Rp {Number(invoice.total).toLocaleString("id-ID")}
+      {tServer(lang, "orders.total_label")}: {f.currency(invoice.total)}
     </div>
 
-    <button class="mt-4 print:hidden" onclick="window.print()"> Print </button>
+    <button class="mt-4 print:hidden" onclick="window.print()"> {tServer(lang, "common.print")} </button>
   </body>
 </html>

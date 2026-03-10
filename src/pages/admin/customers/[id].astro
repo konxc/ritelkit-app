@@ -8,6 +8,7 @@ import SectionHeader from "../../../components/admin/SectionHeader.svelte";
 import AdminLayout from "../../../layouts/AdminLayout.astro";
 import { requireAdmin } from "../../../lib/auth";
 import { getDb, initDb } from "../../../lib/db";
+import { getLang, tServer, fServer } from "../../../lib/i18n/server";
 
 await initDb(Astro);
 const admin = await requireAdmin(Astro);
@@ -40,9 +41,12 @@ const ordersRes = await db.execute({
           ORDER BY created_at DESC`,
   args: [customer.phone, customer.email || ""],
 });
+
+const lang = getLang(Astro.cookies);
+const f = fServer(lang);
 ---
 
-<AdminLayout title="Detail Pelanggan">
+<AdminLayout title={tServer(lang, "customers.detail_title")}>
   <PanelCard>
     <strong>{customer.name}</strong>
     <p class="muted">
@@ -53,10 +57,18 @@ const ordersRes = await db.execute({
   </PanelCard>
 
   <div class="mt-6">
-    <SectionHeader title="Riwayat Pesanan" muted="Berdasarkan telepon/email" />
+    <SectionHeader title={tServer(lang, "customers.order_history")} muted={tServer(lang, "customers.history_desc")} />
   </div>
   <div class="mt-4">
-    <Table headers={["Pesanan", "Total", "Status", "Pembayaran", "Tanggal"]}>
+    <Table
+      headers={[
+        tServer(lang, "orders.order_no"),
+        tServer(lang, "orders.total"),
+        tServer(lang, "orders.status"),
+        tServer(lang, "orders.payment"),
+        tServer(lang, "orders.date"),
+      ]}
+    >
       {
         ordersRes.rows.map((order) => (
           <TableRow>
@@ -68,7 +80,7 @@ const ordersRes = await db.execute({
                 {String((order as { order_no?: string }).order_no || "")}
               </a>
             </TableCell>
-            <TableCell>Rp {Number((order as { total?: number }).total || 0).toLocaleString("id-ID")}</TableCell>
+            <TableCell>{f.currency(Number((order as { total?: number }).total || 0))}</TableCell>
             <TableCell>
               <Badge
                 variant={String((order as { status?: string }).status || "") === "processing" ? "success" : "default"}
@@ -89,7 +101,7 @@ const ordersRes = await db.execute({
                 {String((order as { payment_status?: string }).payment_status || "")}
               </Badge>
             </TableCell>
-            <TableCell>{String((order as { created_at?: string }).created_at || "").split("T")[0]}</TableCell>
+            <TableCell>{f.date(String((order as { created_at?: string }).created_at || ""))}</TableCell>
           </TableRow>
         ))
       }

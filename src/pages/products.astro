@@ -1,31 +1,31 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { getDb, initDb } from "../lib/db";
+import { getLang, tServer, fServer } from "../lib/i18n/server";
 
 await initDb(Astro);
 const db = getDb(Astro);
 const products = await db.execute(
   "SELECT name, price, images_json, description FROM products WHERE is_active = 1 ORDER BY created_at DESC",
 );
+const lang = getLang(Astro.cookies);
+const f = fServer(lang);
 ---
 
-<Layout
-  title="Katalog Produk — Roti Sholawat"
-  description="Pilihan roti manis, cake, dan paket snack box premium dari Roti Sholawat Yogyakarta."
->
+<Layout title={tServer(lang, "catalog.title") + " — Roti Sholawat"} description={tServer(lang, "catalog.description")}>
   <main class="bg-surface pb-24">
     <!-- Products Hero -->
     <section class="bg-primary/5 relative overflow-hidden pt-16 pb-16 lg:pt-20">
       <div class="absolute inset-0 z-0 bg-[radial-gradient(circle_at_top_right,rgba(37,190,196,0.1),transparent_50%)]">
       </div>
       <div class="relative z-10 container mx-auto max-w-3xl text-center">
-        <span class="sub-title">Katalog Lengkap</span>
+        <span class="sub-title">{tServer(lang, "catalog.hero_subtitle")}</span>
         <h1 class="mb-6">
-          Pilihan Terbaik untuk <span class="text-primary italic">Setiap Acara</span>
+          {tServer(lang, "catalog.hero_title_1")}
+          <span class="text-primary italic">{tServer(lang, "catalog.hero_title_2")}</span>
         </h1>
         <p class="text-text-muted text-lg leading-relaxed">
-          Dari roti harian yang lembut hingga paket snack box premium untuk momen spesial Anda. Kami memastikan setiap
-          produk dibuat dengan bahan pilihan dan penuh keberkahan.
+          {tServer(lang, "catalog.hero_desc")}
         </p>
       </div>
     </section>
@@ -33,9 +33,11 @@ const products = await db.execute(
     <section class="section py-20">
       <div class="container">
         <div class="mb-12 flex flex-wrap items-center justify-between gap-4">
-          <h2 class="text-2xl md:text-3xl">Semua Produk</h2>
+          <h2 class="text-2xl md:text-3xl">{tServer(lang, "catalog.title_all")}</h2>
           <div class="bg-primary/5 flex gap-2 rounded-xl p-1">
-            <button class="text-primary rounded-lg bg-white px-4 py-2 text-sm font-bold shadow-sm">Semua</button>
+            <button class="text-primary rounded-lg bg-white px-4 py-2 text-sm font-bold shadow-sm"
+              >{tServer(lang, "common.all")}</button
+            >
             <button
               class="text-text-muted hover:text-primary rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
               >Roti</button
@@ -93,13 +95,11 @@ const products = await db.execute(
                     </h3>
                     <p class="text-text-muted my-3 line-clamp-2 min-h-[40px] text-sm">{product.description}</p>
                     <div class="border-primary/5 mt-6 flex items-center justify-between border-t pt-4">
-                      <strong class="text-primary font-fraunces text-xl">
-                        Rp {Number(product.price).toLocaleString("id-ID")}
-                      </strong>
+                      <strong class="text-primary font-fraunces text-xl">{f.currency(Number(product.price))}</strong>
                       <a
                         href="/order"
                         class="bg-primary/10 text-primary hover:bg-primary flex h-10 w-10 items-center justify-center rounded-full transition-all hover:text-white"
-                        aria-label="Pesan"
+                        aria-label={tServer(lang, "common.order")}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"

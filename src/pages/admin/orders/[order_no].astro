@@ -5,6 +5,7 @@ import { requireAdmin } from "../../../lib/auth";
 import { getDrizzle, initDb } from "../../../lib/db";
 import { orders } from "../../../db/schema";
 import { eq } from "drizzle-orm";
+import { getLang, tServer } from "../../../lib/i18n/server";
 
 await initDb(Astro);
 const admin = await requireAdmin(Astro);
@@ -36,9 +37,11 @@ const productsData =
 
 const productMap = Object.fromEntries(productsData.map((p) => [p.id, p.name]));
 
+const lang = getLang(Astro.cookies);
+
 const parsedItems = rawItems.map((item) => ({
   ...item,
-  name: item.name || productMap[item.product_id] || "Produk dihapus",
+  name: item.name || productMap[item.product_id] || tServer(lang, "orders.product_deleted"),
   total: item.qty * item.price,
 }));
 
@@ -49,6 +52,6 @@ const parsedOrder = {
 };
 ---
 
-<AdminLayout title={`Pesanan ${order.orderNo}`}>
+<AdminLayout title={`${tServer(lang, "orders.order_label")} ${order.orderNo}`}>
   <OrderDetailPageContent order={parsedOrder as any} client:load />
 </AdminLayout>

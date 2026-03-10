@@ -1,213 +1,207 @@
 <script lang="ts">
-import { trpc } from "../../../lib/trpc";
-import { fade, fly } from "svelte/transition";
-import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-import { actions } from "astro:actions";
-import CrudInlineForm from "../CrudInlineForm.svelte";
-import RowActions from "../RowActions.svelte";
-import SectionHeader from "../SectionHeader.svelte";
-import ToastNotification from "../ToastNotification.svelte";
-import Table from "../ui/Table.svelte";
-import TableRow from "../ui/TableRow.svelte";
-import TableCell from "../ui/TableCell.svelte";
-import Button from "../ui/Button.svelte";
-import TextInput from "../ui/forms/TextInput.svelte";
-import SelectInput from "../ui/forms/SelectInput.svelte";
-import Textarea from "../ui/forms/Textarea.svelte";
+  import { trpc } from "../../../lib/trpc";
+  import { fade, fly } from "svelte/transition";
+  import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+  import { actions } from "astro:actions";
+  import CrudInlineForm from "../CrudInlineForm.svelte";
+  import RowActions from "../RowActions.svelte";
+  import SectionHeader from "../SectionHeader.svelte";
+  import ToastNotification from "../ToastNotification.svelte";
+  import Table from "../ui/Table.svelte";
+  import TableRow from "../ui/TableRow.svelte";
+  import TableCell from "../ui/TableCell.svelte";
+  import Button from "../ui/Button.svelte";
+  import TextInput from "../ui/forms/TextInput.svelte";
+  import SelectInput from "../ui/forms/SelectInput.svelte";
+  import Textarea from "../ui/forms/Textarea.svelte";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
+  import { onMount } from "svelte";
 
-export type RuleRow = {
-  id: string | number;
-  name: string;
-  type: string;
-  priority: number;
-  configJson: string;
-  isActive: boolean | number;
-};
-
-type ShippingRuleInput = {
-  name: string;
-  type: string;
-  priority: number;
-  config: Record<string, unknown>;
-  isActive: boolean | number;
-};
-
-let { rows: initialRows = [] }: { rows: RuleRow[] } = $props();
-
-const queryClient = useQueryClient();
-let toastRef = $state<ToastNotification>();
-let isSubmitting = $state(false);
-let isDrawerOpen = $state(false);
-
-const rulesQuery = createQuery(() => ({
-  queryKey: ["shippingRules.list"],
-  queryFn: () => trpc.shippingRules.list.query(),
-  initialData: initialRows.length > 0 ? initialRows : undefined,
-  refetchOnMount: false,
-  staleTime: 1000 * 60 * 5,
-}));
-
-let currentRules = $derived((rulesQuery.data as RuleRow[]) || initialRows);
-
-// Reactive state for the create form
-let configType = $state("flat");
-let flatFee = $state(10000);
-let thresholdAmount = $state(150000);
-let thresholdFee = $state(10000);
-let zoneList = $state("");
-
-const currentConfig = $derived.by(() => {
-  if (configType === "flat") return { fee: flatFee };
-  if (configType === "free_threshold") return { threshold: thresholdAmount, fee: thresholdFee };
-  if (configType === "zone") {
-    const zones = zoneList
-      .split("\n")
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line) => {
-        const [province, city, district, fee] = line.split("|");
-        return {
-          province: (province || "").trim(),
-          city: (city || "").trim(),
-          district: (district || "").trim(),
-          fee: Number(fee || 0),
-        };
-      });
-    return { zones };
-  }
-  return {};
-});
-
-const configPreview = $derived(JSON.stringify(currentConfig));
-
-let savingId = $state<string | null>(null);
-let deletingId = $state<string | null>(null);
-
-const handleCreate = async (event: SubmitEvent) => {
-  event.preventDefault();
-  const form = event.currentTarget as HTMLFormElement;
-  const formData = new FormData(form);
-
-  isSubmitting = true;
-  try {
-    await trpc.shippingRules.create.mutate({
-      name: formData.get("name") as string,
-      type: configType,
-      priority: Number(formData.get("priority")),
-      config: currentConfig,
-      isActive: true,
-    });
-
-    toastRef?.show("Aturan pengiriman berhasil ditambahkan!", "success");
-    form.reset();
-    configType = "flat";
-    flatFee = 10000;
-    thresholdAmount = 150000;
-    thresholdFee = 10000;
-    zoneList = "";
-    queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
-    isDrawerOpen = false;
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "An error occurred";
-    toastRef?.show(message, "error");
-  } finally {
-    isSubmitting = false;
-  }
-};
-
-const handleRowAction = async (
-  id: string | number,
-  action: string,
-  rowElement: HTMLElement | null,
-) => {
-  const resolvedId = String(id);
-  if (action === "delete") {
-    if (confirm("Hapus aturan ini?")) {
-      deletingId = resolvedId;
-      try {
-        await trpc.shippingRules.delete.mutate(resolvedId);
-        toastRef?.show("Aturan pengiriman dihapus", "success");
-        queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
-      } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : "An error occurred";
-        toastRef?.show(message, "error");
-      } finally {
-        deletingId = null;
-      }
-    }
-  } else if (action === "save" && rowElement) {
-    const fields: Record<string, string> = {};
-    rowElement.querySelectorAll("[data-field]").forEach((el) => {
-      const field = el.getAttribute("data-field")!;
-      if (
-        el instanceof HTMLSelectElement ||
-        el instanceof HTMLInputElement ||
-        el instanceof HTMLTextAreaElement
-      ) {
-        fields[field] = el.value;
-      } else {
-        fields[field] = el.textContent?.trim() || "";
-      }
-    });
-
-    const data = {
-      name: fields.name,
-      type: fields.type,
-      priority: Number(fields.priority),
-      config: fields.config ? (JSON.parse(fields.config) as Record<string, unknown>) : undefined,
-      isActive: fields.isActive === "true",
-    };
-
-    savingId = resolvedId;
-    try {
-      await trpc.shippingRules.update.mutate({
-        id: resolvedId,
-        data,
-      });
-      toastRef?.show("Aturan diperbarui", "success");
-      queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "An error occurred";
-      toastRef?.show(message, "error");
-    } finally {
-      savingId = null;
-    }
-  }
-};
-
-let isSimulating = $state(false);
-let simulateMessage = $state("");
-
-const handleSimulation = async (event: SubmitEvent) => {
-  event.preventDefault();
-  const form = event.currentTarget as HTMLFormElement;
-  const formData = new FormData(form);
-  const payload = {
-    subtotal: Number(formData.get("subtotal") || 0),
-    province: String(formData.get("province") || ""),
-    city: String(formData.get("city") || ""),
-    district: String(formData.get("district") || ""),
-    freeShipping: formData.get("free_shipping") === "true",
+  export type RuleRow = {
+    id: string | number;
+    name: string;
+    type: string;
+    priority: number;
+    configJson: string;
+    isActive: boolean | number;
   };
 
-  isSimulating = true;
-  simulateMessage = "";
+  type ShippingRuleInput = {
+    name: string;
+    type: string;
+    priority: number;
+    config: Record<string, unknown>;
+    isActive: boolean | number;
+  };
 
-  try {
-    const { data, error } = await actions.simulateShipping(payload);
-    if (!error && data) {
-      simulateMessage = `Aturan: ${String(data.rule || "-")} | Ongkir: Rp ${Number(data.fee || 0).toLocaleString("id-ID")}`;
-    } else if (error) {
-      simulateMessage = `Error: ${error.message}`;
+  let { rows: initialRows = [] }: { rows: RuleRow[] } = $props();
+
+  const queryClient = useQueryClient();
+  let toastRef = $state<ToastNotification>();
+  let isSubmitting = $state(false);
+  let isDrawerOpen = $state(false);
+
+  const rulesQuery = createQuery(() => ({
+    queryKey: ["shippingRules.list"],
+    queryFn: () => trpc.shippingRules.list.query(),
+    initialData: initialRows.length > 0 ? initialRows : undefined,
+    refetchOnMount: false,
+    staleTime: 1000 * 60 * 5,
+  }));
+
+  let currentRules = $derived((rulesQuery.data as RuleRow[]) || initialRows);
+
+  // Reactive state for the create form
+  let configType = $state("flat");
+  let flatFee = $state(10000);
+  let thresholdAmount = $state(150000);
+  let thresholdFee = $state(10000);
+  let zoneList = $state("");
+
+  const currentConfig = $derived.by(() => {
+    if (configType === "flat") return { fee: flatFee };
+    if (configType === "free_threshold") return { threshold: thresholdAmount, fee: thresholdFee };
+    if (configType === "zone") {
+      const zones = zoneList
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => {
+          const [province, city, district, fee] = line.split("|");
+          return {
+            province: (province || "").trim(),
+            city: (city || "").trim(),
+            district: (district || "").trim(),
+            fee: Number(fee || 0),
+          };
+        });
+      return { zones };
     }
-  } finally {
-    isSimulating = false;
-  }
-};
+    return {};
+  });
+
+  const configPreview = $derived(JSON.stringify(currentConfig));
+
+  let savingId = $state<string | null>(null);
+  let deletingId = $state<string | null>(null);
+
+  const handleCreate = async (event: SubmitEvent) => {
+    event.preventDefault();
+    const form = event.currentTarget as HTMLFormElement;
+    const formData = new FormData(form);
+
+    isSubmitting = true;
+    try {
+      await trpc.shippingRules.create.mutate({
+        name: formData.get("name") as string,
+        type: configType,
+        priority: Number(formData.get("priority")),
+        config: currentConfig,
+        isActive: true,
+      });
+
+      toastRef?.show(t("shipping_rules.toast_add"), "success");
+      form.reset();
+      configType = "flat";
+      flatFee = 10000;
+      thresholdAmount = 150000;
+      thresholdFee = 10000;
+      zoneList = "";
+      queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
+      isDrawerOpen = false;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : t("common.error_occurred");
+      toastRef?.show(message, "error");
+    } finally {
+      isSubmitting = false;
+    }
+  };
+
+  const handleRowAction = async (id: string | number, action: string, rowElement: HTMLElement | null) => {
+    const resolvedId = String(id);
+    if (action === "delete") {
+      if (confirm(t("shipping_rules.confirm_delete"))) {
+        deletingId = resolvedId;
+        try {
+          await trpc.shippingRules.delete.mutate(resolvedId);
+          toastRef?.show(t("shipping_rules.toast_delete"), "success");
+          queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : t("common.error_occurred");
+          toastRef?.show(message, "error");
+        } finally {
+          deletingId = null;
+        }
+      }
+    } else if (action === "save" && rowElement) {
+      const fields: Record<string, string> = {};
+      rowElement.querySelectorAll("[data-field]").forEach((el) => {
+        const field = el.getAttribute("data-field")!;
+        if (el instanceof HTMLSelectElement || el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+          fields[field] = el.value;
+        } else {
+          fields[field] = el.textContent?.trim() || "";
+        }
+      });
+
+      const data = {
+        name: fields.name,
+        type: fields.type,
+        priority: Number(fields.priority),
+        config: fields.config ? (JSON.parse(fields.config) as Record<string, unknown>) : undefined,
+        isActive: fields.isActive === "true",
+      };
+
+      savingId = resolvedId;
+      try {
+        await trpc.shippingRules.update.mutate({
+          id: resolvedId,
+          data,
+        });
+        toastRef?.show(t("shipping_rules.toast_update"), "success");
+        queryClient.invalidateQueries({ queryKey: ["shippingRules.list"] });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : t("common.error_occurred");
+        toastRef?.show(message, "error");
+      } finally {
+        savingId = null;
+      }
+    }
+  };
+
+  let isSimulating = $state(false);
+  let simulateMessage = $state("");
+
+  const handleSimulation = async (event: SubmitEvent) => {
+    event.preventDefault();
+    const form = event.currentTarget as HTMLFormElement;
+    const formData = new FormData(form);
+    const payload = {
+      subtotal: Number(formData.get("subtotal") || 0),
+      province: String(formData.get("province") || ""),
+      city: String(formData.get("city") || ""),
+      district: String(formData.get("district") || ""),
+      freeShipping: formData.get("free_shipping") === "true",
+    };
+
+    isSimulating = true;
+    simulateMessage = "";
+
+    try {
+      const { data, error } = await actions.simulateShipping(payload);
+      if (!error && data) {
+        simulateMessage = `${t(`shipping_rules.types.${data.rule}`)} | ${t("common.total")}: ${t("common.currency_symbol")} ${Number(data.fee || 0).toLocaleString(t("common.lang_code"))}`;
+      } else if (error) {
+        simulateMessage = `Error: ${error.message}`;
+      }
+    } finally {
+      isSimulating = false;
+    }
+  };
 </script>
 
 <div class="mt-2 mb-8 flex items-center justify-between">
-  <SectionHeader title="Daftar Aturan" muted="Kelola dan konfigurasi ongkir" />
+  <SectionHeader title={t("shipping_rules.title_list")} muted={t("shipping_rules.subtitle_list")} />
   <Button class="flex items-center gap-2" onclick={() => (isDrawerOpen = true)}>
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -220,7 +214,7 @@ const handleSimulation = async (event: SubmitEvent) => {
       stroke-linecap="round"
       stroke-linejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg
     >
-    Tambah Aturan
+    {t("shipping_rules.add_rule")}
   </Button>
 </div>
 
@@ -240,13 +234,15 @@ const handleSimulation = async (event: SubmitEvent) => {
     >
       <div class="flex items-center justify-between border-b border-stone-100 bg-stone-50/50 px-6 py-5">
         <div>
-          <h3 class="text-lg font-bold text-stone-800">Tambah Aturan</h3>
-          <p class="mt-0.5 text-xs font-semibold tracking-wider text-stone-400 uppercase">Ongkir dinamis</p>
+          <h3 class="text-lg font-bold text-stone-800">{t("shipping_rules.title_add")}</h3>
+          <p class="mt-0.5 text-xs font-semibold tracking-wider text-stone-400 uppercase">
+            {t("shipping_rules.subtitle_add")}
+          </p>
         </div>
         <button
           class="flex h-8 w-8 items-center justify-center rounded-full text-stone-500 transition-colors hover:bg-stone-200"
           onclick={() => (isDrawerOpen = false)}
-          aria-label="Tutup Panel"
+          aria-label={t("common.close")}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -267,16 +263,16 @@ const handleSimulation = async (event: SubmitEvent) => {
           <div class="space-y-8 p-6">
             <div class="space-y-6">
               <h4 class="border-b border-[#c48a3a]/20 pb-2 text-xs font-bold tracking-widest text-[#c48a3a] uppercase">
-                Identitas Aturan
+                {t("shipping_rules.identity")}
               </h4>
               <div class="space-y-4">
                 <div>
                   <TextInput
                     id="name"
                     name="name"
-                    label="Nama Aturan"
+                    label={t("shipping_rules.name")}
                     required
-                    placeholder="Cth: Jabodetabek Flat"
+                    placeholder={t("shipping_rules.name_placeholder")}
                     class="font-bold"
                   />
                 </div>
@@ -285,12 +281,12 @@ const handleSimulation = async (event: SubmitEvent) => {
                     <SelectInput
                       id="type"
                       name="type"
-                      label="Tipe"
+                      label={t("shipping_rules.type")}
                       bind:value={configType}
                       options={[
-                        { value: "flat", label: "💵 Biaya Tetap" },
-                        { value: "free_threshold", label: "🛒 Gratis Minimum" },
-                        { value: "zone", label: "🗺️ Zonasi" },
+                        { value: "flat", label: `💵 ${t("shipping_rules.types.flat")}` },
+                        { value: "free_threshold", label: `🛒 ${t("shipping_rules.types.free_threshold")}` },
+                        { value: "zone", label: `🗺️ ${t("shipping_rules.types.zone")}` },
                       ]}
                     />
                   </div>
@@ -299,7 +295,7 @@ const handleSimulation = async (event: SubmitEvent) => {
                       id="priority"
                       name="priority"
                       type="number"
-                      label="Prioritas"
+                      label={t("common.priority")}
                       value="100"
                       class="font-bold tabular-nums"
                     />
@@ -310,7 +306,7 @@ const handleSimulation = async (event: SubmitEvent) => {
 
             <div class="space-y-6">
               <h4 class="border-b border-[#c48a3a]/20 pb-2 text-xs font-bold tracking-widest text-[#c48a3a] uppercase">
-                Konfigurasi Aturan
+                {t("shipping_rules.config")}
               </h4>
               <div class="space-y-4 rounded-2xl border border-stone-100 bg-stone-50/50 p-4">
                 {#if configType === "flat"}
@@ -319,7 +315,7 @@ const handleSimulation = async (event: SubmitEvent) => {
                       id="flat_fee"
                       name="flat_fee"
                       type="number"
-                      label="Biaya Tetap (Rp)"
+                      label={t("shipping_rules.flat_fee")}
                       bind:value={flatFee}
                       class="font-bold tabular-nums"
                     />
@@ -331,7 +327,7 @@ const handleSimulation = async (event: SubmitEvent) => {
                         id="threshold_amount"
                         name="threshold_amount"
                         type="number"
-                        label="Min. Belanja untuk Gratis (Rp)"
+                        label={t("shipping_rules.free_threshold_min")}
                         bind:value={thresholdAmount}
                         class="font-bold tabular-nums"
                       />
@@ -341,7 +337,7 @@ const handleSimulation = async (event: SubmitEvent) => {
                         id="threshold_fee"
                         name="threshold_fee"
                         type="number"
-                        label="Biaya di bawah limit (Rp)"
+                        label={t("shipping_rules.below_limit_fee")}
                         bind:value={thresholdFee}
                         class="font-bold tabular-nums"
                       />
@@ -352,16 +348,14 @@ const handleSimulation = async (event: SubmitEvent) => {
                     <Textarea
                       id="zone_list"
                       name="zone_list"
-                      label="Daftar Zona (Pihak Ke-3 / Custom)"
+                      label={t("shipping_rules.zone_list")}
                       rows={4}
                       bind:value={zoneList}
-                      placeholder="DI Yogyakarta|Bantul|Sewon|8000\nDI Yogyakarta|Sleman||12000"
+                      placeholder={t("shipping_rules.zone_placeholder")}
                       class="font-mono"
                     />
                     <p class="mt-1 text-[10px] text-stone-400 italic">
-                      Format: <span class="rounded border border-stone-100 bg-stone-50 px-1 py-0.5"
-                        >provinsi|kota|kecamatan|biaya</span
-                      >, pisahkan baris baru.
+                      {t("shipping_rules.zone_help")}
                     </p>
                   </div>
                 {/if}
@@ -370,7 +364,7 @@ const handleSimulation = async (event: SubmitEvent) => {
                   <Textarea
                     id="config_preview"
                     name="config_preview"
-                    label="Pratinjau JSON Konfigurasi"
+                    label={t("shipping_rules.json_preview")}
                     rows={2}
                     value={configPreview}
                     readonly
@@ -380,7 +374,7 @@ const handleSimulation = async (event: SubmitEvent) => {
               </div>
               <div class="border-t border-stone-100 pt-2">
                 <p class="mt-4 mb-2 text-xs text-stone-400 italic">
-                  * Aturan dengan prioritas lebih tinggi (angka kecil) akan diproses lebih dulu.
+                  {t("shipping_rules.priority_help")}
                 </p>
               </div>
             </div>
@@ -411,7 +405,7 @@ const handleSimulation = async (event: SubmitEvent) => {
                   class="mr-2"><path d="M5 12h14" /><path d="M12 5v14" /></svg
                 >
               {/if}
-              Simpan Aturan
+              {t("shipping_rules.save")}
             </Button>
           </div>
         </CrudInlineForm>
@@ -421,10 +415,10 @@ const handleSimulation = async (event: SubmitEvent) => {
 {/if}
 
 <div class="mt-6">
-  <SectionHeader title="Daftar Aturan" muted="Klik sel untuk edit" />
+  <SectionHeader title={t("shipping_rules.title_list")} muted={t("catalog.categories.tips_desc")} />
 </div>
 <div class="mt-6">
-  <SectionHeader title="Simulasi Ongkir" badge="Uji Aturan" />
+  <SectionHeader title={t("shipping_rules.simulation_title")} badge={t("shipping_rules.simulation_subtitle")} />
   <div class="mt-4 max-w-5xl overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
     <CrudInlineForm class="p-8" onsubmit={handleSimulation} isSubmitting={isSimulating}>
       <div class="grid grid-cols-2 gap-6 lg:grid-cols-5">
@@ -433,28 +427,28 @@ const handleSimulation = async (event: SubmitEvent) => {
             id="subtotal"
             name="subtotal"
             type="number"
-            label="Subtotal (Rp)"
+            label={t("shipping_rules.subtotal")}
             value="150000"
             class="font-bold tabular-nums"
           />
         </div>
         <div>
-          <TextInput id="province" name="province" label="Provinsi" value="DI Yogyakarta" />
+          <TextInput id="province" name="province" label={t("shipping_rules.province")} value="DI Yogyakarta" />
         </div>
         <div>
-          <TextInput id="city" name="city" label="Kota / Kab" value="Bantul" />
+          <TextInput id="city" name="city" label={t("shipping_rules.city")} value="Bantul" />
         </div>
         <div>
-          <TextInput id="district" name="district" label="Kecamatan" value="Sewon" />
+          <TextInput id="district" name="district" label={t("shipping_rules.district")} value="Sewon" />
         </div>
         <div>
           <SelectInput
             id="free_shipping"
             name="free_shipping"
-            label="Promo Gratis?"
+            label={t("shipping_rules.promo_label")}
             options={[
-              { value: "false", label: "Tidak Ada" },
-              { value: "true", label: "Ada Promo" },
+              { value: "false", label: t("shipping_rules.promo_no") },
+              { value: "true", label: t("shipping_rules.promo_yes") },
             ]}
           />
         </div>
@@ -474,14 +468,14 @@ const handleSimulation = async (event: SubmitEvent) => {
               ></path></svg
             >
           {/if}
-          Hitung Estimasi Ongkir
+          {t("shipping_rules.calculate")}
         </Button>
         {#if simulateMessage}
           <div
             class="flex w-full flex-1 items-center rounded-xl border-none bg-stone-900 px-6 py-2.5 text-sm font-semibold text-white shadow-lg transition-all duration-300"
             transition:fade={{ duration: 200 }}
           >
-            <span class="mr-3 text-lg">{simulateMessage.includes("Error") ? "❌" : "✅"}</span>
+            <span class="mr-3 text-lg">{simulateMessage.includes(t("common.error")) ? "❌" : "✅"}</span>
             <span class="font-mono leading-relaxed opacity-90">{simulateMessage}</span>
           </div>
         {/if}
@@ -491,11 +485,20 @@ const handleSimulation = async (event: SubmitEvent) => {
 </div>
 
 <div class="mt-2">
-  <Table headers={["Nama", "Tipe", "Prioritas", "Konfigurasi", "Status", "Aksi"]}>
+  <Table
+    headers={[
+      t("common.name"),
+      t("shipping_rules.type"),
+      t("shipping_rules.priority"),
+      t("shipping_rules.config"),
+      t("common.status"),
+      t("common.actions"),
+    ]}
+  >
     {#if currentRules.length === 0}
       <TableRow>
         <TableCell colspan={6} class="py-12 text-center text-sm text-stone-400 italic"
-          >Belum ada aturan pengiriman aktif.</TableCell
+          >{t("shipping_rules.empty")}</TableCell
         >
       </TableRow>
     {/if}
@@ -515,9 +518,11 @@ const handleSimulation = async (event: SubmitEvent) => {
             data-field="type"
             class="cursor-pointer rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-xs font-bold uppercase transition-all outline-none hover:bg-white focus:bg-white"
           >
-            <option value="flat" selected={row.type === "flat"}>💵 Tetap</option>
-            <option value="free_threshold" selected={row.type === "free_threshold"}>🛒 Minimum</option>
-            <option value="zone" selected={row.type === "zone"}>🗺️ Zona</option>
+            <option value="flat" selected={row.type === "flat"}>💵 {t("shipping_rules.types.flat")}</option>
+            <option value="free_threshold" selected={row.type === "free_threshold"}
+              >🛒 {t("shipping_rules.types.free_threshold")}</option
+            >
+            <option value="zone" selected={row.type === "zone"}>🗺️ {t("shipping_rules.types.zone")}</option>
           </select>
         </TableCell>
         <TableCell class="py-4">
@@ -542,8 +547,8 @@ const handleSimulation = async (event: SubmitEvent) => {
             data-field="isActive"
             class="cursor-pointer rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-xs font-bold transition-all outline-none hover:bg-white focus:bg-white"
           >
-            <option value="true" selected={!!row.isActive}>🟢 AKTIF</option>
-            <option value="false" selected={!row.isActive}>🔴 NONAKTIF</option>
+            <option value="true" selected={!!row.isActive}>🟢 {t("common.active_status").toUpperCase()}</option>
+            <option value="false" selected={!row.isActive}>🔴 {t("common.inactive_status").toUpperCase()}</option>
           </select>
         </TableCell>
         <TableCell class="py-4 pr-4 text-right">

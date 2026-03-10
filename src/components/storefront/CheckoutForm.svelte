@@ -1,109 +1,109 @@
 <script lang="ts">
-import { onMount } from "svelte";
+  import { onMount } from "svelte";
 
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  qty: number;
-}
-
-let { cart, totalPrice, env } = $props<{
-  cart: Map<string, CartItem>;
-  totalPrice: number;
-  env: any;
-}>();
-
-let loading = $state(false);
-let error = $state("");
-let formElement: HTMLFormElement;
-
-onMount(() => {
-  // Load Midtrans Snap script if not present
-  if (!window.snap) {
-    const script = document.createElement("script");
-    script.src =
-      env.MIDTRANS_IS_PRODUCTION === "true"
-        ? "https://app.midtrans.com/snap/snap.js"
-        : "https://app.sandbox.midtrans.com/snap/snap.js";
-    script.setAttribute("data-client-key", env.PUBLIC_MIDTRANS_CLIENT_KEY);
-    document.head.appendChild(script);
+  interface CartItem {
+    id: string;
+    name: string;
+    price: number;
+    qty: number;
   }
-});
 
-async function handleSubmit(e: SubmitEvent) {
-  e.preventDefault();
-  if (cart.size === 0 || loading) return;
+  let { cart, totalPrice, env } = $props<{
+    cart: Map<string, CartItem>;
+    totalPrice: number;
+    env: any;
+  }>();
 
-  loading = true;
-  error = "";
+  let loading = $state(false);
+  let error = $state("");
+  let formElement: HTMLFormElement;
 
-  const formData = new FormData(formElement);
-  const items = (Array.from(cart.values()) as CartItem[]).map((item) => ({
-    product_id: item.id,
-    qty: item.qty,
-  }));
-
-  const payload = {
-    customer_name: formData.get("customer_name"),
-    customer_phone: formData.get("customer_phone"),
-    customer_email: "",
-    shipping_address: {
-      province: "DI Yogyakarta",
-      city: formData.get("city"),
-      district: formData.get("district"),
-      street: formData.get("street"),
-    },
-    delivery_date: formData.get("delivery_date"),
-    delivery_time: formData.get("delivery_time"),
-    coupon_code: "",
-    items,
-  };
-
-  try {
-    const res = await fetch("/api/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text);
+  onMount(() => {
+    // Load Midtrans Snap script if not present
+    if (!window.snap) {
+      const script = document.createElement("script");
+      script.src =
+        env.MIDTRANS_IS_PRODUCTION === "true"
+          ? "https://app.midtrans.com/snap/snap.js"
+          : "https://app.sandbox.midtrans.com/snap/snap.js";
+      script.setAttribute("data-client-key", env.PUBLIC_MIDTRANS_CLIENT_KEY);
+      document.head.appendChild(script);
     }
+  });
 
-    const data = (await res.json()) as {
-      snap_token: string;
-      order_no: string;
+  async function handleSubmit(e: SubmitEvent) {
+    e.preventDefault();
+    if (cart.size === 0 || loading) return;
+
+    loading = true;
+    error = "";
+
+    const formData = new FormData(formElement);
+    const items = (Array.from(cart.values()) as CartItem[]).map((item) => ({
+      product_id: item.id,
+      qty: item.qty,
+    }));
+
+    const payload = {
+      customer_name: formData.get("customer_name"),
+      customer_phone: formData.get("customer_phone"),
+      customer_email: "",
+      shipping_address: {
+        province: "DI Yogyakarta",
+        city: formData.get("city"),
+        district: formData.get("district"),
+        street: formData.get("street"),
+      },
+      delivery_date: formData.get("delivery_date"),
+      delivery_time: formData.get("delivery_time"),
+      coupon_code: "",
+      items,
     };
 
-    window.snap?.pay(data.snap_token, {
-      onSuccess: () => {
-        window.location.href = `/order/success?order=${data.order_no}`;
-      },
-      onPending: () => {
-        window.location.href = `/order/pending?order=${data.order_no}`;
-      },
-      onError: () => {
-        error = "Payment failed.";
-        loading = false;
-      },
-      onClose: () => {
-        loading = false;
-      },
-    });
-  } catch (err: any) {
-    error = err.message || "A system error occurred.";
-    loading = false;
-  }
-}
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-// Exposed trigger for parent
-export function submit() {
-  if (formElement.reportValidity()) {
-    formElement.requestSubmit();
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text);
+      }
+
+      const data = (await res.json()) as {
+        snap_token: string;
+        order_no: string;
+      };
+
+      window.snap?.pay(data.snap_token, {
+        onSuccess: () => {
+          window.location.href = `/order/success?order=${data.order_no}`;
+        },
+        onPending: () => {
+          window.location.href = `/order/pending?order=${data.order_no}`;
+        },
+        onError: () => {
+          error = "Payment failed.";
+          loading = false;
+        },
+        onClose: () => {
+          loading = false;
+        },
+      });
+    } catch (err: any) {
+      error = err.message || "A system error occurred.";
+      loading = false;
+    }
   }
-}
+
+  // Exposed trigger for parent
+  export function submit() {
+    if (formElement.reportValidity()) {
+      formElement.requestSubmit();
+    }
+  }
 </script>
 
 <div id="checkout-section" class="transition-all duration-300">
