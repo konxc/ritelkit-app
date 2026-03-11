@@ -62,7 +62,7 @@ if (tab === "content") {
   initialRows = data?.rows || [];
   totalPages = Math.max(1, Math.ceil(Number(data?.total || 0) / limit));
 } else if (tab === "admins") {
-  const { data } = await Astro.callAction(actions.listAdminUsers, {});
+  const { data } = await Astro.callAction(actions.listAdminUsers, { q });
   initialRows = data || [];
   totalPages = 1;
 }

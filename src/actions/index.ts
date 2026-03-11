@@ -1226,14 +1226,20 @@ export const server = {
 
   // --- ADMIN USERS ---
   listAdminUsers: defineAction({
-    handler: async (_, ctx) => {
+    input: z.object({
+      q: z.string().optional(),
+    }).optional(),
+    handler: async (input, ctx) => {
       const apiCtx = ctx as unknown as APIContext;
       const admin = await requireAdmin(apiCtx);
       if (!admin || admin.role !== "owner") throw new ActionError({ code: "UNAUTHORIZED" });
 
       await initDb(apiCtx);
       const db = getDrizzle(apiCtx);
-      return db.select().from(adminUsers).orderBy(desc(adminUsers.createdAt));
+      const q = input?.q;
+      const where = q ? like(adminUsers.email, `%${q}%`) : undefined;
+
+      return db.select().from(adminUsers).where(where).orderBy(desc(adminUsers.createdAt));
     },
   }),
 

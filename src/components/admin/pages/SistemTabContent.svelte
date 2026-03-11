@@ -29,12 +29,12 @@
 
 <QueryProvider initialData={rows}>
   {#if tab === "content"}
-    <CmsManager {q} {page} {limit} {rows} />
+    <CmsManager {q} {page} {limit} {rows} {lang} />
   {:else if tab === "notifications"}
-    <NotificationsManager {q} {page} {limit} />
+    <NotificationsManager {q} {page} {limit} {rows} {lang} />
   {:else if tab === "audit"}
-    <AuditLogManager {q} {page} {limit} {rows} />
+    <AuditLogManager {q} {page} {limit} {rows} {lang} />
   {:else if tab === "admins"}
-    <AdminUsersManager {rows} />
+    <AdminUsersManager {rows} {q} {lang} />
   {/if}
 </QueryProvider>
