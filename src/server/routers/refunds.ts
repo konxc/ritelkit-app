@@ -1,27 +1,39 @@
 import { adminProcedure, router } from "../trpc";
 import { refunds, orders, orderStatusHistory } from "../../db/schema";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql, like } from "drizzle-orm";
 import { z } from "zod";
 
 export const refundRouter = router({
   list: adminProcedure
     .input(
       z.object({
+        q: z.string().optional(),
         limit: z.number().default(20),
         offset: z.number().default(0),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const data = await ctx.db
-        .select()
-        .from(refunds)
-        .orderBy(desc(refunds.createdAt))
-        .limit(input.limit)
-        .offset(input.offset);
-      const totalResult = await ctx.db.select({ count: refunds.id }).from(refunds);
+      const { q, limit, offset } = input;
+      const whereClause = [];
+      if (q) {
+        whereClause.push(like(refunds.orderNo, `%${q}%`));
+      }
+
+      const baseQuery = ctx.db.select().from(refunds);
+      const finalQuery =
+        whereClause.length > 0 ? baseQuery.where(sql`${sql.join(whereClause, sql` AND `)}`) : baseQuery;
+
+      const rows = await finalQuery.orderBy(desc(refunds.createdAt)).limit(limit).offset(offset);
+
+      const countQuery = ctx.db.select({ count: sql<number>`count(*)` }).from(refunds);
+      const finalCountQuery =
+        whereClause.length > 0 ? countQuery.where(sql`${sql.join(whereClause, sql` AND `)}`) : countQuery;
+
+      const totalRes = await finalCountQuery;
+
       return {
-        rows: data,
-        total: totalResult.length,
+        rows,
+        total: totalRes[0]?.count || 0,
       };
     }),
 

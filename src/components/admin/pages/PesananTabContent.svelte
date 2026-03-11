@@ -11,13 +11,15 @@
   let {
     tab,
     q = "",
+    status = "",
     page = 1,
     limit = 20,
-    initialData = null,
+    initialData = {},
     lang,
   }: {
     tab: string;
     q?: string;
+    status?: string;
     page?: number;
     limit?: number;
     initialData?: any;
@@ -30,14 +32,22 @@
 
 <QueryProvider {initialData}>
   {#if tab === "order"}
-    <OrdersManager {q} {page} {limit} rows={initialData?.rows || []} />
+    <OrdersManager {q} {status} {page} {limit} {lang} rows={initialData.orders} total={initialData.ordersTotal} />
   {:else if tab === "fulfillment"}
-    <FulfillmentManager rows={initialData?.rows || []} />
+    <FulfillmentManager
+      {q}
+      {status}
+      {page}
+      {limit}
+      {lang}
+      rows={initialData.shipments}
+      total={initialData.shipmentsTotal}
+    />
   {:else if tab === "shipping"}
-    <ShippingManager rows={initialData?.rows || []} />
+    <ShippingManager {lang} rows={initialData.shippingRules} />
   {:else if tab === "invoice"}
-    <InvoicesManager {page} {limit} rows={initialData?.rows || []} />
+    <InvoicesManager {q} {page} {limit} {lang} rows={initialData.invoices} total={initialData.invoicesTotal} />
   {:else if tab === "refund"}
-    <RefundsManager {page} {limit} rows={initialData?.rows || []} />
+    <RefundsManager {q} {page} {limit} {lang} rows={initialData.refunds} total={initialData.refundsTotal} />
   {/if}
 </QueryProvider>

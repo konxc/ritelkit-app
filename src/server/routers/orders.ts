@@ -112,4 +112,26 @@ export const orderRouter = router({
       await logAudit(ctx.ctx, "update_order", "order", input.id, input.data);
       return { ok: true };
     }),
+
+  create: adminProcedure
+    .input(OrderSchema.omit({ id: true, createdAt: true, updatedAt: true }))
+    .mutation(async ({ ctx, input }) => {
+      const id = crypto.randomUUID();
+      const now = new Date().toISOString();
+      const newOrder = {
+        ...input,
+        id,
+        createdAt: now,
+        updatedAt: now,
+      };
+      await ctx.db.insert(orders).values(newOrder as any);
+      await logAudit(ctx.ctx, "create_order", "order", id, newOrder);
+      return { id };
+    }),
+
+  delete: adminProcedure.input(z.string()).mutation(async ({ ctx, input }) => {
+    await ctx.db.delete(orders).where(eq(orders.id, input));
+    await logAudit(ctx.ctx, "delete_order", "order", input, null);
+    return { ok: true };
+  }),
 });

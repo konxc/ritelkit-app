@@ -1,23 +1,44 @@
 import { adminProcedure, router } from "../trpc";
 import { shipments, orders, orderStatusHistory } from "../../db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql, or, like, inArray } from "drizzle-orm";
 import { z } from "zod";
 
 export const shipmentRouter = router({
   list: adminProcedure
     .input(
       z.object({
+        q: z.string().optional(),
+        status: z.array(z.string()).optional(),
         limit: z.number().default(20),
         offset: z.number().default(0),
       }),
     )
     .query(async ({ ctx, input }) => {
-      return await ctx.db
-        .select()
-        .from(shipments)
-        .orderBy(desc(shipments.createdAt))
-        .limit(input.limit)
-        .offset(input.offset);
+      const { q, status, limit, offset } = input;
+      const whereClause = [];
+      if (q) {
+        whereClause.push(or(like(shipments.orderNo, `%${q}%`), like(shipments.trackingNo || "", `%${q}%`)));
+      }
+      if (status && status.length > 0) {
+        whereClause.push(inArray(shipments.status, status));
+      }
+
+      const baseQuery = ctx.db.select().from(shipments);
+      const finalQuery =
+        whereClause.length > 0 ? baseQuery.where(sql`${sql.join(whereClause, sql` AND `)}`) : baseQuery;
+
+      const rows = await finalQuery.orderBy(desc(shipments.createdAt)).limit(limit).offset(offset);
+
+      const countQuery = ctx.db.select({ count: sql<number>`count(*)` }).from(shipments);
+      const finalCountQuery =
+        whereClause.length > 0 ? countQuery.where(sql`${sql.join(whereClause, sql` AND `)}`) : countQuery;
+
+      const totalRes = await finalCountQuery;
+
+      return {
+        rows,
+        total: totalRes[0]?.count || 0,
+      };
     }),
 
   create: adminProcedure

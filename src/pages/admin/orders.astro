@@ -1,14 +1,12 @@
 ---
-import { actions } from "astro:actions";
 import AdminTabs from "../../components/admin/AdminTabs.astro";
 import PaginationNav from "../../components/admin/PaginationNav.svelte";
 import PesananTabContent from "../../components/admin/pages/PesananTabContent.svelte";
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import { normalizeTab, parsePage } from "../../lib/admin";
 import { requireAdmin } from "../../lib/auth";
-import { initDb } from "../../lib/db";
+import { getDrizzle, initDb } from "../../lib/db";
 import { appRouter } from "../../server/router";
-import { createContext } from "../../server/context";
 
 await initDb(Astro);
 const admin = await requireAdmin(Astro);
@@ -37,48 +35,67 @@ if (rawTab && rawTab !== tab) {
   return Astro.redirect(canonicalUrl.pathname + canonicalUrl.search);
 }
 const { page, q, offset, limit } = parsePage(Astro.url, 20);
+const statusFilter = Astro.url.searchParams.get("status");
 
-const trpc = appRouter.createCaller(await createContext(Astro as any));
+const db = getDrizzle(Astro);
 
-let initialData: any = null;
+const caller = appRouter.createCaller({ db, admin, ctx: Astro as any });
+
 let totalPages = 1;
+const initialData = {
+  orders: [] as any[],
+  ordersTotal: 0,
+  shipments: [] as any[],
+  shipmentsTotal: 0,
+  shippingRules: [] as any[],
+  invoices: [] as any[],
+  invoicesTotal: 0,
+  refunds: [] as any[],
+  refundsTotal: 0,
+};
 
 if (tab === "order") {
-  const data = await trpc.orders.list({
+  const result = await caller.orders.list({
+    q: q || undefined,
+    status: statusFilter ? [statusFilter] : undefined,
+    limit,
+    offset,
+  });
+  initialData.orders = result.rows;
+  initialData.ordersTotal = result.total;
+  totalPages = Math.max(1, Math.ceil(result.total / limit));
+} else if (tab === "fulfillment") {
+  const result = await caller.shipments.list({
+    q: q || undefined,
+    status: statusFilter ? [statusFilter] : undefined,
+    limit,
+    offset,
+  });
+  initialData.shipments = result.rows;
+  initialData.shipmentsTotal = result.total;
+  totalPages = Math.max(1, Math.ceil(result.total / limit));
+} else if (tab === "shipping") {
+  const result = await caller.shippingRules.list();
+  initialData.shippingRules = result;
+  totalPages = 1;
+} else if (tab === "invoice") {
+  const result = await caller.invoices.list({
     q: q || undefined,
     limit,
     offset,
   });
-  initialData = data;
-  totalPages = data?.totalPages || 1;
-} else if (tab === "fulfillment") {
-  const { data } = await Astro.callAction(actions.listShipments, {
-    q,
-    limit,
-    offset,
-  });
-  initialData = data;
-  totalPages = Math.ceil((data?.total || 0) / limit) || 1;
-} else if (tab === "shipping") {
-  const { data } = await Astro.callAction(actions.listShippingRules, {});
-  initialData = data;
-  totalPages = 1;
-} else if (tab === "invoice") {
-  const { data } = await Astro.callAction(actions.listInvoices, {
-    q,
-    limit,
-    offset,
-  });
-  initialData = data;
-  totalPages = Math.ceil((data?.total || 0) / limit) || 1;
+  initialData.invoices = result.rows;
+  initialData.invoicesTotal = result.total;
+  totalPages = Math.max(1, Math.ceil(result.total / limit));
 } else if (tab === "refund") {
-  const { data } = await Astro.callAction(actions.listRefunds, {
-    q,
+  const result = await caller.refunds.list({
+    q: q || undefined,
     limit,
     offset,
   });
-  initialData = data;
-  totalPages = Math.ceil((data?.total || 0) / limit) || 1;
+  initialData.refunds = result.rows;
+  initialData.refundsTotal = result.total;
+  totalPages = Math.max(1, Math.ceil(result.total / limit));
 }
 
 const tabs = [
@@ -90,7 +107,7 @@ const tabs = [
   {
     id: "fulfillment",
     label: "fulfillment.title",
-    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/><path d="m16 21 2-2 4 4"/><circle cx="12" cy="12" r="3"/></svg>',
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14"/><circle cx="12" cy="12" r="3"/></svg>',
   },
   {
     id: "shipping",
@@ -109,6 +126,8 @@ const tabs = [
   },
 ];
 import { getLang, tServer } from "../../lib/i18n/server";
+import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
+import OrdersHeaderFilters from "../../components/admin/OrdersHeaderFilters.svelte";
 const lang = getLang(Astro.cookies);
 ---
 
@@ -117,12 +136,22 @@ const lang = getLang(Astro.cookies);
     <AdminTabs tabs={tabs} activeTab={tab} {lang} />
   </div>
 
-  <PesananTabContent {tab} {q} {page} {limit} {initialData} {lang} client:load />
+  <AdminToolbar
+    title={tServer(lang, "common.filter")}
+    class="sticky top-0 z-20 sm:top-2 md:top-4 lg:hidden"
+    showMobileFloat={true}
+    client:load
+  >
+    <OrdersHeaderFilters tab={tab} q={q} status={statusFilter || ""} lang={lang} client:load />
+  </AdminToolbar>
+
+  <PesananTabContent {tab} {q} status={statusFilter || ""} {page} {limit} {initialData} {lang} client:load />
 
   <PaginationNav
     page={page}
     totalPages={totalPages}
-    prevHref={page > 1 ? `?tab=${tab}&q=${encodeURIComponent(q)}&page=${page - 1}` : undefined}
-    nextHref={page < totalPages ? `?tab=${tab}&q=${encodeURIComponent(q)}&page=${page + 1}` : undefined}
+    prevHref={page > 1 ? `?tab=${tab}&q=${encodeURIComponent(q)}&status=${statusFilter || ""}&page=${page - 1}` : undefined}
+    nextHref={page < totalPages ? `?tab=${tab}&q=${encodeURIComponent(q)}&status=${statusFilter || ""}&page=${page + 1}` : undefined}
+    client:load
   />
 </AdminLayout>
