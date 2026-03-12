@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "astro:schema";
 import { router, adminProcedure } from "../trpc";
 import { coupons } from "../../db/schema";
 import { CouponSchema } from "../../lib/types";

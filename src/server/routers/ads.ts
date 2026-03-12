@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "astro:schema";
 import { router, adminProcedure } from "../trpc";
 import { adsCampaigns } from "../../db/schema";
 import { AdsCampaignSchema } from "../../lib/types";

@@ -330,6 +330,23 @@
                 <div class="col-span-2 space-y-1.5 text-left">
                    <div class="mb-1 flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-stone-400"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <label for="status" class="text-[0.8rem] font-bold text-stone-600">{t("common.status")}</label>
+                  </div>
+                  <SelectInput
+                    id="status"
+                    name="status"
+                    placeholder={t("ads.select_status") || t("coupons.select_status")}
+                    options={[
+                      { label: t("ads.status_draft"), value: "draft" },
+                      { label: t("ads.status_active"), value: "active" },
+                      { label: t("ads.status_paused"), value: "paused" },
+                      { label: t("ads.status_completed"), value: "completed" },
+                    ]}
+                  />
+                </div>
+                <div class="col-span-2 space-y-1.5 text-left">
+                   <div class="mb-1 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-stone-400"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                     <label for="notes" class="text-[0.8rem] font-bold text-stone-600">{t("ads.notes")}</label>
                   </div>
                   <TextInput id="notes" name="notes" placeholder={t("ads.notes_placeholder")} class="ring-stone-100/50" />

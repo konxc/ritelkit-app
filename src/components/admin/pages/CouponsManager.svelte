@@ -301,6 +301,7 @@
                   <SelectInput
                     id="type"
                     name="type"
+                    placeholder={t("coupons.select_type")}
                     options={[
                       { label: t("coupons.type_percent"), value: "percent" },
                       { label: t("coupons.type_fixed"), value: "fixed" },
@@ -378,6 +379,7 @@
                   <SelectInput
                     id="is_active"
                     name="is_active"
+                    placeholder={t("coupons.select_status")}
                     options={[
                       { label: t("coupons.active"), value: "true" },
                       { label: t("coupons.inactive"), value: "false" },
