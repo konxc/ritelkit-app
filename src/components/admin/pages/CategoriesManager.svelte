@@ -1,7 +1,8 @@
 <script lang="ts">
   import { trpc } from "../../../lib/trpc";
   import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
+  import { fly } from "svelte/transition";
   import { t, initI18n } from "../../../lib/i18n/store.svelte";
   import type { Category } from "../../../lib/types";
   import CrudInlineForm from "../CrudInlineForm.svelte";
@@ -40,7 +41,25 @@
     sortOrder?: number;
   };
 
-  let { rows: initialRows = [], total: initialTotal = 0 }: { rows?: Category[]; total?: number } = $props();
+  let {
+    rows: initialRows = [],
+    total: initialTotal = 0,
+    q = "",
+    status = "",
+    page = 1,
+    limit = 30,
+    lang,
+  }: {
+    rows?: Category[];
+    total?: number;
+    q?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+    lang?: any;
+  } = $props();
+
+  initI18n(untrack(() => lang));
 
   const queryClient = useQueryClient();
   let toastRef = $state<ToastNotification>();
@@ -50,14 +69,16 @@
   let processingId = $state<string | null>(null);
   let isDrawerOpen = $state(false);
 
-  let q = $state("");
-  let page = $state(1);
-  const limit = 20;
+  let localQ = $state(untrack(() => q));
+  let localStatus = $state(untrack(() => status));
+  let localPage = $state(untrack(() => page));
+  const localLimit = untrack(() => limit) || 20;
 
   const syncFiltersFromUrl = () => {
     const params = new URLSearchParams(window.location.search);
-    q = params.get("q") || "";
-    page = parseInt(params.get("page") || "1", 10);
+    localQ = params.get("q") || "";
+    localStatus = params.get("status") || "";
+    localPage = parseInt(params.get("page") || "1", 10);
   };
 
   onMount(() => {
@@ -72,9 +93,18 @@
   });
 
   const categoriesQuery = createQuery(() => ({
-    queryKey: ["categories.list", { q, page, limit }],
-    queryFn: () => trpc.categories.list.query({ q, page, limit }),
-    initialData: q === "" && page === 1 ? { data: initialRows, total: initialTotal } : undefined,
+    queryKey: ["categories.list", { q: localQ, status: localStatus, limit: localLimit, page: localPage }],
+    queryFn: () =>
+      trpc.categories.list.query({
+        q: localQ,
+        status: localStatus as "active" | "inactive" | undefined,
+        limit: localLimit,
+        page: localPage,
+      }),
+    initialData:
+      localQ === "" && localStatus === "" && localPage === 1
+        ? { data: initialRows, total: initialTotal }
+        : undefined,
     placeholderData: (prev) => prev,
   }));
 
@@ -170,12 +200,13 @@
   };
 </script>
 
-<div class="mt-2 mb-8 flex items-center justify-between">
-  <SectionHeader title={t("catalog.categories.title")} muted={t("catalog.categories.subtitle")} />
-  <div class="hidden lg:flex lg:items-center lg:gap-3">
-    <div class="mr-2">
-      <AdminHeaderFilters tab="categories" {columns} />
-    </div>
+<div in:fly={{ y: 20, duration: 400, delay: 100 }}>
+  <div class="mt-2 mb-8 flex items-center justify-between">
+    <SectionHeader title={t("catalog.categories.title")} muted={t("catalog.categories.subtitle")} />
+    <div class="hidden lg:flex lg:items-center lg:gap-3">
+      <div class="mr-2">
+        <AdminHeaderFilters tab="categories" q={localQ} status={localStatus} {columns} {lang} />
+      </div>
     <ColumnVisibilityToggle bind:columns />
     <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
       <div
@@ -501,3 +532,4 @@
 </Table>
 
 <ToastNotification bind:this={toastRef} />
+</div>

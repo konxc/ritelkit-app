@@ -13,7 +13,7 @@
   import SelectInput from "../ui/forms/SelectInput.svelte";
   import Textarea from "../ui/forms/Textarea.svelte";
   import { t, initI18n } from "../../../lib/i18n/store.svelte";
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
   import { fade, fly } from "svelte/transition";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
@@ -25,16 +25,20 @@
   let {
     rows: initialRows = [],
     q = "",
+    status = "",
     page = 1,
     limit = 30,
     lang,
   }: {
     rows?: Notification[];
     q?: string;
+    status?: string;
     page?: number;
     limit?: number;
     lang?: any;
   } = $props();
+
+  initI18n(untrack(() => lang));
 
   let columns = $state([
     { id: "kanal", label: t("notifications.label_channel"), isVisible: true },
@@ -48,6 +52,10 @@
     ...columns.filter((c) => c.isVisible).map((c) => ({ label: c.label })),
     t("common.actions"),
   ]);
+
+  let localQ = $state(untrack(() => q));
+  let localStatus = $state(untrack(() => status));
+  let localPage = $state(untrack(() => page));
 
   let toastRef = $state<ToastNotification>();
   let rows = $state<Notification[]>([]);
@@ -63,9 +71,10 @@
   });
 
   const refreshData = async () => {
-    const offset = (page - 1) * limit;
+    const offset = (localPage - 1) * limit;
     const { data, error } = await actions.listNotifications({
-      q,
+      q: localQ,
+      status: localStatus,
       limit,
       offset,
     });
@@ -73,6 +82,27 @@
       rows = data.rows as Notification[];
     }
   };
+
+  function syncFiltersFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    localQ = params.get("q") || "";
+    localStatus = params.get("status") || "";
+    localPage = parseInt(params.get("page") || "1", 10);
+  }
+
+  onMount(() => {
+    syncFiltersFromUrl();
+    window.addEventListener("popstate", syncFiltersFromUrl);
+    window.addEventListener("astro:after-navigation", syncFiltersFromUrl);
+    return () => {
+      window.removeEventListener("popstate", syncFiltersFromUrl);
+      window.removeEventListener("astro:after-navigation", syncFiltersFromUrl);
+    };
+  });
+
+  $effect(() => {
+    refreshData();
+  });
 
   const handleCreate = async (event: SubmitEvent) => {
     event.preventDefault();
@@ -166,7 +196,7 @@
       
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <div class="mr-2">
-          <AdminHeaderFilters tab="notifications" {q} {columns} />
+          <AdminHeaderFilters tab="notifications" q={localQ} status={localStatus} {columns} {lang} />
         </div>
 
         <ColumnVisibilityToggle bind:columns />

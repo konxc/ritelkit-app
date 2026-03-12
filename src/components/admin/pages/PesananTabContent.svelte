@@ -46,8 +46,8 @@
   {:else if tab === "shipping"}
     <ShippingManager {lang} rows={initialData.shippingRules} />
   {:else if tab === "invoice"}
-    <InvoicesManager {q} {page} {limit} {lang} rows={initialData.invoices} total={initialData.invoicesTotal} />
+    <InvoicesManager {q} {status} {page} {limit} {lang} rows={initialData.invoices} total={initialData.invoicesTotal} />
   {:else if tab === "refund"}
-    <RefundsManager {q} {page} {limit} {lang} rows={initialData.refunds} total={initialData.refundsTotal} />
+    <RefundsManager {q} {status} {page} {limit} {lang} rows={initialData.refunds} total={initialData.refundsTotal} />
   {/if}
 </QueryProvider>

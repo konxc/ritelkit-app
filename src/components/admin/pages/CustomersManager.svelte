@@ -41,6 +41,7 @@
     initialRows = [],
     total: initialTotal = 0,
     q = "",
+    status = "",
     page = 1,
     limit = 20,
     lang,
@@ -48,6 +49,7 @@
     initialRows?: CustomerRow[];
     total?: number;
     q?: string;
+    status?: string;
     page?: number;
     limit?: number;
     lang?: any;
@@ -58,6 +60,10 @@
   const queryClient = useQueryClient();
   let toastRef = $state<ToastNotification>();
   let isSubmitting = $state(false);
+  let localQ = $state(untrack(() => q));
+  let localStatus = $state(untrack(() => status));
+  let localPage = $state(untrack(() => page));
+  let localLimit = $derived(limit);
   let isDrawerOpen = $state(false);
   let savingId = $state<string | null>(null);
   let deletingId = $state<string | null>(null);
@@ -74,12 +80,28 @@
     t("common.actions"),
   ]);
 
-  const offset = $derived((page - 1) * limit);
+  function syncFiltersFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    localQ = params.get("q") || "";
+    localStatus = params.get("status") || "";
+    localPage = parseInt(params.get("page") || "1", 10);
+  }
+
+  onMount(() => {
+    syncFiltersFromUrl();
+    window.addEventListener("popstate", syncFiltersFromUrl);
+    window.addEventListener("astro:after-navigation", syncFiltersFromUrl);
+    return () => {
+      window.removeEventListener("popstate", syncFiltersFromUrl);
+      window.removeEventListener("astro:after-navigation", syncFiltersFromUrl);
+    };
+  });
 
   const customersQuery = createQuery(() => ({
-    queryKey: ["customers.list", { q, limit, offset }],
-    queryFn: () => trpc.customers.list.query({ q, limit, offset }),
-    initialData: initialRows?.length > 0 ? { data: initialRows, total: initialTotal } : undefined,
+    queryKey: ["customers.list", { q: localQ, limit, offset: (localPage - 1) * limit }],
+    queryFn: () => trpc.customers.list.query({ q: localQ, limit, offset: (localPage - 1) * limit }),
+    initialData:
+      localQ === "" && localPage === 1 ? { data: initialRows, total: initialTotal } : undefined,
     refetchOnMount: false,
     staleTime: 1000 * 60 * 5,
   }));
@@ -221,7 +243,7 @@
       <SectionHeader title={t("customers.title_list")} muted={t("customers.muted_list")} />
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <div class="mr-2">
-          <AdminHeaderFilters tab="customers" {q} {columns} />
+          <AdminHeaderFilters tab="customers" q={localQ} {columns} {lang} />
         </div>
 
         <ColumnVisibilityToggle bind:columns />

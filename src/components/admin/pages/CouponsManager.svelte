@@ -67,16 +67,38 @@
     t("common.actions"),
   ]);
 
-  const offset = $derived((page - 1) * limit);
+  let localQ = $state(untrack(() => q));
+  let localStatus = $state(untrack(() => status));
+  let localPage = $state(untrack(() => page));
+
+  function syncFiltersFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    localQ = params.get("q") || "";
+    localStatus = params.get("status") || "";
+    localPage = parseInt(params.get("page") || "1", 10);
+  }
+
+  onMount(() => {
+    syncFiltersFromUrl();
+    window.addEventListener("popstate", syncFiltersFromUrl);
+    window.addEventListener("astro:after-navigation", syncFiltersFromUrl);
+    return () => {
+      window.removeEventListener("popstate", syncFiltersFromUrl);
+      window.removeEventListener("astro:after-navigation", syncFiltersFromUrl);
+    };
+  });
 
   const couponsQuery = createQuery(() => ({
-    queryKey: ["coupons", { q, status, limit, offset }],
-    queryFn: () => trpc.coupons.list.query({ q, status, limit, offset }),
-    initialData: initialRows?.length > 0 ? { data: initialRows, total: initialTotal } : undefined,
+    queryKey: ["coupons", { q: localQ, status: localStatus, limit, offset: (localPage - 1) * limit }],
+    queryFn: () => trpc.coupons.list.query({ q: localQ, status: localStatus, limit, offset: (localPage - 1) * limit }),
+    initialData:
+      localQ === "" && localStatus === "" && localPage === 1
+        ? { data: initialRows, total: initialTotal }
+        : undefined,
   }));
 
   let rows = $derived(couponsQuery.data?.data || initialRows || []);
-  let total = $derived(couponsQuery.data?.total || initialTotal || 0);
+  let totalCount = $derived(couponsQuery.data?.total || initialTotal || 0);
 
   const createCouponMutation = createMutation(() => ({
     mutationFn: (data: any) => trpc.coupons.create.mutate(data),
@@ -229,7 +251,7 @@
       <SectionHeader title={t("coupons.title_list")} muted={t("coupons.muted_list")} />
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <div class="mr-2">
-          <AdminHeaderFilters tab="coupons" {q} {status} {columns} />
+          <AdminHeaderFilters tab="coupons" q={localQ} status={localStatus} {columns} {lang} />
         </div>
 
         <ColumnVisibilityToggle bind:columns />

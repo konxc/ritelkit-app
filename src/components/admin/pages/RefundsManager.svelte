@@ -38,6 +38,7 @@
     rows: initialRows = [],
     total: initialTotal = 0,
     q = "",
+    status = "",
     page = 1,
     limit = 20,
     lang,
@@ -45,12 +46,34 @@
     rows?: RefundRow[];
     total?: number;
     q?: string;
+    status?: string;
     page?: number;
     limit?: number;
     lang?: any;
   } = $props();
 
   initI18n(untrack(() => lang));
+
+  let localQ = $state(untrack(() => q));
+  let localStatus = $state(untrack(() => status));
+  let localPage = $state(untrack(() => page));
+
+  function syncFiltersFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    localQ = params.get("q") || "";
+    localStatus = params.get("status") || "";
+    localPage = parseInt(params.get("page") || "1", 10);
+  }
+
+  onMount(() => {
+    syncFiltersFromUrl();
+    window.addEventListener("popstate", syncFiltersFromUrl);
+    window.addEventListener("astro:after-navigation", syncFiltersFromUrl);
+    return () => {
+      window.removeEventListener("popstate", syncFiltersFromUrl);
+      window.removeEventListener("astro:after-navigation", syncFiltersFromUrl);
+    };
+  });
 
   const offset = $derived((page - 1) * limit);
   const queryClient = useQueryClient();
@@ -78,9 +101,18 @@
   let isDrawerOpen = $state(false);
 
   const refundsQuery = createQuery(() => ({
-    queryKey: ["refunds.list", { q, limit, offset }],
-    queryFn: () => trpc.refunds.list.query({ q, limit, offset }),
-    initialData: initialRows.length > 0 ? { rows: initialRows, total: initialTotal } : undefined,
+    queryKey: ["refunds.list", { q: localQ, status: localStatus, limit, offset: (localPage - 1) * limit }],
+    queryFn: () =>
+      trpc.refunds.list.query({
+        q: localQ,
+        status: localStatus ? [localStatus] : undefined,
+        limit,
+        offset: (localPage - 1) * limit,
+      }),
+    initialData:
+      localQ === "" && localStatus === "" && localPage === 1
+        ? { rows: initialRows, total: initialTotal }
+        : undefined,
     refetchOnMount: false,
     staleTime: 1000 * 60 * 5,
   }));
@@ -249,9 +281,9 @@
   <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
     <SectionHeader title={t("refunds.title_list")} muted={t("refunds.badge_manual")} />
     <div class="hidden lg:flex lg:items-center lg:gap-3">
-      <div class="mr-2">
-        <AdminHeaderFilters tab="refund" {q} {columns} />
-      </div>
+        <div class="mr-2">
+          <AdminHeaderFilters tab="refund" q={localQ} status={localStatus} {columns} {lang} />
+        </div>
 
       <ColumnVisibilityToggle bind:columns />
 

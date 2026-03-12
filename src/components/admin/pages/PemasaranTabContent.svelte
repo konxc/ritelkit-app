@@ -9,6 +9,7 @@
   let {
     tab,
     q = "",
+    status = "",
     page = 1,
     limit = 20,
     initialData,
@@ -16,6 +17,7 @@
   }: {
     tab: string;
     q?: string;
+    status?: string;
     page?: number;
     limit?: number;
     initialData?: any;
@@ -28,10 +30,17 @@
 
 <QueryProvider {initialData}>
   {#if tab === "customers"}
-    <CustomersManager {q} {page} {limit} initialRows={initialData?.rows || initialData?.data} total={initialData?.total} />
+    <CustomersManager
+      {q}
+      {status}
+      {page}
+      {limit}
+      initialRows={initialData?.rows || initialData?.data}
+      total={initialData?.total}
+    />
   {:else if tab === "coupons"}
-    <CouponsManager rows={initialData?.data} total={initialData?.total} {q} {page} {limit} {lang} />
+    <CouponsManager rows={initialData?.data} total={initialData?.total} {q} {status} {page} {limit} {lang} />
   {:else if tab === "ads"}
-    <AdsManager rows={initialData?.data} total={initialData?.total} {q} {page} {limit} {lang} />
+    <AdsManager rows={initialData?.data} total={initialData?.total} {q} {status} {page} {limit} {lang} />
   {/if}
 </QueryProvider>

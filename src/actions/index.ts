@@ -1,7 +1,7 @@
 import { ActionError, defineAction } from "astro:actions";
 import { z } from "astro:schema";
 import type { APIContext } from "astro";
-import { asc, desc, eq, like, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, like, or, sql } from "drizzle-orm";
 import {
   adminUsers,
   auditLogs,
@@ -1098,6 +1098,7 @@ export const server = {
   listNotifications: defineAction({
     input: z.object({
       q: z.string().optional(),
+      status: z.string().optional(),
       limit: z.number().default(30),
       offset: z.number().default(0),
     }),
@@ -1108,8 +1109,17 @@ export const server = {
 
       await initDb(apiCtx);
       const db = getDrizzle(apiCtx);
-      const { q, limit, offset } = input;
-      const where = q ? or(like(notifications.recipient, `%${q}%`), like(notifications.template, `%${q}%`)) : undefined;
+      const { q, status, limit, offset } = input;
+      
+      const conditions = [];
+      if (q) {
+        conditions.push(or(like(notifications.recipient, `%${q}%`), like(notifications.template, `%${q}%`)));
+      }
+      if (status) {
+        conditions.push(eq(notifications.status, status as any));
+      }
+      
+      const where = conditions.length > 0 ? and(...conditions) : undefined;
 
       const rows = await db
         .select()
@@ -1402,6 +1412,7 @@ export const server = {
   listCmsPages: defineAction({
     input: z.object({
       q: z.string().optional(),
+      status: z.string().optional(),
       limit: z.number().default(30),
       offset: z.number().default(0),
     }),
@@ -1412,8 +1423,17 @@ export const server = {
 
       await initDb(apiCtx);
       const db = getDrizzle(apiCtx);
-      const { q, limit, offset } = input;
-      const where = q ? or(like(cmsPages.title, `%${q}%`), like(cmsPages.slug, `%${q}%`)) : undefined;
+      const { q, status, limit, offset } = input;
+      
+      const conditions = [];
+      if (q) {
+        conditions.push(or(like(cmsPages.title, `%${q}%`), like(cmsPages.slug, `%${q}%`)));
+      }
+      if (status) {
+        conditions.push(eq(cmsPages.isActive, status === "active" ? 1 : 0));
+      }
+      
+      const where = conditions.length > 0 ? and(...conditions) : undefined;
 
       const rows = await db
         .select()
@@ -1540,13 +1560,19 @@ export const server = {
       await initDb(apiCtx);
       const db = getDrizzle(apiCtx);
       const { q, limit, offset } = input;
-      const where = q
-        ? or(
+      
+      const conditions = [];
+      if (q) {
+        conditions.push(
+          or(
             like(auditLogs.actorEmail, `%${q}%`),
             like(auditLogs.action, `%${q}%`),
             like(auditLogs.entityType, `%${q}%`),
           )
-        : undefined;
+        );
+      }
+      
+      const where = conditions.length > 0 ? and(...conditions) : undefined;
 
       const rows = await db
         .select()

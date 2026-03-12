@@ -19,6 +19,7 @@
     error = "",
     id = "",
     name = "",
+    autocomplete = "off",
     class: className = "",
     ...rest
   }: Props = $props();
@@ -47,13 +48,13 @@
   {/if}
 
   {#if type === "number"}
-    <input {id} {name} type="number" {placeholder} bind:value class={inputClasses} aria-invalid={!!error} {...rest} />
+    <input {id} {name} type="number" {autocomplete} {placeholder} bind:value class={inputClasses} aria-invalid={!!error} {...rest} />
   {:else if type === "password"}
-    <input {id} {name} type="password" {placeholder} bind:value class={inputClasses} aria-invalid={!!error} {...rest} />
+    <input {id} {name} type="password" {autocomplete} {placeholder} bind:value class={inputClasses} aria-invalid={!!error} {...rest} />
   {:else if type === "email"}
-    <input {id} {name} type="email" {placeholder} bind:value class={inputClasses} aria-invalid={!!error} {...rest} />
+    <input {id} {name} type="email" {autocomplete} {placeholder} bind:value class={inputClasses} aria-invalid={!!error} {...rest} />
   {:else}
-    <input {id} {name} {type} {placeholder} bind:value class={inputClasses} aria-invalid={!!error} {...rest} />
+    <input {id} {name} {type} {autocomplete} {placeholder} bind:value class={inputClasses} aria-invalid={!!error} {...rest} />
   {/if}
 
   {#if error}

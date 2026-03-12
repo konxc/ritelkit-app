@@ -86,18 +86,40 @@
     t("common.actions"),
   ]);
 
-  const offset = $derived((page - 1) * limit);
+  let localQ = $state(untrack(() => q));
+  let localStatus = $state(untrack(() => status));
+  let localPage = $state(untrack(() => page));
+
+  function syncFiltersFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    localQ = params.get("q") || "";
+    localStatus = params.get("status") || "";
+    localPage = parseInt(params.get("page") || "1", 10);
+  }
+
+  onMount(() => {
+    syncFiltersFromUrl();
+    window.addEventListener("popstate", syncFiltersFromUrl);
+    window.addEventListener("astro:after-navigation", syncFiltersFromUrl);
+    return () => {
+      window.removeEventListener("popstate", syncFiltersFromUrl);
+      window.removeEventListener("astro:after-navigation", syncFiltersFromUrl);
+    };
+  });
 
   const adsQuery = createQuery(() => ({
-    queryKey: ["ads.list", { q, status, limit, offset }],
-    queryFn: () => trpc.ads.list.query({ q, status, limit, offset }),
-    initialData: initialRows?.length > 0 ? { data: initialRows, total: initialTotal } : undefined,
+    queryKey: ["ads.list", { q: localQ, status: localStatus, limit, offset: (localPage - 1) * limit }],
+    queryFn: () => trpc.ads.list.query({ q: localQ, status: localStatus, limit, offset: (localPage - 1) * limit }),
+    initialData:
+      localQ === "" && localStatus === "" && localPage === 1
+        ? { data: initialRows, total: initialTotal }
+        : undefined,
     refetchOnMount: false,
     staleTime: 1000 * 60 * 5,
   }));
 
   let rows = $derived(adsQuery.data?.data || initialRows || []);
-  let total = $derived(adsQuery.data?.total || initialTotal || 0);
+  let totalCount = $derived(adsQuery.data?.total || initialTotal || 0);
 
   const handleCreate = async (event: SubmitEvent) => {
     event.preventDefault();
@@ -179,17 +201,6 @@
     }
   };
 
-  const syncFromUrl = () => {
-    const params = new URLSearchParams(window.location.search);
-    q = params.get("q") || "";
-    status = params.get("status") || "";
-    page = Number(params.get("page")) || 1;
-  };
-
-  onMount(() => {
-    window.addEventListener("popstate", syncFromUrl);
-    return () => window.removeEventListener("popstate", syncFromUrl);
-  });
 </script>
 
 {#snippet adIcon()}
@@ -238,7 +249,7 @@
       <SectionHeader title={t("ads.title_list")} muted={t("ads.badge_ads")} />
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <div class="mr-2">
-          <AdminHeaderFilters tab="ads" {q} {status} {columns} />
+          <AdminHeaderFilters tab="ads" q={localQ} status={localStatus} {columns} />
         </div>
 
         <ColumnVisibilityToggle bind:columns />

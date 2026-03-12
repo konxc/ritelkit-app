@@ -5,8 +5,8 @@
   import Table from "../ui/Table.svelte";
   import TableRow from "../ui/TableRow.svelte";
   import TableCell from "../ui/TableCell.svelte";
-  import { t } from "../../../lib/i18n/store.svelte";
-  import { onMount } from "svelte";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
+  import { onMount, untrack } from "svelte";
   import SectionHeader from "../SectionHeader.svelte";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
@@ -15,16 +15,20 @@
   let {
     rows: initialRows = [],
     q = "",
+    status = "",
     page = 1,
     limit = 30,
     lang,
   }: {
     rows?: AuditLog[];
     q?: string;
+    status?: string;
     page?: number;
     limit?: number;
     lang?: any;
   } = $props();
+
+  initI18n(untrack(() => lang));
 
   let columns = $state([
     { id: "user", label: t("system_admin.audit_log.user"), isVisible: true },
@@ -46,11 +50,35 @@
     rows = initialRows;
   });
 
+  let localQ = $state(untrack(() => q));
+  let localStatus = $state(untrack(() => status));
+  let localPage = $state(untrack(() => page));
+
+  function syncFiltersFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    localQ = params.get("q") || "";
+    localPage = parseInt(params.get("page") || "1", 10);
+  }
+
+  onMount(() => {
+    syncFiltersFromUrl();
+    window.addEventListener("popstate", syncFiltersFromUrl);
+    window.addEventListener("astro:after-navigation", syncFiltersFromUrl);
+    return () => {
+      window.removeEventListener("popstate", syncFiltersFromUrl);
+      window.removeEventListener("astro:after-navigation", syncFiltersFromUrl);
+    };
+  });
+
+  $effect(() => {
+    refreshData();
+  });
+
   const refreshData = async () => {
-    const offset = (page - 1) * limit;
+    const offset = (localPage - 1) * limit;
     isLoading = true;
     const { data, error } = await actions.listAuditLogs({
-      q,
+      q: localQ,
       limit,
       offset,
     });
@@ -60,21 +88,6 @@
     }
   };
 
-  const syncFromUrl = () => {
-    const params = new URLSearchParams(window.location.search);
-    q = params.get("q") || "";
-    page = parseInt(params.get("page") || "1");
-  };
-
-  onMount(() => {
-    window.addEventListener("popstate", syncFromUrl);
-    return () => window.removeEventListener("popstate", syncFromUrl);
-  });
-
-  // Re-fetch when props change (search/pagination)
-  $effect(() => {
-    refreshData();
-  });
 </script>
 
 <div class="h-full w-full">
@@ -84,7 +97,7 @@
       
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <div class="mr-2">
-          <AdminHeaderFilters tab="audit" {q} {columns} {lang} />
+          <AdminHeaderFilters tab="audit" q={localQ} status={localStatus} {columns} {lang} />
         </div>
 
         <ColumnVisibilityToggle bind:columns />

@@ -1,6 +1,6 @@
 import { adminProcedure, router } from "../trpc";
 import { invoices, orders } from "../../db/schema";
-import { eq, desc, sql, or, like } from "drizzle-orm";
+import { eq, desc, sql, or, like, and, inArray } from "drizzle-orm";
 import { z } from "zod";
 
 export const invoiceRouter = router({
@@ -8,15 +8,19 @@ export const invoiceRouter = router({
     .input(
       z.object({
         q: z.string().optional(),
+        status: z.array(z.string()).optional(),
         limit: z.number().default(20),
         offset: z.number().default(0),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { q, limit, offset } = input;
+      const { q, status, limit, offset } = input;
       const whereClause = [];
       if (q) {
         whereClause.push(or(like(invoices.invoiceNo, `%${q}%`), like(orders.orderNo, `%${q}%`)));
+      }
+      if (status && status.length > 0) {
+        whereClause.push(inArray(invoices.status, status));
       }
 
       const baseQuery = ctx.db
@@ -32,14 +36,17 @@ export const invoiceRouter = router({
         .innerJoin(orders, eq(orders.id, invoices.orderId));
 
       const finalQuery =
-        whereClause.length > 0 ? baseQuery.where(sql`${sql.join(whereClause, sql` AND `)}`) : baseQuery;
+        whereClause.length > 0 ? baseQuery.where(and(...whereClause)) : baseQuery;
 
       const rows = await finalQuery.orderBy(desc(invoices.createdAt)).limit(limit).offset(offset);
 
       const countQuery = ctx.db.select({ count: sql<number>`count(*)` }).from(invoices);
-      const finalCountQuery = q
-        ? countQuery.innerJoin(orders, eq(orders.id, invoices.orderId)).where(sql`${sql.join(whereClause, sql` AND `)}`)
-        : countQuery;
+      const finalCountQuery =
+        whereClause.length > 0
+          ? countQuery
+              .innerJoin(orders, eq(orders.id, invoices.orderId))
+              .where(and(...whereClause))
+          : countQuery;
 
       const totalRes = await finalCountQuery;
 

@@ -14,6 +14,7 @@
   import TextInput from "../ui/forms/TextInput.svelte";
   import SelectInput from "../ui/forms/SelectInput.svelte";
   import Textarea from "../ui/forms/Textarea.svelte";
+  import Button from "../ui/Button.svelte";
   import InlineEditableField from "../ui/forms/InlineEditableField.svelte";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
   import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
@@ -54,7 +55,8 @@
     t("common.actions"),
   ]);
 
-  let q = $state("");
+  let localQ = $state("");
+  let localStatus = $state("");
 
   const rulesQuery = createQuery(() => ({
     queryKey: ["shippingRules.list"],
@@ -66,8 +68,31 @@
 
   let currentRules = $derived.by(() => {
     const raw = (rulesQuery.data as RuleRow[]) || initialRows || [];
-    if (!q) return raw;
-    return raw.filter((r) => r?.name?.toLowerCase().includes(q.toLowerCase()));
+    let filtered = raw;
+    if (localQ) {
+      filtered = filtered.filter((r) => r?.name?.toLowerCase().includes(localQ.toLowerCase()));
+    }
+    if (localStatus) {
+      const activeBool = localStatus === "active";
+      filtered = filtered.filter((r) => r?.isActive === activeBool);
+    }
+    return filtered;
+  });
+
+  function syncFiltersFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    localQ = params.get("q") || "";
+    localStatus = params.get("status") || "";
+  }
+
+  onMount(() => {
+    syncFiltersFromUrl();
+    window.addEventListener("popstate", syncFiltersFromUrl);
+    window.addEventListener("astro:after-navigation", syncFiltersFromUrl);
+    return () => {
+      window.removeEventListener("popstate", syncFiltersFromUrl);
+      window.removeEventListener("astro:after-navigation", syncFiltersFromUrl);
+    };
   });
 
   // Reactive state for the create form
@@ -358,7 +383,7 @@
       <SectionHeader title={t("shipping_rules.title_list")} muted={t("shipping_rules.subtitle_list")} />
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <div class="mr-2">
-          <AdminHeaderFilters tab="shipping" bind:q {columns} />
+          <AdminHeaderFilters tab="shipping" q={localQ} status={localStatus} {columns} {lang} />
         </div>
 
         <ColumnVisibilityToggle bind:columns />
@@ -551,6 +576,8 @@
                 />
               </div>
             </div>
+          </div>
+
           <div class="rounded-2xl border border-[#c48a3a]/10 bg-[#c48a3a]/5 p-5 text-[#865d25]">
             <div class="flex gap-3">
               <svg

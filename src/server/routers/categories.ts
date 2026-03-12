@@ -1,7 +1,7 @@
 import { adminProcedure, router } from "../trpc";
 import { categories } from "../../db/schema";
 import { CategorySchema } from "../../lib/types";
-import { eq, asc, like, sql } from "drizzle-orm";
+import { eq, asc, like, and, sql } from "drizzle-orm";
 import { z } from "zod";
 import { logAudit } from "../../lib/admin";
 
@@ -11,16 +11,21 @@ export const categoryRouter = router({
       z
         .object({
           q: z.string().optional(),
+          status: z.string().optional(),
           page: z.number().optional().default(1),
           limit: z.number().optional().default(50),
         })
         .optional(),
     )
     .query(async ({ ctx, input }) => {
-      const { q, page = 1, limit = 50 } = input || {};
+      const { q, status, page = 1, limit = 50 } = input || {};
       const offset = (page - 1) * limit;
 
-      const whereClause = q ? like(categories.name, `%${q}%`) : undefined;
+      const conditions = [];
+      if (q) conditions.push(like(categories.name, `%${q}%`));
+      if (status) conditions.push(eq(categories.isActive, status === "active" ? 1 : 0));
+
+      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
       const data = await ctx.db
         .select()

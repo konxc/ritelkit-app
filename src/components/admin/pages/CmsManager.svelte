@@ -22,8 +22,8 @@
   import TextInput from "../ui/forms/TextInput.svelte";
   import SelectInput from "../ui/forms/SelectInput.svelte";
   import Textarea from "../ui/forms/Textarea.svelte";
-  import { t } from "../../../lib/i18n/store.svelte";
-  import { onMount } from "svelte";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
+  import { onMount, untrack } from "svelte";
   import { actions } from "astro:actions";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
@@ -34,16 +34,20 @@
   let {
     rows: initialRows = [],
     q = "",
+    status = "",
     page = 1,
     limit = 30,
     lang,
   }: {
     rows?: CmsPageRow[];
     q?: string;
+    status?: string;
     page?: number;
     limit?: number;
     lang?: any;
   } = $props();
+
+  initI18n(untrack(() => lang));
 
   let columns = $state([
     { id: "title", label: t("cms.label_title"), isVisible: true },
@@ -56,6 +60,11 @@
     ...columns.filter((c) => c.isVisible).map((c) => ({ label: c.label })),
     t("common.actions"),
   ]);
+
+  let localQ = $state(untrack(() => q));
+  let localStatus = $state(untrack(() => status));
+  let localPage = $state(untrack(() => page));
+  const localLimit = untrack(() => limit) || 20;
 
   let rows = $state<CmsPageRow[]>([]);
   let rowStates = $state<Record<string, { isSaving?: boolean; isDeleting?: boolean; isEditing?: boolean }>>({});
@@ -75,22 +84,28 @@
   });
 
   const refreshData = async () => {
-    const offset = (page - 1) * limit;
-    const { data, error } = await actions.listCmsPages({ q, limit, offset });
+    const offset = (localPage - 1) * localLimit;
+    const { data, error } = await actions.listCmsPages({ q: localQ, status: localStatus, limit: localLimit, offset });
     if (!error && data) {
       rows = data.rows as CmsPageRow[];
     }
   };
 
-  const syncFromUrl = () => {
+  function syncFiltersFromUrl() {
     const params = new URLSearchParams(window.location.search);
-    q = params.get("q") || "";
-    page = parseInt(params.get("page") || "1");
-  };
+    localQ = params.get("q") || "";
+    localStatus = params.get("status") || "";
+    localPage = parseInt(params.get("page") || "1", 10);
+  }
 
   onMount(() => {
-    window.addEventListener("popstate", syncFromUrl);
-    return () => window.removeEventListener("popstate", syncFromUrl);
+    syncFiltersFromUrl();
+    window.addEventListener("popstate", syncFiltersFromUrl);
+    window.addEventListener("astro:after-navigation", syncFiltersFromUrl);
+    return () => {
+      window.removeEventListener("popstate", syncFiltersFromUrl);
+      window.removeEventListener("astro:after-navigation", syncFiltersFromUrl);
+    };
   });
 
   // Re-fetch when props change (search/pagination)
@@ -177,7 +192,7 @@
       
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <div class="mr-2">
-          <AdminHeaderFilters tab="content" {q} {columns} {lang} />
+          <AdminHeaderFilters tab="content" q={localQ} status={localStatus} {columns} {lang} />
         </div>
 
         <ColumnVisibilityToggle bind:columns />

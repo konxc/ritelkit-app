@@ -1,7 +1,8 @@
 <script lang="ts">
   import { trpc } from "../../../lib/trpc";
   import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
+  import { fly } from "svelte/transition";
   import { t, initI18n } from "../../../lib/i18n/store.svelte";
   import type { Product } from "../../../lib/types";
   import Fab from "../ui/Fab.svelte";
@@ -62,29 +63,41 @@
     rows: initialRows = [],
     total: initialTotal = 0,
     categoryOptions = [],
+    q = "",
+    status = "",
+    page = 1,
+    limit = 20,
+    lang,
   }: {
     rows?: ProductRow[];
     total?: number;
     categoryOptions?: CategoryOption[];
+    q?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+    lang?: any;
   } = $props();
+
+  initI18n(untrack(() => lang));
 
   const queryClient = useQueryClient();
   let isMutating = $state(false);
   let csrfToken = $state("");
   let toastRef = $state<ToastNotification>();
 
-  let q = $state("");
-  let categoryFilterId = $state("");
-  let statusFilterValue = $state("");
-  let page = $state(1);
-  const limit = 20;
+  let localQ = $state(untrack(() => q));
+  let localCategoryId = $state("");
+  let localStatus = $state(untrack(() => status));
+  let localPage = $state(untrack(() => page));
+  let localLimit = $derived(limit);
 
   function syncFiltersFromUrl() {
     const params = new URLSearchParams(window.location.search);
-    q = params.get("q") || "";
-    categoryFilterId = params.get("category") || "";
-    statusFilterValue = params.get("status") || "";
-    page = parseInt(params.get("page") || "1", 10);
+    localQ = params.get("q") || "";
+    localCategoryId = params.get("category") || "";
+    localStatus = params.get("status") || "";
+    localPage = parseInt(params.get("page") || "1", 10);
   }
 
   onMount(() => {
@@ -102,17 +115,17 @@
   });
 
   const productsQuery = createQuery(() => ({
-    queryKey: ["products.list", { q, categoryId: categoryFilterId, status: statusFilterValue, page, limit }],
+    queryKey: ["products.list", { q: localQ, categoryId: localCategoryId, status: localStatus, page: localPage, limit: localLimit }],
     queryFn: () =>
       trpc.products.list.query({
-        q,
-        categoryId: categoryFilterId,
-        status: statusFilterValue,
-        page,
-        limit,
+        q: localQ,
+        categoryId: localCategoryId,
+        status: localStatus,
+        page: localPage,
+        limit: localLimit,
       }),
     initialData:
-      q === "" && categoryFilterId === "" && statusFilterValue === "" && page === 1
+      localQ === "" && localCategoryId === "" && localStatus === "" && localPage === 1
         ? { data: initialRows, total: initialTotal }
         : undefined,
     placeholderData: (prev) => prev, // Keep old data while fetching
@@ -261,16 +274,25 @@
     }
   };
 
-  const currentCategories = $derived(categories);
+  const currentCategories = $derived(categoryOptions);
   const handleDragOver = (e: DragEvent) => e.preventDefault();
 </script>
 
-<div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
-  <SectionHeader title={t("catalog.products.title")} muted={t("catalog.products.subtitle")} />
-  <div class="hidden lg:flex lg:items-center lg:gap-3">
-    <div class="mr-2">
-      <AdminHeaderFilters tab="products" {categoryOptions} {columns} />
-    </div>
+<div in:fly={{ y: 20, duration: 400, delay: 100 }}>
+  <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <SectionHeader title={t("catalog.products.title")} muted={t("catalog.products.subtitle")} />
+    <div class="hidden lg:flex lg:items-center lg:gap-3">
+      <div class="mr-2">
+        <AdminHeaderFilters
+          tab="products"
+          q={localQ}
+          status={localStatus}
+          categoryId={localCategoryId}
+          {categoryOptions}
+          {columns}
+          {lang}
+        />
+      </div>
 
     <ColumnVisibilityToggle bind:columns />
 
@@ -699,3 +721,4 @@
 </Table>
 
 <ToastNotification bind:this={toastRef} />
+</div>

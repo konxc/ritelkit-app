@@ -84,6 +84,7 @@ const tabs = [
     icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="12" x="3" y="6" rx="2" ry="2"/><path d="M3 10h18"/><path d="M7 6v12"/><path d="M15 13h.01"/></svg>',
   },
 ];
+const statusFilter = Astro.url.searchParams.get("status");
 import { getLang, type LanguageCode, tServer } from "../../lib/i18n/server";
 import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
 import AdminHeaderFilters from "../../components/admin/AdminHeaderFilters.svelte";
@@ -101,10 +102,10 @@ const lang: LanguageCode = getLang(Astro.cookies);
     showMobileFloat={true}
     client:load
   >
-    <AdminHeaderFilters tab={tab} q={q} lang={lang} client:load />
+    <AdminHeaderFilters tab={tab} q={q} status={statusFilter || ""} lang={lang} client:load />
   </AdminToolbar>
 
-  <PemasaranTabContent {tab} {q} {page} {limit} {initialData} {lang} client:load />
+  <PemasaranTabContent {tab} {q} status={statusFilter || ""} {page} {limit} {initialData} {lang} client:load />
 
   <PaginationNav
     page={page}

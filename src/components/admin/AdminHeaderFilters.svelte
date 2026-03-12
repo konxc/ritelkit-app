@@ -31,12 +31,14 @@
   let localQ = $state("");
   let localStatus = $state("");
   let localCategoryId = $state("");
+  let localSubtab = $state("");
 
   function syncFromUrl() {
     const params = new URLSearchParams(window.location.search);
     localQ = params.get("q") || "";
     localStatus = params.get("status") || "";
     localCategoryId = params.get("category") || "";
+    localSubtab = params.get("subtab") || "";
   }
 
   onMount(() => {
@@ -132,7 +134,7 @@
         { label: t("status.failed"), value: "failed" },
       ];
     }
-    if (tab === "content") {
+    if (tab === "content" || tab === "categories") {
       return [
         ...base,
         { label: t("common.active"), value: "active" },
@@ -200,6 +202,9 @@
     fulfillment: t("fulfillment.title_list"),
     refund: t("refunds.title_list"),
     shipping: t("shipping_rules.title_list"),
+    order: t("orders.title_list") || "Orders",
+    invoice: t("invoices.title_list") || "Invoices",
+    categories: t("catalog.categories.title") || "Categories",
   } as Record<string, string>);
   let tabLabel = $derived(tabLabels[tab || "ads"] || tab || "");
 
@@ -216,7 +221,7 @@
   <!-- Main Search Area -->
   <div class="flex items-center gap-2 lg:flex-1">
     <div class="group relative flex-1">
-      <SearchInput name="q" value={localQ} oninput={onSearchInput} placeholder={t("common.search")} />
+      <SearchInput name="q" value={localQ} oninput={onSearchInput} placeholder={t("common.search")} autocomplete="one-time-code" />
     </div>
     <div class="lg:hidden">
       <Button variant="outline" size="sm" onclick={() => (showAdvanced = true)} class="px-3">
@@ -240,7 +245,7 @@
 
   <!-- Desktop Filters Panel -->
   <div class="hidden items-center gap-3 lg:flex">
-    {#if categoryOptions.length > 0}
+    {#if categoryOptions.length > 0 && localSubtab !== "log"}
       <div class="w-44">
         <SelectInput
           name="category"
@@ -292,7 +297,7 @@
     }}
   >
     <div class="grid gap-6 py-4">
-       {#if categoryOptions.length > 0}
+       {#if categoryOptions.length > 0 && localSubtab !== "log"}
         <div class="space-y-4">
            <label for="category-select" class="text-[0.7rem] font-extrabold tracking-widest text-stone-400 uppercase"
             >{t("catalog.products.category")}</label

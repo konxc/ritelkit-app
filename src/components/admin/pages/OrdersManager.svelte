@@ -70,11 +70,21 @@
     "id" | "orderNo" | "customerName" | "total" | "status" | "paymentStatus" | "createdAt"
   >;
 
-  const offset = $derived((page - 1) * limit);
+  let localQ = $state(untrack(() => q));
+  let localStatus = $state(untrack(() => status));
+  let localPage = $state(untrack(() => page));
+
+  const offset = $derived((localPage - 1) * limit);
 
   const ordersQuery = createQuery(() => ({
-    queryKey: ["orders.list", { q, status, limit, offset }],
-    queryFn: () => trpc.orders.list.query({ q, status: status ? [status] : undefined, limit, offset }),
+    queryKey: ["orders.list", { q: localQ, status: localStatus, limit, offset: (localPage - 1) * limit }],
+    queryFn: () =>
+      trpc.orders.list.query({
+        q: localQ,
+        status: localStatus ? [localStatus] : undefined,
+        limit,
+        offset: (localPage - 1) * limit,
+      }),
     initialData:
       initialRows.length > 0
         ? {
@@ -88,6 +98,23 @@
   }));
 
   let currentRows = $derived((ordersQuery.data?.rows as OrderTableRow[]) || initialRows);
+
+  function syncFiltersFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    localQ = params.get("q") || "";
+    localStatus = params.get("status") || "";
+    localPage = parseInt(params.get("page") || "1", 10);
+  }
+
+  onMount(() => {
+    syncFiltersFromUrl();
+    window.addEventListener("popstate", syncFiltersFromUrl);
+    window.addEventListener("astro:after-navigation", syncFiltersFromUrl);
+    return () => {
+      window.removeEventListener("popstate", syncFiltersFromUrl);
+      window.removeEventListener("astro:after-navigation", syncFiltersFromUrl);
+    };
+  });
 
   const getStatusType = (status: string) => {
     if (!status) return "default";
@@ -228,7 +255,7 @@
       <SectionHeader title={t("orders.title_list")} muted={t("orders.subtitle_list")} />
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <div class="mr-2">
-          <AdminHeaderFilters tab="order" {q} {status} {columns} />
+          <AdminHeaderFilters tab="order" q={localQ} status={localStatus} {columns} {lang} />
         </div>
 
         <ColumnVisibilityToggle bind:columns />

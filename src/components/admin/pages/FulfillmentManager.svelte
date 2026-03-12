@@ -70,11 +70,41 @@
     t("common.actions"),
   ]);
 
+  let localQ = $state(untrack(() => q));
+  let localStatus = $state(untrack(() => status));
+  let localPage = $state(untrack(() => page));
+
+  function syncFiltersFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    localQ = params.get("q") || "";
+    localStatus = params.get("status") || "";
+    localPage = parseInt(params.get("page") || "1", 10);
+  }
+
+  onMount(() => {
+    syncFiltersFromUrl();
+    window.addEventListener("popstate", syncFiltersFromUrl);
+    window.addEventListener("astro:after-navigation", syncFiltersFromUrl);
+    return () => {
+      window.removeEventListener("popstate", syncFiltersFromUrl);
+      window.removeEventListener("astro:after-navigation", syncFiltersFromUrl);
+    };
+  });
+
   // Query for existing shipments
   const shipmentsQuery = createQuery(() => ({
-    queryKey: ["shipments", { q, status, limit, offset }],
-    queryFn: () => trpc.shipments.list.query({ q, status: status ? [status] : undefined, limit, offset }),
-    initialData: initialShipments.length > 0 ? { rows: initialShipments, total: initialTotal } : undefined,
+    queryKey: ["shipments", { q: localQ, status: localStatus, limit, offset: (localPage - 1) * limit }],
+    queryFn: () =>
+      trpc.shipments.list.query({
+        q: localQ,
+        status: localStatus ? [localStatus] : undefined,
+        limit,
+        offset: (localPage - 1) * limit,
+      }),
+    initialData:
+      localQ === "" && localStatus === "" && localPage === 1
+        ? { rows: initialShipments, total: initialTotal }
+        : undefined,
     refetchOnMount: false,
     staleTime: 1000 * 60 * 5,
   }));
@@ -240,7 +270,7 @@
     <SectionHeader title={t("fulfillment.title_list")} muted={t("fulfillment.badge_tracking")} />
     <div class="hidden lg:flex lg:items-center lg:gap-3">
       <div class="mr-2">
-        <AdminHeaderFilters tab="fulfillment" {q} {status} {columns} />
+        <AdminHeaderFilters tab="fulfillment" q={localQ} status={localStatus} {columns} {lang} />
       </div>
 
       <ColumnVisibilityToggle bind:columns />

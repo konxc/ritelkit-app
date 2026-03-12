@@ -7,9 +7,18 @@
     class?: string;
     oninput?: (e: Event & { currentTarget: HTMLInputElement }) => void;
     onchange?: (e: Event & { currentTarget: HTMLInputElement }) => void;
+    autocomplete?: any;
   }
 
-  let { value = "", name = "q", placeholder = "", class: className = "", oninput, onchange }: Props = $props();
+  let {
+    value = "",
+    name = "q",
+    placeholder = "",
+    class: className = "",
+    oninput,
+    onchange,
+    autocomplete = "off",
+  }: Props = $props();
 
   let displayPlaceholder = $derived(placeholder || t("common.search"));
 </script>
@@ -37,9 +46,11 @@
     {name}
     placeholder={placeholder || displayPlaceholder}
     {value}
+    {autocomplete}
     {oninput}
     {onchange}
-    type="text"
+    spellcheck="false"
+    type="search"
     class="block w-full rounded-2xl border border-stone-200 bg-stone-50/50 py-2.5 pr-4 pl-11 text-[0.85rem] font-semibold text-stone-800 shadow-sm ring-stone-900/5 transition-all duration-300 placeholder:text-stone-400 hover:border-stone-300 hover:bg-white focus:border-[#c48a3a] focus:bg-white focus:ring-[4px] focus:ring-[#c48a3a]/15 focus:outline-none lg:text-sm"
   />
 </div>

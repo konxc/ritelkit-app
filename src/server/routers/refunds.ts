@@ -1,6 +1,6 @@
 import { adminProcedure, router } from "../trpc";
 import { refunds, orders, orderStatusHistory } from "../../db/schema";
-import { desc, eq, sql, like } from "drizzle-orm";
+import { desc, eq, sql, like, and, inArray } from "drizzle-orm";
 import { z } from "zod";
 
 export const refundRouter = router({
@@ -8,26 +8,30 @@ export const refundRouter = router({
     .input(
       z.object({
         q: z.string().optional(),
+        status: z.array(z.string()).optional(),
         limit: z.number().default(20),
         offset: z.number().default(0),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { q, limit, offset } = input;
+      const { q, status, limit, offset } = input;
       const whereClause = [];
       if (q) {
         whereClause.push(like(refunds.orderNo, `%${q}%`));
       }
+      if (status && status.length > 0) {
+        whereClause.push(inArray(refunds.status, status));
+      }
 
       const baseQuery = ctx.db.select().from(refunds);
       const finalQuery =
-        whereClause.length > 0 ? baseQuery.where(sql`${sql.join(whereClause, sql` AND `)}`) : baseQuery;
+        whereClause.length > 0 ? baseQuery.where(and(...whereClause)) : baseQuery;
 
       const rows = await finalQuery.orderBy(desc(refunds.createdAt)).limit(limit).offset(offset);
 
       const countQuery = ctx.db.select({ count: sql<number>`count(*)` }).from(refunds);
       const finalCountQuery =
-        whereClause.length > 0 ? countQuery.where(sql`${sql.join(whereClause, sql` AND `)}`) : countQuery;
+        whereClause.length > 0 ? countQuery.where(and(...whereClause)) : countQuery;
 
       const totalRes = await finalCountQuery;
 

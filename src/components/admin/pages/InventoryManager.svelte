@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
   import { trpc } from "../../../lib/trpc";
   import { createQuery, useQueryClient } from "@tanstack/svelte-query";
   import { t, initI18n } from "../../../lib/i18n/store.svelte";
@@ -78,28 +78,46 @@
     movements: initialMovements = [],
     movementsTotal: initialMovementsTotal = 0,
     categoryOptions = [],
+    subtab = "stock",
+    q = "",
+    status = "",
+    page = 1,
+    limit = 20,
+    lang,
   }: {
     products?: InventoryProductRow[];
     productsTotal?: number;
     movements?: InventoryMovement[];
     movementsTotal?: number;
     categoryOptions?: { id: string | number; name: string }[];
+    subtab?: string;
+    q?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+    lang?: any;
   } = $props();
+
+  initI18n(untrack(() => lang));
 
   const queryClient = useQueryClient();
   let toastRef = $state<ToastNotification>();
   let isSubmitting = $state(false);
   let isDrawerOpen = $state(false);
-  let activeSubTab = $state("stock");
+  let activeSubTab = $state(untrack(() => subtab || "stock"));
 
   // Reactive filters from URL
-  let q = $state("");
-  let page = $state(1);
-  const limit = 20;
+  let localQ = $state(untrack(() => q));
+  let localStatus = $state(untrack(() => status));
+  let localCategoryId = $state("");
+  let localPage = $state(untrack(() => page));
+  let localLimit = $derived(limit);
 
   function syncFiltersFromUrl() {
     const params = new URLSearchParams(window.location.search);
-    q = params.get("q") || "";
+    localQ = params.get("q") || "";
+    localStatus = params.get("status") || "";
+    localCategoryId = params.get("category") || "";
     const rawSubtab = params.get("subtab");
     activeSubTab = normalizeTab(rawSubtab, {
       allowed: ["stock", "log"],
@@ -110,12 +128,25 @@
         history: "log",
       },
     });
-    if (rawSubtab && rawSubtab !== activeSubTab) {
+    
+    // Update URL if subtab was normalized or missing
+    if (activeSubTab !== rawSubtab) {
       const url = new URL(window.location.href);
       url.searchParams.set("subtab", activeSubTab);
       window.history.replaceState({}, "", url.href);
     }
-    page = parseInt(params.get("page") || "1", 10);
+    localPage = parseInt(params.get("page") || "1", 10);
+  }
+
+  function getTabUrl(targetSubtab: string) {
+    const params = new URLSearchParams();
+    params.set("tab", "inventory");
+    params.set("subtab", targetSubtab);
+    if (localQ) params.set("q", localQ);
+    if (localStatus) params.set("status", localStatus);
+    if (localCategoryId && targetSubtab === "stock") params.set("category", localCategoryId);
+    if (localPage > 1) params.set("page", localPage.toString());
+    return `?${params.toString()}`;
   }
 
   onMount(() => {
@@ -129,16 +160,18 @@
   });
 
   const productsQuery = createQuery(() => ({
-    queryKey: ["inventory.products.list", { q, page, limit }],
-    queryFn: () => trpc.inventory.listProducts.query({ q, page, limit }),
-    initialData: q === "" && page === 1 ? { data: initialProducts, total: initialProductsTotal } : undefined,
+    queryKey: ["inventory.products.list", { q: localQ, categoryId: localCategoryId, page: localPage, limit: localLimit }],
+    queryFn: () => trpc.inventory.listProducts.query({ q: localQ, categoryId: localCategoryId, page: localPage, limit: localLimit }),
+    initialData:
+      localQ === "" && localPage === 1 ? { data: initialProducts, total: initialProductsTotal } : undefined,
     placeholderData: (prev) => prev,
   }));
 
   const movementsQuery = createQuery(() => ({
-    queryKey: ["inventory.movements.list", { q, page, limit }],
-    queryFn: () => trpc.inventory.listMovements.query({ q, page, limit }),
-    initialData: q === "" && page === 1 ? { data: initialMovements, total: initialMovementsTotal } : undefined,
+    queryKey: ["inventory.movements.list", { q: localQ, page: localPage, limit: localLimit }],
+    queryFn: () => trpc.inventory.listMovements.query({ q: localQ, page: localPage, limit: localLimit }),
+    initialData:
+      localQ === "" && localPage === 1 ? { data: initialMovements, total: initialMovementsTotal } : undefined,
     refetchOnMount: false,
     staleTime: 1000 * 60 * 5,
   }));
@@ -205,17 +238,20 @@
   };
 </script>
 
-<div class="mt-2 mb-6 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-  <div>
-    <SectionHeader
-      title={activeSubTab === "stock" ? t("catalog.inventory.stock_title") : t("catalog.inventory.log_title")}
-      muted={activeSubTab === "stock" ? t("catalog.inventory.stock_muted") : t("catalog.inventory.log_muted")}
-    />
+<div in:fly={{ y: 20, duration: 400, delay: 100 }}>
+  <div class="mt-2 mb-6 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+    <div>
+      <SectionHeader
+        title={activeSubTab === "stock" ? t("catalog.inventory.stock_title") : t("catalog.inventory.log_title")}
+        muted={activeSubTab === "stock" ? t("catalog.inventory.stock_muted") : t("catalog.inventory.log_muted")}
+      />
 
-    <!-- Sub-Tabs Navigation -->
-    <div class="no-scrollbar mt-4 flex items-center gap-2 overflow-x-auto pb-1">
-      <button
-        onclick={() => {
+      <!-- Sub-Tabs Navigation -->
+      <div class="no-scrollbar mt-4 flex items-center gap-2 overflow-x-auto pb-1">
+      <a
+        href={getTabUrl("stock")}
+        onclick={(e) => {
+          e.preventDefault();
           activeSubTab = "stock";
           const url = new URL(window.location.href);
           url.searchParams.set("subtab", "stock");
@@ -242,9 +278,11 @@
           /><path d="m3.3 7 8.7 5 8.7-5" /><path d="M12 22V12" /></svg
         >
         {t("catalog.inventory.stock_tab")}
-      </button>
-      <button
-        onclick={() => {
+      </a>
+      <a
+        href={getTabUrl("log")}
+        onclick={(e) => {
+          e.preventDefault();
           activeSubTab = "log";
           const url = new URL(window.location.href);
           url.searchParams.set("subtab", "log");
@@ -268,14 +306,19 @@
           stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg
         >
         {t("catalog.inventory.log_tab")}
-      </button>
+      </a>
     </div>
   </div>
+
   <div class="hidden lg:flex lg:items-center lg:gap-3">
     <div class="mr-2">
       <AdminHeaderFilters
         tab="inventory"
-        {categoryOptions}
+        q={localQ}
+        status={localStatus}
+        categoryId={localCategoryId}
+        categoryOptions={activeSubTab === "stock" ? categoryOptions : []}
+        {lang}
         columns={activeSubTab === "stock" ? stockColumns : logColumns}
       />
     </div>
@@ -330,7 +373,7 @@
         >
       </div>
       <span class="flex flex-col items-start leading-none">
-        <span class="text-[0.6rem] font-bold tracking-wider text-white/70 uppercase">{t("common.update")}</span>
+        <span class="text-[0.6rem] font-bold tracking-wider text-white/70 uppercase">{t("common.edit")}</span>
         <span class="text-[0.85rem] font-bold">{t("catalog.inventory.form_title")}</span>
       </span>
     </Button>
@@ -625,3 +668,4 @@
 {/if}
 
 <ToastNotification bind:this={toastRef} />
+</div>

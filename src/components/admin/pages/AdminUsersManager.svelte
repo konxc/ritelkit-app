@@ -12,8 +12,8 @@
   import Button from "../ui/Button.svelte";
   import TextInput from "../ui/forms/TextInput.svelte";
   import SelectInput from "../ui/forms/SelectInput.svelte";
-  import { t } from "../../../lib/i18n/store.svelte";
-  import { onMount } from "svelte";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
+  import { onMount, untrack } from "svelte";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
   import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
@@ -23,10 +23,16 @@
   let {
     rows: initialRows = [],
     q = "",
+    status = "",
+    lang,
   }: {
     rows?: AdminUser[];
     q?: string;
+    status?: string;
+    lang?: any;
   } = $props();
+
+  initI18n(untrack(() => lang));
 
   let columns = $state([
     { id: "email", label: t("system_admin.admin_users.email"), isVisible: true },
@@ -51,22 +57,34 @@
     rows = initialRows;
   });
 
+  let localQ = $state(untrack(() => q));
+  let localStatus = $state(untrack(() => status));
+
+  function syncFiltersFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    localQ = params.get("q") || "";
+  }
+
+  onMount(() => {
+    syncFiltersFromUrl();
+    window.addEventListener("popstate", syncFiltersFromUrl);
+    window.addEventListener("astro:after-navigation", syncFiltersFromUrl);
+    return () => {
+      window.removeEventListener("popstate", syncFiltersFromUrl);
+      window.removeEventListener("astro:after-navigation", syncFiltersFromUrl);
+    };
+  });
+
+  $effect(() => {
+    refreshData();
+  });
+
   const refreshData = async () => {
-    const { data, error } = await actions.listAdminUsers({ q });
+    const { data, error } = await actions.listAdminUsers({ q: localQ });
     if (!error && data) {
       rows = data as AdminUser[];
     }
   };
-
-  const syncFromUrl = () => {
-    const params = new URLSearchParams(window.location.search);
-    q = params.get("q") || "";
-  };
-
-  onMount(() => {
-    window.addEventListener("popstate", syncFromUrl);
-    return () => window.removeEventListener("popstate", syncFromUrl);
-  });
 
   const handleCreate = async (event: SubmitEvent) => {
     event.preventDefault();
@@ -142,7 +160,7 @@
       
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <div class="mr-2">
-          <AdminHeaderFilters tab="admins" {q} {columns} />
+          <AdminHeaderFilters tab="admins" q={localQ} {columns} {lang} />
         </div>
 
         <ColumnVisibilityToggle bind:columns />

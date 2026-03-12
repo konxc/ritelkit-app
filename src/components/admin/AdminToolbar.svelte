@@ -20,7 +20,8 @@
 
   onMount(() => {
     // Use a more predictable key
-    const storageKey = `catalog_toolbar_${title.toLowerCase().replace(/\s+/g, "_")}`;
+    const path = window.location.pathname.replace(/\//g, "_");
+    const storageKey = `toolbar_${path}_${title.toLowerCase().replace(/\s+/g, "_")}`;
     const saved = localStorage.getItem(storageKey);
 
     if (saved !== null) {
@@ -40,7 +41,8 @@
 
   function toggle() {
     isVisible = !isVisible;
-    const storageKey = `catalog_toolbar_${title.toLowerCase().replace(/\s+/g, "_")}`;
+    const path = window.location.pathname.replace(/\//g, "_");
+    const storageKey = `toolbar_${path}_${title.toLowerCase().replace(/\s+/g, "_")}`;
     localStorage.setItem(storageKey, String(isVisible));
   }
 </script>

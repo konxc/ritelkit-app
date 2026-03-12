@@ -34,6 +34,7 @@
     rows: initialRows = [],
     total: initialTotal = 0,
     q = "",
+    status = "",
     page = 1,
     limit = 20,
     lang,
@@ -41,6 +42,7 @@
     rows?: InvoiceRow[];
     total?: number;
     q?: string;
+    status?: string;
     page?: number;
     limit?: number;
     lang?: any;
@@ -48,12 +50,40 @@
 
   initI18n(untrack(() => lang));
 
-  const offset = $derived((page - 1) * limit);
+  let localQ = $state(untrack(() => q));
+  let localStatus = $state(untrack(() => status));
+  let localPage = $state(untrack(() => page));
+
+  function syncFiltersFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    localQ = params.get("q") || "";
+    localStatus = params.get("status") || "";
+    localPage = parseInt(params.get("page") || "1", 10);
+  }
+
+  onMount(() => {
+    syncFiltersFromUrl();
+    window.addEventListener("popstate", syncFiltersFromUrl);
+    window.addEventListener("astro:after-navigation", syncFiltersFromUrl);
+    return () => {
+      window.removeEventListener("popstate", syncFiltersFromUrl);
+      window.removeEventListener("astro:after-navigation", syncFiltersFromUrl);
+    };
+  });
 
   const invoicesQuery = createQuery(() => ({
-    queryKey: ["invoices.list", { q, limit, offset }],
-    queryFn: () => trpc.invoices.list.query({ q, limit, offset }),
-    initialData: initialRows.length > 0 ? { rows: initialRows, total: initialTotal } : undefined,
+    queryKey: ["invoices.list", { q: localQ, status: localStatus, limit, offset: (localPage - 1) * limit }],
+    queryFn: () =>
+      trpc.invoices.list.query({
+        q: localQ,
+        status: localStatus ? [localStatus] : undefined,
+        limit,
+        offset: (localPage - 1) * limit,
+      }),
+    initialData:
+      localQ === "" && localStatus === "" && localPage === 1
+        ? { rows: initialRows, total: initialTotal }
+        : undefined,
     refetchOnMount: false,
     staleTime: 1000 * 60 * 5,
   }));
@@ -177,7 +207,7 @@
     <SectionHeader title={t("invoices.title_list")} muted={t("invoices.badge_manual")} />
     <div class="hidden lg:flex lg:items-center lg:gap-3">
       <div class="mr-2">
-        <AdminHeaderFilters tab="invoice" {q} {columns} />
+        <AdminHeaderFilters tab="invoice" q={localQ} status={localStatus} {columns} {lang} />
       </div>
 
       <ColumnVisibilityToggle bind:columns />

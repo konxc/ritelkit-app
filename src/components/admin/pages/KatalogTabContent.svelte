@@ -9,14 +9,18 @@
 
   let {
     tab,
+    subtab = "stock",
     q = "",
+    status = "",
     page = 1,
     limit = 20,
     initialData = {},
     lang,
   }: {
     tab: string;
+    subtab?: string;
     q?: string;
+    status?: string;
     page?: number;
     limit?: number;
     initialData?: {
@@ -38,12 +42,25 @@
 
 <QueryProvider {initialData}>
   {#if tab === "categories"}
-    <CategoriesManager rows={initialData.categories} total={initialData.categoriesTotal} />
+    <CategoriesManager
+      rows={initialData.categories}
+      total={initialData.categoriesTotal}
+      {q}
+      {status}
+      {page}
+      {limit}
+      {lang}
+    />
   {:else if tab === "products"}
     <ProductsManager
       rows={initialData.products}
       total={initialData.productsTotal}
-      categories={initialData.categories}
+      categoryOptions={initialData.categories}
+      {q}
+      {status}
+      {page}
+      {limit}
+      {lang}
     />
   {:else if tab === "inventory"}
     <InventoryManager
@@ -51,7 +68,13 @@
       productsTotal={initialData.inventoryProductsTotal}
       movements={initialData.inventoryMovements}
       movementsTotal={initialData.inventoryMovementsTotal}
-      categories={initialData.categories}
+      categoryOptions={initialData.categories}
+      {subtab}
+      {q}
+      {status}
+      {page}
+      {limit}
+      {lang}
     />
   {/if}
 </QueryProvider>

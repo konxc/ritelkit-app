@@ -10,6 +10,7 @@
   let {
     tab,
     q = "",
+    status = "",
     page = 1,
     limit = 30,
     rows = [],
@@ -17,6 +18,7 @@
   }: {
     tab: string;
     q?: string;
+    status?: string;
     page?: number;
     limit?: number;
     rows?: any[];
@@ -29,12 +31,12 @@
 
 <QueryProvider initialData={rows}>
   {#if tab === "content"}
-    <CmsManager {q} {page} {limit} {rows} {lang} />
+    <CmsManager {q} {status} {page} {limit} {rows} {lang} />
   {:else if tab === "notifications"}
-    <NotificationsManager {q} {page} {limit} {rows} {lang} />
+    <NotificationsManager {q} {status} {page} {limit} {rows} {lang} />
   {:else if tab === "audit"}
-    <AuditLogManager {q} {page} {limit} {rows} {lang} />
+    <AuditLogManager {q} {status} {page} {limit} {rows} {lang} />
   {:else if tab === "admins"}
-    <AdminUsersManager {rows} {q} {lang} />
+    <AdminUsersManager {rows} {q} {status} {lang} />
   {/if}
 </QueryProvider>
