@@ -2,12 +2,58 @@ import { z } from "zod";
 import { router, adminProcedure } from "../trpc";
 import { adsCampaigns } from "../../db/schema";
 import { AdsCampaignSchema } from "../../lib/types";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, or, like, and, sql } from "drizzle-orm";
 
 export const adsRouter = router({
-  list: adminProcedure.query(async ({ ctx }) => {
-    return ctx.db.select().from(adsCampaigns).orderBy(desc(adsCampaigns.createdAt)).all();
-  }),
+  list: adminProcedure
+    .input(
+      z
+        .object({
+          q: z.string().optional(),
+          status: z.string().optional(),
+          offset: z.number().optional().default(0),
+          limit: z.number().optional().default(20),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      const { q, status, offset = 0, limit = 20 } = input || {};
+
+      let whereClause: any;
+      const conditions = [];
+
+      if (q) {
+        conditions.push(or(like(adsCampaigns.name, `%${q}%`), like(adsCampaigns.channel, `%${q}%`)));
+      }
+
+      if (status) {
+        conditions.push(eq(adsCampaigns.status, status as any));
+      }
+
+      if (conditions.length > 0) {
+        whereClause = and(...conditions);
+      }
+
+      const data = await ctx.db
+        .select()
+        .from(adsCampaigns)
+        .where(whereClause)
+        .orderBy(desc(adsCampaigns.createdAt))
+        .limit(limit)
+        .offset(offset)
+        .all();
+
+      const totalRes = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(adsCampaigns)
+        .where(whereClause)
+        .get();
+
+      return {
+        data,
+        total: totalRes?.count || 0,
+      };
+    }),
 
   create: adminProcedure
     .input(AdsCampaignSchema.omit({ id: true, createdAt: true, updatedAt: true }))

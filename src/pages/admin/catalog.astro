@@ -9,7 +9,7 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 import { normalizeTab, parsePage } from "../../lib/admin";
 import { requireAdmin } from "../../lib/auth";
 import { getDrizzle, initDb } from "../../lib/db";
-import CatalogHeaderFilters from "../../components/admin/CatalogHeaderFilters.svelte";
+import AdminHeaderFilters from "../../components/admin/AdminHeaderFilters.svelte";
 import { appRouter } from "../../server/router";
 
 await initDb(Astro);
@@ -150,7 +150,7 @@ const lang: LanguageCode = getLang(Astro.cookies);
           showMobileFloat={true}
           client:load
         >
-          <CatalogHeaderFilters tab="categories" q={q} lang={lang} client:load />
+          <AdminHeaderFilters tab="categories" q={q} lang={lang} client:load />
         </AdminToolbar>
       </>
     )
@@ -165,7 +165,7 @@ const lang: LanguageCode = getLang(Astro.cookies);
           showMobileFloat={true}
           client:load
         >
-          <CatalogHeaderFilters
+          <AdminHeaderFilters
             tab="products"
             q={q}
             categoryId={categoryId || ""}
@@ -188,7 +188,7 @@ const lang: LanguageCode = getLang(Astro.cookies);
           showMobileFloat={true}
           client:load
         >
-          <CatalogHeaderFilters
+          <AdminHeaderFilters
             tab="inventory"
             q={q}
             categoryId={categoryId || ""}

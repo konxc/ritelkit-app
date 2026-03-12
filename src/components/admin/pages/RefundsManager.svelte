@@ -18,7 +18,7 @@
   import TextInput from "../ui/forms/TextInput.svelte";
   import SelectInput from "../ui/forms/SelectInput.svelte";
   import Badge from "../ui/Badge.svelte";
-  import OrdersHeaderFilters from "../OrdersHeaderFilters.svelte";
+  import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
   import { fade, fly } from "svelte/transition";
 
@@ -250,7 +250,7 @@
     <SectionHeader title={t("refunds.title_list")} muted={t("refunds.badge_manual")} />
     <div class="hidden lg:flex lg:items-center lg:gap-3">
       <div class="mr-2">
-        <OrdersHeaderFilters tab="refund" {q} {columns} />
+        <AdminHeaderFilters tab="refund" {q} {columns} />
       </div>
 
       <ColumnVisibilityToggle bind:columns />
@@ -442,4 +442,5 @@
   </Table>
 
   <ToastNotification bind:this={toastRef} />
+</div>
 </div>

@@ -17,7 +17,7 @@
   import InlineEditableField from "../ui/forms/InlineEditableField.svelte";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
   import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
-  import OrdersHeaderFilters from "../OrdersHeaderFilters.svelte";
+  import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import { t, initI18n } from "../../../lib/i18n/store.svelte";
   import { onMount, untrack } from "svelte";
   import { fade, fly } from "svelte/transition";
@@ -65,9 +65,9 @@
   }));
 
   let currentRules = $derived.by(() => {
-    const raw = (rulesQuery.data as RuleRow[]) || initialRows;
+    const raw = (rulesQuery.data as RuleRow[]) || initialRows || [];
     if (!q) return raw;
-    return raw.filter((r) => r.name.toLowerCase().includes(q.toLowerCase()));
+    return raw.filter((r) => r?.name?.toLowerCase().includes(q.toLowerCase()));
   });
 
   // Reactive state for the create form
@@ -353,18 +353,59 @@
 {/snippet}
 
 <div class="h-full w-full">
-  <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
-    <SectionHeader title={t("shipping_rules.title_list")} muted={t("shipping_rules.subtitle_list")} />
-    <div class="hidden lg:flex lg:items-center lg:gap-3">
-      <div class="mr-2">
-        <OrdersHeaderFilters tab="shipping" bind:q {columns} />
+  <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
+    <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <SectionHeader title={t("shipping_rules.title_list")} muted={t("shipping_rules.subtitle_list")} />
+      <div class="hidden lg:flex lg:items-center lg:gap-3">
+        <div class="mr-2">
+          <AdminHeaderFilters tab="shipping" bind:q {columns} />
+        </div>
+
+        <ColumnVisibilityToggle bind:columns />
+
+        <div class="h-10 w-px bg-stone-200/80"></div>
+
+        <Button variant="simple" onclick={() => (isSimulateDrawerOpen = true)} class="group flex items-center gap-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            ><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z" /><path d="m15 3 6 6" /><path d="M15 3v6h6" /><rect x="7" y="11" width="10" height="6" rx="1" /><path d="M10 14h4" /></svg
+          >
+          {t("shipping_rules.simulation_title")}
+        </Button>
+        <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
+          <div class="flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg
+            >
+            {t("shipping_rules.add_rule")}
+          </div>
+        </Button>
       </div>
+    </div>
 
-      <ColumnVisibilityToggle bind:columns />
-
-      <div class="h-10 w-px bg-stone-200/80"></div>
-
-      <Button variant="simple" onclick={() => (isSimulateDrawerOpen = true)} class="group flex items-center gap-2">
+    <!-- Mobile Actions Area -->
+    <div class="mb-6 flex flex-col gap-3 lg:hidden">
+      <Button
+        variant="simple"
+        onclick={() => (isSimulateDrawerOpen = true)}
+        class="flex h-12 w-full items-center justify-center gap-3 rounded-2xl bg-white text-stone-600 shadow-sm"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="18"
@@ -379,49 +420,9 @@
         >
         {t("shipping_rules.simulation_title")}
       </Button>
-      <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
-        <div class="flex items-center gap-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg
-          >
-          {t("shipping_rules.add_rule")}
-        </div>
-      </Button>
     </div>
-  </div>
 
-  <!-- Mobile Actions Area -->
-  <div class="mb-6 flex flex-col gap-3 lg:hidden">
-    <Button
-      variant="simple"
-      onclick={() => (isSimulateDrawerOpen = true)}
-      class="flex h-12 w-full items-center justify-center gap-3 rounded-2xl bg-white text-stone-600 shadow-sm"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        ><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z" /><path d="m15 3 6 6" /><path d="M15 3v6h6" /><rect x="7" y="11" width="10" height="6" rx="1" /><path d="M10 14h4" /></svg
-      >
-      {t("shipping_rules.simulation_title")}
-    </Button>
-  </div>
-
-  <Fab onclick={() => (isDrawerOpen = true)} label={t("shipping_rules.add_rule")} />
+    <Fab onclick={() => (isDrawerOpen = true)} label={t("shipping_rules.add_rule")} />
 
   <Drawer
     bind:isOpen={isDrawerOpen}
@@ -688,7 +689,6 @@
     </div>
   </Drawer>
 
-  <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
     <Table headers={activeHeaders}>
       {#if currentRules.length === 0}
         <TableEmptyState
@@ -765,7 +765,7 @@
         </TableRow>
       {/each}
     </Table>
-  </div>
-
+  
   <ToastNotification bind:this={toastRef} />
+  </div>
 </div>

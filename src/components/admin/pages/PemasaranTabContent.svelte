@@ -28,10 +28,10 @@
 
 <QueryProvider {initialData}>
   {#if tab === "customers"}
-    <CustomersManager {q} {page} {limit} initialRows={initialData?.rows} total={initialData?.total} />
+    <CustomersManager {q} {page} {limit} initialRows={initialData?.rows || initialData?.data} total={initialData?.total} />
   {:else if tab === "coupons"}
-    <CouponsManager rows={initialData} />
+    <CouponsManager rows={initialData?.data} total={initialData?.total} {q} {page} {limit} {lang} />
   {:else if tab === "ads"}
-    <AdsManager rows={initialData} />
+    <AdsManager rows={initialData?.data} total={initialData?.total} {q} {page} {limit} {lang} />
   {/if}
 </QueryProvider>

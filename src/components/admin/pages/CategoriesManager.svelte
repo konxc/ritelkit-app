@@ -14,7 +14,7 @@
   import TableEmptyState from "../ui/TableEmptyState.svelte";
   import InlineEditableField from "../ui/forms/InlineEditableField.svelte";
   import Button from "../ui/Button.svelte";
-  import CatalogHeaderFilters from "../CatalogHeaderFilters.svelte";
+  import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import Fab from "../ui/Fab.svelte";
   import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
   import TextInput from "../ui/forms/TextInput.svelte";
@@ -174,7 +174,7 @@
   <SectionHeader title={t("catalog.categories.title")} muted={t("catalog.categories.subtitle")} />
   <div class="hidden lg:flex lg:items-center lg:gap-3">
     <div class="mr-2">
-      <CatalogHeaderFilters tab="categories" {columns} />
+      <AdminHeaderFilters tab="categories" {columns} />
     </div>
     <ColumnVisibilityToggle bind:columns />
     <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">

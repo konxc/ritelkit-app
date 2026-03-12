@@ -20,7 +20,7 @@
   import Button from "../ui/Button.svelte";
   import TextInput from "../ui/forms/TextInput.svelte";
   import SelectInput from "../ui/forms/SelectInput.svelte";
-  import CatalogHeaderFilters from "../CatalogHeaderFilters.svelte";
+  import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
   import Textarea from "../ui/forms/Textarea.svelte";
 
@@ -61,11 +61,11 @@
   let {
     rows: initialRows = [],
     total: initialTotal = 0,
-    categories = [],
+    categoryOptions = [],
   }: {
     rows?: ProductRow[];
     total?: number;
-    categories?: CategoryOption[];
+    categoryOptions?: CategoryOption[];
   } = $props();
 
   const queryClient = useQueryClient();
@@ -269,7 +269,7 @@
   <SectionHeader title={t("catalog.products.title")} muted={t("catalog.products.subtitle")} />
   <div class="hidden lg:flex lg:items-center lg:gap-3">
     <div class="mr-2">
-      <CatalogHeaderFilters tab="products" categoryOptions={currentCategories} {columns} />
+      <AdminHeaderFilters tab="products" {categoryOptions} {columns} />
     </div>
 
     <ColumnVisibilityToggle bind:columns />
@@ -433,7 +433,7 @@
                 id="category_id"
                 name="categoryId"
                 label={t("catalog.products.category")}
-                options={currentCategories.map((c) => ({
+                options={categoryOptions.map((c) => ({
                   label: c.name,
                   value: c.id,
                 }))}
@@ -626,7 +626,7 @@
             <!-- Mobile Category Badge -->
             <div class="mt-0.5 lg:hidden">
               <span class="text-[0.65rem] font-bold tracking-wide text-[#c48a3a] uppercase">
-                {categories.find((c) => String(c.id) === String(row.categoryId))?.name ||
+                {categoryOptions.find((c) => String(c.id) === String(row.categoryId))?.name ||
                   t("catalog.products.no_category")}
               </span>
             </div>
@@ -640,7 +640,7 @@
             class="w-[140px] cursor-pointer truncate rounded-xl border border-stone-200/50 bg-stone-100/60 px-3 py-2 text-sm font-semibold text-stone-700 shadow-sm transition-all outline-none hover:bg-white focus:border-[#c48a3a] focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
           >
             <option value="">{t("catalog.products.no_category")}</option>
-            {#each categories as cat}
+            {#each categoryOptions as cat}
               <option value={cat.id} selected={cat.id === row.categoryId}>
                 {cat.name}
               </option>

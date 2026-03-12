@@ -20,7 +20,7 @@
   import Fab from "../ui/Fab.svelte";
   import Badge from "../ui/Badge.svelte";
   import Drawer from "../ui/overlay/Drawer.svelte";
-  import CatalogHeaderFilters from "../CatalogHeaderFilters.svelte";
+  import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
 
   let stockColumns = $state([
@@ -77,13 +77,13 @@
     productsTotal: initialProductsTotal = 0,
     movements: initialMovements = [],
     movementsTotal: initialMovementsTotal = 0,
-    categories = [],
+    categoryOptions = [],
   }: {
     products?: InventoryProductRow[];
     productsTotal?: number;
     movements?: InventoryMovement[];
     movementsTotal?: number;
-    categories?: { id: string | number; name: string }[];
+    categoryOptions?: { id: string | number; name: string }[];
   } = $props();
 
   const queryClient = useQueryClient();
@@ -273,9 +273,9 @@
   </div>
   <div class="hidden lg:flex lg:items-center lg:gap-3">
     <div class="mr-2">
-      <CatalogHeaderFilters
+      <AdminHeaderFilters
         tab="inventory"
-        categoryOptions={categories}
+        {categoryOptions}
         columns={activeSubTab === "stock" ? stockColumns : logColumns}
       />
     </div>

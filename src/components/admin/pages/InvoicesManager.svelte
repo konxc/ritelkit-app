@@ -17,7 +17,7 @@
   import { onMount, untrack } from "svelte";
   import { fade, fly } from "svelte/transition";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
-  import OrdersHeaderFilters from "../OrdersHeaderFilters.svelte";
+  import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
 
   export type InvoiceRow = {
@@ -177,7 +177,7 @@
     <SectionHeader title={t("invoices.title_list")} muted={t("invoices.badge_manual")} />
     <div class="hidden lg:flex lg:items-center lg:gap-3">
       <div class="mr-2">
-        <OrdersHeaderFilters tab="invoice" {q} {columns} />
+        <AdminHeaderFilters tab="invoice" {q} {columns} />
       </div>
 
       <ColumnVisibilityToggle bind:columns />
@@ -285,6 +285,7 @@
             <a
               href={`/admin/orders/${row.orderNo}`}
               class="flex h-8 w-8 items-center justify-center rounded-lg border border-stone-200 text-stone-400 transition-all hover:border-[#c48a3a] hover:text-[#c48a3a]"
+              aria-label={t("orders.view_detail")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -308,5 +309,6 @@
   </Table>
 
   <ToastNotification bind:this={toastRef} />
+</div>
 </div>
 

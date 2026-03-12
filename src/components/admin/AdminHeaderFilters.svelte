@@ -9,15 +9,19 @@
   let {
     q = "",
     status = "",
+    categoryId = "",
     tab = "ads",
     lang,
     columns = [],
+    categoryOptions = [],
   }: {
     q?: string;
     status?: string;
+    categoryId?: string;
     tab?: string;
     lang?: any;
     columns?: { id: string; label: string; isVisible: boolean }[];
+    categoryOptions?: { id: string | number; name: string }[];
   } = $props();
 
   // Root call for SSR and initial hydration (untracked for Svelte 5)
@@ -26,11 +30,13 @@
   let showAdvanced = $state(false);
   let localQ = $state("");
   let localStatus = $state("");
+  let localCategoryId = $state("");
 
   function syncFromUrl() {
     const params = new URLSearchParams(window.location.search);
     localQ = params.get("q") || "";
     localStatus = params.get("status") || "";
+    localCategoryId = params.get("category") || "";
   }
 
   onMount(() => {
@@ -67,10 +73,80 @@
         { label: t("coupons.inactive"), value: "inactive" },
       ];
     }
+    if (tab === "products") {
+       return [
+        ...base,
+        { label: t("common.active"), value: "active" },
+        { label: t("common.inactive"), value: "inactive" },
+      ];
+    }
+    if (tab === "order") {
+      return [
+        ...base,
+        { label: t("status.pending"), value: "pending" },
+        { label: t("status.processing"), value: "processing" },
+        { label: t("status.shipped"), value: "shipped" },
+        { label: t("status.delivered"), value: "delivered" },
+        { label: t("status.cancelled"), value: "cancelled" },
+        { label: t("status.refunded"), value: "refunded" },
+      ];
+    }
+    if (tab === "fulfillment") {
+      return [
+        ...base,
+        { label: t("status.packing"), value: "packing" },
+        { label: t("status.shipped"), value: "shipped" },
+        { label: t("status.delivered"), value: "delivered" },
+        { label: t("status.cancelled"), value: "cancelled" },
+      ];
+    }
+    if (tab === "invoice") {
+      return [
+        ...base,
+        { label: t("status.pending"), value: "pending" },
+        { label: t("status.paid"), value: "paid" },
+        { label: t("status.void"), value: "void" },
+      ];
+    }
+    if (tab === "refund") {
+      return [
+        ...base,
+        { label: t("status.pending"), value: "pending" },
+        { label: t("status.processing"), value: "processing" },
+        { label: t("status.completed"), value: "completed" },
+        { label: t("status.failed"), value: "failed" },
+      ];
+    }
+    if (tab === "shipping") {
+      return [
+        ...base,
+        { label: t("common.active"), value: "active" },
+        { label: t("common.inactive"), value: "inactive" },
+      ];
+    }
+    if (tab === "notifications") {
+      return [
+        ...base,
+        { label: t("status.pending"), value: "pending" },
+        { label: t("status.sent"), value: "sent" },
+        { label: t("status.failed"), value: "failed" },
+      ];
+    }
+    if (tab === "content") {
+      return [
+        ...base,
+        { label: t("common.active"), value: "active" },
+        { label: t("common.inactive"), value: "inactive" },
+      ];
+    }
     return base;
   };
 
   let statusOptions = $derived(getStatusOptions(tab || "ads"));
+  let catOptions = $derived([
+    { label: t("common.all_categories"), value: "" },
+    ...categoryOptions.map((c) => ({ label: c?.name || "", value: String(c?.id || "") })),
+  ]);
 
   let isUpdating = $state(false);
 
@@ -83,6 +159,9 @@
 
     if (localStatus) url.searchParams.set("status", localStatus);
     else url.searchParams.delete("status");
+
+    if (localCategoryId) url.searchParams.set("category", localCategoryId);
+    else url.searchParams.delete("category");
 
     // Reset to page 1 on filter change
     url.searchParams.set("page", "1");
@@ -116,6 +195,11 @@
     admins: t("system.admins"),
     audit: t("system.audit"),
     content: t("system.content"),
+    products: t("nav.catalog"),
+    inventory: t("catalog.inventory.stock_tab"),
+    fulfillment: t("fulfillment.title_list"),
+    refund: t("refunds.title_list"),
+    shipping: t("shipping_rules.title_list"),
   } as Record<string, string>);
   let tabLabel = $derived(tabLabels[tab || "ads"] || tab || "");
 
@@ -156,7 +240,19 @@
 
   <!-- Desktop Filters Panel -->
   <div class="hidden items-center gap-3 lg:flex">
-    {#if ["ads", "coupons"].includes(tab || "ads")}
+    {#if categoryOptions.length > 0}
+      <div class="w-44">
+        <SelectInput
+          name="category"
+          bind:value={localCategoryId}
+          onchange={onFilterChange}
+          options={catOptions}
+          class="bg-stone-50/50 hover:bg-white"
+        />
+      </div>
+    {/if}
+
+    {#if ["ads", "coupons", "products", "order", "fulfillment", "invoice", "refund", "shipping", "notifications", "content"].includes(tab || "ads")}
       <div class="w-44">
         <SelectInput
           name="status"
@@ -196,7 +292,16 @@
     }}
   >
     <div class="grid gap-6 py-4">
-      {#if ["ads", "coupons"].includes(tab || "ads")}
+       {#if categoryOptions.length > 0}
+        <div class="space-y-4">
+           <label for="category-select" class="text-[0.7rem] font-extrabold tracking-widest text-stone-400 uppercase"
+            >{t("catalog.products.category")}</label
+          >
+          <SelectInput name="category" bind:value={localCategoryId} options={catOptions} />
+        </div>
+      {/if}
+
+      {#if ["ads", "coupons", "products", "order", "fulfillment", "invoice", "refund", "shipping", "notifications", "content"].includes(tab || "ads")}
         <div class="space-y-4">
           <label for="status-select" class="text-[0.7rem] font-extrabold tracking-widest text-stone-400 uppercase"
             >{t("common.status")}</label

@@ -29,7 +29,7 @@
   import Button from "../ui/Button.svelte";
   import TextInput from "../ui/forms/TextInput.svelte";
   import SelectInput from "../ui/forms/SelectInput.svelte";
-  import OrdersHeaderFilters from "../OrdersHeaderFilters.svelte";
+  import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
 
   let {
@@ -240,7 +240,7 @@
     <SectionHeader title={t("fulfillment.title_list")} muted={t("fulfillment.badge_tracking")} />
     <div class="hidden lg:flex lg:items-center lg:gap-3">
       <div class="mr-2">
-        <OrdersHeaderFilters tab="fulfillment" {q} {status} {columns} />
+        <AdminHeaderFilters tab="fulfillment" {q} {status} {columns} />
       </div>
 
       <ColumnVisibilityToggle bind:columns />
@@ -461,5 +461,6 @@
   </Table>
 
   <ToastNotification bind:this={toastRef} />
+</div>
 </div>
 

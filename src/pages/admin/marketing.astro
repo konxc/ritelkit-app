@@ -54,14 +54,16 @@ if (tab === "customers") {
     totalPages = Math.max(1, Math.ceil(result.data.total / limit));
   }
 } else if (tab === "coupons") {
-  const data = await trpc.coupons.list();
-  if (data) {
-    initialData = data;
+  const result = await trpc.coupons.list({ q, limit, offset });
+  if (result) {
+    initialData = result;
+    totalPages = Math.max(1, Math.ceil(result.total / limit));
   }
 } else if (tab === "ads") {
-  const data = await trpc.ads.list();
-  if (data) {
-    initialData = data;
+  const result = await trpc.ads.list({ q, limit, offset });
+  if (result) {
+    initialData = result;
+    totalPages = Math.max(1, Math.ceil(result.total / limit));
   }
 }
 
@@ -83,6 +85,8 @@ const tabs = [
   },
 ];
 import { getLang, type LanguageCode, tServer } from "../../lib/i18n/server";
+import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
+import AdminHeaderFilters from "../../components/admin/AdminHeaderFilters.svelte";
 const lang: LanguageCode = getLang(Astro.cookies);
 ---
 
@@ -91,16 +95,22 @@ const lang: LanguageCode = getLang(Astro.cookies);
     <AdminTabs tabs={tabs} activeTab={tab} {lang} />
   </div>
 
+  <AdminToolbar
+    title={tServer(lang, "common.filter")}
+    class="sticky top-0 z-20 sm:top-2 md:top-4 lg:hidden"
+    showMobileFloat={true}
+    client:load
+  >
+    <AdminHeaderFilters tab={tab} q={q} lang={lang} client:load />
+  </AdminToolbar>
+
   <PemasaranTabContent {tab} {q} {page} {limit} {initialData} {lang} client:load />
 
-  {
-    tab === "customers" && (
-      <PaginationNav
-        page={page}
-        totalPages={totalPages}
-        prevHref={page > 1 ? `?tab=customers&q=${encodeURIComponent(q)}&page=${page - 1}` : undefined}
-        nextHref={page < totalPages ? `?tab=customers&q=${encodeURIComponent(q)}&page=${page + 1}` : undefined}
-      />
-    )
-  }
+  <PaginationNav
+    page={page}
+    totalPages={totalPages}
+    prevHref={page > 1 ? `?tab=${tab}&q=${encodeURIComponent(q)}&page=${page - 1}` : undefined}
+    nextHref={page < totalPages ? `?tab=${tab}&q=${encodeURIComponent(q)}&page=${page + 1}` : undefined}
+    client:load
+  />
 </AdminLayout>

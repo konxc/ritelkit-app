@@ -2,13 +2,59 @@ import { z } from "zod";
 import { router, adminProcedure } from "../trpc";
 import { coupons } from "../../db/schema";
 import { CouponSchema } from "../../lib/types";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, like, and, sql } from "drizzle-orm";
 import { logAudit } from "../../lib/admin";
 
 export const couponRouter = router({
-  list: adminProcedure.query(async ({ ctx }) => {
-    return ctx.db.select().from(coupons).orderBy(desc(coupons.createdAt)).all();
-  }),
+  list: adminProcedure
+    .input(
+      z
+        .object({
+          q: z.string().optional(),
+          status: z.string().optional(),
+          offset: z.number().optional().default(0),
+          limit: z.number().optional().default(20),
+        })
+        .optional(),
+    )
+    .query(async ({ ctx, input }) => {
+      const { q, status, offset = 0, limit = 20 } = input || {};
+
+      let whereClause: any;
+      const conditions = [];
+
+      if (q) {
+        conditions.push(like(coupons.code, `%${q}%`));
+      }
+
+      if (status) {
+        conditions.push(eq(coupons.isActive, status === "active" ? 1 : 0));
+      }
+
+      if (conditions.length > 0) {
+        whereClause = and(...conditions);
+      }
+
+      const data = await ctx.db
+        .select()
+        .from(coupons)
+        .where(whereClause)
+        .orderBy(desc(coupons.createdAt))
+        .limit(limit)
+        .offset(offset)
+        .all();
+
+      const totalRes = await ctx.db
+        .select({ count: sql<number>`count(*)` })
+        .from(coupons)
+        .where(whereClause)
+        .get();
+
+      return {
+        data,
+        total: totalRes?.count || 0,
+      };
+    }),
 
   create: adminProcedure
     .input(CouponSchema.omit({ id: true, createdAt: true, updatedAt: true }))

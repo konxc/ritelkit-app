@@ -229,7 +229,7 @@
       <SectionHeader title={t("coupons.title_list")} muted={t("coupons.muted_list")} />
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <div class="mr-2">
-          <MarketingHeaderFilters tab="coupons" {q} {status} {columns} />
+          <AdminHeaderFilters tab="coupons" {q} {status} {columns} />
         </div>
 
         <ColumnVisibilityToggle bind:columns />

@@ -127,7 +127,7 @@ const tabs = [
 ];
 import { getLang, tServer } from "../../lib/i18n/server";
 import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
-import OrdersHeaderFilters from "../../components/admin/OrdersHeaderFilters.svelte";
+import AdminHeaderFilters from "../../components/admin/AdminHeaderFilters.svelte";
 const lang = getLang(Astro.cookies);
 ---
 
@@ -142,7 +142,7 @@ const lang = getLang(Astro.cookies);
     showMobileFloat={true}
     client:load
   >
-    <OrdersHeaderFilters tab={tab} q={q} status={statusFilter || ""} lang={lang} client:load />
+    <AdminHeaderFilters tab={tab} q={q} status={statusFilter || ""} lang={lang} client:load />
   </AdminToolbar>
 
   <PesananTabContent {tab} {q} status={statusFilter || ""} {page} {limit} {initialData} {lang} client:load />

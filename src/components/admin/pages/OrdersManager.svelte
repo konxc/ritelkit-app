@@ -17,7 +17,7 @@
   import Button from "../ui/Button.svelte";
   import TextInput from "../ui/forms/TextInput.svelte";
   import SelectInput from "../ui/forms/SelectInput.svelte";
-  import OrdersHeaderFilters from "../OrdersHeaderFilters.svelte";
+  import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
 
@@ -228,7 +228,7 @@
       <SectionHeader title={t("orders.title_list")} muted={t("orders.subtitle_list")} />
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <div class="mr-2">
-          <OrdersHeaderFilters tab="order" {q} {status} {columns} />
+          <AdminHeaderFilters tab="order" {q} {status} {columns} />
         </div>
 
         <ColumnVisibilityToggle bind:columns />
