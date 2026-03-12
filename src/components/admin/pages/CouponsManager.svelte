@@ -19,7 +19,6 @@
   import InlineEditableField from "../ui/forms/InlineEditableField.svelte";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
-  import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
   import { trpc } from "../../../lib/trpc";
   import { fade, fly } from "svelte/transition";
   import { createQuery, createMutation, useQueryClient } from "@tanstack/svelte-query";
@@ -58,7 +57,7 @@
     { id: "max_discount", label: t("coupons.max_discount"), isVisible: false, class: "text-stone-500 tabular-nums" },
     { id: "start_date", label: t("coupons.start_date"), isVisible: false, class: "font-mono text-stone-400" },
     { id: "end_date", label: t("coupons.end_date"), isVisible: true, class: "font-mono text-stone-400" },
-    { id: "limit", label: t("common.limit"), isVisible: true, class: "font-medium text-stone-700 tabular-nums" },
+    { id: "limit", label: t("coupons.total_quota"), isVisible: true, class: "font-medium text-stone-700 tabular-nums" },
     { id: "status", label: t("coupons.status"), isVisible: true, class: "" },
   ]);
 
@@ -248,15 +247,9 @@
 <div class="h-full w-full text-xs">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
     <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <SectionHeader title={t("coupons.title_list")} muted={t("coupons.muted_list")} />
+      <SectionHeader title={t("coupons.title_list")} muted={t("coupons.badge_promo")} />
       <div class="hidden lg:flex lg:items-center lg:gap-3">
-        <div class="mr-2">
-          <AdminHeaderFilters tab="coupons" q={localQ} status={localStatus} {columns} {lang} />
-        </div>
-
-        <ColumnVisibilityToggle bind:columns />
-
-        <div class="h-10 w-px bg-stone-200/80"></div>
+        <AdminHeaderFilters tab="coupons" q={localQ} status={localStatus} bind:columns {lang} />
 
         <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
           <div class="flex items-center gap-2">
@@ -273,7 +266,7 @@
     <Drawer
       bind:isOpen={isDrawerOpen}
       title={t("coupons.title_add")}
-      subtitle={t("coupons.muted_add")}
+      subtitle={t("coupons.badge_promo")}
       icon={couponIcon}
       footer={drawerFooter}
       maxWidth="lg"
@@ -321,7 +314,7 @@
 
             <div class="space-y-6">
               <h4 class="border-b border-[#c48a3a]/20 pb-2 text-xs font-bold tracking-widest text-[#c48a3a] uppercase">
-                {t("coupons.limitations") || "Batasan & Kuota"}
+                {t("coupons.limitations")}
               </h4>
               <div class="grid grid-cols-2 gap-4">
                 <div class="space-y-1.5 text-left">
@@ -395,7 +388,7 @@
                 <div>
                   <h4 class="text-[0.75rem] font-black tracking-wider uppercase">{t("catalog.categories.tips_title")}</h4>
                   <p class="mt-1 text-[0.8rem] leading-relaxed font-medium">
-                    {t("coupons.tips_coupon_create") || "Gunakan kode yang mudah diingat dan tentukan batasan kuota untuk mencegah kerugian berlebih."}
+                    {t("coupons.tips_coupon_create")}
                   </p>
                 </div>
               </div>
@@ -408,8 +401,8 @@
     <Table headers={activeHeaders}>
       {#if rows.length === 0}
         <TableEmptyState
-          title={t("coupons.empty_title") || t("coupons.empty")}
-          subtitle={t("coupons.empty_description") || ""}
+          title={t("coupons.empty")}
+          subtitle={t("coupons.empty_description")}
           colspan={activeHeaders.length}
         />
       {/if}
@@ -502,7 +495,7 @@
              <InlineEditableField
               value={row.usageLimit ?? t("coupons.unlimited")}
               field="usage_limit"
-              ariaLabel={t("common.limit")}
+              ariaLabel={t("coupons.total_quota")}
               class="font-medium text-stone-700 tabular-nums"
             />
           </TableCell>

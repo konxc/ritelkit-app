@@ -1,6 +1,6 @@
 <script lang="ts">
   interface Props {
-    value?: string | number;
+    value?: string | number | null;
     label?: string;
     type?: "text" | "email" | "password" | "number" | "tel" | "time" | "url" | string;
     placeholder?: string;

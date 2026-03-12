@@ -3,6 +3,7 @@
   import SelectInput from "./ui/forms/SelectInput.svelte";
   import Button from "./ui/Button.svelte";
   import AdminFilterDrawer from "./ui/forms/AdminFilterDrawer.svelte";
+  import ColumnVisibilityToggle from "./ui/ColumnVisibilityToggle.svelte";
   import { onMount, untrack } from "svelte";
   import { t, initI18n } from "../../lib/i18n/store.svelte";
 
@@ -12,7 +13,7 @@
     categoryId = "",
     tab = "ads",
     lang,
-    columns = [],
+    columns = $bindable([]),
     categoryOptions = [],
   }: {
     q?: string;
@@ -217,10 +218,10 @@
   }
 </script>
 
-<div class="flex w-full flex-col gap-4 lg:flex-row lg:items-center">
+<div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-3">
   <!-- Main Search Area -->
-  <div class="flex items-center gap-2 lg:flex-1">
-    <div class="group relative flex-1">
+  <div class="flex items-center gap-2">
+    <div class="group relative lg:w-64">
       <SearchInput name="q" value={localQ} oninput={onSearchInput} placeholder={t("common.search")} autocomplete="one-time-code" />
     </div>
     <div class="lg:hidden">
@@ -245,6 +246,8 @@
 
   <!-- Desktop Filters Panel -->
   <div class="hidden items-center gap-3 lg:flex">
+    <div class="h-8 w-px bg-stone-200/60 mr-1"></div>
+
     {#if categoryOptions.length > 0 && localSubtab !== "log"}
       <div class="w-44">
         <SelectInput
@@ -257,7 +260,7 @@
       </div>
     {/if}
 
-    {#if ["ads", "coupons", "products", "order", "fulfillment", "invoice", "refund", "shipping", "notifications", "content"].includes(tab || "ads")}
+    {#if ["ads", "coupons", "products", "order", "fulfillment", "invoice", "refund", "shipping", "notifications", "content", "categories"].includes(tab || "ads")}
       <div class="w-44">
         <SelectInput
           name="status"
@@ -267,6 +270,10 @@
           class="bg-stone-50/50 hover:bg-white"
         />
       </div>
+    {/if}
+
+    {#if columns?.length}
+      <ColumnVisibilityToggle bind:columns />
     {/if}
   </div>
 
@@ -306,7 +313,7 @@
         </div>
       {/if}
 
-      {#if ["ads", "coupons", "products", "order", "fulfillment", "invoice", "refund", "shipping", "notifications", "content"].includes(tab || "ads")}
+      {#if ["ads", "coupons", "products", "order", "fulfillment", "invoice", "refund", "shipping", "notifications", "content", "categories"].includes(tab || "ads")}
         <div class="space-y-4">
           <label for="status-select" class="text-[0.7rem] font-extrabold tracking-widest text-stone-400 uppercase"
             >{t("common.status")}</label

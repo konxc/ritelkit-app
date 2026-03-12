@@ -10,7 +10,6 @@
   import SectionHeader from "../SectionHeader.svelte";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
-  import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
 
   let {
     rows: initialRows = [],
@@ -96,13 +95,7 @@
       <SectionHeader title={t("system.audit")} muted={t("system_admin.audit_log.subtitle")} />
       
       <div class="hidden lg:flex lg:items-center lg:gap-3">
-        <div class="mr-2">
-          <AdminHeaderFilters tab="audit" q={localQ} status={localStatus} {columns} {lang} />
-        </div>
-
-        <ColumnVisibilityToggle bind:columns />
-
-        <div class="h-10 w-px bg-stone-200/80"></div>
+        <AdminHeaderFilters tab="audit" q={localQ} status={localStatus} bind:columns {lang} />
       </div>
     </div>
 
@@ -122,7 +115,17 @@
             {/if}
             {#if columns[1].isVisible}
               <TableCell class="py-4">
-                <span class="rounded-md bg-stone-100 px-2 py-1 text-xs font-bold tracking-wider text-stone-600 uppercase">
+                <span
+                  class={`rounded-md px-2 py-1 text-xs font-bold tracking-wider uppercase ${
+                    r.action.toLowerCase().includes("delete")
+                      ? "bg-red-50 text-red-600 border border-red-100"
+                      : r.action.toLowerCase().includes("create")
+                        ? "bg-emerald-50 text-emerald-600 border border-emerald-100"
+                        : r.action.toLowerCase().includes("update")
+                          ? "bg-amber-50 text-amber-600 border border-amber-100"
+                          : "bg-stone-100 text-stone-600 border border-stone-200"
+                  }`}
+                >
                   {r.action}
                 </span>
               </TableCell>

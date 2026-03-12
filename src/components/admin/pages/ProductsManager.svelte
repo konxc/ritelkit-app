@@ -22,7 +22,6 @@
   import TextInput from "../ui/forms/TextInput.svelte";
   import SelectInput from "../ui/forms/SelectInput.svelte";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
-  import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
   import Textarea from "../ui/forms/Textarea.svelte";
 
   let columns = $state([
@@ -243,7 +242,7 @@
     }
   };
 
-  const handleRowAction = async (id: string | number, action: string, rowEl: HTMLElement) => {
+  const handleRowAction = async (id: string | number, action: string, rowEl: HTMLElement | null) => {
     const resolvedId = String(id);
 
     if (action === "delete") {
@@ -252,6 +251,7 @@
     }
 
     if (action === "save") {
+      if (!rowEl) return;
       const payload: Record<string, string | number | null> = {};
       rowEl.querySelectorAll("[data-field]").forEach((cell) => {
         const field = cell.getAttribute("data-field");
@@ -282,21 +282,15 @@
   <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
     <SectionHeader title={t("catalog.products.title")} muted={t("catalog.products.subtitle")} />
     <div class="hidden lg:flex lg:items-center lg:gap-3">
-      <div class="mr-2">
-        <AdminHeaderFilters
-          tab="products"
-          q={localQ}
-          status={localStatus}
-          categoryId={localCategoryId}
-          {categoryOptions}
-          {columns}
-          {lang}
-        />
-      </div>
-
-    <ColumnVisibilityToggle bind:columns />
-
-    <div class="h-10 w-px bg-stone-200/80"></div>
+      <AdminHeaderFilters
+        tab="products"
+        q={localQ}
+        status={localStatus}
+        categoryId={localCategoryId}
+        {categoryOptions}
+        bind:columns
+        {lang}
+      />
 
     <Button
       variant="outline"
@@ -459,7 +453,7 @@
                   label: c.name,
                   value: c.id,
                 }))}
-                placeholder={t("common.loading")}
+                placeholder={t("catalog.products.select_category")}
                 class="ring-stone-100/50"
               />
             </div>
@@ -513,7 +507,7 @@
                 id="isActive"
                 name="isActive"
                 label={t("catalog.products.visibility")}
-                placeholder={t("common.loading")}
+                placeholder={t("catalog.products.select_status")}
                 options={[
                   { label: t("catalog.products.active_pub"), value: "true" },
                   { label: t("catalog.products.draft_hide"), value: "false" },
@@ -659,7 +653,7 @@
         <TableCell class="hidden py-4 lg:table-cell">
           <select
             data-field="categoryId"
-            class="w-[140px] cursor-pointer truncate rounded-xl border border-stone-200/50 bg-stone-100/60 px-3 py-2 text-sm font-semibold text-stone-700 shadow-sm transition-all outline-none hover:bg-white focus:border-[#c48a3a] focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
+            class="w-[140px] cursor-pointer truncate rounded-xl border border-stone-200/50 bg-stone-100/60 px-3 py-2 text-sm font-semibold text-stone-700 shadow-sm transition-all outline-none hover:bg-white focus:border-[#c48a3a]/30 focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/20"
           >
             <option value="">{t("catalog.products.no_category")}</option>
             {#each categoryOptions as cat}
@@ -712,7 +706,7 @@
             isSaving={isMutating}
             isDeleting={isMutating}
             onSave={(e) => handleRowAction(row.id, "save", e.currentTarget.closest("tr")!)}
-            onDelete={() => handleRowAction(row.id, "delete", null!)}
+            onDelete={() => handleRowAction(row.id, "delete", null)}
           />
         </div>
       </TableCell>

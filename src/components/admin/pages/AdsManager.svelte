@@ -43,7 +43,6 @@
   import InlineEditableField from "../ui/forms/InlineEditableField.svelte";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
-  import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
 
   let {
     rows: initialRows = [],
@@ -248,13 +247,7 @@
     <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
       <SectionHeader title={t("ads.title_list")} muted={t("ads.badge_ads")} />
       <div class="hidden lg:flex lg:items-center lg:gap-3">
-        <div class="mr-2">
-          <AdminHeaderFilters tab="ads" q={localQ} status={localStatus} {columns} />
-        </div>
-
-        <ColumnVisibilityToggle bind:columns />
-
-        <div class="h-10 w-px bg-stone-200/80"></div>
+        <AdminHeaderFilters tab="ads" q={localQ} status={localStatus} bind:columns />
 
         <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
           <div class="flex items-center gap-2">
@@ -335,7 +328,7 @@
                   <SelectInput
                     id="status"
                     name="status"
-                    placeholder={t("ads.select_status") || t("coupons.select_status")}
+                    placeholder={t("ads.select_status")}
                     options={[
                       { label: t("ads.status_draft"), value: "draft" },
                       { label: t("ads.status_active"), value: "active" },
@@ -360,7 +353,7 @@
                 <div>
                   <h4 class="text-[0.75rem] font-black tracking-wider uppercase">{t("catalog.categories.tips_title")}</h4>
                   <p class="mt-1 text-[0.8rem] leading-relaxed font-medium">
-                    {t("ads.tips_campaign_launch") || "Pastikan budget iklan sesuai dengan target audience dan durasi kampanye yang direncanakan."}
+                    {t("ads.tips_campaign_launch")}
                   </p>
                 </div>
               </div>

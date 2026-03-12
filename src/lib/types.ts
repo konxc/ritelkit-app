@@ -1,6 +1,6 @@
-import { z } from "astro:schema";
+import { z } from "zod";
 
-const JsonArraySchema = z.preprocess((val) => {
+const JsonArraySchema = z.preprocess((val: unknown) => {
   if (typeof val === "string") {
     try {
       return JSON.parse(val);
@@ -12,7 +12,7 @@ const JsonArraySchema = z.preprocess((val) => {
 }, z.array(z.any()));
 
 const JsonObjectSchema = z.preprocess(
-  (val) => {
+  (val: unknown) => {
     if (typeof val === "string") {
       try {
         return JSON.parse(val);

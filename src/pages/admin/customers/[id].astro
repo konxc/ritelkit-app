@@ -41,122 +41,192 @@ if (!customer) {
 const ordersRes = await db.execute({
   sql: `SELECT order_no, total, status, payment_status, created_at
           FROM orders
-          WHERE customer_phone = ? OR (customer_email IS NOT NULL AND customer_email = ?)
+          WHERE customer_id = ? OR customer_phone = ? OR (customer_email IS NOT NULL AND customer_email = ?)
           ORDER BY created_at DESC`,
-  args: [customer.phone, customer.email || ""],
+  args: [customer.id, customer.phone, customer.email || ""],
 });
 
 const lang = getLang(Astro.cookies);
 const f = fServer(lang);
+
+const totalOrders = ordersRes.rows.length;
+const totalSpend = ordersRes.rows.reduce((acc, row) => acc + Number((row as any).total || 0), 0);
+const lastOrderDate = totalOrders > 0 ? (ordersRes.rows[0] as any).created_at : null;
+
+const statusColors: Record<string, "success" | "warning" | "danger" | "info" | "default"> = {
+  completed: "success",
+  shipped: "info",
+  processing: "warning",
+  pending: "warning",
+  cancelled: "danger",
+  delivered: "success",
+};
+
+const paymentColors: Record<string, "success" | "warning" | "danger" | "default"> = {
+  paid: "success",
+  unpaid: "danger",
+  failed: "danger",
+  refunded: "warning",
+  expired: "default",
+};
 ---
 
 <AdminLayout title={tServer(lang, "customers.detail_title")}>
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Left: Customer Info -->
-    <div class="lg:col-span-1 space-y-6">
-       <PanelCard class="overflow-hidden border-stone-200/60 shadow-sm">
-        <div class="mb-4 flex items-center gap-3 border-b border-stone-100 pb-4">
-          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#c48a3a]/10 text-[#c48a3a]">
-             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          </div>
-          <div>
-            <h2 class="text-lg font-black text-stone-900 leading-tight">{customer.name}</h2>
-            <p class="text-[0.65rem] font-bold tracking-widest text-stone-400 uppercase">{tServer(lang, "customers.badge_crm")}</p>
-          </div>
+  <div class="flex flex-col gap-8">
+    <!-- Header -->
+    <div class="flex items-center gap-4">
+      <a
+        href="/admin/customers"
+        class="flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-400 transition-all hover:bg-stone-50 hover:text-stone-900 active:scale-95"
+        title={tServer(lang, "common.back")}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </a>
+      <div>
+        <h1 class="text-2xl font-black tracking-tight text-stone-900">{customer.name}</h1>
+        <div class="mt-1 flex items-center gap-2 text-xs font-bold text-stone-400 uppercase tracking-widest">
+           <span>{tServer(lang, "customers.badge_crm")}</span>
+           <span class="h-1 w-1 rounded-full bg-stone-300"></span>
+           <span>ID: {customer.id.split('-')[0]}</span>
         </div>
-
-        <div class="space-y-4">
-          <div class="flex items-center gap-3">
-             <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-stone-50 text-stone-400">
-               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l2.27-2.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-             </div>
-             <div>
-               <p class="text-[0.65rem] font-bold text-stone-400 uppercase leading-none mb-1">{tServer(lang, "common.phone")}</p>
-               <p class="text-sm font-bold text-stone-700">{customer.phone}</p>
-             </div>
-          </div>
-
-          <div class="flex items-center gap-3">
-             <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-stone-50 text-stone-400">
-               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-             </div>
-             <div>
-               <p class="text-[0.65rem] font-bold text-stone-400 uppercase leading-none mb-1">{tServer(lang, "common.email")}</p>
-               <p class="text-sm font-bold text-stone-700">{customer.email || "-"}</p>
-             </div>
-          </div>
-
-          <div class="border-t border-stone-100 pt-4">
-             <p class="text-[0.65rem] font-bold text-stone-400 uppercase leading-none mb-2">{tServer(lang, "customers.notes")}</p>
-             <p class="text-sm font-medium text-stone-600 leading-relaxed italic">
-               "{customer.notes || tServer(lang, "common.no_data")}"
-             </p>
-          </div>
-        </div>
-      </PanelCard>
+      </div>
     </div>
 
-    <!-- Right: History -->
-    <div class="lg:col-span-2">
-      <SectionHeader title={tServer(lang, "customers.order_history")} muted={tServer(lang, "customers.history_desc")} />
-      
-      <div class="mt-4">
-        <Table
-          headers={[
-            tServer(lang, "orders.order_no"),
-            tServer(lang, "orders.total"),
-            tServer(lang, "orders.status"),
-            tServer(lang, "orders.payment"),
-            tServer(lang, "orders.date"),
-          ]}
-        >
-          {ordersRes.rows.length === 0 ? (
-            <TableEmptyState 
-              title={tServer(lang, "common.no_data")} 
-              subtitle={tServer(lang, "orders.empty")} 
-              colspan={5} 
-            />
-          ) : (
-            ordersRes.rows.map((order) => (
-              <TableRow>
-                <TableCell>
-                  <a
-                    href={`/admin/orders/${String((order as { order_no?: string }).order_no || "")}`}
-                    class="font-extrabold text-[#c48a3a] hover:underline"
-                  >
-                    {String((order as { order_no?: string }).order_no || "")}
-                  </a>
-                </TableCell>
-                <TableCell class="font-bold text-stone-800">{f.currency(Number((order as { total?: number }).total || 0))}</TableCell>
-                <TableCell>
-                  <Badge
-                    variant={String((order as { status?: string }).status || "") === "completed" ? "success" : String((order as { status?: string }).status || "") === "cancelled" ? "danger" : "default"}
-                    class="uppercase text-[0.6rem] tracking-tighter"
-                  >
-                    {tServer(lang, `orders.statuses.${String((order as { status?: string }).status || "")}`) || String((order as { status?: string }).status || "")}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      String((order as { payment_status?: string }).payment_status || "") === "paid"
-                        ? "success"
-                        : String((order as { payment_status?: string }).payment_status || "") === "failed"
-                          ? "danger"
-                          : "default"
-                    }
-                    class="uppercase text-[0.6rem] tracking-tighter"
-                  >
-                    {tServer(lang, `orders.payments.${String((order as { payment_status?: string }).payment_status || "")}`) || String((order as { payment_status?: string }).payment_status || "")}
-                  </Badge>
-                </TableCell>
-                <TableCell class="text-stone-400 font-medium text-[0.7rem]">{f.date(String((order as { created_at?: string }).created_at || ""))}</TableCell>
-              </TableRow>
-            ))
-          )}
-        </Table>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+       <PanelCard class="bg-white border-stone-200/60 shadow-sm">
+          <p class="text-[0.65rem] font-bold tracking-widest text-stone-400 uppercase mb-1">{tServer(lang, "customers.total_orders") || "Total Pesanan"}</p>
+          <p class="text-2xl font-black text-stone-900 font-mono">{totalOrders}</p>
+       </PanelCard>
+       <PanelCard class="bg-stone-900 border-stone-900 shadow-lg text-white">
+          <p class="text-[0.65rem] font-bold tracking-widest text-[#c48a3a] uppercase mb-1">{tServer(lang, "customers.total_spend") || "Total Belanja"}</p>
+          <p class="text-2xl font-black text-white font-mono">{f.currency(totalSpend)}</p>
+       </PanelCard>
+       <PanelCard class="bg-white border-stone-200/60 shadow-sm">
+          <p class="text-[0.65rem] font-bold tracking-widest text-stone-400 uppercase mb-1">{tServer(lang, "customers.last_order") || "Pesanan Terakhir"}</p>
+          <p class="text-sm font-bold text-stone-700">
+            {lastOrderDate ? f.date(lastOrderDate) : "-"}
+          </p>
+       </PanelCard>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Left: Customer Info -->
+      <div class="lg:col-span-1 space-y-6">
+         <PanelCard class="overflow-hidden border-stone-200/60 shadow-sm bg-white p-6">
+          <div class="mb-6 flex items-center gap-3 border-b border-stone-100 pb-4">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#c48a3a]/10 text-[#c48a3a]">
+               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+              <h3 class="text-[0.7rem] font-black tracking-widest text-stone-400 uppercase">{tServer(lang, "customers.basic_info") || "Informasi Dasar"}</h3>
+              <p class="text-md font-black text-stone-900 leading-tight">{customer.name}</p>
+            </div>
+          </div>
+
+          <div class="space-y-5">
+            <div class="flex items-center gap-4">
+               <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-stone-50 text-stone-400 border border-stone-100">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l2.27-2.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+               </div>
+               <div>
+                 <p class="text-[0.6rem] font-black text-stone-400 uppercase leading-none mb-1">{tServer(lang, "common.phone")}</p>
+                 <p class="text-sm font-black text-stone-700 font-mono tracking-tighter">{customer.phone}</p>
+               </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+               <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-stone-50 text-stone-400 border border-stone-100">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+               </div>
+               <div class="min-w-0">
+                 <p class="text-[0.6rem] font-black text-stone-400 uppercase leading-none mb-1">{tServer(lang, "common.email")}</p>
+                 <p class="text-sm font-bold text-stone-700 truncate">{customer.email || "-"}</p>
+               </div>
+            </div>
+
+            <div class="border-t border-stone-100 pt-5">
+               <div class="flex items-center gap-2 mb-2">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-[#c48a3a]"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"/></svg>
+                 <p class="text-[0.65rem] font-black text-stone-400 uppercase tracking-wider">{tServer(lang, "customers.notes")}</p>
+               </div>
+               <p class="text-sm font-medium text-stone-600 leading-relaxed italic bg-stone-50 p-3 rounded-xl border border-stone-100">
+                 "{customer.notes || tServer(lang, "common.no_data")}"
+               </p>
+            </div>
+            
+            <div class="mt-4">
+               <p class="text-[0.6rem] font-bold text-stone-300 uppercase italic">
+                 {tServer(lang, "common.registered_at") || "Terdaftar sejak"} {f.date(customer.created_at)}
+               </p>
+            </div>
+          </div>
+        </PanelCard>
+      </div>
+
+      <!-- Right: History -->
+      <div class="lg:col-span-2 space-y-4">
+        <div class="flex items-center justify-between">
+           <SectionHeader title={tServer(lang, "customers.order_history")} muted={tServer(lang, "customers.history_desc")} />
+           <Badge variant="info" class="text-[0.6rem]">{totalOrders} Orders</Badge>
+        </div>
+        
+        <div class="overflow-hidden rounded-[20px] border border-stone-200/60 bg-white shadow-sm">
+          <Table
+            headers={[
+              tServer(lang, "orders.order_no"),
+              tServer(lang, "orders.total"),
+              tServer(lang, "orders.status"),
+              tServer(lang, "orders.payment"),
+              tServer(lang, "orders.date"),
+            ]}
+          >
+            {ordersRes.rows.length === 0 ? (
+              <TableEmptyState 
+                title={tServer(lang, "customers.empty_orders")} 
+                subtitle={tServer(lang, "customers.empty_orders_desc")} 
+                colspan={5} 
+              />
+            ) : (
+              ordersRes.rows.map((order) => (
+                <TableRow class="hover:bg-stone-50/50 transition-colors group">
+                  <TableCell class="py-5">
+                    <a
+                      href={`/admin/orders/${String((order as { order_no?: string }).order_no || "")}`}
+                      class="font-mono font-black text-[#c48a3a] hover:underline uppercase tracking-tighter"
+                    >
+                      {String((order as { order_no?: string }).order_no || "")}
+                    </a>
+                  </TableCell>
+                  <TableCell class="py-5 font-mono font-black text-stone-900 tabular-nums">
+                    {f.currency(Number((order as { total?: number }).total || 0))}
+                  </TableCell>
+                  <TableCell class="py-5">
+                    <Badge
+                      variant={statusColors[String((order as { status?: string }).status || "").toLowerCase()] || "default"}
+                      class="text-[0.6rem] py-0.5"
+                      showDot
+                    >
+                      {tServer(lang, `orders.statuses.${String((order as { status?: string }).status || "").toLowerCase()}`) || String((order as { status?: string }).status || "")}
+                    </Badge>
+                  </TableCell>
+                  <TableCell class="py-5">
+                    <Badge
+                      variant={paymentColors[String((order as { payment_status?: string }).payment_status || "").toLowerCase()] || "default"}
+                      class="text-[0.6rem] py-0.5"
+                    >
+                      {tServer(lang, `orders.payments.${String((order as { payment_status?: string }).payment_status || "").toLowerCase()}`) || String((order as { payment_status?: string }).payment_status || "")}
+                    </Badge>
+                  </TableCell>
+                  <TableCell class="py-5 text-stone-400 font-bold text-[0.7rem] uppercase tracking-tighter whitespace-nowrap">
+                    {f.date(String((order as { created_at?: string }).created_at || ""))}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </Table>
+        </div>
       </div>
     </div>
   </div>
 </AdminLayout>
-

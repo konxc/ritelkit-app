@@ -18,7 +18,6 @@
   import TextInput from "../ui/forms/TextInput.svelte";
   import SelectInput from "../ui/forms/SelectInput.svelte";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
-  import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
 
   let {
@@ -158,8 +157,8 @@
       // Basic manual order creation
       const data = {
         orderNo: `MAN-${Date.now().toString().slice(-6)}`,
-        status: "pending",
-        paymentStatus: "pending",
+        status: (formData.get("status") as string) || "pending",
+        paymentStatus: (formData.get("paymentStatus") as string) || "unpaid",
         customerName: formData.get("customerName") as string,
         customerPhone: formData.get("customerPhone") as string,
         customerEmail: formData.get("customerEmail") as string,
@@ -169,7 +168,7 @@
         discountTotal: 0,
         deliveryFee: 0,
         total: Number(formData.get("total")),
-        notes: "Manual order created by Admin",
+        notes: formData.get("notes") as string || t("orders.manual_order_note"),
       };
 
       await trpc.orders.create.mutate(data);
@@ -254,13 +253,7 @@
     <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
       <SectionHeader title={t("orders.title_list")} muted={t("orders.subtitle_list")} />
       <div class="hidden lg:flex lg:items-center lg:gap-3">
-        <div class="mr-2">
-          <AdminHeaderFilters tab="order" q={localQ} status={localStatus} {columns} {lang} />
-        </div>
-
-        <ColumnVisibilityToggle bind:columns />
-
-        <div class="h-10 w-px bg-stone-200/80"></div>
+        <AdminHeaderFilters tab="order" q={localQ} status={localStatus} bind:columns {lang} />
 
         <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
           <div class="flex items-center gap-2">
@@ -303,7 +296,12 @@
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-stone-400"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                   <label for="customerName" class="text-[0.8rem] font-bold text-stone-600">{t("orders.customer")}</label>
                 </div>
-                <TextInput id="customerName" name="customerName" required />
+                <TextInput 
+                  id="customerName" 
+                  name="customerName" 
+                  required 
+                  placeholder={t("customers.name_placeholder")}
+                />
               </div>
 
               <div class="grid grid-cols-2 gap-4">
@@ -312,14 +310,23 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-stone-400"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                     <label for="customerPhone" class="text-[0.8rem] font-bold text-stone-600">{t("orders.phone")}</label>
                   </div>
-                  <TextInput id="customerPhone" name="customerPhone" required />
+                  <TextInput 
+                    id="customerPhone" 
+                    name="customerPhone" 
+                    required 
+                    placeholder={t("customers.phone_placeholder")}
+                  />
                 </div>
                 <div class="space-y-1.5">
                   <div class="mb-1 flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-stone-400"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                     <label for="customerEmail" class="text-[0.8rem] font-bold text-stone-600">{t("orders.email")}</label>
                   </div>
-                  <TextInput id="customerEmail" name="customerEmail" />
+                  <TextInput 
+                    id="customerEmail" 
+                    name="customerEmail" 
+                    placeholder={t("customers.email_placeholder")}
+                  />
                 </div>
               </div>
 
@@ -328,7 +335,12 @@
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-stone-400"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                   <label for="address" class="text-[0.8rem] font-bold text-stone-600">{t("orders.address")}</label>
                 </div>
-                <TextInput id="address" name="address" required />
+                <TextInput 
+                  id="address" 
+                  name="address" 
+                  required 
+                  placeholder={t("orders.address_placeholder") || "e.g. Jl. Raya No. 123"}
+                />
               </div>
             </div>
           </div>
@@ -338,12 +350,56 @@
               {t("orders.payment_info")}
             </h4>
             <div class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                  <div class="mb-1 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-stone-400"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <label for="status" class="text-[0.8rem] font-bold text-stone-600">{t("orders.status")}</label>
+                  </div>
+                  <SelectInput
+                    id="status"
+                    name="status"
+                    placeholder={t("orders.select_status")}
+                    options={[
+                      { value: "pending", label: t("orders.statuses.pending") },
+                      { value: "processing", label: t("orders.statuses.processing") },
+                      { value: "completed", label: t("orders.statuses.completed") },
+                      { value: "cancelled", label: t("orders.statuses.cancelled") },
+                    ]}
+                    value="pending"
+                  />
+                </div>
+                <div class="space-y-1.5">
+                  <div class="mb-1 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-stone-400"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                    <label for="paymentStatus" class="text-[0.8rem] font-bold text-stone-600">{t("orders.payment_status")}</label>
+                  </div>
+                  <SelectInput
+                    id="paymentStatus"
+                    name="paymentStatus"
+                    placeholder={t("orders.select_payment")}
+                    options={[
+                      { value: "unpaid", label: t("orders.payments.unpaid") },
+                      { value: "paid", label: t("orders.payments.paid") },
+                      { value: "failed", label: t("orders.payments.failed") },
+                    ]}
+                    value="unpaid"
+                  />
+                </div>
+              </div>
+
               <div class="space-y-1.5">
                 <div class="mb-1 flex items-center gap-2">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-stone-400"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                   <label for="total" class="text-[0.8rem] font-bold text-stone-600">{t("orders.total")}</label>
                 </div>
-                <TextInput id="total" name="total" type="number" required />
+                <TextInput 
+                  id="total" 
+                  name="total" 
+                  type="number" 
+                  required 
+                  placeholder={t("orders.total_placeholder")}
+                />
               </div>
             </div>
           </div>

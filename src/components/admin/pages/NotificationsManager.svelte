@@ -17,7 +17,6 @@
   import { fade, fly } from "svelte/transition";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
-  import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
   import Fab from "../ui/Fab.svelte";
   import Drawer from "../ui/overlay/Drawer.svelte";
   import InlineEditableField from "../ui/forms/InlineEditableField.svelte";
@@ -195,13 +194,7 @@
       <SectionHeader title={t("notifications.title_log")} muted={t("notifications.badge_manual")} />
       
       <div class="hidden lg:flex lg:items-center lg:gap-3">
-        <div class="mr-2">
-          <AdminHeaderFilters tab="notifications" q={localQ} status={localStatus} {columns} {lang} />
-        </div>
-
-        <ColumnVisibilityToggle bind:columns />
-
-        <div class="h-10 w-px bg-stone-200/80"></div>
+        <AdminHeaderFilters tab="notifications" q={localQ} status={localStatus} bind:columns {lang} />
 
         <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
           <div class="flex items-center gap-2">
@@ -302,6 +295,7 @@
                   id="channel"
                   name="channel"
                   label={t("notifications.label_channel")}
+                  placeholder={t("notifications.select_channel")}
                   options={[
                     { value: "whatsapp", label: "WhatsApp" },
                     { value: "email", label: "Email" },
@@ -309,7 +303,7 @@
                 />
               </div>
               <div>
-                <TextInput id="recipient" name="recipient" label={t("notifications.label_recipient")} required />
+                <TextInput id="recipient" name="recipient" label={t("notifications.label_recipient")} placeholder={t("notifications.placeholder_recipient")} required />
               </div>
               <div>
                 <TextInput

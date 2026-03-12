@@ -19,7 +19,6 @@
   import SelectInput from "../ui/forms/SelectInput.svelte";
   import Badge from "../ui/Badge.svelte";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
-  import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
   import { fade, fly } from "svelte/transition";
 
   export type RefundRow = {
@@ -280,14 +279,8 @@
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
   <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
     <SectionHeader title={t("refunds.title_list")} muted={t("refunds.badge_manual")} />
-    <div class="hidden lg:flex lg:items-center lg:gap-3">
-        <div class="mr-2">
-          <AdminHeaderFilters tab="refund" q={localQ} status={localStatus} {columns} {lang} />
-        </div>
-
-      <ColumnVisibilityToggle bind:columns />
-
-      <div class="h-10 w-px bg-stone-200/80"></div>
+      <div class="hidden lg:flex lg:items-center lg:gap-3">
+        <AdminHeaderFilters tab="refund" q={localQ} status={localStatus} bind:columns {lang} />
 
       <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
         <div class="flex items-center gap-2">
@@ -367,12 +360,14 @@
                 <SelectInput
                   id="status"
                   name="status"
+                  placeholder={t("refunds.select_status")}
                   options={[
                     { value: "pending", label: `⏳ ${t("status.pending")}` },
                     { value: "completed", label: `✅ ${t("status.completed")}` },
                     { value: "failed", label: `❌ ${t("status.failed")}` },
                   ]}
                   class="ring-stone-100/50"
+                  value="pending"
                 />
               </div>
             </div>

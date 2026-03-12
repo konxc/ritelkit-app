@@ -16,6 +16,11 @@ const orderNo = Astro.params.order_no;
 const db = getDrizzle(Astro);
 const order = await db.query.orders.findFirst({
   where: eq(orders.orderNo, orderNo ?? ""),
+  with: {
+    statusHistory: {
+      orderBy: (history, { desc }) => [desc(history.createdAt)],
+    },
+  },
 });
 
 if (!order) {

@@ -17,7 +17,6 @@
   import Button from "../ui/Button.svelte";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import Fab from "../ui/Fab.svelte";
-  import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
   import TextInput from "../ui/forms/TextInput.svelte";
   import SelectInput from "../ui/forms/SelectInput.svelte";
   import Drawer from "../ui/overlay/Drawer.svelte";
@@ -204,10 +203,7 @@
   <div class="mt-2 mb-8 flex items-center justify-between">
     <SectionHeader title={t("catalog.categories.title")} muted={t("catalog.categories.subtitle")} />
     <div class="hidden lg:flex lg:items-center lg:gap-3">
-      <div class="mr-2">
-        <AdminHeaderFilters tab="categories" q={localQ} status={localStatus} {columns} {lang} />
-      </div>
-    <ColumnVisibilityToggle bind:columns />
+      <AdminHeaderFilters tab="categories" q={localQ} status={localStatus} bind:columns {lang} />
     <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
       <div
         class="flex h-5 w-5 items-center justify-center rounded-full bg-white/20 transition-transform group-hover:rotate-90"
@@ -423,7 +419,7 @@
             <SelectInput
               name="isActive"
               id="isActive"
-              placeholder={t("common.loading")}
+              placeholder={t("catalog.categories.select_status")}
               options={[
                 { label: t("catalog.categories.active"), value: "true" },
                 { label: t("catalog.categories.draft"), value: "false" },
@@ -510,7 +506,7 @@
         <TableCell class="py-4">
           <select
             data-field="isActive"
-            class="cursor-pointer rounded-lg border border-stone-200/50 bg-stone-100/60 px-3 py-1.5 text-[0.7rem] font-bold tracking-wider text-stone-700 uppercase transition-all outline-none hover:border-[#c48a3a]/30 hover:bg-white focus:bg-white"
+            class="cursor-pointer rounded-lg border border-stone-200/50 bg-stone-100/60 px-3 py-1.5 text-[0.7rem] font-bold tracking-wider text-stone-700 uppercase transition-all outline-none hover:border-[#c48a3a]/30 hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
           >
             <option value="true" selected={row.isActive === 1}>{t("catalog.categories.active")}</option>
             <option value="false" selected={row.isActive === 0}>{t("catalog.categories.draft")}</option>

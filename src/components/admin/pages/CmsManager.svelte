@@ -27,7 +27,6 @@
   import { actions } from "astro:actions";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
-  import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
   import Fab from "../ui/Fab.svelte";
   import Drawer from "../ui/overlay/Drawer.svelte";
 
@@ -191,13 +190,7 @@
       <SectionHeader title={t("cms.title_list")} muted={t("cms.subtitle_list")} />
       
       <div class="hidden lg:flex lg:items-center lg:gap-3">
-        <div class="mr-2">
-          <AdminHeaderFilters tab="content" q={localQ} status={localStatus} {columns} {lang} />
-        </div>
-
-        <ColumnVisibilityToggle bind:columns />
-
-        <div class="h-10 w-px bg-stone-200/80"></div>
+        <AdminHeaderFilters tab="content" q={localQ} status={localStatus} bind:columns {lang} />
 
         <Button variant="primary" onclick={() => { resetForm(); isDrawerOpen = true; }} class="group flex items-center gap-2">
           <div class="flex items-center gap-2">
@@ -304,6 +297,7 @@
               id="is_active"
               name="is_active"
               label={t("cms.label_status")}
+              placeholder={t("cms.select_status")}
               bind:value={isActive}
               options={[
                 { value: "true", label: t("common.active_status") },
@@ -359,10 +353,10 @@
               <RowActions
                 viewHref={`/content/${p.slug}`}
                 showEdit={true}
+                showSave={false}
                 onEdit={() => handleEdit(p.id)}
                 onDelete={() => handleRowAction(p.id, "delete")}
                 isDeleting={rowStates[p.id]?.isDeleting}
-                isSaving={rowStates[p.id]?.isEditing}
               />
             </TableCell>
           </TableRow>

@@ -18,7 +18,6 @@
   import { fade, fly } from "svelte/transition";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
-  import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
 
   export type InvoiceRow = {
     id: string;
@@ -205,14 +204,8 @@
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
   <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
     <SectionHeader title={t("invoices.title_list")} muted={t("invoices.badge_manual")} />
-    <div class="hidden lg:flex lg:items-center lg:gap-3">
-      <div class="mr-2">
-        <AdminHeaderFilters tab="invoice" q={localQ} status={localStatus} {columns} {lang} />
-      </div>
-
-      <ColumnVisibilityToggle bind:columns />
-
-      <div class="h-10 w-px bg-stone-200/80"></div>
+      <div class="hidden lg:flex lg:items-center lg:gap-3">
+        <AdminHeaderFilters tab="invoice" q={localQ} status={localStatus} bind:columns {lang} />
 
       <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
         <div class="flex items-center gap-2">

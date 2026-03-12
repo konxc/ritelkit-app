@@ -16,7 +16,6 @@
   import { onMount, untrack } from "svelte";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
-  import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
   import Fab from "../ui/Fab.svelte";
   import Drawer from "../ui/overlay/Drawer.svelte";
 
@@ -159,13 +158,7 @@
       <SectionHeader title={t("system_admin.admin_users.title_list")} muted={t("system_admin.admin_users.subtitle_list")} />
       
       <div class="hidden lg:flex lg:items-center lg:gap-3">
-        <div class="mr-2">
-          <AdminHeaderFilters tab="admins" q={localQ} {columns} {lang} />
-        </div>
-
-        <ColumnVisibilityToggle bind:columns />
-
-        <div class="h-10 w-px bg-stone-200/80"></div>
+        <AdminHeaderFilters tab="admins" q={localQ} bind:columns {lang} />
 
         <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
           <div class="flex items-center gap-2">
@@ -259,12 +252,13 @@
       <div class="px-5 py-6 lg:px-7 lg:py-8">
         <CrudInlineForm id="user-form" onsubmit={handleCreate} {isSubmitting}>
           <div class="space-y-6">
-            <TextInput id="email" name="email" type="email" label={t("system_admin.admin_users.email")} required />
+            <TextInput id="email" name="email" type="email" label={t("system_admin.admin_users.email")} placeholder={t("system_admin.admin_users.enter_email")} required />
             <TextInput
               id="password"
               name="password"
               type="password"
               label={t("system_admin.admin_users.password")}
+              placeholder={t("system_admin.admin_users.enter_password")}
               required
               minlength={8}
             />
@@ -272,6 +266,7 @@
               id="role"
               name="role"
               label={t("system_admin.admin_users.role")}
+              placeholder={t("system_admin.admin_users.select_role")}
               options={[
                 { value: "owner", label: t("system_admin.admin_users.roles.owner") },
                 { value: "admin", label: t("system_admin.admin_users.roles.admin") },
@@ -305,8 +300,9 @@
               <TableCell class="py-4">
                 <div data-field="role" class="w-full">
                   <select
-                    class="w-full cursor-pointer rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-sm font-bold text-stone-700 transition-all outline-none hover:bg-white focus:border-[#c48a3a] focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
+                    class="w-full cursor-pointer rounded-lg border border-transparent bg-white/50 px-3 py-1.5 text-sm font-bold text-stone-700 transition-all outline-none hover:bg-white focus:border-[#c48a3a] focus:ring-2 focus:ring-[#c48a3a]/30"
                   >
+                    <option value="" disabled>{t("system_admin.admin_users.select_role")}</option>
                     <option value="owner" selected={row.role === "owner"}>{t("system_admin.admin_users.roles.owner")}</option>
                     <option value="admin" selected={row.role === "admin"}>{t("system_admin.admin_users.roles.admin")}</option>
                     <option value="editor" selected={row.role === "editor"}>{t("system_admin.admin_users.roles.editor")}</option>

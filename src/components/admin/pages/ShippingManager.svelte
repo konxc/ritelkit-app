@@ -17,7 +17,6 @@
   import Button from "../ui/Button.svelte";
   import InlineEditableField from "../ui/forms/InlineEditableField.svelte";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
-  import ColumnVisibilityToggle from "../ui/ColumnVisibilityToggle.svelte";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import { t, initI18n } from "../../../lib/i18n/store.svelte";
   import { onMount, untrack } from "svelte";
@@ -382,13 +381,7 @@
     <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
       <SectionHeader title={t("shipping_rules.title_list")} muted={t("shipping_rules.subtitle_list")} />
       <div class="hidden lg:flex lg:items-center lg:gap-3">
-        <div class="mr-2">
-          <AdminHeaderFilters tab="shipping" q={localQ} status={localStatus} {columns} {lang} />
-        </div>
-
-        <ColumnVisibilityToggle bind:columns />
-
-        <div class="h-10 w-px bg-stone-200/80"></div>
+        <AdminHeaderFilters tab="shipping" q={localQ} status={localStatus} bind:columns {lang} />
 
         <Button variant="simple" onclick={() => (isSimulateDrawerOpen = true)} class="group flex items-center gap-2">
           <svg
