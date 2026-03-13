@@ -1,5 +1,5 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 
 const TRANSLATIONS_PATH = path.join(process.cwd(), "src/lib/i18n/translations.ts");
 const SRC_DIR = path.join(process.cwd(), "src");
@@ -28,8 +28,7 @@ try {
   const tsContent = fs.readFileSync(TRANSLATIONS_PATH, "utf8");
   // Simple regex to extract JSON keys from the id object. This relies on the keys being double-quoted string literals.
   const regex = /"([^"]+)"\s*:/g;
-  let match;
-  while ((match = regex.exec(tsContent)) !== null) {
+  for (const match of tsContent.matchAll(regex)) {
     if (match[1].length > 1) {
       availableKeys.add(match[1]);
     }
@@ -51,8 +50,7 @@ filesToScan.forEach((file) => {
   // Also matches string interpolations slightly if they use literal quotes inside, e.g. t(`...${...}...`) is harder, we'll focus on static strings.
   const regex = /(?:t|tServer)\s*\(\s*(?:[\w]+,\s*)?["'`]([a-zA-Z0-9_.-]+)["'`]/g;
 
-  let match;
-  while ((match = regex.exec(content)) !== null) {
+  for (const match of content.matchAll(regex)) {
     const key = match[1];
 
     // Ignore keys from dynamic usages like t(`invoices.status_${invoice.status}`) if we matched only part of it,
@@ -62,7 +60,7 @@ filesToScan.forEach((file) => {
     if (!usedKeysMap.has(key)) {
       usedKeysMap.set(key, new Set());
     }
-    usedKeysMap.get(key).add(file.replace(process.cwd() + "/", ""));
+    usedKeysMap.get(key).add(file.replace(`${process.cwd()}/`, ""));
     totalOccurrences++;
   }
 
@@ -127,7 +125,7 @@ if (unusedKeys.length === 0) {
   for (const [group, keys] of Object.entries(unusedByPrefix)) {
     console.log(`   - [${group}] ${keys.length} keys`);
     if (keys.length < 5) {
-      keys.forEach((k) => console.log(`       "${k}"`));
+      for (const k of keys) console.log(`       "${k}"`);
     } else {
       console.log(`       "${keys[0]}", "${keys[1]}", "${keys[2]}", ... and ${keys.length - 3} more`);
     }

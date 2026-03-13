@@ -41,7 +41,7 @@
     { id: "password", label: t("system_admin.admin_users.password"), isVisible: true },
   ]);
 
-  const filters = createAdminFilters({ q, status, page: 1 });
+  const filters = createAdminFilters({ q: untrack(() => q), status: untrack(() => status), page: 1 });
   let toastRef = $state<ToastNotification>();
   let isDrawerOpen = $state(false);
   let processingId = $state<string | null>(null);

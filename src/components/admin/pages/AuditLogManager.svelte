@@ -42,7 +42,7 @@
     { id: "time", label: t("system_admin.audit_log.time"), isVisible: true },
   ]);
 
-  const filters = createAdminFilters({ q, status: "", page });
+  const filters = createAdminFilters({ q: untrack(() => q), status: "", page: untrack(() => page) });
 
   const query = createQuery(() => ({
     queryKey: ["auditLogs", filters.q, filters.page],

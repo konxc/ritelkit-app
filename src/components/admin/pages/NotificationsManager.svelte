@@ -52,7 +52,7 @@
     { id: "terkirim", label: t("notifications.header_sent"), isVisible: true },
   ]);
 
-  const filters = createAdminFilters({ q, status, page });
+  const filters = createAdminFilters({ q: untrack(() => q), status: untrack(() => status), page: untrack(() => page) });
   const localLimit = untrack(() => limit) || 30;
 
   let toastRef = $state<ToastNotification>();

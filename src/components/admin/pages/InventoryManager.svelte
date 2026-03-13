@@ -53,7 +53,12 @@
   import PaginationNav from "../PaginationNav.svelte";
   import { onMount } from "svelte";
 
-  const filters = createAdminFilters({ q, status, page, subtab });
+  const filters = createAdminFilters({
+    q: untrack(() => q),
+    status: untrack(() => status),
+    page: untrack(() => page),
+    subtab: untrack(() => subtab),
+  });
   const localLimit = untrack(() => limit) || 20;
 
   let toastRef = $state<ToastNotification>();

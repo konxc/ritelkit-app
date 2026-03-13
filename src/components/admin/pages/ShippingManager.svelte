@@ -37,7 +37,7 @@
   import { createAdminMutation } from "../../../lib/admin-mutations.svelte";
   import { createTableState } from "../../../lib/admin-table-state.svelte";
 
-  const filters = createAdminFilters({ q, status, page });
+  const filters = createAdminFilters({ q: untrack(() => q), status: untrack(() => status), page: untrack(() => page) });
 
   let toastRef = $state<ToastNotification>();
   let isDrawerOpen = $state(false);

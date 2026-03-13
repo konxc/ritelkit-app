@@ -84,7 +84,7 @@
     imagesJson?: string | null;
   };
 
-  const filters = createAdminFilters({ q, status, page });
+  const filters = createAdminFilters({ q: untrack(() => q), status: untrack(() => status), page: untrack(() => page) });
   const localLimit = untrack(() => limit) || 20;
 
   const tableState = createTableState<ProductRow>(() => currentRows);

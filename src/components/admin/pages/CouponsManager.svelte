@@ -55,7 +55,7 @@
     { id: "status", label: t("coupons.status"), isVisible: true },
   ]);
 
-  const filters = createAdminFilters({ q, status, page });
+  const filters = createAdminFilters({ q: untrack(() => q), status: untrack(() => status), page: untrack(() => page) });
   let toastRef = $state<ToastNotification>();
   let isDrawerOpen = $state(false);
   let processingId = $state<string | null>(null);

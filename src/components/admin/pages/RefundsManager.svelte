@@ -40,7 +40,7 @@
   import Fab from "../ui/Fab.svelte";
   import PaginationNav from "../PaginationNav.svelte";
 
-  const filters = createAdminFilters({ q, status, page });
+  const filters = createAdminFilters({ q: untrack(() => q), status: untrack(() => status), page: untrack(() => page) });
   const localLimit = untrack(() => limit) || 20;
 
   let toastRef = $state<ToastNotification>();
