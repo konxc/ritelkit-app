@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { t } from "../../../../lib/i18n/store.svelte";
+
   interface Props {
     value?: string | number | null;
     label?: string;
@@ -38,6 +40,8 @@
       .filter(Boolean)
       .join(" "),
   );
+
+  let defaultPlaceholder = $derived(placeholder || (label ? `${t("common.example")}: ${label}` : ""));
 </script>
 
 <div class="w-full space-y-1 lg:space-y-1.5">
@@ -53,7 +57,7 @@
       {name}
       type="number"
       {autocomplete}
-      {placeholder}
+      placeholder={defaultPlaceholder}
       bind:value
       class={inputClasses}
       aria-invalid={!!error}
@@ -65,7 +69,7 @@
       {name}
       type="password"
       {autocomplete}
-      {placeholder}
+      placeholder={defaultPlaceholder}
       bind:value
       class={inputClasses}
       aria-invalid={!!error}
@@ -77,7 +81,7 @@
       {name}
       type="email"
       {autocomplete}
-      {placeholder}
+      placeholder={defaultPlaceholder}
       bind:value
       class={inputClasses}
       aria-invalid={!!error}
@@ -89,7 +93,7 @@
       {name}
       {type}
       {autocomplete}
-      {placeholder}
+      placeholder={defaultPlaceholder}
       bind:value
       class={inputClasses}
       aria-invalid={!!error}

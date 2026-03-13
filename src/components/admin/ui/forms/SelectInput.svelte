@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { t } from "../../../../lib/i18n/store.svelte";
+
   interface Option {
     label: string;
     value: string | number | boolean;
@@ -46,6 +48,8 @@
       .filter(Boolean)
       .join(" "),
   );
+
+  let defaultPlaceholder = $derived(placeholder || (label ? `Pilih ${label}...` : ""));
 </script>
 
 <div class="relative w-full space-y-1 lg:space-y-1.5">
@@ -57,8 +61,8 @@
 
   <div class="relative">
     <select {id} {name} bind:value {onchange} class={selectClasses} aria-invalid={!!error} {...rest}>
-      {#if placeholder}
-        <option value="" disabled selected={!value}>{placeholder}</option>
+      {#if defaultPlaceholder}
+        <option value="" disabled selected={!value}>{defaultPlaceholder}</option>
       {/if}
 
       {@render children?.()}

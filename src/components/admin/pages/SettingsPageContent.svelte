@@ -1,6 +1,6 @@
 <script lang="ts">
   let { lang }: { lang?: any } = $props();
-  
+
   import { untrack } from "svelte";
   import { initI18n } from "../../../lib/i18n/store.svelte";
   initI18n(untrack(() => lang));
