@@ -41,7 +41,7 @@
   <div class="flex items-center gap-3">
     <button
       type="button"
-      class="h-11 flex-1 rounded-2xl border border-stone-200 bg-white text-[0.7rem] font-black tracking-widest text-stone-400 uppercase transition-all hover:bg-stone-50 hover:text-stone-600 focus:outline-none active:scale-95 lg:h-[52px]"
+      class="flex h-11 flex-1 rounded-2xl border border-stone-200 bg-white text-[0.7rem] font-black tracking-widest text-stone-400 uppercase transition-all hover:bg-stone-50 hover:text-stone-600 focus:outline-none active:scale-95 lg:hidden lg:h-[52px]"
       onclick={() => (isOpen = false)}
     >
       {resolvedCancelLabel}

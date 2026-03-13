@@ -195,9 +195,9 @@
           required
         />
         <SelectInput id="role" name="role" label={t("system_admin.admin_users.role")} required>
-          <option value="admin">{t("system_admin.admin_users.role_admin")}</option>
-          <option value="editor">{t("system_admin.admin_users.role_editor")}</option>
-          <option value="owner">{t("system_admin.admin_users.role_owner")}</option>
+          <option value="admin">{t("system_admin.admin_users.roles.admin")}</option>
+          <option value="editor">{t("system_admin.admin_users.roles.editor")}</option>
+          <option value="owner">{t("system_admin.admin_users.roles.owner")}</option>
         </SelectInput>
       </div>
     </AdminDrawerForm>
@@ -206,8 +206,8 @@
       <Table headers={activeHeaders}>
         {#if currentRows.length === 0}
           <TableEmptyState
-            title={t("system_admin.admin_users.empty_title")}
-            subtitle={t("system_admin.admin_users.empty_description")}
+            title={t("system_admin.admin_users.empty")}
+            subtitle={t("common.empty_orders_desc")}
             colspan={activeHeaders.length}
           />
         {/if}
@@ -226,13 +226,13 @@
                   class="rounded-md border-none bg-transparent px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase focus:ring-0"
                 >
                   <option value="admin" selected={(tableState.editedValues[p.id]?.role ?? p.role) === "admin"}
-                    >{t("system_admin.admin_users.role_admin")}</option
+                    >{t("system_admin.admin_users.roles.admin")}</option
                   >
                   <option value="editor" selected={(tableState.editedValues[p.id]?.role ?? p.role) === "editor"}
-                    >{t("system_admin.admin_users.role_editor")}</option
+                    >{t("system_admin.admin_users.roles.editor")}</option
                   >
                   <option value="owner" selected={(tableState.editedValues[p.id]?.role ?? p.role) === "owner"}
-                    >{t("system_admin.admin_users.role_owner")}</option
+                    >{t("system_admin.admin_users.roles.owner")}</option
                   >
                 </select>
               </TableCell>

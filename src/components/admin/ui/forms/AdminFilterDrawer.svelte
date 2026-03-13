@@ -28,7 +28,9 @@
 
 {#snippet drawerFooter()}
   <div class="flex gap-3">
-    <Button variant="simple" class="flex-1 font-bold" onclick={() => (isOpen = false)}>{t("common.cancel")}</Button>
+    <Button variant="simple" class="flex-1 font-bold lg:hidden" onclick={() => (isOpen = false)}
+      >{t("common.cancel")}</Button
+    >
     <Button variant="primary" class="flex-1 font-bold" onclick={handleApply}>{t("common.apply_filter")}</Button>
   </div>
 {/snippet}

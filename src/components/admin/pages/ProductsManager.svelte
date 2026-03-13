@@ -358,8 +358,7 @@
             <label for="categoryId" class="text-[0.75rem] font-bold tracking-wider text-stone-500 uppercase"
               >{t("catalog.products.category")}</label
             >
-            <SelectInput name="categoryId" id="categoryId">
-              <option value="">{t("catalog.categories.name_placeholder")}</option>
+            <SelectInput id="category_id" name="category_id" label={t("catalog.products.category")}>
               {#each categoryOptions as cat}
                 <option value={cat.id}>{cat.name}</option>
               {/each}
@@ -536,7 +535,6 @@
               onchange={(e) => tableState.onEdit(row.id, "categoryId", e.currentTarget.value)}
               class="w-[140px] cursor-pointer truncate rounded-xl border border-stone-200/50 bg-stone-100/60 px-3 py-2 text-sm font-semibold text-stone-700 shadow-sm transition-all outline-none hover:bg-white focus:border-[#c48a3a]/30 focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/20"
             >
-              <option value="">{t("catalog.products.no_category")}</option>
               {#each categoryOptions as cat}
                 <option
                   value={cat.id}

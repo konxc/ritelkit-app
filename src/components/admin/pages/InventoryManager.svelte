@@ -70,10 +70,7 @@
         limit: localLimit,
       }),
     enabled: filters.subtab === "stock",
-    initialData:
-      filters.isInitial && filters.subtab === "stock"
-        ? { data: initialProducts, total: initialProductsTotal }
-        : undefined,
+    initialData: filters.isInitial ? { data: initialProducts, total: initialProductsTotal } : undefined,
   }));
 
   // Log Query
@@ -86,10 +83,7 @@
         limit: localLimit,
       }),
     enabled: filters.subtab === "log",
-    initialData:
-      filters.isInitial && filters.subtab === "log"
-        ? { data: initialMovements, total: initialMovementsTotal }
-        : undefined,
+    initialData: filters.isInitial ? { data: initialMovements, total: initialMovementsTotal } : undefined,
   }));
 
   const movementMutation = createAdminMutation(
@@ -236,7 +230,7 @@
     <AdminDrawerForm
       bind:isOpen={isDrawerOpen}
       title={t("catalog.inventory.process_mutation")}
-      subtitle={t("catalog.inventory.movement_desc")}
+      subtitle={t("catalog.inventory.form_subtitle")}
       icon={inventoryIcon}
       isSubmitting={movementMutation.isPending}
       onsubmit={handleCreate}
@@ -244,7 +238,6 @@
     >
       <div class="space-y-6">
         <SelectInput id="product_id" name="product_id" label={t("catalog.products.product")} required>
-          <option value="">{t("catalog.inventory.select_product")}</option>
           {#each initialProducts as p}
             <option value={p.id}>{p.name} ({p.sku})</option>
           {/each}

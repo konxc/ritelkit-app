@@ -94,7 +94,7 @@
             {/if}
           </div>
           <button
-            class="flex h-10 w-10 items-center justify-center rounded-full bg-white text-stone-400 shadow-sm transition-all hover:bg-stone-100 hover:text-stone-800 focus:outline-none active:scale-90"
+            class="hidden h-10 w-10 items-center justify-center rounded-full bg-white text-stone-400 shadow-sm transition-all hover:bg-stone-100 hover:text-stone-800 focus:outline-none active:scale-90 lg:flex"
             onclick={handleClose}
             aria-label="Tutup Panel"
           >

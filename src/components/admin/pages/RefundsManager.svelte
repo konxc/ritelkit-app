@@ -120,7 +120,7 @@
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
     <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <SectionHeader title={t("refunds.title")} muted={t("refunds.title_list")} />
+      <SectionHeader title={t("refunds.title")} muted={t("orders.subtitle_list")} />
 
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <AdminHeaderFilters tab="refunds" q={filters.q} status={filters.status} bind:columns {lang} />
@@ -164,7 +164,7 @@
     <AdminDrawerForm
       bind:isOpen={isDrawerOpen}
       title={t("refunds.title_create")}
-      subtitle={t("refunds.title_list")}
+      subtitle={t("refunds.title")}
       icon={refundIcon}
       isSubmitting={createMutation.isPending}
       onsubmit={handleCreate}
@@ -201,7 +201,7 @@
             {#if columns[2].isVisible}
               <TableCell class="py-4">
                 <Badge variant={getStatusType(row.status)}>
-                  {t(`refunds.statuses.${row.status?.toLowerCase()}`) || row.status}
+                  {t(`orders.statuses.${row.status?.toLowerCase()}`) || row.status}
                 </Badge>
               </TableCell>
             {/if}
