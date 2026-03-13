@@ -1,6 +1,5 @@
 ---
 import AdminTabs from "../../components/admin/AdminTabs.astro";
-import PaginationNav from "../../components/admin/PaginationNav.svelte";
 import PesananTabContent from "../../components/admin/pages/PesananTabContent.svelte";
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import { normalizeTab, parsePage } from "../../lib/admin";
@@ -41,7 +40,6 @@ const db = getDrizzle(Astro);
 
 const caller = appRouter.createCaller({ db, admin, ctx: Astro as any });
 
-let totalPages = 1;
 const initialData = {
   orders: [] as any[],
   ordersTotal: 0,
@@ -63,7 +61,6 @@ if (tab === "order") {
   });
   initialData.orders = result.rows;
   initialData.ordersTotal = result.total;
-  totalPages = Math.max(1, Math.ceil(result.total / limit));
 } else if (tab === "fulfillment") {
   const result = await caller.shipments.list({
     q: q || undefined,
@@ -73,11 +70,9 @@ if (tab === "order") {
   });
   initialData.shipments = result.rows;
   initialData.shipmentsTotal = result.total;
-  totalPages = Math.max(1, Math.ceil(result.total / limit));
 } else if (tab === "shipping") {
   const result = await caller.shippingRules.list();
   initialData.shippingRules = result;
-  totalPages = 1;
 } else if (tab === "invoice") {
   const result = await caller.invoices.list({
     q: q || undefined,
@@ -86,7 +81,6 @@ if (tab === "order") {
   });
   initialData.invoices = result.rows;
   initialData.invoicesTotal = result.total;
-  totalPages = Math.max(1, Math.ceil(result.total / limit));
 } else if (tab === "refund") {
   const result = await caller.refunds.list({
     q: q || undefined,
@@ -95,7 +89,6 @@ if (tab === "order") {
   });
   initialData.refunds = result.rows;
   initialData.refundsTotal = result.total;
-  totalPages = Math.max(1, Math.ceil(result.total / limit));
 }
 
 const tabs = [

@@ -1,7 +1,6 @@
 ---
 import { actions } from "astro:actions";
 import AdminTabs from "../../components/admin/AdminTabs.astro";
-import PaginationNav from "../../components/admin/PaginationNav.svelte";
 import SistemTabContent from "../../components/admin/pages/SistemTabContent.svelte";
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import { normalizeTab, parsePage } from "../../lib/admin";
@@ -36,7 +35,6 @@ const { page, q, offset, limit } = parsePage(Astro.url, 30);
 
 let initialRows: any[] = [];
 let initialTotal = 0;
-let totalPages = 1;
 
 if (tab === "content") {
   const { data } = await Astro.callAction(actions.listCmsPages, {
@@ -46,7 +44,6 @@ if (tab === "content") {
   });
   initialRows = data?.rows || [];
   initialTotal = Number(data?.total || 0);
-  totalPages = Math.max(1, Math.ceil(initialTotal / limit));
 } else if (tab === "notifications") {
   const { data } = await Astro.callAction(actions.listNotifications, {
     q,
@@ -55,7 +52,6 @@ if (tab === "content") {
   });
   initialRows = data?.rows || [];
   initialTotal = Number(data?.total || 0);
-  totalPages = Math.max(1, Math.ceil(initialTotal / limit));
 } else if (tab === "audit") {
   const { data } = await Astro.callAction(actions.listAuditLogs, {
     q,
@@ -64,11 +60,9 @@ if (tab === "content") {
   });
   initialRows = data?.rows || [];
   initialTotal = Number(data?.total || 0);
-  totalPages = Math.max(1, Math.ceil(initialTotal / limit));
 } else if (tab === "admins") {
   const { data } = await Astro.callAction(actions.listAdminUsers, { q });
   initialRows = data || [];
-  totalPages = 1;
 }
 
 const tabs = [

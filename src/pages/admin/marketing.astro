@@ -1,7 +1,6 @@
 ---
 import { actions } from "astro:actions";
 import AdminTabs from "../../components/admin/AdminTabs.astro";
-import PaginationNav from "../../components/admin/PaginationNav.svelte";
 import PemasaranTabContent from "../../components/admin/pages/PemasaranTabContent.svelte";
 import AdminLayout from "../../layouts/AdminLayout.astro";
 import { normalizeTab, parsePage } from "../../lib/admin";
@@ -41,7 +40,6 @@ const trpc = appRouter.createCaller(await createContext(Astro as any));
 
 // Data for Tabs
 let initialData: any = null;
-let totalPages = 1;
 
 if (tab === "customers") {
   const result = await Astro.callAction(actions.listCustomers, {
@@ -51,19 +49,16 @@ if (tab === "customers") {
   });
   if (result.data) {
     initialData = result.data;
-    totalPages = Math.max(1, Math.ceil(result.data.total / limit));
   }
 } else if (tab === "coupons") {
   const result = await trpc.coupons.list({ q, limit, offset });
   if (result) {
     initialData = result;
-    totalPages = Math.max(1, Math.ceil(result.total / limit));
   }
 } else if (tab === "ads") {
   const result = await trpc.ads.list({ q, limit, offset });
   if (result) {
     initialData = result;
-    totalPages = Math.max(1, Math.ceil(result.total / limit));
   }
 }
 
