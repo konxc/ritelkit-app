@@ -26,7 +26,7 @@
 
   import { fade, fly } from "svelte/transition";
   import SectionHeader from "../SectionHeader.svelte";
-  import StatCard from "../StatCard.svelte";
+  import StatCard from "../ui/StatCard.svelte";
   import Table from "../ui/Table.svelte";
   import TableRow from "../ui/TableRow.svelte";
   import TableCell from "../ui/TableCell.svelte";
