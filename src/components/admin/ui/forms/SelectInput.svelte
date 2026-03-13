@@ -49,7 +49,7 @@
       .join(" "),
   );
 
-  let defaultPlaceholder = $derived(placeholder || (label ? `Pilih ${label}...` : ""));
+  let defaultPlaceholder = $derived(placeholder || (label ? `${t("common.select")} ${label}...` : ""));
 </script>
 
 <div class="relative w-full space-y-1 lg:space-y-1.5">

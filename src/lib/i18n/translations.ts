@@ -149,6 +149,7 @@ export const id = {
     close_modal: "Tutup modal",
   },
   common: {
+    select: "Pilih",
     registered_at: "Terdaftar",
     simulation_placeholder: "Data simulasi...",
     growth_rate: "Growth Rate",
@@ -1057,6 +1058,7 @@ export const en = {
     close_modal: "Close modal",
   },
   common: {
+    select: "Select",
     save: "Save",
     delete: "Delete",
     cancel: "Cancel",
@@ -1917,6 +1919,8 @@ export const ja = {
     close_modal: "モーダルを閉じる",
   },
   common: {
+    select: "選択",
+    example: "例",
     save: "保存",
     delete: "削除",
     cancel: "キャンセル",
@@ -2030,6 +2034,7 @@ export const ja = {
       "ふわふわの日常のパンから、特別な瞬間のためのプレミアムなスナックボックスパッケージまで。すべての製品が厳選された材料で作られ、祝福に満ちていることを保証します。",
     title_all: "すべての製品",
     categories: {
+      select_status: "ステータスを選択...",
       title: "カテゴリ一覧",
       subtitle: "製品カテゴリを管理および編集します",
       add: "カテゴリを追加",
@@ -2127,6 +2132,10 @@ export const ja = {
     },
   },
   orders: {
+    title_list: "注文リスト",
+    subtitle_list: "注文データの管理とトランザクションの監視。",
+    title_add: "注文を作成",
+    subtitle_add: "手動注文の作成",
     order_label: "注文",
     product_deleted: "削除された商品",
     order_no: "注文番号",
