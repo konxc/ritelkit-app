@@ -2,6 +2,7 @@ export type TranslationKey = keyof typeof id;
 
 export const id = {
   nav: {
+    simulasi: "Simulasi",
     overview: "Ringkasan",
     reports: "Laporan",
     catalog: "Katalog",
@@ -148,6 +149,24 @@ export const id = {
     close_modal: "Tutup modal",
   },
   common: {
+    registered_at: "Terdaftar",
+    simulation_placeholder: "Data simulasi...",
+    growth_rate: "Growth Rate",
+    avg_order: "Rata-rata Pesanan",
+    total_orders: "Total Pesanan",
+    total_revenue: "Total Pendapatan",
+    results: "Hasil",
+    run_simulation: "Jalankan Simulasi",
+    simulating: "Mensimulasikan...",
+    retention_rate: "Retention Rate",
+    new_customers: "Customer Baru",
+    marketing_spend: "Pengeluaran Marketing",
+    parameters: "Parameter",
+    simulasi_desc: "Deskripsi simulasi",
+    save_changes: "Simpan Perubahan",
+    processing: "Merespons...",
+    confirm_delete: "Konfirmasi Hapus",
+    unknown: "Tidak Diketahui",
     save: "Simpan",
     delete: "Hapus",
     cancel: "Batal",
@@ -368,6 +387,8 @@ export const id = {
     },
   },
   orders: {
+    toast_deleted: "Pesanan berhasil dihapus",
+    toast_created: "Pesanan berhasil dibuat",
     order_label: "Pesanan",
     product_deleted: "Produk dihapus",
     order_no: "No. Pesanan",
@@ -482,6 +503,7 @@ export const id = {
     basic_info: "Informasi Dasar",
   },
   coupons: {
+    empty_description: "Silakan tambah kupon pertama Anda.",
     title_add: "Tambah Kupon",
     title_list: "Daftar Kupon",
     muted_add: "Promo & diskon",
@@ -518,6 +540,8 @@ export const id = {
     tips_coupon_create: "Gunakan kode yang mudah diingat dan tentukan batasan kuota untuk mencegah kerugian berlebih.",
   },
   ads: {
+    empty: "Belum ada kampanye iklan",
+    toast_add: "Iklan berhasil ditambahkan",
     title_create: "Buat Kampanye",
     title_list: "Daftar Kampanye",
     campaign_info: "Informasi Kampanye",
@@ -550,6 +574,8 @@ export const id = {
     select_status: "Pilih Status Iklan",
   },
   refunds: {
+    toast_add: "Pengembalian berhasil ditambahkan",
+    title_list: "Daftar Pengembalian",
     title: "Pengembalian",
     title_create: "Buat Pengembalian",
     order_no: "No. Pesanan",
@@ -572,6 +598,7 @@ export const id = {
     gateway: "Gateway",
   },
   fulfillment: {
+    toast_add: "Fulfillment berhasil ditambahkan",
     title: "Pemenuhan",
     title_create: "Buat Pengiriman",
     title_list: "Daftar Pengiriman",
@@ -664,6 +691,7 @@ export const id = {
     },
   },
   invoices: {
+    id: "ID Faktur",
     title: "Faktur",
     title_create: "Buat Faktur",
     title_list: "Daftar Faktur",
@@ -687,6 +715,10 @@ export const id = {
     toast_update: "Faktur diperbarui",
   },
   notifications: {
+    empty: "Belum ada notifikasi",
+    toast_created: "Notifikasi berhasil dibuat",
+    toast_deleted: "Notifikasi berhasil dihapus",
+    toast_sent: "Notifikasi berhasil dikirim",
     title_create: "Buat Notifikasi",
     badge_manual: "Kirim Manual",
     label_channel: "Kanal",
@@ -709,6 +741,8 @@ export const id = {
     placeholder_recipient: "Cth: 08123456789 atau email@ex.com",
   },
   cms: {
+    empty: "Belum ada halaman konten",
+    toast_add: "Konten berhasil ditambahkan",
     title_create: "Buat Kalender / Halaman",
     title_edit: "Ubah Halaman",
     title_list: "Daftar Halaman CMS",
@@ -734,6 +768,16 @@ export const id = {
   },
   system_admin: {
     settings: {
+      free_delivery_min: "Min Belanja Gratis Ongkir",
+      province: "Provinsi",
+      delivery_settings: "Pengaturan Pengiriman",
+      available_days: "Hari Tersedia",
+      same_day_desc: "Pengiriman hari yang sama",
+      preorder_only_desc: "Hanya menerima preorder",
+      order_settings: "Pengaturan Pesanan",
+      btn_load_def: "Muat Pengaturan Awal",
+      quick_setup_desc: "Gunakan pengaturan cepat",
+      quick_setup: "Pengaturan Cepat",
       title: "Pengaturan Operasional",
       subtitle:
         "Semua perubahan pengaturan di bawah ini akan langsung memengaruhi operasional toko. Gunakan data demo jika Anda ingin melakukan simulasi pengaturan sistem.",
@@ -766,6 +810,7 @@ export const id = {
       save_settings: "Simpan Pengaturan",
     },
     admin_users: {
+      subtitle_add: "Tambah admin baru ke sistem",
       title_add: "Tambah Admin",
       title_list: "Daftar Admin",
       subtitle_list: "Ubah peran / atur ulang kata sandi",
@@ -789,6 +834,7 @@ export const id = {
       enter_password: "Masukkan kata sandi...",
     },
     audit_log: {
+      empty_description: "Belum ada log audit yang tercatat",
       title: "Log Audit Sistem",
       subtitle: "Pantau aktivitas administratif dan perubahan sistem.",
       user: "Pengguna",
@@ -1587,6 +1633,16 @@ export const en = {
   },
   system_admin: {
     settings: {
+      free_delivery_min: "Min Belanja Gratis Ongkir",
+      province: "Provinsi",
+      delivery_settings: "Pengaturan Pengiriman",
+      available_days: "Hari Tersedia",
+      same_day_desc: "Pengiriman hari yang sama",
+      preorder_only_desc: "Hanya menerima preorder",
+      order_settings: "Pengaturan Pesanan",
+      btn_load_def: "Muat Pengaturan Awal",
+      quick_setup_desc: "Gunakan pengaturan cepat",
+      quick_setup: "Pengaturan Cepat",
       title: "Operational Settings",
       subtitle:
         "All settings changes below will directly affect store operations. Use demo data if you want to simulate system settings.",
@@ -1619,6 +1675,7 @@ export const en = {
       save_settings: "Save Settings",
     },
     admin_users: {
+      subtitle_add: "Tambah admin baru ke sistem",
       title_add: "Add Admin",
       title_list: "Admin List",
       subtitle_list: "Change roles / reset passwords",
@@ -1642,6 +1699,7 @@ export const en = {
       enter_password: "Enter password...",
     },
     audit_log: {
+      empty_description: "Belum ada log audit yang tercatat",
       title: "System Audit Log",
       subtitle: "Monitor administrative actions and system updates.",
       user: "User",
@@ -2388,6 +2446,16 @@ export const ja = {
   },
   system_admin: {
     settings: {
+      free_delivery_min: "Min Belanja Gratis Ongkir",
+      province: "Provinsi",
+      delivery_settings: "Pengaturan Pengiriman",
+      available_days: "Hari Tersedia",
+      same_day_desc: "Pengiriman hari yang sama",
+      preorder_only_desc: "Hanya menerima preorder",
+      order_settings: "Pengaturan Pesanan",
+      btn_load_def: "Muat Pengaturan Awal",
+      quick_setup_desc: "Gunakan pengaturan cepat",
+      quick_setup: "Pengaturan Cepat",
       title: "運用設定",
       subtitle:
         "以下の設定変更は店舗運営に直接影響します。システム設定をシミュレートしたい場合は、デモデータを使用してください。",
@@ -2420,6 +2488,7 @@ export const ja = {
       save_settings: "設定を保存",
     },
     admin_users: {
+      subtitle_add: "Tambah admin baru ke sistem",
       title_add: "管理者を追加",
       title_list: "管理者一覧",
       subtitle_list: "役割の変更 / パスワードのリセット",
@@ -2440,6 +2509,7 @@ export const ja = {
       },
     },
     audit_log: {
+      empty_description: "Belum ada log audit yang tercatat",
       title: "システム監査ログ",
       subtitle: "管理者およびシステムの活動",
       user: "ユーザー",

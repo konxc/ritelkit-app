@@ -1,0 +1,73 @@
+
+> roti-sholawat@0.0.1 check:i18n /home/dev/project/roti-sholawat
+> tsx scripts/check-i18n.ts
+
+
+🔍 i18n Validation Report
+=========================
+Total available keys: 827
+Total used keys: 606
+Total occurrences in code: 924
+
+❌ Missing Keys (Used in code, but missing from translation file):
+   - "payment."
+     Used in: 
+       src/components/admin/pages/OverviewApp.svelte
+
+♻️  Unused Keys (Defined in translation file, but never used statically):
+   - [nav] 4 keys
+       "nav.profile"
+       "nav.group_main"
+       "nav.group_management"
+       "nav.group_others"
+   - [design_system] 5 keys
+       "design_system.title", "design_system.toc", "design_system.forms_grid", ... and 2 more
+   - [common] 11 keys
+       "common.error", "common.success", "common.warning", ... and 8 more
+   - [catalog] 23 keys
+       "catalog.products.initial_stock", "catalog.products.stock_placeholder", "catalog.products.visibility", ... and 20 more
+   - [orders] 14 keys
+       "orders.subtitle_add", "orders.customer_info", "orders.save", ... and 11 more
+   - [shipping] 1 keys
+       "shipping.title"
+   - [invoice] 2 keys
+       "invoice.title_create"
+       "invoice.title_list"
+   - [refund] 3 keys
+       "refund.title"
+       "refund.title_create"
+       "refund.title_list"
+   - [customers] 1 keys
+       "customers.muted_list"
+   - [coupons] 5 keys
+       "coupons.muted_list", "coupons.scheduling", "coupons.select_type", ... and 2 more
+   - [ads] 15 keys
+       "ads.campaign_info", "ads.campaign_name", "ads.name_placeholder", ... and 12 more
+   - [refunds] 15 keys
+       "refunds.order_no", "refunds.initial_status", "refunds.reason_placeholder", ... and 12 more
+   - [fulfillment] 14 keys
+       "fulfillment.badge_tracking", "fulfillment.order_no", "fulfillment.order_no_placeholder", ... and 11 more
+   - [shipping_rules] 28 keys
+       "shipping_rules.title", "shipping_rules.subtitle_add", "shipping_rules.identity", ... and 25 more
+   - [invoices] 8 keys
+       "invoices.title_create", "invoices.order_no_placeholder", "invoices.generate", ... and 5 more
+   - [notifications] 10 keys
+       "notifications.badge_manual", "notifications.placeholder_template", "notifications.placeholder_payload", ... and 7 more
+   - [cms] 9 keys
+       "cms.title_edit", "cms.label_active", "cms.badge_brand_awareness", ... and 6 more
+   - [system_admin] 28 keys
+       "system_admin.settings.simulation_mode", "system_admin.settings.simulation_desc", "system_admin.settings.seed_data", ... and 25 more
+   - [status] 4 keys
+       "status.unpaid"
+       "status.active"
+       "status.inactive"
+       "status.draft"
+   - [payment] 6 keys
+       "payment.unpaid", "payment.paid", "payment.failed", ... and 3 more
+   - [simulasi] 6 keys
+       "simulasi.title", "simulasi.subtitle", "simulasi.active_data", ... and 3 more
+   - [dashboard] 1 keys
+       "dashboard.view_all"
+
+Note: Unused keys might be constructed dynamically (e.g., t(`status_${val}`)).
+ ELIFECYCLE  Command failed with exit code 1.

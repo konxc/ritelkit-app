@@ -5,7 +5,7 @@ const TRANSLATIONS_PATH = path.join(process.cwd(), "src/lib/i18n/translations.ts
 const SRC_DIR = path.join(process.cwd(), "src");
 
 // Utility to read all files in a directory recursively
-function getAllFiles(dirPath, arrayOfFiles = []) {
+function getAllFiles(dirPath: string, arrayOfFiles: string[] = []): string[] {
   const files = fs.readdirSync(dirPath);
 
   files.forEach((file) => {
@@ -22,24 +22,33 @@ function getAllFiles(dirPath, arrayOfFiles = []) {
   return arrayOfFiles;
 }
 
+import { id } from "../src/lib/i18n/translations.ts";
+
 // 1. Parse translations.ts to get all available keys
-const availableKeys = new Set();
+const availableKeys = new Set<string>();
 try {
-  const tsContent = fs.readFileSync(TRANSLATIONS_PATH, "utf8");
-  // Simple regex to extract JSON keys from the id object. This relies on the keys being double-quoted string literals.
-  const regex = /"([^"]+)"\s*:/g;
-  for (const match of tsContent.matchAll(regex)) {
-    if (match[1].length > 1) {
-      availableKeys.add(match[1]);
+  function flattenObj(obj: any, parent: string = "", res: string[] = []) {
+    for (const key in obj) {
+      const propName = parent ? parent + "." + key : key;
+      if (typeof obj[key] === "object") {
+        flattenObj(obj[key], propName, res);
+      } else {
+        res.push(propName);
+      }
     }
+    return res;
   }
-} catch (e) {
-  console.error("Failed to read translations.ts:", e.message);
+  const keys = flattenObj(id);
+  for (const k of keys) {
+    availableKeys.add(k);
+  }
+} catch (e: any) {
+  console.error("Failed to parse translations:", e.message);
   process.exit(1);
 }
 
 // 2. Scan all files for usage of t("key") or tServer(lang, "key")
-const usedKeysMap = new Map(); // key -> list of files where used
+const usedKeysMap = new Map<string, Set<string>>(); // key -> list of files where used
 let totalOccurrences = 0;
 
 const filesToScan = getAllFiles(SRC_DIR);
@@ -48,7 +57,7 @@ filesToScan.forEach((file) => {
   const content = fs.readFileSync(file, "utf8");
   // Matches t("key"), t('key'), tServer(lang, "key"), tServer(lang, 'key')
   // Also matches string interpolations slightly if they use literal quotes inside, e.g. t(`...${...}...`) is harder, we'll focus on static strings.
-  const regex = /(?:t|tServer)\s*\(\s*(?:[\w]+,\s*)?["'`]([a-zA-Z0-9_.-]+)["'`]/g;
+  const regex = /\b(?:t|tServer)\s*\(\s*(?:[\w]+,\s*)?["'`]([a-zA-Z0-9_.-]+)["'`]/g;
 
   for (const match of content.matchAll(regex)) {
     const key = match[1];
@@ -58,9 +67,9 @@ filesToScan.forEach((file) => {
     if (key.endsWith("_")) continue;
 
     if (!usedKeysMap.has(key)) {
-      usedKeysMap.set(key, new Set());
+      usedKeysMap.set(key, new Set<string>());
     }
-    usedKeysMap.get(key).add(file.replace(`${process.cwd()}/`, ""));
+    usedKeysMap.get(key)!.add(file.replace(`${process.cwd()}/`, ""));
     totalOccurrences++;
   }
 
@@ -75,8 +84,8 @@ console.log(`Total available keys: ${availableKeys.size}`);
 console.log(`Total used keys: ${usedKeysMap.size}`);
 console.log(`Total occurrences in code: ${totalOccurrences}`);
 
-const missingKeys = [];
-const unusedKeys = [];
+const missingKeys: { key: string; files: string[] }[] = [];
+const unusedKeys: string[] = [];
 
 // Find missing keys (used in code, but not in translations.ts)
 for (const [key, files] of usedKeysMap.entries()) {
@@ -115,7 +124,7 @@ if (unusedKeys.length === 0) {
   console.log("   (None! Very clean 🧹)");
 } else {
   // Group to avoid spamming too much output
-  const unusedByPrefix = unusedKeys.reduce((acc, key) => {
+  const unusedByPrefix = unusedKeys.reduce((acc: Record<string, string[]>, key: string) => {
     const prefix = key.split(".")[0] || "other";
     acc[prefix] = acc[prefix] || [];
     acc[prefix].push(key);
@@ -123,11 +132,14 @@ if (unusedKeys.length === 0) {
   }, {});
 
   for (const [group, keys] of Object.entries(unusedByPrefix)) {
-    console.log(`   - [${group}] ${keys.length} keys`);
-    if (keys.length < 5) {
-      for (const k of keys) console.log(`       "${k}"`);
+    const typedKeys = keys as string[];
+    console.log(`   - [${group}] ${typedKeys.length} keys`);
+    if (typedKeys.length < 5) {
+      for (const k of typedKeys) console.log(`       "${k}"`);
     } else {
-      console.log(`       "${keys[0]}", "${keys[1]}", "${keys[2]}", ... and ${keys.length - 3} more`);
+      console.log(
+        `       "${typedKeys[0]}", "${typedKeys[1]}", "${typedKeys[2]}", ... and ${typedKeys.length - 3} more`,
+      );
     }
   }
 }

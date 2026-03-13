@@ -255,7 +255,7 @@
                 </TableCell>
                 <TableCell class="py-4">
                   <Badge variant={order.paymentStatus === "paid" ? "success" : "warning"}>
-                    {t("payment." + (order.paymentStatus || "unpaid"))}
+                    {t(`payment.${order.paymentStatus || "unpaid"}`)}
                   </Badge>
                 </TableCell>
               </TableRow>
