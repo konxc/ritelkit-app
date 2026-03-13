@@ -463,7 +463,7 @@
           checked
           class="h-4 w-4 rounded border-stone-300 text-[#c48a3a] focus:ring-[#c48a3a]"
         />
-        <label for="isActive" class="text-sm font-bold text-stone-700">{t("catalog.products.active")}</label>
+        <label for="isActive" class="text-sm font-bold text-stone-700">{t("common.active")}</label>
       </div>
     </div>
   </AdminDrawerForm>
@@ -582,7 +582,7 @@
               <option value="true" selected={(tableState.editedValues[row.id]?.isActive ?? row.isActive) === 1}
                 >{t("catalog.products.active_pub")}</option
               >
-              <option value="false" selected={(tableState.editedValues[row.id]?.isActive ?? row.isActive) === 0}
+              <option value="false" selected={!(tableState.editedValues[row.id]?.isActive ?? row.isActive)}
                 >{t("catalog.products.draft_hide")}</option
               >
             </select>
