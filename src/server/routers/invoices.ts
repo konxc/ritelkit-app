@@ -35,17 +35,14 @@ export const invoiceRouter = router({
         .from(invoices)
         .innerJoin(orders, eq(orders.id, invoices.orderId));
 
-      const finalQuery =
-        whereClause.length > 0 ? baseQuery.where(and(...whereClause)) : baseQuery;
+      const finalQuery = whereClause.length > 0 ? baseQuery.where(and(...whereClause)) : baseQuery;
 
       const rows = await finalQuery.orderBy(desc(invoices.createdAt)).limit(limit).offset(offset);
 
       const countQuery = ctx.db.select({ count: sql<number>`count(*)` }).from(invoices);
       const finalCountQuery =
         whereClause.length > 0
-          ? countQuery
-              .innerJoin(orders, eq(orders.id, invoices.orderId))
-              .where(and(...whereClause))
+          ? countQuery.innerJoin(orders, eq(orders.id, invoices.orderId)).where(and(...whereClause))
           : countQuery;
 
       const totalRes = await finalCountQuery;
@@ -54,5 +51,26 @@ export const invoiceRouter = router({
         rows,
         total: totalRes[0]?.count || 0,
       };
+    }),
+  update: adminProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        data: z.object({
+          status: z.string().optional(),
+          dueAt: z.string().optional().nullable(),
+        }),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const now = new Date().toISOString();
+      await ctx.db
+        .update(invoices)
+        .set({
+          ...input.data,
+          updatedAt: now,
+        })
+        .where(eq(invoices.id, input.id));
+      return { ok: true };
     }),
 });

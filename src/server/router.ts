@@ -11,6 +11,10 @@ import { couponRouter } from "./routers/coupons";
 import { adsRouter } from "./routers/ads";
 import { inventoryRouter } from "./routers/inventory";
 import { settingsRouter } from "./routers/settings";
+import { cmsRouter } from "./routers/cms";
+import { adminUserRouter } from "./routers/adminUsers";
+import { notificationRouter } from "./routers/notifications";
+import { auditLogRouter } from "./routers/auditLog";
 
 export const appRouter = router({
   products: productRouter,
@@ -25,6 +29,10 @@ export const appRouter = router({
   ads: adsRouter,
   inventory: inventoryRouter,
   settings: settingsRouter,
+  cms: cmsRouter,
+  adminUsers: adminUserRouter,
+  notifications: notificationRouter,
+  auditLogs: auditLogRouter,
 });
 
 export type AppRouter = typeof appRouter;

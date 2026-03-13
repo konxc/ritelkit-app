@@ -2,7 +2,6 @@
 import { asc } from "drizzle-orm";
 import AdminTabs from "../../components/admin/AdminTabs.astro";
 import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
-import PaginationNav from "../../components/admin/PaginationNav.svelte";
 import KatalogTabContent from "../../components/admin/pages/KatalogTabContent.svelte";
 import { categories } from "../../db/schema";
 import AdminLayout from "../../layouts/AdminLayout.astro";
@@ -44,20 +43,8 @@ const categoryId = Astro.url.searchParams.get("category");
 const statusFilter = Astro.url.searchParams.get("status"); // 'active', 'inactive'
 
 const { page, q, limit } = parsePage(Astro.url, 20);
-
-function buildPageUrl(targetPage: number) {
-  const url = new URL(Astro.url.pathname, Astro.url.origin);
-  url.searchParams.set("tab", tab);
-  url.searchParams.set("subtab", subtab);
-  if (q) url.searchParams.set("q", q);
-  if (categoryId) url.searchParams.set("category", categoryId);
-  if (statusFilter) url.searchParams.set("status", statusFilter);
-  if (targetPage > 1) url.searchParams.set("page", String(targetPage));
-  return url.search;
-}
 const db = getDrizzle(Astro);
 
-let totalPages = 1;
 const initialData = {
   categories: [] as any[],
   categoriesTotal: 0,
@@ -78,7 +65,6 @@ if (tab === "categories") {
   const result = await caller.categories.list({ limit, page, q: q || undefined });
   initialData.categories = result.data;
   initialData.categoriesTotal = result.total;
-  totalPages = Math.max(1, Math.ceil(result.total / limit));
 } else if (tab === "products") {
   const result = await caller.products.list({
     limit,
@@ -90,7 +76,6 @@ if (tab === "categories") {
 
   initialData.products = result.data;
   initialData.productsTotal = result.total;
-  totalPages = Math.max(1, Math.ceil(result.total / limit));
 
   // Use all categories for options
   initialData.categories = categoryOptions;
@@ -115,12 +100,6 @@ if (tab === "categories") {
   initialData.inventoryMovements = movementsResult.data;
   initialData.inventoryMovementsTotal = movementsResult.total;
   initialData.categories = categoryOptions; // Added this line
-
-  if (subtab === "stock") {
-    totalPages = Math.max(1, Math.ceil(productsResult.total / limit));
-  } else {
-    totalPages = Math.max(1, Math.ceil(movementsResult.total / limit));
-  }
 
   // Use all categories for options
   initialData.categoriesTotal = categoryOptions.length;
@@ -213,12 +192,4 @@ const lang: LanguageCode = getLang(Astro.cookies);
   }
 
   <KatalogTabContent {tab} {subtab} {q} status={statusFilter || ""} {page} {limit} {initialData} {lang} client:load />
-
-  <PaginationNav
-    page={page}
-    totalPages={totalPages}
-    prevHref={page > 1 ? buildPageUrl(page - 1) : undefined}
-    nextHref={page < totalPages ? buildPageUrl(page + 1) : undefined}
-    client:load
-  />
 </AdminLayout>

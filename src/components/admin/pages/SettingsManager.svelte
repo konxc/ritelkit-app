@@ -1,19 +1,22 @@
 <script lang="ts">
-  import { actions } from "astro:actions";
+  import { trpc } from "../../../lib/trpc";
+  import { createQuery } from "@tanstack/svelte-query";
   import { fly } from "svelte/transition";
   import { t, initI18n } from "../../../lib/i18n/store.svelte";
-  import { onMount } from "svelte";
+  import { untrack } from "svelte";
   import ToastNotification from "../ToastNotification.svelte";
   import TextInput from "../ui/forms/TextInput.svelte";
   import SelectInput from "../ui/forms/SelectInput.svelte";
   import Button from "../ui/Button.svelte";
+  import { createAdminMutation } from "../../../lib/admin-mutations.svelte";
 
   let { lang }: { lang?: any } = $props();
 
-  let toastRef = $state<ToastNotification>();
-  let isSubmitting = $state(false);
-  let isSeeding = $state(false);
+  initI18n(untrack(() => lang));
 
+  let toastRef = $state<ToastNotification>();
+
+  // Local state for form fields, initialized from query data
   let preorderOnly = $state(false);
   let leadTimeHours = $state(0);
   let cutoffTime = $state("");
@@ -22,9 +25,14 @@
   let deliveryProvince = $state("DI Yogyakarta");
   let freeDeliveryThreshold = $state(0);
 
-  const fetchSettings = async () => {
-    const { data, error } = await actions.getSettings({});
-    if (!error && data) {
+  const query = createQuery(() => ({
+    queryKey: ["settings"],
+    queryFn: () => trpc.settings.get.query(),
+  }));
+
+  $effect(() => {
+    if (query.data) {
+      const data = query.data as Record<string, any>;
       const os = data.order_settings || {};
       const ds = data.delivery_settings || {};
 
@@ -36,11 +44,16 @@
       deliveryProvince = ds.deliveryProvince ?? ds.delivery_province ?? "DI Yogyakarta";
       freeDeliveryThreshold = ds.freeDeliveryThreshold ?? ds.free_delivery_threshold ?? 0;
     }
-  };
-
-  $effect(() => {
-    fetchSettings();
   });
+
+  const mutation = createAdminMutation(
+    (data: any) => trpc.settings.update.mutate(data),
+    {
+      invalidateKeys: [["settings"]],
+      successMessage: t("system_admin.settings.toast_success"),
+    },
+    () => toastRef,
+  );
 
   const formatDays = (value: string) =>
     value
@@ -50,8 +63,7 @@
 
   const handleSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
-    isSubmitting = true;
-    const { error } = await actions.updateSettings({
+    await mutation.mutate({
       orderSettings: {
         preorderOnly,
         minimumLeadTimeHours: Number(leadTimeHours),
@@ -64,13 +76,6 @@
         freeDeliveryThreshold: Number(freeDeliveryThreshold),
       },
     });
-    isSubmitting = false;
-
-    if (error) {
-      toastRef?.show(error.message, "error");
-    } else {
-      toastRef?.show(t("system_admin.settings.toast_success"), "success");
-    }
   };
 
   const handleSeed = async () => {
@@ -93,197 +98,158 @@
       class="flex flex-col gap-4 rounded-2xl border border-stone-200/60 bg-stone-50 p-6 sm:flex-row sm:items-center sm:justify-between"
     >
       <div class="flex items-start gap-3 text-stone-600">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="mt-0.5 shrink-0 text-[#c48a3a]"
-          ><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg
-        >
-        <div>
-          <h4 class="mb-0.5 text-sm font-bold text-stone-900">{t("system_admin.settings.simulation_mode")}</h4>
-          <p class="text-sm">{t("system_admin.settings.simulation_desc")}</p>
-        </div>
-      </div>
-      <Button
-        variant="outline"
-        type="button"
-        onclick={handleSeed}
-        disabled={isSeeding || isSubmitting}
-        aria-label={t("system_admin.settings.seed_data")}
-      >
-        {#if isSeeding}
+        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm">
           <svg
-            class="mr-2 -ml-1 h-4 w-4 animate-spin text-stone-600"
             xmlns="http://www.w3.org/2000/svg"
-            fill="none"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
-            ><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path
-              class="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            ></path></svg
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            ><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" /><path
+              d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"
+            /><path d="M9 12H4s.55-3.03 2-5c1.62-2.2 5-3 5-3" /><path d="M12 15v5s3.03-.55 5-2c2.2-1.62 3-5 3-5" /></svg
           >
-          <span class="text-xs">{t("system_admin.settings.seeding")}</span>
-        {:else}
-          {t("system_admin.settings.seed_data")}
-        {/if}
-      </Button>
-    </div>
-
-    <form id="settings-form" onsubmit={handleSubmit} class="space-y-8">
-      <div class="grid gap-8 lg:grid-cols-2">
-        <!-- Panel 1: Model Pesanan -->
-        <div
-          class="space-y-6 rounded-3xl border border-stone-200/60 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] sm:p-8"
-        >
-          <div class="border-b border-stone-100 pb-4">
-            <h3 class="font-['Syne',sans-serif] text-xl font-bold text-stone-800">
-              {t("system_admin.settings.order_model")}
-            </h3>
-            <p class="mt-1 text-sm text-stone-500">{t("system_admin.settings.order_model_desc")}</p>
-          </div>
-
-          <div class="space-y-5">
-            <SelectInput
-              id="preorder"
-              label={t("system_admin.settings.preorder_only")}
-              bind:value={preorderOnly}
-              options={[
-                { label: t("system_admin.settings.preorder_yes"), value: true },
-                {
-                  label: t("system_admin.settings.preorder_no"),
-                  value: false,
-                },
-              ]}
-            />
-            <p class="-mt-2.5 ml-1 text-xs text-stone-500">
-              {t("system_admin.settings.preorder_help")}
-            </p>
-
-            <TextInput
-              id="lead_time"
-              type="number"
-              label={t("system_admin.settings.lead_time")}
-              min="0"
-              bind:value={leadTimeHours}
-              aria-describedby="lead_time_help"
-            />
-            <p id="lead_time_help" class="-mt-2.5 ml-1 text-xs text-stone-500">
-              {t("system_admin.settings.lead_time_help")}
-            </p>
-
-            <TextInput
-              id="cutoff_time"
-              type="time"
-              label={t("system_admin.settings.cutoff_time")}
-              bind:value={cutoffTime}
-              aria-describedby="cutoff_time_help"
-            />
-            <p id="cutoff_time_help" class="-mt-2.5 ml-1 text-xs text-stone-500">
-              {t("system_admin.settings.cutoff_time_help")}
-            </p>
-
-            <SelectInput
-              id="sameday_enabled"
-              label={t("system_admin.settings.same_day")}
-              bind:value={sameDayEnabled}
-              options={[
-                { label: t("common.active"), value: true },
-                { label: t("common.inactive"), value: false },
-              ]}
-            />
-            <p class="-mt-2.5 ml-1 text-xs text-stone-500">
-              {t("system_admin.settings.same_day_help")}
-            </p>
-
-            <TextInput
-              id="available_days"
-              type="text"
-              label={t("system_admin.settings.operational_days")}
-              bind:value={availableDays}
-              placeholder={t("system_admin.settings.operational_days_placeholder")}
-              aria-describedby="available_days_help"
-            />
-            <p id="available_days_help" class="-mt-2.5 ml-1 text-xs text-stone-500">
-              {t("system_admin.settings.operational_days_help")}
-            </p>
-          </div>
         </div>
-
-        <!-- Panel 2: Pengiriman -->
-        <div
-          class="space-y-6 self-start rounded-3xl border border-stone-200/60 bg-white p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] sm:p-8"
-        >
-          <div class="border-b border-stone-100 pb-4">
-            <h3 class="font-['Syne',sans-serif] text-xl font-bold text-stone-800">
-              {t("system_admin.settings.delivery")}
-            </h3>
-            <p class="mt-1 text-sm text-stone-500">{t("system_admin.settings.delivery_desc")}</p>
-          </div>
-
-          <div class="space-y-5">
-            <TextInput
-              id="delivery_province"
-              type="text"
-              label={t("system_admin.settings.default_province")}
-              bind:value={deliveryProvince}
-              placeholder={`${t("common.example")}: DI Yogyakarta`}
-            />
-
-            <div class="space-y-1.5">
-              <label for="free_delivery_threshold" class="block text-sm font-semibold text-stone-700"
-                >{t("system_admin.settings.free_delivery_threshold")}</label
-              >
-              <div class="relative">
-                <span class="absolute top-1/2 left-4 z-10 -translate-y-1/2 font-medium text-stone-500"
-                  >{t("common.currency_symbol")}</span
-                >
-                <TextInput
-                  id="free_delivery_threshold"
-                  type="number"
-                  min="0"
-                  step="1000"
-                  bind:value={freeDeliveryThreshold}
-                  class="pr-4 pl-11"
-                  aria-describedby="free_delivery_help"
-                />
-              </div>
-              <p id="free_delivery_help" class="-mt-1 ml-1 text-xs text-stone-500">
-                {t("system_admin.settings.free_delivery_help")}
-              </p>
-            </div>
-          </div>
+        <div>
+          <h4 class="text-sm font-bold text-stone-900">{t("system_admin.settings.quick_setup")}</h4>
+          <p class="text-xs text-stone-500">{t("system_admin.settings.quick_setup_desc")}</p>
         </div>
       </div>
-
-      <div class="flex items-center justify-end border-t border-stone-200 pt-4">
-        <Button variant="primary" type="submit" disabled={isSubmitting || isSeeding}>
-          {#if isSubmitting}
-            <svg
-              class="mr-2 -ml-1 inline-block h-5 w-5 animate-spin text-white"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              ><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path
+      <div class="flex items-center gap-3">
+        <Button variant="secondary" outline onclick={handleSeed} class="border-stone-200 text-stone-600">
+          {t("system_admin.settings.btn_load_def")}
+        </Button>
+        <Button variant="primary" onclick={(e: any) => handleSubmit(e)} disabled={mutation.isPending}>
+          {#if mutation.isPending}
+            <svg class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path
                 class="opacity-75"
                 fill="currentColor"
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path></svg
-            >
-            <span class="text-xs">{t("common.saving")}</span>
+              ></path>
+            </svg>
+            {t("common.processing")}
           {:else}
-            {t("system_admin.settings.save_settings")}
+            {t("common.save_changes")}
           {/if}
         </Button>
       </div>
-    </form>
+    </div>
+
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+      <!-- Order Settings -->
+      <section
+        class="space-y-6 rounded-3xl border border-stone-200/60 bg-white p-8 shadow-sm transition-all hover:shadow-md"
+      >
+        <div class="flex items-center gap-3 border-b border-stone-100 pb-4">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              ><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" /><path d="M3 6h18" /><path
+                d="M16 10a4 4 0 0 1-8 0"
+              /></svg
+            >
+          </div>
+          <h3 class="text-lg font-bold text-stone-900">{t("system_admin.settings.order_settings")}</h3>
+        </div>
+
+        <div class="space-y-6">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <label for="preorderOnly" class="text-sm font-bold text-stone-700"
+                >{t("system_admin.settings.preorder_only")}</label
+              >
+              <p class="text-[11px] text-stone-400">{t("system_admin.settings.preorder_only_desc")}</p>
+            </div>
+            <input
+              id="preorderOnly"
+              type="checkbox"
+              bind:checked={preorderOnly}
+              class="h-5 w-5 rounded border-stone-300 text-[#c48a3a] focus:ring-[#c48a3a]"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <TextInput
+              label={t("system_admin.settings.lead_time")}
+              type="number"
+              bind:value={leadTimeHours}
+              suffix="Hours"
+            />
+            <TextInput label={t("system_admin.settings.cutoff_time")} type="time" bind:value={cutoffTime} />
+          </div>
+
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <label for="sameDayEnabled" class="text-sm font-bold text-stone-700"
+                >{t("system_admin.settings.same_day")}</label
+              >
+              <p class="text-[11px] text-stone-400">{t("system_admin.settings.same_day_desc")}</p>
+            </div>
+            <input
+              id="sameDayEnabled"
+              type="checkbox"
+              bind:checked={sameDayEnabled}
+              class="h-5 w-5 rounded border-stone-300 text-[#c48a3a] focus:ring-[#c48a3a]"
+            />
+          </div>
+
+          <TextInput
+            label={t("system_admin.settings.available_days")}
+            bind:value={availableDays}
+            placeholder="Monday, Tuesday, ..."
+          />
+        </div>
+      </section>
+
+      <!-- Delivery Settings -->
+      <section
+        class="space-y-6 rounded-3xl border border-stone-200/60 bg-white p-8 shadow-sm transition-all hover:shadow-md"
+      >
+        <div class="flex items-center gap-3 border-b border-stone-100 pb-4">
+          <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              ><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M7 3v18" /><path d="M3 7h18" /><path
+                d="M3 12h18"
+              /><path d="M3 17h18" /></svg
+            >
+          </div>
+          <h3 class="text-lg font-bold text-stone-900">{t("system_admin.settings.delivery_settings")}</h3>
+        </div>
+
+        <div class="space-y-6">
+          <TextInput label={t("system_admin.settings.province")} bind:value={deliveryProvince} />
+          <TextInput
+            label={t("system_admin.settings.free_delivery_min")}
+            type="number"
+            bind:value={freeDeliveryThreshold}
+            prefix={t("common.currency_symbol")}
+          />
+        </div>
+      </section>
+    </div>
   </div>
 
   <ToastNotification bind:this={toastRef} />

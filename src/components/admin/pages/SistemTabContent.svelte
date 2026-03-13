@@ -14,6 +14,7 @@
     page = 1,
     limit = 30,
     rows = [],
+    total = 0,
     lang,
   }: {
     tab: string;
@@ -22,6 +23,7 @@
     page?: number;
     limit?: number;
     rows?: any[];
+    total?: number;
     lang?: any;
   } = $props();
 
@@ -31,11 +33,11 @@
 
 <QueryProvider initialData={rows}>
   {#if tab === "content"}
-    <CmsManager {q} {status} {page} {limit} {rows} {lang} />
+    <CmsManager {q} {status} {page} {limit} {rows} {total} {lang} />
   {:else if tab === "notifications"}
-    <NotificationsManager {q} {status} {page} {limit} {rows} {lang} />
+    <NotificationsManager {q} {status} {page} {limit} {rows} {total} {lang} />
   {:else if tab === "audit"}
-    <AuditLogManager {q} {status} {page} {limit} {rows} {lang} />
+    <AuditLogManager {q} {status} {page} {limit} {rows} {total} {lang} />
   {:else if tab === "admins"}
     <AdminUsersManager {rows} {q} {status} {lang} />
   {/if}

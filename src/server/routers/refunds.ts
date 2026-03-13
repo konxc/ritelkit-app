@@ -24,14 +24,12 @@ export const refundRouter = router({
       }
 
       const baseQuery = ctx.db.select().from(refunds);
-      const finalQuery =
-        whereClause.length > 0 ? baseQuery.where(and(...whereClause)) : baseQuery;
+      const finalQuery = whereClause.length > 0 ? baseQuery.where(and(...whereClause)) : baseQuery;
 
       const rows = await finalQuery.orderBy(desc(refunds.createdAt)).limit(limit).offset(offset);
 
       const countQuery = ctx.db.select({ count: sql<number>`count(*)` }).from(refunds);
-      const finalCountQuery =
-        whereClause.length > 0 ? countQuery.where(and(...whereClause)) : countQuery;
+      const finalCountQuery = whereClause.length > 0 ? countQuery.where(and(...whereClause)) : countQuery;
 
       const totalRes = await finalCountQuery;
 

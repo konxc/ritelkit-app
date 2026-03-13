@@ -23,6 +23,11 @@
   import SelectInput from "../ui/forms/SelectInput.svelte";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import Textarea from "../ui/forms/Textarea.svelte";
+  import { createAdminFilters } from "../../../lib/admin-filters.svelte";
+  import AdminDrawerForm from "../ui/overlay/AdminDrawerForm.svelte";
+  import { createAdminMutation } from "../../../lib/admin-mutations.svelte";
+  import { createTableState } from "../../../lib/admin-table-state.svelte";
+  import PaginationNav from "../PaginationNav.svelte";
 
   let columns = $state([
     { id: "foto", label: t("catalog.products.photo"), isVisible: true, class: "" },
@@ -57,7 +62,6 @@
     isActive: number;
     imagesJson?: string | null;
   };
-
   let {
     rows: initialRows = [],
     total: initialTotal = 0,
@@ -80,104 +84,98 @@
 
   initI18n(untrack(() => lang));
 
+  const filters = createAdminFilters({ q, status, page });
+  const localLimit = untrack(() => limit) || 20;
+
+  const tableState = createTableState<ProductRow>(() => currentRows);
   const queryClient = useQueryClient();
-  let isMutating = $state(false);
-  let csrfToken = $state("");
   let toastRef = $state<ToastNotification>();
-
-  let localQ = $state(untrack(() => q));
-  let localCategoryId = $state("");
-  let localStatus = $state(untrack(() => status));
-  let localPage = $state(untrack(() => page));
-  let localLimit = $derived(limit);
-
-  function syncFiltersFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    localQ = params.get("q") || "";
-    localCategoryId = params.get("category") || "";
-    localStatus = params.get("status") || "";
-    localPage = parseInt(params.get("page") || "1", 10);
-  }
-
-  onMount(() => {
-    csrfToken = document.querySelector("meta[name='csrf-token']")?.getAttribute("content") || "";
-    syncFiltersFromUrl();
-
-    // Listen for URL changes (from navigate or history API)
-    window.addEventListener("popstate", syncFiltersFromUrl);
-    window.addEventListener("astro:after-navigation", syncFiltersFromUrl);
-
-    return () => {
-      window.removeEventListener("popstate", syncFiltersFromUrl);
-      window.removeEventListener("astro:after-navigation", syncFiltersFromUrl);
-    };
-  });
+  let processingId = $state<string | null>(null);
+  let isDrawerOpen = $state(false);
 
   const productsQuery = createQuery(() => ({
-    queryKey: ["products.list", { q: localQ, categoryId: localCategoryId, status: localStatus, page: localPage, limit: localLimit }],
+    queryKey: ["products.list", filters.q, filters.status, filters.categoryId, filters.page],
     queryFn: () =>
       trpc.products.list.query({
-        q: localQ,
-        categoryId: localCategoryId,
-        status: localStatus,
-        page: localPage,
+        q: filters.q,
+        status: filters.status,
+        categoryId: filters.categoryId,
         limit: localLimit,
+        page: filters.page,
       }),
-    initialData:
-      localQ === "" && localCategoryId === "" && localStatus === "" && localPage === 1
-        ? { data: initialRows, total: initialTotal }
-        : undefined,
-    placeholderData: (prev) => prev, // Keep old data while fetching
+    initialData: filters.isInitial ? { data: initialRows, total: initialTotal } : undefined,
   }));
 
-  let currentRows = $derived((productsQuery.data?.data as ProductRow[]) || initialRows);
-  let isFetching = $derived(productsQuery.isFetching);
+  const currentRows = $derived(productsQuery.data?.data || []);
+  const totalPages = $derived(Math.max(1, Math.ceil((productsQuery.data?.total || 0) / localLimit)));
 
-  const handleCreate = async (payload: ProductMutationInput) => {
-    isMutating = true;
-    try {
-      await trpc.products.create.mutate(payload);
-      queryClient.invalidateQueries({ queryKey: ["products.list"] });
-      toastRef?.show(t("catalog.products.toast_add"), "success");
-      return true;
-    } catch (err: any) {
-      toastRef?.show(err.message || "Failed to add product", "error");
-      return false;
-    } finally {
-      isMutating = false;
-    }
-  };
+  // Update table state when query data changes
 
-  const handleUpdate = async (id: string, data: Partial<ProductMutationInput>) => {
-    isMutating = true;
+  const updateMutation = createAdminMutation(
+    (input: { id: string; data: Partial<ProductMutationInput> }) => trpc.products.update.mutate(input),
+    {
+      invalidateKeys: [["products.list"]],
+      successMessage: t("catalog.products.toast_update"),
+      onSuccess: () => {
+        if (processingId) tableState.clearChanges(processingId);
+      },
+    },
+    () => toastRef,
+  );
+
+  const deleteMutation = createAdminMutation(
+    (id: string) => trpc.products.delete.mutate(id),
+    {
+      invalidateKeys: [["products.list"]],
+      successMessage: t("catalog.products.toast_delete"),
+    },
+    () => toastRef,
+  );
+
+  const createMutation = createAdminMutation(
+    (payload: ProductMutationInput) => trpc.products.create.mutate(payload),
+    {
+      invalidateKeys: [["products.list"]],
+      successMessage: t("catalog.products.toast_add"),
+      onSuccess: () => {
+        isDrawerOpen = false;
+        // Reset local form if needed
+      },
+    },
+    () => toastRef,
+  );
+
+  let isMutating = $derived(updateMutation.isPending || deleteMutation.isPending || createMutation.isPending);
+
+  const handleSave = async (id: string) => {
+    const updates = tableState.editedValues[id];
+    if (!updates) return;
+
+    processingId = id;
     try {
-      await trpc.products.update.mutate({ id, data });
-      queryClient.invalidateQueries({ queryKey: ["products.list"] });
-      toastRef?.show(t("catalog.products.toast_update"), "success");
-    } catch (err: any) {
-      toastRef?.show(err.message || "Failed to update product", "error");
+      await updateMutation.mutate({ id, data: updates as Partial<ProductMutationInput> });
     } finally {
-      isMutating = false;
+      processingId = null;
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm(t("catalog.products.confirm_delete"))) return;
-    isMutating = true;
+    processingId = id;
     try {
-      await trpc.products.delete.mutate(id);
-      queryClient.invalidateQueries({ queryKey: ["products.list"] });
-      toastRef?.show(t("catalog.products.toast_delete"), "success");
-    } catch (err: any) {
-      toastRef?.show(err.message || "Failed to delete product", "error");
+      await deleteMutation.mutate(id);
     } finally {
-      isMutating = false;
+      processingId = null;
     }
   };
 
-  let isDrawerOpen = $state(false);
   let newImageUrls = $state<string[]>([]);
   let uploadStatus = $state("");
+  let csrfToken = $state("");
+
+  onMount(() => {
+    csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content") || "";
+  });
   let newName = $state("");
   let newSlug = $derived(
     newName
@@ -233,45 +231,12 @@
       slug: newSlug || `item-${Date.now()}`,
     };
 
-    const ok = await handleCreate(payload as ProductMutationInput);
-    if (ok) {
+    try {
+      await createMutation.mutate(payload as ProductMutationInput);
       form.reset();
       newImageUrls = [];
       newName = "";
-      isDrawerOpen = false;
-    }
-  };
-
-  const handleRowAction = async (id: string | number, action: string, rowEl: HTMLElement | null) => {
-    const resolvedId = String(id);
-
-    if (action === "delete") {
-      await handleDelete(resolvedId);
-      return;
-    }
-
-    if (action === "save") {
-      if (!rowEl) return;
-      const payload: Record<string, string | number | null> = {};
-      rowEl.querySelectorAll("[data-field]").forEach((cell) => {
-        const field = cell.getAttribute("data-field");
-        if (!field) return;
-        if (cell instanceof HTMLSelectElement || cell instanceof HTMLInputElement) {
-          payload[field] = field === "isActive" ? (cell.value === "true" ? 1 : 0) : cell.value;
-          return;
-        }
-        if (field === "images_json") {
-          payload.imagesJson = cell.getAttribute("data-value") || "[]";
-          return;
-        }
-        payload[field] = cell.textContent?.trim() || "";
-      });
-
-      if (payload.price) payload.price = Number(payload.price);
-      if (payload.stock) payload.stock = Number(payload.stock);
-
-      await handleUpdate(resolvedId, payload as Partial<ProductMutationInput>);
-    }
+    } catch (e) {}
   };
 
   const currentCategories = $derived(categoryOptions);
@@ -284,107 +249,41 @@
     <div class="hidden lg:flex lg:items-center lg:gap-3">
       <AdminHeaderFilters
         tab="products"
-        q={localQ}
-        status={localStatus}
-        categoryId={localCategoryId}
+        q={filters.q}
+        status={filters.status}
+        categoryId={filters.categoryId}
         {categoryOptions}
         bind:columns
         {lang}
       />
 
-    <Button
-      variant="outline"
-      href="/api/admin/export?entity=products"
-      class="border-stone-200 text-stone-600 hover:bg-stone-50"
-    >
-      <svg
-        slot="children"
-        xmlns="http://www.w3.org/2000/svg"
-        width="15"
-        height="15"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        class="mr-1.5 inline-block"
+      <Button
+        variant="outline"
+        href="/api/admin/export?entity=products"
+        class="border-stone-200 text-stone-600 hover:bg-stone-50"
       >
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-        <polyline points="7 10 12 15 17 10" />
-        <line x1="12" y1="15" x2="12" y2="3" />
-      </svg>
-      <span class="font-bold">{t("common.export")}</span>
-    </Button>
-
-    <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
-      <div class="flex items-center gap-2">
         <svg
+          slot="children"
           xmlns="http://www.w3.org/2000/svg"
-          width="18"
-          height="18"
+          width="15"
+          height="15"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
           stroke-width="2.5"
           stroke-linecap="round"
-          stroke-linejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg
+          stroke-linejoin="round"
+          class="mr-1.5 inline-block"
         >
-        {t("catalog.products.add")}
-      </div>
-    </Button>
-  </div>
-</div>
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        <span class="font-bold">{t("common.export")}</span>
+      </Button>
 
-<Fab onclick={() => (isDrawerOpen = true)} label={t("catalog.products.add")} />
-
-{#snippet productIcon()}
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2.5"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    ><path d="m7.5 4.27 9 5.15" /><path
-      d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"
-    /><path d="m3.3 7 8.7 5 8.7-5" /><path d="M12 22V12" /></svg
-  >
-{/snippet}
-
-{#snippet drawerFooter()}
-  <div class="flex items-center gap-3">
-    <button
-      type="button"
-      class="h-11 flex-1 rounded-2xl border border-stone-200 bg-white text-[0.7rem] font-black tracking-widest text-stone-400 uppercase transition-all hover:bg-stone-50 hover:text-stone-600 focus:outline-none active:scale-95 lg:h-[52px]"
-      onclick={() => (isDrawerOpen = false)}
-    >
-      {t("common.cancel")}
-    </button>
-    <Button
-      type="submit"
-      form="product-form"
-      variant="primary"
-      class="relative flex h-11 flex-[2] items-center justify-center gap-3 overflow-hidden rounded-2xl bg-[#c48a3a] px-8 py-0 font-black text-white shadow-[0_10px_30px_-10px_rgba(196,138,58,0.5)] transition-all hover:-translate-y-1 hover:shadow-[0_15px_35px_-10px_rgba(196,138,58,0.6)] active:scale-[0.98] lg:h-[52px]"
-      disabled={isMutating}
-    >
-      {#if isMutating}
-        <div class="flex items-center gap-3">
-          <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path
-              class="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            ></path>
-          </svg>
-          <span class="text-xs">{t("common.saving")}</span>
-        </div>
-      {:else}
-        <div class="flex items-center gap-3">
+      <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
+        <div class="flex items-center gap-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="18"
@@ -394,325 +293,323 @@
             stroke="currentColor"
             stroke-width="2.5"
             stroke-linecap="round"
-            stroke-linejoin="round"><path d="M12 5v14" /><path d="M5 12h14" /></svg
+            stroke-linejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg
           >
-          <span class="text-[0.75rem] tracking-tight uppercase">{t("catalog.products.add")}</span>
+          {t("catalog.products.add")}
         </div>
-      {/if}
-    </Button>
+      </Button>
+    </div>
   </div>
-{/snippet}
 
-<Drawer
-  bind:isOpen={isDrawerOpen}
-  title={t("catalog.products.add")}
-  subtitle={t("catalog.products.subtitle")}
-  icon={productIcon}
-  footer={drawerFooter}
-  maxWidth="xl"
->
-  <div class="flex h-full flex-col px-5 py-6 lg:px-7 lg:py-8">
-    <CrudInlineForm
-      id="product-form"
-      onsubmit={productFormHandler}
-      isSubmitting={isMutating}
-      className="flex h-full flex-col"
+  <Fab onclick={() => (isDrawerOpen = true)} label={t("catalog.products.add")} />
+
+  {#snippet productIcon()}
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      ><path d="m7.5 4.27 9 5.15" /><path
+        d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"
+      /><path d="m3.3 7 8.7 5 8.7-5" /><path d="M12 22V12" /></svg
     >
-      <div class="flex flex-1 flex-col space-y-6 lg:space-y-10">
-        <div class="space-y-6">
-          <h4 class="border-b border-[#c48a3a]/20 pb-2 text-xs font-bold tracking-widest text-[#c48a3a] uppercase">
-            {t("catalog.products.basic_info")}
-          </h4>
-          <div class="grid grid-cols-2 gap-4 lg:grid-cols-2 lg:gap-5">
-            <div class="col-span-2">
-              <TextInput
-                id="name"
-                name="name"
-                label={t("catalog.products.name")}
-                required
-                bind:value={newName}
-                placeholder={t("catalog.products.name_placeholder")}
-                class="ring-stone-100/50"
-              />
-            </div>
-            <div>
-              <TextInput
-                id="sku"
-                name="sku"
-                label={t("catalog.products.sku")}
-                placeholder={t("catalog.products.sku_placeholder")}
-                class="font-mono text-xs text-stone-600 ring-stone-100/50"
-              />
-            </div>
-            <div>
-              <SelectInput
-                id="category_id"
-                name="categoryId"
-                label={t("catalog.products.category")}
-                options={categoryOptions.map((c) => ({
-                  label: c.name,
-                  value: c.id,
-                }))}
-                placeholder={t("catalog.products.select_category")}
-                class="ring-stone-100/50"
-              />
-            </div>
-          </div>
-          <div class="flex flex-1 flex-col space-y-1.5">
-            <Textarea
-              id="description"
-              name="description"
-              label={t("catalog.products.description")}
-              placeholder={t("catalog.products.description_placeholder")}
-              class="flex-1 ring-stone-100/50"
+  {/snippet}
+
+  <AdminDrawerForm
+    bind:isOpen={isDrawerOpen}
+    title={t("catalog.products.add")}
+    subtitle={t("catalog.products.subtitle")}
+    icon={productIcon}
+    isSubmitting={createMutation.isPending}
+    onsubmit={productFormHandler}
+    formId="product-form"
+    saveLabel={t("catalog.products.add")}
+  >
+    <div class="space-y-6">
+      <!-- Basic Info -->
+      <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <div class="space-y-4">
+          <div class="space-y-1.5">
+            <label for="name" class="text-[0.75rem] font-bold tracking-wider text-stone-500 uppercase"
+              >{t("catalog.products.name")}</label
+            >
+            <TextInput
+              name="name"
+              id="name"
+              required
+              bind:value={newName}
+              placeholder={t("catalog.products.name_placeholder")}
             />
           </div>
-        </div>
-
-        <div class="space-y-6">
-          <h4 class="border-b border-[#c48a3a]/20 pb-2 text-xs font-bold tracking-widest text-[#c48a3a] uppercase">
-            {t("catalog.products.pricing_stock")}
-          </h4>
-          <div class="grid grid-cols-2 gap-4 lg:grid-cols-3 lg:gap-5">
-            <div class="relative space-y-1 lg:space-y-1.5">
-              <label for="price" class="block text-[0.75rem] font-bold tracking-wider text-stone-500 uppercase"
-                >{t("catalog.products.price")}</label
-              >
-              <div class="relative">
-                <span class="absolute top-1/2 left-3 z-10 -translate-y-1/2 text-xs font-bold text-stone-400"
-                  >{t("common.currency_symbol")}</span
-                >
-                <TextInput
-                  id="price"
-                  name="price"
-                  type="number"
-                  placeholder={t("catalog.products.price_placeholder")}
-                  required
-                  class="pl-9 font-bold text-stone-800 tabular-nums ring-stone-100/50"
-                />
-              </div>
-            </div>
-            <div>
-              <TextInput
-                id="stock"
-                name="stock"
-                type="number"
-                label={t("catalog.products.initial_stock")}
-                placeholder={t("catalog.products.stock_placeholder")}
-                class="text-center font-bold tabular-nums ring-stone-100/50"
-              />
-            </div>
-            <div class="col-span-2 lg:col-span-1">
-              <SelectInput
-                id="isActive"
-                name="isActive"
-                label={t("catalog.products.visibility")}
-                placeholder={t("catalog.products.select_status")}
-                options={[
-                  { label: t("catalog.products.active_pub"), value: "true" },
-                  { label: t("catalog.products.draft_hide"), value: "false" },
-                ]}
-                class="ring-stone-100/50"
-              />
-            </div>
+          <div class="space-y-1.5">
+            <label for="sku" class="text-[0.75rem] font-bold tracking-wider text-stone-500 uppercase"
+              >{t("catalog.products.sku")}</label
+            >
+            <TextInput name="sku" id="sku" placeholder={t("catalog.products.sku_placeholder")} />
           </div>
         </div>
-
-        <div class="space-y-6">
-          <h4 class="border-b border-[#c48a3a]/20 pb-2 text-xs font-bold tracking-widest text-[#c48a3a] uppercase">
-            {t("catalog.products.media_visual")}
-          </h4>
-          <div
-            class="relative flex w-full flex-col gap-2 space-y-1 self-start rounded-3xl border border-stone-100 bg-stone-50/50 p-6 shadow-sm"
-          >
-            <label for="file-input" class="block text-[0.7rem] font-bold tracking-wider text-stone-500 uppercase"
-              >{t("catalog.products.upload_title")}</label
+        <div class="space-y-4">
+          <div class="space-y-1.5">
+            <label for="categoryId" class="text-[0.75rem] font-bold tracking-wider text-stone-500 uppercase"
+              >{t("catalog.products.category")}</label
             >
-            <div
-              class="group relative mt-2 flex min-h-[160px] flex-1 cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed border-stone-200/80 bg-white p-6 text-center shadow-inner transition-colors hover:border-[#c48a3a]/40 hover:bg-stone-50"
-              id="upload-zone"
-              role="button"
-              tabindex="0"
-              ondragover={handleDragOver}
-              ondrop={handleDrop}
-            >
-              <input
-                type="file"
-                id="file-input"
-                multiple
-                accept="image/*"
-                class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                onchange={handleFileUpload}
-              />
-              <div class="flex flex-col items-center gap-3">
-                <div
-                  class="flex h-12 w-12 items-center justify-center rounded-full bg-stone-100 text-stone-400 transition-all duration-300 group-hover:scale-110 group-hover:text-[#c48a3a]"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    ><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line
-                      x1="12"
-                      y1="3"
-                      x2="12"
-                      y2="15"
-                    /></svg
-                  >
-                </div>
-                <div>
-                  <span class="mb-0.5 block text-sm font-bold text-stone-700">{t("catalog.products.upload_drag")}</span>
-                  <p class="text-[0.65rem] font-semibold tracking-wide text-stone-400 uppercase">
-                    {t("catalog.products.upload_click")}
-                  </p>
-                </div>
-              </div>
+            <SelectInput name="categoryId" id="categoryId">
+              <option value="">{t("catalog.products.category_placeholder")}</option>
+              {#each categoryOptions as cat}
+                <option value={cat.id}>{cat.name}</option>
+              {/each}
+            </SelectInput>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1.5">
+              <label for="price" class="text-[0.75rem] font-bold tracking-wider text-stone-500 uppercase"
+                >{t("catalog.products.price")}</label
+              >
+              <TextInput type="number" name="price" id="price" required placeholder="0" />
             </div>
-            <div id="upload-status" class="mt-1.5 text-center text-xs font-semibold text-stone-500">
-              {uploadStatus}
+            <div class="space-y-1.5">
+              <label for="stock" class="text-[0.75rem] font-bold tracking-wider text-stone-500 uppercase"
+                >{t("catalog.products.stock")}</label
+              >
+              <TextInput type="number" name="stock" id="stock" placeholder="0" />
             </div>
-            {#if newImageUrls.length > 0}
-              <div class="mt-4 w-full">
-                <ImageGallery urls={newImageUrls} onChange={(next) => (newImageUrls = next)} />
-              </div>
-            {/if}
           </div>
         </div>
       </div>
-    </CrudInlineForm>
-  </div>
-</Drawer>
-<Table headers={activeHeaders}>
-  {#if currentRows.length === 0}
-    <TableEmptyState
-      title={t("catalog.products.empty")}
-      subtitle={t("catalog.products.empty_desc")}
-      colspan={activeHeaders.length}
-    />
-  {/if}
-  {#each currentRows as row (row.id)}
-    <TableRow
-      data-id={row.id}
-      class="group border-b border-stone-100 transition-colors last:border-0 hover:bg-stone-50/50"
-    >
-      {#if columns[0].isVisible}
-        <TableCell class="vertical-top py-4">
-          <div
-            data-field="images_json"
-            data-value={row.imagesJson || "[]"}
-            class="h-16 w-16 overflow-hidden rounded-xl border border-stone-100 bg-white p-1 shadow-sm transition-transform hover:scale-105 lg:h-[84px] lg:w-[84px]"
-          >
-            <ImageGallery
-              urls={parseUrls(row.imagesJson || "[]")}
-              onChange={(next) => {
-                row.imagesJson = JSON.stringify(next);
-              }}
-            />
-          </div>
-        </TableCell>
-      {/if}
-      {#if columns[1].isVisible}
-        <TableCell class="py-4">
-          <div class="flex max-w-[240px] flex-col items-start gap-1">
-            <InlineEditableField
-              value={row.name}
-              field="name"
-              ariaLabel={t("catalog.products.name")}
-              title={row.name}
-              class="w-full truncate text-[0.85rem] leading-tight lg:text-[0.95rem]"
-            />
-            <div class="flex items-center gap-1.5 lg:ml-3">
-              <span
-                class="px-1.2 rounded bg-stone-100 py-0.5 text-[0.55rem] font-bold tracking-wider text-stone-400 uppercase lg:px-1.5 lg:text-[0.6rem]"
-                >{t("catalog.products.label_sku")}</span
+
+      <!-- Images -->
+      <div class="space-y-1.5">
+        <label for="product-images" class="text-[0.75rem] font-bold tracking-wider text-stone-500 uppercase"
+          >{t("catalog.products.photo")}</label
+        >
+        <div
+          role="button"
+          tabindex="0"
+          class="group relative overflow-hidden rounded-2xl border-2 border-dashed border-stone-200 bg-stone-50 transition-all hover:border-[#c48a3a]/30 hover:bg-white"
+          ondragover={handleDragOver}
+          ondrop={handleDrop}
+        >
+          <input
+            id="product-images"
+            type="file"
+            class="absolute inset-0 cursor-pointer opacity-0"
+            accept="image/*"
+            multiple
+            onchange={handleFileUpload}
+          />
+          <div class="flex flex-col items-center justify-center py-8">
+            <div
+              class="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm transition-transform group-hover:scale-110"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="text-[#c48a3a]"
+                ><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line
+                  x1="12"
+                  y1="3"
+                  x2="12"
+                  y2="15"
+                /></svg
               >
-              <InlineEditableField
-                value={row.sku || "-"}
-                field="sku"
-                ariaLabel={t("catalog.products.sku")}
-                class="w-full truncate px-2 py-0.5 font-mono text-[0.65rem] font-normal text-stone-500 shadow-sm lg:text-[0.7rem]"
+            </div>
+            <span class="text-sm font-bold text-stone-700">{t("catalog.products.upload_drag")}</span>
+            <p class="text-[0.65rem] font-semibold tracking-widest text-stone-400 uppercase">
+              {t("catalog.products.upload_click")}
+            </p>
+          </div>
+        </div>
+        {#if uploadStatus}
+          <p class="mt-2 text-center text-xs font-bold text-[#c48a3a]">{uploadStatus}</p>
+        {/if}
+        {#if newImageUrls.length > 0}
+          <div class="mt-4">
+            <ImageGallery urls={newImageUrls} onChange={(next) => (newImageUrls = next)} />
+          </div>
+        {/if}
+      </div>
+
+      <!-- Description -->
+      <div class="space-y-1.5">
+        <label for="description" class="text-[0.75rem] font-bold tracking-wider text-stone-500 uppercase"
+          >{t("catalog.products.description")}</label
+        >
+        <Textarea
+          name="description"
+          id="description"
+          rows={4}
+          placeholder={t("catalog.products.description_placeholder")}
+        />
+      </div>
+
+      <!-- Status -->
+      <div class="flex items-center gap-3 rounded-2xl bg-stone-50 p-4">
+        <input
+          type="checkbox"
+          name="isActive"
+          id="isActive"
+          value="true"
+          checked
+          class="h-4 w-4 rounded border-stone-300 text-[#c48a3a] focus:ring-[#c48a3a]"
+        />
+        <label for="isActive" class="text-sm font-bold text-stone-700">{t("catalog.products.active")}</label>
+      </div>
+    </div>
+  </AdminDrawerForm>
+  <Table headers={activeHeaders}>
+    {#if currentRows.length === 0}
+      <TableEmptyState
+        title={t("catalog.products.empty")}
+        subtitle={t("catalog.products.empty_desc")}
+        colspan={activeHeaders.length}
+      />
+    {/if}
+    {#each currentRows as row (row.id)}
+      <TableRow
+        data-id={row.id}
+        class="group border-b border-stone-100 transition-colors last:border-0 hover:bg-stone-50/50"
+      >
+        {#if columns[0].isVisible}
+          <TableCell class="vertical-top py-4">
+            <div
+              class="h-16 w-16 overflow-hidden rounded-xl border border-stone-100 bg-white p-1 shadow-sm transition-transform hover:scale-105 lg:h-[84px] lg:w-[84px]"
+            >
+              <ImageGallery
+                urls={parseUrls(tableState.editedValues[row.id]?.imagesJson ?? row.imagesJson ?? "[]")}
+                onChange={(next) => {
+                  tableState.onEdit(row.id, "imagesJson", JSON.stringify(next));
+                }}
               />
             </div>
-            <!-- Mobile Category Badge -->
-            <div class="mt-0.5 lg:hidden">
-              <span class="text-[0.65rem] font-bold tracking-wide text-[#c48a3a] uppercase">
-                {categoryOptions.find((c) => String(c.id) === String(row.categoryId))?.name ||
-                  t("catalog.products.no_category")}
-              </span>
+          </TableCell>
+        {/if}
+        {#if columns[1].isVisible}
+          <TableCell class="py-4">
+            <div class="flex max-w-[240px] flex-col items-start gap-1">
+              <InlineEditableField
+                value={row.name}
+                oninput={(e: any) => tableState.onEdit(row.id, "name", e.currentTarget.innerText)}
+                field="name"
+                ariaLabel={t("catalog.products.name")}
+                title={row.name}
+                class="w-full truncate text-[0.85rem] leading-tight lg:text-[0.95rem]"
+              />
+              <div class="flex items-center gap-1.5 lg:ml-3">
+                <span
+                  class="px-1.2 rounded bg-stone-100 py-0.5 text-[0.55rem] font-bold tracking-wider text-stone-400 uppercase lg:px-1.5 lg:text-[0.6rem]"
+                  >{t("catalog.products.label_sku")}</span
+                >
+                <InlineEditableField
+                  value={row.sku || "-"}
+                  oninput={(e: any) => tableState.onEdit(row.id, "sku", e.currentTarget.innerText)}
+                  field="sku"
+                  ariaLabel={t("catalog.products.sku")}
+                  class="w-full truncate px-2 py-0.5 font-mono text-[0.65rem] font-normal text-stone-500 shadow-sm lg:text-[0.7rem]"
+                />
+              </div>
+              <!-- Mobile Category Badge -->
+              <div class="mt-0.5 lg:hidden">
+                <span class="text-[0.65rem] font-bold tracking-wide text-[#c48a3a] uppercase">
+                  {categoryOptions.find(
+                    (c) => String(c.id) === String(tableState.editedValues[row.id]?.categoryId ?? row.categoryId),
+                  )?.name || t("catalog.products.no_category")}
+                </span>
+              </div>
             </div>
-          </div>
-        </TableCell>
-      {/if}
-      {#if columns[2].isVisible}
-        <TableCell class="hidden py-4 lg:table-cell">
-          <select
-            data-field="categoryId"
-            class="w-[140px] cursor-pointer truncate rounded-xl border border-stone-200/50 bg-stone-100/60 px-3 py-2 text-sm font-semibold text-stone-700 shadow-sm transition-all outline-none hover:bg-white focus:border-[#c48a3a]/30 focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/20"
-          >
-            <option value="">{t("catalog.products.no_category")}</option>
-            {#each categoryOptions as cat}
-              <option value={cat.id} selected={cat.id === row.categoryId}>
-                {cat.name}
-              </option>
-            {/each}
-          </select>
-        </TableCell>
-      {/if}
-      {#if columns[3].isVisible}
-        <TableCell class="py-4">
-          <div class="flex items-center">
-            <span class="mr-1.5 pl-3 text-xs font-bold text-stone-400">{t("common.currency_symbol")}</span>
-            <InlineEditableField
-              value={row.price}
-              field="price"
-              ariaLabel={t("catalog.products.price")}
-              class="w-auto text-stone-800 tabular-nums"
+          </TableCell>
+        {/if}
+        {#if columns[2].isVisible}
+          <TableCell class="hidden py-4 lg:table-cell">
+            <select
+              onchange={(e) => tableState.onEdit(row.id, "categoryId", e.currentTarget.value)}
+              class="w-[140px] cursor-pointer truncate rounded-xl border border-stone-200/50 bg-stone-100/60 px-3 py-2 text-sm font-semibold text-stone-700 shadow-sm transition-all outline-none hover:bg-white focus:border-[#c48a3a]/30 focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/20"
+            >
+              <option value="">{t("catalog.products.no_category")}</option>
+              {#each categoryOptions as cat}
+                <option
+                  value={cat.id}
+                  selected={String(cat.id) === String(tableState.editedValues[row.id]?.categoryId ?? row.categoryId)}
+                >
+                  {cat.name}
+                </option>
+              {/each}
+            </select>
+          </TableCell>
+        {/if}
+        {#if columns[3].isVisible}
+          <TableCell class="py-4">
+            <div class="flex items-center">
+              <span class="mr-1.5 pl-3 text-xs font-bold text-stone-400">{t("common.currency_symbol")}</span>
+              <InlineEditableField
+                value={row.price}
+                oninput={(e: any) => tableState.onEdit(row.id, "price", Number(e.currentTarget.innerText))}
+                field="price"
+                ariaLabel={t("catalog.products.price")}
+                class="w-auto text-stone-800 tabular-nums"
+              />
+            </div>
+          </TableCell>
+        {/if}
+        {#if columns[4].isVisible}
+          <TableCell class="py-4">
+            <div class="flex items-center">
+              <InlineEditableField
+                value={row.stock ?? ""}
+                oninput={(e: any) => tableState.onEdit(row.id, "stock", Number(e.currentTarget.innerText))}
+                field="stock"
+                ariaLabel={t("catalog.products.stock")}
+                class="w-20 text-center text-[1rem] tabular-nums"
+              />
+            </div>
+          </TableCell>
+        {/if}
+        {#if columns[5].isVisible}
+          <TableCell class="py-4">
+            <select
+              onchange={(e) => tableState.onEdit(row.id, "isActive", e.currentTarget.value === "true" ? 1 : 0)}
+              class="cursor-pointer rounded-full border border-stone-200/50 bg-stone-100/60 px-3 py-1.5 text-[0.75rem] font-bold tracking-wider text-stone-700 uppercase transition-all outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
+            >
+              <option value="true" selected={(tableState.editedValues[row.id]?.isActive ?? row.isActive) === 1}
+                >{t("catalog.products.active_pub")}</option
+              >
+              <option value="false" selected={(tableState.editedValues[row.id]?.isActive ?? row.isActive) === 0}
+                >{t("catalog.products.draft_hide")}</option
+              >
+            </select>
+          </TableCell>
+        {/if}
+        <TableCell align="center" class="py-4">
+          <div class="flex items-center justify-center">
+            <RowActions
+              showSave={tableState.hasChanges(row.id)}
+              isSaving={processingId === row.id && updateMutation.isPending}
+              isDeleting={processingId === row.id && deleteMutation.isPending}
+              onSave={() => handleSave(row.id)}
+              onDelete={() => handleDelete(row.id)}
             />
           </div>
         </TableCell>
-      {/if}
-      {#if columns[4].isVisible}
-        <TableCell class="py-4">
-          <div class="flex items-center">
-            <InlineEditableField
-              value={row.stock ?? ""}
-              field="stock"
-              ariaLabel={t("catalog.products.stock")}
-              class="w-20 text-center text-[1rem] tabular-nums"
-            />
-          </div>
-        </TableCell>
-      {/if}
-      {#if columns[5].isVisible}
-        <TableCell class="py-4">
-          <select
-            data-field="isActive"
-            class="cursor-pointer rounded-full border border-stone-200/50 bg-stone-100/60 px-3 py-1.5 text-[0.75rem] font-bold tracking-wider text-stone-700 uppercase transition-all outline-none hover:bg-white focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
-          >
-            <option value="true" selected={row.isActive === 1}>{t("catalog.products.active_pub")}</option>
-            <option value="false" selected={row.isActive === 0}>{t("catalog.products.draft_hide")}</option>
-          </select>
-        </TableCell>
-      {/if}
-      <TableCell align="center" class="py-4">
-        <div class="flex items-center justify-center">
-          <RowActions
-            isSaving={isMutating}
-            isDeleting={isMutating}
-            onSave={(e) => handleRowAction(row.id, "save", e.currentTarget.closest("tr")!)}
-            onDelete={() => handleRowAction(row.id, "delete", null)}
-          />
-        </div>
-      </TableCell>
-    </TableRow>
-  {/each}
-</Table>
+      </TableRow>
+    {/each}
+  </Table>
 
-<ToastNotification bind:this={toastRef} />
+  <PaginationNav
+    page={filters.page}
+    {totalPages}
+    prevHref={filters.page > 1 ? filters.buildPageUrl(filters.page - 1) : undefined}
+    nextHref={filters.page < totalPages ? filters.buildPageUrl(filters.page + 1) : undefined}
+  />
+  <ToastNotification bind:this={toastRef} />
 </div>

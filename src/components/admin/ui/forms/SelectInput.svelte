@@ -14,6 +14,7 @@
     name?: string;
     class?: string;
     onchange?: (e: Event) => void;
+    children?: import("svelte").Snippet;
     [key: string]: any;
   }
 
@@ -27,6 +28,7 @@
     name = "",
     class: className = "",
     onchange,
+    children,
     ...rest
   }: Props = $props();
 
@@ -58,6 +60,8 @@
       {#if placeholder}
         <option value="" disabled selected={!value}>{placeholder}</option>
       {/if}
+
+      {@render children?.()}
 
       {#each options as option}
         <option value={option.value}>{option.label}</option>

@@ -1110,7 +1110,7 @@ export const server = {
       await initDb(apiCtx);
       const db = getDrizzle(apiCtx);
       const { q, status, limit, offset } = input;
-      
+
       const conditions = [];
       if (q) {
         conditions.push(or(like(notifications.recipient, `%${q}%`), like(notifications.template, `%${q}%`)));
@@ -1118,7 +1118,7 @@ export const server = {
       if (status) {
         conditions.push(eq(notifications.status, status as any));
       }
-      
+
       const where = conditions.length > 0 ? and(...conditions) : undefined;
 
       const rows = await db
@@ -1236,9 +1236,11 @@ export const server = {
 
   // --- ADMIN USERS ---
   listAdminUsers: defineAction({
-    input: z.object({
-      q: z.string().optional(),
-    }).optional(),
+    input: z
+      .object({
+        q: z.string().optional(),
+      })
+      .optional(),
     handler: async (input, ctx) => {
       const apiCtx = ctx as unknown as APIContext;
       const admin = await requireAdmin(apiCtx);
@@ -1424,7 +1426,7 @@ export const server = {
       await initDb(apiCtx);
       const db = getDrizzle(apiCtx);
       const { q, status, limit, offset } = input;
-      
+
       const conditions = [];
       if (q) {
         conditions.push(or(like(cmsPages.title, `%${q}%`), like(cmsPages.slug, `%${q}%`)));
@@ -1432,7 +1434,7 @@ export const server = {
       if (status) {
         conditions.push(eq(cmsPages.isActive, status === "active" ? 1 : 0));
       }
-      
+
       const where = conditions.length > 0 ? and(...conditions) : undefined;
 
       const rows = await db
@@ -1560,7 +1562,7 @@ export const server = {
       await initDb(apiCtx);
       const db = getDrizzle(apiCtx);
       const { q, limit, offset } = input;
-      
+
       const conditions = [];
       if (q) {
         conditions.push(
@@ -1568,10 +1570,10 @@ export const server = {
             like(auditLogs.actorEmail, `%${q}%`),
             like(auditLogs.action, `%${q}%`),
             like(auditLogs.entityType, `%${q}%`),
-          )
+          ),
         );
       }
-      
+
       const where = conditions.length > 0 ? and(...conditions) : undefined;
 
       const rows = await db

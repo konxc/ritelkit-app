@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { actions } from "astro:actions";
-  import { fade, fly } from "svelte/transition";
+  import { trpc } from "../../../lib/trpc";
+  import { createQuery } from "@tanstack/svelte-query";
+  import { fly } from "svelte/transition";
   import type { AdminUser } from "../../../lib/types";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
   import RowActions from "../RowActions.svelte";
   import SectionHeader from "../SectionHeader.svelte";
   import ToastNotification from "../ToastNotification.svelte";
@@ -13,11 +13,14 @@
   import TextInput from "../ui/forms/TextInput.svelte";
   import SelectInput from "../ui/forms/SelectInput.svelte";
   import { t, initI18n } from "../../../lib/i18n/store.svelte";
-  import { onMount, untrack } from "svelte";
+  import { untrack } from "svelte";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
   import Fab from "../ui/Fab.svelte";
-  import Drawer from "../ui/overlay/Drawer.svelte";
+  import AdminDrawerForm from "../ui/overlay/AdminDrawerForm.svelte";
+  import { createAdminFilters } from "../../../lib/admin-filters.svelte";
+  import { createAdminMutation } from "../../../lib/admin-mutations.svelte";
+  import { createTableState } from "../../../lib/admin-table-state.svelte";
 
   let {
     rows: initialRows = [],
@@ -39,126 +42,99 @@
     { id: "password", label: t("system_admin.admin_users.password"), isVisible: true },
   ]);
 
-  let activeHeaders = $derived([
-    ...columns.filter((c) => c.isVisible).map((c) => ({ label: c.label })),
-    t("common.actions"),
-  ]);
-
+  const filters = createAdminFilters({ q, status, page: 1 });
   let toastRef = $state<ToastNotification>();
-  let rows = $state<AdminUser[]>([]);
-  let isSubmitting = $state(false);
-  let savingId = $state<string | null>(null);
-  let deletingId = $state<string | null>(null);
   let isDrawerOpen = $state(false);
+  let processingId = $state<string | null>(null);
 
-  // Sync with initialRows from SSR
-  $effect(() => {
-    rows = initialRows;
-  });
+  const query = createQuery(() => ({
+    queryKey: ["adminUsers", filters.q],
+    queryFn: () => trpc.adminUsers.list.query({ q: filters.q }),
+    initialData: filters.isInitial ? initialRows : undefined,
+  }));
 
-  let localQ = $state(untrack(() => q));
-  let localStatus = $state(untrack(() => status));
+  const currentRows = $derived(query.data || []);
+  const tableState = createTableState<any>(() => currentRows);
 
-  function syncFiltersFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    localQ = params.get("q") || "";
-  }
+  const updateMutation = createAdminMutation(
+    (payload: { id: string; data: any }) => trpc.adminUsers.update.mutate(payload),
+    {
+      invalidateKeys: [["adminUsers"]],
+      successMessage: t("system_admin.admin_users.toast_update"),
+      onSuccess: () => tableState.reset(),
+    },
+    () => toastRef,
+  );
 
-  onMount(() => {
-    syncFiltersFromUrl();
-    window.addEventListener("popstate", syncFiltersFromUrl);
-    window.addEventListener("astro:after-navigation", syncFiltersFromUrl);
-    return () => {
-      window.removeEventListener("popstate", syncFiltersFromUrl);
-      window.removeEventListener("astro:after-navigation", syncFiltersFromUrl);
-    };
-  });
+  const deleteMutation = createAdminMutation(
+    (id: string) => trpc.adminUsers.delete.mutate(id),
+    {
+      invalidateKeys: [["adminUsers"]],
+      successMessage: t("system_admin.admin_users.toast_delete"),
+    },
+    () => toastRef,
+  );
 
-  $effect(() => {
-    refreshData();
-  });
-
-  const refreshData = async () => {
-    const { data, error } = await actions.listAdminUsers({ q: localQ });
-    if (!error && data) {
-      rows = data as AdminUser[];
-    }
-  };
+  const createMutation = createAdminMutation(
+    (data: any) => trpc.adminUsers.create.mutate(data),
+    {
+      invalidateKeys: [["adminUsers"]],
+      successMessage: t("system_admin.admin_users.toast_add"),
+      onSuccess: () => {
+        isDrawerOpen = false;
+      },
+    },
+    () => toastRef,
+  );
 
   const handleCreate = async (event: SubmitEvent) => {
     event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement | null;
-    if (!form) return;
-    const formData = new FormData(form);
+    const formData = new FormData(event.currentTarget as HTMLFormElement);
     const data = {
-      email: String(formData.get("email") || ""),
-      password: String(formData.get("password") || ""),
-      role: String(formData.get("role") || "admin") as "owner" | "admin" | "editor",
+      email: String(formData.get("email")),
+      password: String(formData.get("password")),
+      role: formData.get("role") as any,
     };
+    await createMutation.mutate(data);
+  };
 
-    isSubmitting = true;
-    const { error } = await actions.createAdminUser(data);
-    isSubmitting = false;
-
-    if (error) {
-      toastRef?.show(error.message, "error");
-    } else {
-      toastRef?.show(t("system_admin.admin_users.toast_add"), "success");
-      await refreshData();
-      form.reset();
-      isDrawerOpen = false;
+  const handleSave = async (id: string) => {
+    const updates = tableState.editedValues[id];
+    if (!updates) return;
+    processingId = id;
+    try {
+      await updateMutation.mutate({ id, data: updates });
+    } finally {
+      processingId = null;
     }
   };
 
-  const handleRowAction = async (id: string, action: string, rowEl: HTMLElement | null) => {
-    if (action === "delete") {
-      if (!confirm(t("system_admin.admin_users.confirm_delete"))) return;
-      deletingId = id;
-      const { error } = await actions.deleteAdminUser(id);
-      deletingId = null;
-      if (error) {
-        toastRef?.show(error.message, "error");
-      } else {
-        toastRef?.show(t("system_admin.admin_users.toast_delete"), "success");
-        await refreshData();
-      }
-      return;
-    }
-
-    if (action === "save" && rowEl) {
-      const roleSelect = rowEl.querySelector("[data-field='role'] select") as HTMLSelectElement | null;
-      const role = roleSelect?.value || "";
-      const passwordInput = rowEl.querySelector("[data-field='password'] input") as HTMLInputElement | null;
-      const password = passwordInput?.value || "";
-
-      savingId = id;
-      const { error } = await actions.updateAdminUser({
-        id,
-        data: {
-          role: role as "owner" | "admin" | "editor",
-          password: password || undefined,
-        },
-      });
-      savingId = null;
-
-      if (error) {
-        toastRef?.show(error.message, "error");
-      } else {
-        toastRef?.show(t("system_admin.admin_users.toast_update"), "success");
-        if (passwordInput) passwordInput.value = "";
-        await refreshData();
-      }
+  const handleDelete = async (id: string) => {
+    if (!confirm(t("system_admin.admin_users.confirm_delete"))) return;
+    processingId = id;
+    try {
+      await deleteMutation.mutate(id);
+    } finally {
+      processingId = null;
     }
   };
+
+  const activeHeaders = $derived([
+    ...columns.filter((c) => c.isVisible).map((c) => ({ label: c.label })),
+    t("common.actions"),
+  ]);
 </script>
 
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
     <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <SectionHeader title={t("system_admin.admin_users.title_list")} muted={t("system_admin.admin_users.subtitle_list")} />
-      
+      <SectionHeader
+        title={t("system_admin.admin_users.title_list")}
+        muted={t("system_admin.admin_users.subtitle_list")}
+      />
+
       <div class="hidden lg:flex lg:items-center lg:gap-3">
-        <AdminHeaderFilters tab="admins" q={localQ} bind:columns {lang} />
+        <AdminHeaderFilters tab="admins" q={filters.q} bind:columns {lang} />
 
         <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
           <div class="flex items-center gap-2">
@@ -171,7 +147,11 @@
               stroke="currentColor"
               stroke-width="2.5"
               stroke-linecap="round"
-              stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6"/><path d="M22 11h-6"/></svg>
+              stroke-linejoin="round"
+              ><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path
+                d="M19 8v6"
+              /><path d="M22 11h-6" /></svg
+            >
             {t("system_admin.admin_users.title_add")}
           </div>
         </Button>
@@ -191,145 +171,92 @@
         stroke-width="2.5"
         stroke-linecap="round"
         stroke-linejoin="round"
-        ><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        ><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M19 8v6" /><path
+          d="M22 11h-6"
+        /></svg
+      >
     {/snippet}
 
-    {#snippet drawerFooter()}
-      <div class="flex items-center gap-3">
-        <button
-          type="button"
-          class="h-11 flex-1 rounded-2xl border border-stone-200 bg-white text-[0.7rem] font-black tracking-widest text-stone-400 uppercase transition-all hover:bg-stone-50 hover:text-stone-600 focus:outline-none active:scale-95 lg:h-[52px]"
-          onclick={() => (isDrawerOpen = false)}
-        >
-          {t("common.cancel")}
-        </button>
-        <Button
-          type="submit"
-          form="user-form"
-          variant="primary"
-          class="relative flex h-11 flex-[2] items-center justify-center gap-3 overflow-hidden rounded-2xl bg-[#c48a3a] px-8 py-0 font-black text-white shadow-[0_10px_30px_-10px_rgba(196,138,58,0.5)] transition-all hover:-translate-y-1 hover:shadow-[0_15px_35px_-10px_rgba(196,138,58,0.6)] active:scale-[0.98] lg:h-[52px]"
-          disabled={isSubmitting}
-        >
-          {#if isSubmitting}
-            <div class="flex items-center gap-3">
-              <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path
-                  class="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              <span class="text-xs">{t("common.saving")}</span>
-            </div>
-          {:else}
-            <div class="flex items-center gap-3">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>
-              <span class="text-[0.75rem] tracking-tight uppercase">{t("system_admin.admin_users.add_admin")}</span>
-            </div>
-          {/if}
-        </Button>
-      </div>
-    {/snippet}
-
-    <Drawer
+    <AdminDrawerForm
       bind:isOpen={isDrawerOpen}
       title={t("system_admin.admin_users.title_add")}
-      subtitle={t("system_admin.admin_users.role")}
+      subtitle={t("system_admin.admin_users.subtitle_add")}
       icon={userIcon}
-      footer={drawerFooter}
-      maxWidth="md"
+      isSubmitting={createMutation.isPending}
+      onsubmit={handleCreate}
+      formId="admin-user-form"
     >
-      <div class="px-5 py-6 lg:px-7 lg:py-8">
-        <CrudInlineForm id="user-form" onsubmit={handleCreate} {isSubmitting}>
-          <div class="space-y-6">
-            <TextInput id="email" name="email" type="email" label={t("system_admin.admin_users.email")} placeholder={t("system_admin.admin_users.enter_email")} required />
-            <TextInput
-              id="password"
-              name="password"
-              type="password"
-              label={t("system_admin.admin_users.password")}
-              placeholder={t("system_admin.admin_users.enter_password")}
-              required
-              minlength={8}
-            />
-            <SelectInput
-              id="role"
-              name="role"
-              label={t("system_admin.admin_users.role")}
-              placeholder={t("system_admin.admin_users.select_role")}
-              options={[
-                { value: "owner", label: t("system_admin.admin_users.roles.owner") },
-                { value: "admin", label: t("system_admin.admin_users.roles.admin") },
-                { value: "editor", label: t("system_admin.admin_users.roles.editor") },
-              ]}
-            />
-          </div>
-        </CrudInlineForm>
+      <div class="space-y-6">
+        <TextInput id="email" name="email" label={t("system_admin.admin_users.email")} type="email" required />
+        <TextInput
+          id="password"
+          name="password"
+          label={t("system_admin.admin_users.password")}
+          type="password"
+          required
+        />
+        <SelectInput id="role" name="role" label={t("system_admin.admin_users.role")} required>
+          <option value="admin">{t("system_admin.admin_users.role_admin")}</option>
+          <option value="editor">{t("system_admin.admin_users.role_editor")}</option>
+          <option value="owner">{t("system_admin.admin_users.role_owner")}</option>
+        </SelectInput>
       </div>
-    </Drawer>
+    </AdminDrawerForm>
 
     <div class="mt-2">
       <Table headers={activeHeaders}>
-        {#if rows.length === 0}
+        {#if currentRows.length === 0}
           <TableEmptyState
-            title={t("system_admin.admin_users.empty")}
-            subtitle=""
+            title={t("system_admin.admin_users.empty_title")}
+            subtitle={t("system_admin.admin_users.empty_description")}
             colspan={activeHeaders.length}
           />
         {/if}
-        {#each rows as row (row.id)}
-          <TableRow data-id={row.id} class="group border-b border-stone-100 transition-colors last:border-0 hover:bg-stone-50/50">
+        {#each currentRows as p (p.id)}
+          <TableRow
+            data-id={p.id}
+            class="group border-b border-stone-100 transition-colors last:border-0 hover:bg-stone-50/50"
+          >
             {#if columns[0].isVisible}
-              <TableCell class="py-4">
-                <div class="px-3 py-1.5 font-bold text-stone-900 line-clamp-1">
-                  {row.email}
-                </div>
-              </TableCell>
+              <TableCell class="py-4 font-bold text-stone-900">{p.email}</TableCell>
             {/if}
             {#if columns[1].isVisible}
               <TableCell class="py-4">
-                <div data-field="role" class="w-full">
-                  <select
-                    class="w-full cursor-pointer rounded-lg border border-transparent bg-white/50 px-3 py-1.5 text-sm font-bold text-stone-700 transition-all outline-none hover:bg-white focus:border-[#c48a3a] focus:ring-2 focus:ring-[#c48a3a]/30"
+                <select
+                  onchange={(e) => tableState.onEdit(p.id, "role", e.currentTarget.value)}
+                  class="rounded-md border-none bg-transparent px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase focus:ring-0"
+                >
+                  <option value="admin" selected={(tableState.editedValues[p.id]?.role ?? p.role) === "admin"}
+                    >{t("system_admin.admin_users.role_admin")}</option
                   >
-                    <option value="" disabled>{t("system_admin.admin_users.select_role")}</option>
-                    <option value="owner" selected={row.role === "owner"}>{t("system_admin.admin_users.roles.owner")}</option>
-                    <option value="admin" selected={row.role === "admin"}>{t("system_admin.admin_users.roles.admin")}</option>
-                    <option value="editor" selected={row.role === "editor"}>{t("system_admin.admin_users.roles.editor")}</option>
-                  </select>
-                </div>
+                  <option value="editor" selected={(tableState.editedValues[p.id]?.role ?? p.role) === "editor"}
+                    >{t("system_admin.admin_users.role_editor")}</option
+                  >
+                  <option value="owner" selected={(tableState.editedValues[p.id]?.role ?? p.role) === "owner"}
+                    >{t("system_admin.admin_users.role_owner")}</option
+                  >
+                </select>
               </TableCell>
             {/if}
             {#if columns[2].isVisible}
               <TableCell class="py-4">
-                <div data-field="password" class="w-full">
-                  <input
-                    type="password"
-                    placeholder={t("system_admin.admin_users.password_placeholder")}
-                    class="w-full rounded-lg border border-transparent bg-transparent px-3 py-1.5 text-sm transition-all outline-none hover:bg-white focus:border-[#c48a3a] focus:bg-white focus:ring-2 focus:ring-[#c48a3a]/30"
-                  />
-                </div>
+                <input
+                  type="password"
+                  placeholder="******"
+                  oninput={(e: any) => tableState.onEdit(p.id, "password", (e.currentTarget as HTMLInputElement).value)}
+                  class="w-full border-none bg-transparent font-mono text-xs text-stone-500 outline-none focus:ring-0"
+                />
               </TableCell>
             {/if}
             <TableCell align="center" class="py-4">
-              <div class="flex items-center justify-center">
-                <RowActions
-                  isSaving={savingId === row.id}
-                  isDeleting={deletingId === row.id}
-                  onSave={(e) => handleRowAction(row.id, "save", e.currentTarget.closest("tr")!)}
-                  onDelete={() => handleRowAction(row.id, "delete", null)}
-                />
-              </div>
+              <RowActions
+                showEdit={false}
+                showSave={tableState.hasChanges(p.id)}
+                onSave={() => handleSave(p.id)}
+                onDelete={() => handleDelete(p.id)}
+                isSaving={processingId === p.id && updateMutation.isPending}
+                isDeleting={processingId === p.id && deleteMutation.isPending}
+              />
             </TableCell>
           </TableRow>
         {/each}

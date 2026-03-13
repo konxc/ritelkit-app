@@ -1,6 +1,7 @@
 <script lang="ts">
   import ActionGroup from "./ActionGroup.svelte";
   import { t } from "../../lib/i18n/store.svelte";
+  import type { Snippet } from "svelte";
 
   let {
     detailHref,
@@ -18,6 +19,7 @@
     onDelete,
     onSend,
     onEdit,
+    children,
   }: {
     detailHref?: string;
     detailLabel?: string;
@@ -34,6 +36,7 @@
     onDelete?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
     onSend?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
     onEdit?: (event: MouseEvent & { currentTarget: HTMLButtonElement }) => void;
+    children?: Snippet;
   } = $props();
 </script>
 
@@ -66,6 +69,11 @@
       {t("common.send")}
     </button>
   {/if}
+
+  {#if children}
+    {@render children()}
+  {/if}
+
   {#if showSave}
     <button
       class="btn-ghost flex items-center gap-1 disabled:cursor-not-allowed disabled:opacity-50"

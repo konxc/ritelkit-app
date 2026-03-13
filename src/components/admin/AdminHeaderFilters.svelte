@@ -29,9 +29,9 @@
   initI18n(untrack(() => lang));
 
   let showAdvanced = $state(false);
-  let localQ = $state("");
-  let localStatus = $state("");
-  let localCategoryId = $state("");
+  let localQ = $state(q);
+  let localStatus = $state(status);
+  let localCategoryId = $state(categoryId);
   let localSubtab = $state("");
 
   function syncFromUrl() {
@@ -77,13 +77,13 @@
       ];
     }
     if (tab === "products") {
-       return [
+      return [
         ...base,
         { label: t("common.active"), value: "active" },
         { label: t("common.inactive"), value: "inactive" },
       ];
     }
-    if (tab === "order") {
+    if (tab === "order" || tab === "orders") {
       return [
         ...base,
         { label: t("status.pending"), value: "pending" },
@@ -103,7 +103,7 @@
         { label: t("status.cancelled"), value: "cancelled" },
       ];
     }
-    if (tab === "invoice") {
+    if (tab === "invoice" || tab === "invoices") {
       return [
         ...base,
         { label: t("status.pending"), value: "pending" },
@@ -111,7 +111,7 @@
         { label: t("status.void"), value: "void" },
       ];
     }
-    if (tab === "refund") {
+    if (tab === "refund" || tab === "refunds") {
       return [
         ...base,
         { label: t("status.pending"), value: "pending" },
@@ -222,7 +222,13 @@
   <!-- Main Search Area -->
   <div class="flex items-center gap-2">
     <div class="group relative lg:w-64">
-      <SearchInput name="q" value={localQ} oninput={onSearchInput} placeholder={t("common.search")} autocomplete="one-time-code" />
+      <SearchInput
+        name="q"
+        value={localQ}
+        oninput={onSearchInput}
+        placeholder={t("common.search")}
+        autocomplete="one-time-code"
+      />
     </div>
     <div class="lg:hidden">
       <Button variant="outline" size="sm" onclick={() => (showAdvanced = true)} class="px-3">
@@ -246,7 +252,7 @@
 
   <!-- Desktop Filters Panel -->
   <div class="hidden items-center gap-3 lg:flex">
-    <div class="h-8 w-px bg-stone-200/60 mr-1"></div>
+    <div class="mr-1 h-8 w-px bg-stone-200/60"></div>
 
     {#if categoryOptions.length > 0 && localSubtab !== "log"}
       <div class="w-44">
@@ -304,9 +310,9 @@
     }}
   >
     <div class="grid gap-6 py-4">
-       {#if categoryOptions.length > 0 && localSubtab !== "log"}
+      {#if categoryOptions.length > 0 && localSubtab !== "log"}
         <div class="space-y-4">
-           <label for="category-select" class="text-[0.7rem] font-extrabold tracking-widest text-stone-400 uppercase"
+          <label for="category-select" class="text-[0.7rem] font-extrabold tracking-widest text-stone-400 uppercase"
             >{t("catalog.products.category")}</label
           >
           <SelectInput name="category" bind:value={localCategoryId} options={catOptions} />

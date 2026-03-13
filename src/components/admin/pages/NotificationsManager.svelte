@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { actions } from "astro:actions";
+  import { trpc } from "../../../lib/trpc";
+  import { createQuery } from "@tanstack/svelte-query";
   import type { Notification } from "../../../lib/types";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
   import RowActions from "../RowActions.svelte";
   import SectionHeader from "../SectionHeader.svelte";
   import ToastNotification from "../ToastNotification.svelte";
@@ -13,16 +13,21 @@
   import SelectInput from "../ui/forms/SelectInput.svelte";
   import Textarea from "../ui/forms/Textarea.svelte";
   import { t, initI18n } from "../../../lib/i18n/store.svelte";
-  import { onMount, untrack } from "svelte";
-  import { fade, fly } from "svelte/transition";
+  import { untrack } from "svelte";
+  import { fly } from "svelte/transition";
   import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
   import TableEmptyState from "../ui/TableEmptyState.svelte";
   import Fab from "../ui/Fab.svelte";
-  import Drawer from "../ui/overlay/Drawer.svelte";
-  import InlineEditableField from "../ui/forms/InlineEditableField.svelte";
+  import AdminDrawerForm from "../ui/overlay/AdminDrawerForm.svelte";
+  import { createAdminFilters } from "../../../lib/admin-filters.svelte";
+  import { createAdminMutation } from "../../../lib/admin-mutations.svelte";
+  import { createTableState } from "../../../lib/admin-table-state.svelte";
+  import PaginationNav from "../PaginationNav.svelte";
+  import { onMount } from "svelte";
 
   let {
     rows: initialRows = [],
+    total = 0,
     q = "",
     status = "",
     page = 1,
@@ -30,6 +35,7 @@
     lang,
   }: {
     rows?: Notification[];
+    total?: number;
     q?: string;
     status?: string;
     page?: number;
@@ -47,143 +53,105 @@
     { id: "terkirim", label: t("notifications.header_sent"), isVisible: true },
   ]);
 
-  let activeHeaders = $derived([
+  const filters = createAdminFilters({ q, status, page });
+  const localLimit = untrack(() => limit) || 30;
+
+  let toastRef = $state<ToastNotification>();
+  let isDrawerOpen = $state(false);
+  let processingId = $state<string | null>(null);
+
+  const query = createQuery(() => ({
+    queryKey: ["notifications", filters.q, filters.status, filters.page],
+    queryFn: () =>
+      trpc.notifications.list.query({
+        q: filters.q,
+        status: filters.status ? filters.status : undefined,
+        limit: localLimit,
+        offset: (filters.page - 1) * localLimit,
+      }),
+    initialData: filters.isInitial ? { rows: initialRows, count: total || 0 } : undefined,
+  }));
+
+  const currentRows = $derived(query.data?.rows || []);
+  const totalPages = $derived(Math.max(1, Math.ceil((query.data?.count || 0) / localLimit)));
+  const tableState = createTableState<Notification>(() => currentRows);
+
+  const sendMutation = createAdminMutation(
+    (id: string) => trpc.notifications.send.mutate(id),
+    {
+      invalidateKeys: [["notifications"]],
+      successMessage: t("notifications.toast_sent"),
+    },
+    () => toastRef,
+  );
+
+  const deleteMutation = createAdminMutation(
+    (id: string) => trpc.notifications.delete.mutate(id),
+    {
+      invalidateKeys: [["notifications"]],
+      successMessage: t("notifications.toast_deleted"),
+    },
+    () => toastRef,
+  );
+
+  const createMutation = createAdminMutation(
+    (data: any) => trpc.notifications.create.mutate(data),
+    {
+      invalidateKeys: [["notifications"]],
+      successMessage: t("notifications.toast_created"),
+      onSuccess: () => {
+        isDrawerOpen = false;
+      },
+    },
+    () => toastRef,
+  );
+
+  const handleSend = async (id: string) => {
+    processingId = id;
+    try {
+      await sendMutation.mutate(id);
+    } finally {
+      processingId = null;
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm(t("common.confirm_delete"))) return;
+    processingId = id;
+    try {
+      await deleteMutation.mutate(id);
+    } finally {
+      processingId = null;
+    }
+  };
+
+  const handleCreate = async (event: SubmitEvent) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget as HTMLFormElement);
+    const data = {
+      channel: String(formData.get("channel")),
+      recipient: String(formData.get("recipient")),
+      template: String(formData.get("title")),
+      payloadJson: String(formData.get("payloadJson") || "{}"),
+    };
+    await createMutation.mutate(data);
+  };
+
+  const activeHeaders = $derived([
     ...columns.filter((c) => c.isVisible).map((c) => ({ label: c.label })),
     t("common.actions"),
   ]);
 
-  let localQ = $state(untrack(() => q));
-  let localStatus = $state(untrack(() => status));
-  let localPage = $state(untrack(() => page));
-
-  let toastRef = $state<ToastNotification>();
-  let rows = $state<Notification[]>([]);
-  let isSubmitting = $state(false);
-  let savingId = $state<string | null>(null);
-  let sendingId = $state<string | null>(null);
-  let deletingId = $state<string | null>(null);
-  let isDrawerOpen = $state(false);
-
-  // Sync with initialRows from SSR
-  $effect(() => {
-    rows = initialRows;
-  });
-
-  const refreshData = async () => {
-    const offset = (localPage - 1) * limit;
-    const { data, error } = await actions.listNotifications({
-      q: localQ,
-      status: localStatus,
-      limit,
-      offset,
-    });
-    if (!error && data) {
-      rows = data.rows as Notification[];
-    }
-  };
-
-  function syncFiltersFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    localQ = params.get("q") || "";
-    localStatus = params.get("status") || "";
-    localPage = parseInt(params.get("page") || "1", 10);
-  }
-
-  onMount(() => {
-    syncFiltersFromUrl();
-    window.addEventListener("popstate", syncFiltersFromUrl);
-    window.addEventListener("astro:after-navigation", syncFiltersFromUrl);
-    return () => {
-      window.removeEventListener("popstate", syncFiltersFromUrl);
-      window.removeEventListener("astro:after-navigation", syncFiltersFromUrl);
-    };
-  });
-
-  $effect(() => {
-    refreshData();
-  });
-
-  const handleCreate = async (event: SubmitEvent) => {
-    event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement | null;
-    if (!form) return;
-    const formData = new FormData(form);
-
-    const data = {
-      channel: String(formData.get("channel") || ""),
-      recipient: String(formData.get("recipient") || ""),
-      template: String(formData.get("template") || "") || undefined,
-      payloadJson: String(formData.get("payload_json") || "") || undefined,
-    };
-
-    isSubmitting = true;
-    const { error } = await actions.createNotification(data);
-    isSubmitting = false;
-
-    if (error) {
-      toastRef?.show(error.message, "error");
-    } else {
-      toastRef?.show(t("notifications.toast_save"), "success");
-      form.reset();
-      refreshData();
-    }
-  };
-
-  const handleRowAction = async (id: string, action: string, rowEl: HTMLElement | null) => {
-    if (action === "delete") {
-      if (!confirm(t("notifications.confirm_delete"))) return;
-      deletingId = id;
-      const { error } = await actions.deleteNotification(id);
-      deletingId = null;
-
-      if (error) {
-        toastRef?.show(error.message, "error");
-      } else {
-        toastRef?.show(t("notifications.toast_delete"), "success");
-        refreshData();
-      }
-      return;
-    }
-
-    if (action === "send") {
-      sendingId = id;
-      const { error } = await actions.sendNotification(id);
-      sendingId = null;
-
-      if (error) {
-        toastRef?.show(error.message, "error");
-      } else {
-        toastRef?.show(t("notifications.toast_send"), "success");
-        refreshData();
-      }
-      return;
-    }
-
-    if (action === "save" && rowEl) {
-      const fields: Record<string, string> = {};
-      rowEl.querySelectorAll("[data-field]").forEach((cell) => {
-        const field = cell.getAttribute("data-field");
-        if (!field) return;
-        fields[field] = String(cell.textContent?.trim() || "");
-      });
-
-      savingId = id;
-      const { error } = await actions.updateNotification({
-        id,
-        data: {
-          channel: fields.channel || "",
-          recipient: fields.recipient || "",
-          status: fields.status || "pending",
-        },
-      });
-      savingId = null;
-
-      if (error) {
-        toastRef?.show(error.message, "error");
-      } else {
-        toastRef?.show(t("notifications.toast_update"), "success");
-        refreshData();
-      }
+  const getStatusType = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "sent":
+        return "success";
+      case "pending":
+        return "warning";
+      case "failed":
+        return "danger";
+      default:
+        return "default";
     }
   };
 </script>
@@ -191,33 +159,34 @@
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
     <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <SectionHeader title={t("notifications.title_log")} muted={t("notifications.badge_manual")} />
-      
+      <SectionHeader title={t("notifications.title_list")} muted={t("notifications.manager_subtitle")} />
+
       <div class="hidden lg:flex lg:items-center lg:gap-3">
-        <AdminHeaderFilters tab="notifications" q={localQ} status={localStatus} bind:columns {lang} />
+        <AdminHeaderFilters tab="notifications" q={filters.q} status={filters.status} bind:columns {lang} />
 
         <Button variant="primary" onclick={() => (isDrawerOpen = true)} class="group flex items-center gap-2">
-          <div class="flex items-center gap-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></svg
-            >
-            {t("notifications.title_create")}
-          </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            ><path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.5C2 7 4 5 6.5 5H18c2.2 0 4 1.8 4 4v8Z" /><path
+              d="m22 9-10 7L2 9"
+            /></svg
+          >
+          {t("notifications.add_notification")}
         </Button>
       </div>
     </div>
 
-    <Fab onclick={() => (isDrawerOpen = true)} label={t("notifications.title_create")} />
+    <Fab onclick={() => (isDrawerOpen = true)} label={t("notifications.add_notification")} />
 
-    {#snippet notifIcon()}
+    {#snippet notificationIcon()}
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="18"
@@ -228,181 +197,111 @@
         stroke-width="2.5"
         stroke-linecap="round"
         stroke-linejoin="round"
-        ><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        ><path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.5C2 7 4 5 6.5 5H18c2.2 0 4 1.8 4 4v8Z" /><path
+          d="m22 9-10 7L2 9"
+        /></svg
+      >
     {/snippet}
 
-    {#snippet drawerFooter()}
-      <div class="flex items-center gap-3">
-        <button
-          type="button"
-          class="h-11 flex-1 rounded-2xl border border-stone-200 bg-white text-[0.7rem] font-black tracking-widest text-stone-400 uppercase transition-all hover:bg-stone-50 hover:text-stone-600 focus:outline-none active:scale-95 lg:h-[52px]"
-          onclick={() => (isDrawerOpen = false)}
-        >
-          {t("common.cancel")}
-        </button>
-        <Button
-          type="submit"
-          form="notif-form"
-          variant="primary"
-          class="relative flex h-11 flex-[2] items-center justify-center gap-3 overflow-hidden rounded-2xl bg-[#c48a3a] px-8 py-0 font-black text-white shadow-[0_10px_30px_-10px_rgba(196,138,58,0.5)] transition-all hover:-translate-y-1 hover:shadow-[0_15px_35px_-10px_rgba(196,138,58,0.6)] active:scale-[0.98] lg:h-[52px]"
-          disabled={isSubmitting}
-        >
-          {#if isSubmitting}
-            <div class="flex items-center gap-3">
-              <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path
-                  class="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              <span class="text-xs">{t("common.saving")}</span>
-            </div>
-          {:else}
-            <div class="flex items-center gap-3">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg>
-              <span class="text-[0.75rem] tracking-tight uppercase">{t("notifications.button_save")}</span>
-            </div>
-          {/if}
-        </Button>
-      </div>
-    {/snippet}
-
-    <Drawer
+    <AdminDrawerForm
       bind:isOpen={isDrawerOpen}
-      title={t("notifications.title_create")}
-      subtitle={t("notifications.badge_manual")}
-      icon={notifIcon}
-      footer={drawerFooter}
-      maxWidth="lg"
+      title={t("notifications.title_add")}
+      subtitle={t("notifications.manager_subtitle")}
+      icon={notificationIcon}
+      isSubmitting={createMutation.isPending}
+      onsubmit={handleCreate}
+      formId="notification-form"
     >
-      <div class="px-5 py-6 lg:px-7 lg:py-8">
-        <CrudInlineForm id="notif-form" onsubmit={handleCreate} {isSubmitting}>
-          <div class="space-y-6">
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <SelectInput
-                  id="channel"
-                  name="channel"
-                  label={t("notifications.label_channel")}
-                  placeholder={t("notifications.select_channel")}
-                  options={[
-                    { value: "whatsapp", label: "WhatsApp" },
-                    { value: "email", label: "Email" },
-                  ]}
-                />
-              </div>
-              <div>
-                <TextInput id="recipient" name="recipient" label={t("notifications.label_recipient")} placeholder={t("notifications.placeholder_recipient")} required />
-              </div>
-              <div>
-                <TextInput
-                  id="template"
-                  name="template"
-                  label={t("notifications.label_template")}
-                  placeholder={t("notifications.placeholder_template")}
-                />
-              </div>
-              <div class="col-span-1 md:col-span-2">
-                <Textarea
-                  id="payload_json"
-                  name="payload_json"
-                  label={t("notifications.label_payload")}
-                  rows={4}
-                  placeholder={t("notifications.placeholder_payload")}
-                  class="font-mono text-sm"
-                />
-              </div>
-            </div>
-          </div>
-        </CrudInlineForm>
+      <div class="space-y-6">
+        <SelectInput id="channel" name="channel" label={t("notifications.label_channel")} value="email">
+          <option value="email">Email</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="push">Push Notification</option>
+        </SelectInput>
+        <TextInput id="recipient" name="recipient" label={t("notifications.label_recipient")} required />
+        <TextInput id="title" name="title" label={t("notifications.label_title")} required />
+        <Textarea id="body" name="body" label={t("notifications.label_body")} rows={4} required />
+        <Textarea id="payloadJson" name="payloadJson" label="Payload (JSON)" />
       </div>
-    </Drawer>
+    </AdminDrawerForm>
 
-    <div class="mt-2">
+    <div class="mt-4">
       <Table headers={activeHeaders}>
-        {#if rows.length === 0}
-          <TableEmptyState
-            title={t("notifications.empty_log")}
-            subtitle=""
-            colspan={activeHeaders.length}
-          />
+        {#if currentRows.length === 0}
+          <TableEmptyState title={t("notifications.empty")} colspan={activeHeaders.length} />
         {/if}
-        {#each rows as row (row.id)}
-          <TableRow
-            data-id={row.id}
-            class="group border-b border-stone-100 transition-colors last:border-0 hover:bg-stone-50/50"
-          >
+        {#each currentRows as p (p.id)}
+          <TableRow class="group border-b border-stone-100 transition-colors last:border-0 hover:bg-stone-50/50">
             {#if columns[0].isVisible}
-              <TableCell class="py-4">
-                <InlineEditableField
-                  value={row.channel}
-                  field="channel"
-                  ariaLabel={t("notifications.label_channel")}
-                  class="font-medium text-stone-900"
-                />
-              </TableCell>
+              <TableCell class="py-4 text-[10px] font-bold tracking-widest text-stone-900 uppercase"
+                >{p.channel}</TableCell
+              >
             {/if}
             {#if columns[1].isVisible}
-              <TableCell class="py-4">
-                <InlineEditableField
-                  value={row.recipient}
-                  field="recipient"
-                  ariaLabel={t("notifications.label_recipient")}
-                  class="font-medium text-stone-900"
-                />
-              </TableCell>
+              <TableCell class="py-4 text-stone-600">{p.recipient}</TableCell>
             {/if}
             {#if columns[2].isVisible}
               <TableCell class="py-4">
-                <InlineEditableField
-                  value={row.status}
-                  field="status"
-                  ariaLabel={t("common.status")}
-                  class="text-sm font-semibold text-stone-500"
-                >
-                  {t("status." + row.status) || row.status}
-                </InlineEditableField>
+                <div class="flex items-center gap-2">
+                  <div
+                    class="h-2 w-2 rounded-full {getStatusType(p.status) === 'success'
+                      ? 'bg-green-500'
+                      : getStatusType(p.status) === 'warning'
+                        ? 'bg-amber-500'
+                        : 'bg-red-500'} animate-pulse"
+                  ></div>
+                  <span class="text-[10px] font-black tracking-widest text-stone-700 uppercase">{p.status}</span>
+                </div>
               </TableCell>
             {/if}
             {#if columns[3].isVisible}
-              <TableCell class="py-4 font-mono text-xs text-stone-400">
-                {String(row.createdAt || "-").split("T")[0]}
+              <TableCell class="py-4 text-xs text-stone-400">
+                {p.createdAt ? new Date(p.createdAt).toLocaleString() : "-"}
               </TableCell>
             {/if}
             {#if columns[4].isVisible}
-              <TableCell class="py-4 font-mono text-xs text-stone-400">
-                {row.sentAt ? String(row.sentAt).split("T")[0] : "-"}
+              <TableCell class="py-4 text-xs text-stone-400">
+                {p.sentAt ? new Date(p.sentAt).toLocaleString() : "-"}
               </TableCell>
             {/if}
             <TableCell align="center" class="py-4">
-              <div class="flex items-center justify-center">
-                <RowActions
-                  showSend={true}
-                  onSend={() => handleRowAction(row.id, "send", null)}
-                  onSave={(e) => handleRowAction(row.id, "save", e.currentTarget.closest("tr"))}
-                  onDelete={() => handleRowAction(row.id, "delete", null)}
-                  isSending={sendingId === row.id}
-                  isSaving={savingId === row.id}
-                  isDeleting={deletingId === row.id}
-                />
-              </div>
+              <RowActions
+                showEdit={false}
+                showSave={false}
+                onDelete={() => handleDelete(p.id)}
+                isDeleting={processingId === p.id && deleteMutation.isPending}
+              >
+                <button
+                  class="btn-ghost flex items-center gap-1 disabled:opacity-50"
+                  disabled={p.status === "sent" || (processingId === p.id && sendMutation.isPending)}
+                  onclick={() => handleSend(p.id)}
+                >
+                  {#if processingId === p.id && sendMutation.isPending}
+                    <svg class="h-3 w-3 animate-spin" viewBox="0 0 24 24"
+                      ><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
+                      ></circle><path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path></svg
+                    >
+                  {/if}
+                  {t("notifications.button_send")}
+                </button>
+              </RowActions>
             </TableCell>
           </TableRow>
         {/each}
       </Table>
     </div>
   </div>
-</div>
 
-<ToastNotification bind:this={toastRef} />
+  <PaginationNav
+    page={filters.page}
+    {totalPages}
+    prevHref={filters.page > 1 ? filters.buildPageUrl(filters.page - 1) : undefined}
+    nextHref={filters.page < totalPages ? filters.buildPageUrl(filters.page + 1) : undefined}
+  />
+
+  <ToastNotification bind:this={toastRef} />
+</div>

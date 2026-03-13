@@ -35,6 +35,7 @@ if (rawTab && rawTab !== tab) {
 const { page, q, offset, limit } = parsePage(Astro.url, 30);
 
 let initialRows: any[] = [];
+let initialTotal = 0;
 let totalPages = 1;
 
 if (tab === "content") {
@@ -44,7 +45,8 @@ if (tab === "content") {
     offset,
   });
   initialRows = data?.rows || [];
-  totalPages = Math.max(1, Math.ceil(Number(data?.total || 0) / limit));
+  initialTotal = Number(data?.total || 0);
+  totalPages = Math.max(1, Math.ceil(initialTotal / limit));
 } else if (tab === "notifications") {
   const { data } = await Astro.callAction(actions.listNotifications, {
     q,
@@ -52,7 +54,8 @@ if (tab === "content") {
     offset,
   });
   initialRows = data?.rows || [];
-  totalPages = Math.max(1, Math.ceil(Number(data?.total || 0) / limit));
+  initialTotal = Number(data?.total || 0);
+  totalPages = Math.max(1, Math.ceil(initialTotal / limit));
 } else if (tab === "audit") {
   const { data } = await Astro.callAction(actions.listAuditLogs, {
     q,
@@ -60,7 +63,8 @@ if (tab === "content") {
     offset,
   });
   initialRows = data?.rows || [];
-  totalPages = Math.max(1, Math.ceil(Number(data?.total || 0) / limit));
+  initialTotal = Number(data?.total || 0);
+  totalPages = Math.max(1, Math.ceil(initialTotal / limit));
 } else if (tab === "admins") {
   const { data } = await Astro.callAction(actions.listAdminUsers, { q });
   initialRows = data || [];
@@ -108,13 +112,7 @@ const lang: LanguageCode = getLang(Astro.cookies);
     showMobileFloat={true}
     client:load
   >
-    <AdminHeaderFilters
-      tab={tab}
-      q={q}
-      status={statusFilter || ""}
-      lang={lang}
-      client:load
-    />
+    <AdminHeaderFilters tab={tab} q={q} status={statusFilter || ""} lang={lang} client:load />
   </AdminToolbar>
 
   <SistemTabContent
@@ -124,6 +122,7 @@ const lang: LanguageCode = getLang(Astro.cookies);
     {page}
     {limit}
     rows={initialRows}
+    total={initialTotal}
     {lang}
     client:load
   />

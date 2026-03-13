@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { actions } from "astro:actions";
+  import { trpc } from "../../../lib/trpc";
+  import { createAdminMutation } from "../../../lib/admin-mutations.svelte";
   import CrudInlineForm from "../CrudInlineForm.svelte";
   import PanelCard from "../PanelCard.svelte";
   import Badge from "../ui/Badge.svelte";
@@ -11,7 +12,7 @@
   import SelectInput from "../ui/forms/SelectInput.svelte";
   import TextInput from "../ui/forms/TextInput.svelte";
   import { t, initI18n } from "../../../lib/i18n/store.svelte";
-  import { onMount, untrack } from "svelte";
+  import { untrack } from "svelte";
 
   type InvoiceItem = {
     name: string;
@@ -38,46 +39,40 @@
 
   let { invoice: initialInvoice, lang }: { invoice: InvoiceDetail; lang?: any } = $props();
 
-  // Root call for SSR and initial hydration (untracked for Svelte 5)
   initI18n(untrack(() => lang));
 
-  let invoice = $state<InvoiceDetail>({} as InvoiceDetail);
-  $effect(() => {
-    if (initialInvoice) invoice = initialInvoice;
-  });
+  let invoice = $state<InvoiceDetail>({ ...initialInvoice });
   let toastRef = $state<ToastNotification>();
-  let isSubmitting = $state(false);
 
-  onMount(() => {
-    // initI18n handled by $effect
-  });
+  const updateMutation = createAdminMutation(
+    (payload: { id: string; data: any }) => trpc.invoices.update.mutate(payload),
+    {
+      successMessage: t("invoices.toast_update"),
+      onSuccess: (_: any, vars: { id: string; data: any }) => {
+        invoice = {
+          ...invoice,
+          ...vars.data,
+        };
+      },
+    },
+    () => toastRef,
+  );
 
   const handleSubmit = async (event: SubmitEvent) => {
     event.preventDefault();
-    const form = event.currentTarget as HTMLFormElement;
-    const formData = new FormData(form);
+    const formData = new FormData(event.currentTarget as HTMLFormElement);
     const data = {
       status: String(formData.get("status") || ""),
       dueAt: (String(formData.get("dueAt") || "") || null) as string | null,
     };
 
-    isSubmitting = true;
-    const { error } = await actions.updateInvoice({
+    await updateMutation.mutate({
       id: invoice.id,
       data,
     });
-    isSubmitting = false;
-
-    if (error) {
-      toastRef?.show(error.message, "error");
-    } else {
-      invoice = {
-        ...invoice,
-        ...data,
-      };
-      toastRef?.show(t("invoices.toast_update"), "success");
-    }
   };
+
+  let isSubmitting = $derived(updateMutation.isPending);
 </script>
 
 <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
