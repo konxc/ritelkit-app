@@ -161,7 +161,7 @@
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
     <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <SectionHeader title={t("fulfillment.title")} muted={t("fulfillment.subtitle")} />
+      <SectionHeader title={t("fulfillment.title")} muted={t("fulfillment.title_list")} />
 
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <AdminHeaderFilters tab="fulfillment" q={filters.q} status={filters.status} bind:columns {lang} />
@@ -180,13 +180,13 @@
               stroke-linejoin="round"
               ><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M12 8v8" /><path d="M8 12h8" /></svg
             >
-            {t("fulfillment.add_shipment")}
+            {t("fulfillment.title_create")}
           </div>
         </Button>
       </div>
     </div>
 
-    <Fab onclick={() => (isDrawerOpen = true)} label={t("fulfillment.add_shipment")} />
+    <Fab onclick={() => (isDrawerOpen = true)} label={t("fulfillment.title_create")} />
 
     {#snippet fulfillmentIcon()}
       <svg
@@ -209,8 +209,8 @@
 
     <AdminDrawerForm
       bind:isOpen={isDrawerOpen}
-      title={t("fulfillment.title_add")}
-      subtitle={t("fulfillment.subtitle")}
+      title={t("fulfillment.title_create")}
+      subtitle={t("fulfillment.title_list")}
       icon={fulfillmentIcon}
       isSubmitting={createMutation.isPending}
       onsubmit={handleCreate}

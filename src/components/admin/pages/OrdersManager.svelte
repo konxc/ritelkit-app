@@ -144,7 +144,7 @@
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
     <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <SectionHeader title={t("orders.title_list")} muted={t("orders.manager_subtitle")} />
+      <SectionHeader title={t("orders.title_list")} muted={t("orders.subtitle_list")} />
 
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <AdminHeaderFilters tab="order" q={filters.q} status={filters.status} bind:columns {lang} />
@@ -188,15 +188,15 @@
     <AdminDrawerForm
       bind:isOpen={isDrawerOpen}
       title={t("orders.title_add")}
-      subtitle={t("orders.manager_subtitle")}
+      subtitle={t("orders.subtitle_list")}
       icon={orderIcon}
       isSubmitting={createMutation.isPending}
       onsubmit={handleCreate}
       formId="order-form"
     >
       <div class="space-y-6">
-        <TextInput id="customerName" name="customerName" label={t("orders.customer_name")} required />
-        <TextInput id="customerPhone" name="customerPhone" label={t("orders.customer_phone")} required />
+        <TextInput id="customerName" name="customerName" label={t("common.customer")} required />
+        <TextInput id="customerPhone" name="customerPhone" label={t("orders.phone")} required />
         <TextInput id="total" name="total" label={t("common.total")} type="number" required />
       </div>
     </AdminDrawerForm>

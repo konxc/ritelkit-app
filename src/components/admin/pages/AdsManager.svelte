@@ -152,7 +152,7 @@
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
     <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <SectionHeader title={t("ads.title")} muted={t("ads.subtitle")} />
+      <SectionHeader title={t("ads.title_list")} muted={t("ads.empty_description")} />
 
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <AdminHeaderFilters tab="ads" q={filters.q} status={filters.status} bind:columns {lang} />
@@ -171,13 +171,13 @@
               stroke-linejoin="round"
               ><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M12 8v8" /><path d="M8 12h8" /></svg
             >
-            {t("ads.button_add")}
+            {t("ads.title_create")}
           </div>
         </Button>
       </div>
     </div>
 
-    <Fab onclick={() => (isDrawerOpen = true)} label={t("ads.button_add")} />
+    <Fab onclick={() => (isDrawerOpen = true)} label={t("ads.title_create")} />
 
     {#snippet adIcon()}
       <svg
@@ -196,8 +196,8 @@
 
     <AdminDrawerForm
       bind:isOpen={isDrawerOpen}
-      title={t("ads.title_add")}
-      subtitle={t("ads.subtitle")}
+      title={t("ads.title_create")}
+      subtitle={t("ads.empty_description")}
       icon={adIcon}
       isSubmitting={createMutation.isPending}
       onsubmit={handleCreate}
@@ -232,7 +232,7 @@
           <TextInput id="end_at" name="end_at" label={t("ads.end_date")} type="date" />
         </div>
 
-        <Textarea id="notes" name="notes" label={t("common.notes")} rows={3} />
+        <Textarea id="notes" name="notes" label={t("customers.notes")} rows={3} />
       </div>
     </AdminDrawerForm>
 

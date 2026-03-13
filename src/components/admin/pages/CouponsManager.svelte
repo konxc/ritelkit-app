@@ -155,7 +155,7 @@
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
     <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <SectionHeader title={t("coupons.title_list")} muted={t("coupons.badge_promo")} />
+      <SectionHeader title={t("coupons.title_list")} muted={t("coupons.muted_add")} />
 
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <AdminHeaderFilters tab="coupons" q={filters.q} status={filters.status} bind:columns {lang} />
@@ -202,7 +202,7 @@
     <AdminDrawerForm
       bind:isOpen={isDrawerOpen}
       title={t("coupons.title_add")}
-      subtitle={t("coupons.badge_promo")}
+      subtitle={t("coupons.muted_add")}
       icon={couponIcon}
       isSubmitting={createMutation.isPending}
       onsubmit={handleCreate}

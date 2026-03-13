@@ -134,9 +134,9 @@
   };
 
   let columns = $state([
-    { id: "name", label: t("shipping_rules.label_name"), isVisible: true },
-    { id: "type", label: t("shipping_rules.label_type"), isVisible: true },
-    { id: "config", label: t("shipping_rules.label_config"), isVisible: true },
+    { id: "name", label: t("shipping_rules.name"), isVisible: true },
+    { id: "type", label: t("shipping_rules.type"), isVisible: true },
+    { id: "config", label: t("shipping_rules.config"), isVisible: true },
     { id: "status", label: t("common.status"), isVisible: true },
   ]);
 
@@ -157,7 +157,7 @@
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
     <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <SectionHeader title={t("shipping_rules.title_list")} muted={t("shipping_rules.manager_subtitle")} />
+      <SectionHeader title={t("shipping_rules.title_list")} muted={t("shipping_rules.subtitle_list")} />
 
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <AdminHeaderFilters tab="shipping" q={filters.q} status={filters.status} bind:columns {lang} />
@@ -199,16 +199,16 @@
     <AdminDrawerForm
       bind:isOpen={isDrawerOpen}
       title={t("shipping_rules.title_add")}
-      subtitle={t("shipping_rules.manager_subtitle")}
+      subtitle={t("shipping_rules.subtitle_list")}
       icon={shippingIcon}
       isSubmitting={createMutation.isPending}
       onsubmit={handleCreate}
       formId="shipping-form"
     >
       <div class="space-y-6">
-        <TextInput id="name" name="name" label={t("shipping_rules.label_name")} required />
+        <TextInput id="name" name="name" label={t("shipping_rules.name")} required />
 
-        <SelectInput id="configType" name="configType" label={t("shipping_rules.label_type")} bind:value={configType}>
+        <SelectInput id="configType" name="configType" label={t("shipping_rules.type")} bind:value={configType}>
           <option value="flat">Flat Fee</option>
           <option value="free_above">Free Above Threshold</option>
           <option value="weight_based">Weight Based</option>

@@ -107,11 +107,5 @@ const lang: LanguageCode = getLang(Astro.cookies);
 
   <PemasaranTabContent {tab} {q} status={statusFilter || ""} {page} {limit} {initialData} {lang} client:load />
 
-  <PaginationNav
-    page={page}
-    totalPages={totalPages}
-    prevHref={page > 1 ? `?tab=${tab}&q=${encodeURIComponent(q)}&page=${page - 1}` : undefined}
-    nextHref={page < totalPages ? `?tab=${tab}&q=${encodeURIComponent(q)}&page=${page + 1}` : undefined}
-    client:load
-  />
+
 </AdminLayout>

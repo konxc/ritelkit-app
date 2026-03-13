@@ -14,12 +14,22 @@ export const shippingRuleRouter = router({
         name: z.string(),
         type: z.string(),
         priority: z.number().default(100),
-        config: z.union([
-          z.object({ type: z.literal("flat"), flatFee: z.number().optional(), thresholdAmount: z.number().optional() }),
-          z.object({ type: z.literal("free_above"), thresholdAmount: z.number().optional(), flatFee: z.number().optional() }),
-          z.object({ type: z.literal("weight_based") }),
-          z.record(z.unknown())
-        ]).optional(),
+        config: z
+          .union([
+            z.object({
+              type: z.literal("flat"),
+              flatFee: z.number().optional(),
+              thresholdAmount: z.number().optional(),
+            }),
+            z.object({
+              type: z.literal("free_above"),
+              thresholdAmount: z.number().optional(),
+              flatFee: z.number().optional(),
+            }),
+            z.object({ type: z.literal("weight_based") }),
+            z.record(z.unknown()),
+          ])
+          .optional(),
         isActive: z.boolean().default(true),
       }),
     )
@@ -47,12 +57,22 @@ export const shippingRuleRouter = router({
           name: z.string().optional(),
           type: z.string().optional(),
           priority: z.number().optional(),
-          config: z.union([
-            z.object({ type: z.literal("flat"), flatFee: z.number().optional(), thresholdAmount: z.number().optional() }),
-            z.object({ type: z.literal("free_above"), thresholdAmount: z.number().optional(), flatFee: z.number().optional() }),
-            z.object({ type: z.literal("weight_based") }),
-            z.record(z.unknown())
-          ]).optional(),
+          config: z
+            .union([
+              z.object({
+                type: z.literal("flat"),
+                flatFee: z.number().optional(),
+                thresholdAmount: z.number().optional(),
+              }),
+              z.object({
+                type: z.literal("free_above"),
+                thresholdAmount: z.number().optional(),
+                flatFee: z.number().optional(),
+              }),
+              z.object({ type: z.literal("weight_based") }),
+              z.record(z.unknown()),
+            ])
+            .optional(),
           isActive: z.boolean().optional(),
         }),
       }),

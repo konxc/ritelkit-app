@@ -359,7 +359,7 @@
               >{t("catalog.products.category")}</label
             >
             <SelectInput name="categoryId" id="categoryId">
-              <option value="">{t("catalog.products.category_placeholder")}</option>
+              <option value="">{t("catalog.categories.name_placeholder")}</option>
               {#each categoryOptions as cat}
                 <option value={cat.id}>{cat.name}</option>
               {/each}

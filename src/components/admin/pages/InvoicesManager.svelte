@@ -48,7 +48,7 @@
       class: "font-mono font-bold text-stone-800 tabular-nums",
     },
     { id: "status", label: t("common.status"), isVisible: true },
-    { id: "date", label: t("invoices.issued_date"), isVisible: true, class: "hidden lg:table-cell" },
+    { id: "date", label: t("common.date"), isVisible: true, class: "hidden lg:table-cell" },
   ]);
 
   const query = createQuery(() => ({
@@ -88,7 +88,7 @@
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
     <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <SectionHeader title={t("invoices.title")} muted={t("invoices.subtitle")} />
+      <SectionHeader title={t("invoices.title")} muted={t("invoices.subtitle_list")} />
 
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <AdminHeaderFilters tab="invoices" q={filters.q} status={filters.status} bind:columns {lang} />
@@ -137,7 +137,7 @@
                 outline
                 class="h-8 border-stone-200 px-3 text-[10px] font-bold tracking-widest uppercase"
               >
-                {t("common.details")}
+                {t("common.detail")}
               </Button>
             </TableCell>
           </TableRow>

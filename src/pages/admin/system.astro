@@ -127,10 +127,5 @@ const lang: LanguageCode = getLang(Astro.cookies);
     client:load
   />
 
-  <PaginationNav
-    page={page}
-    totalPages={totalPages}
-    prevHref={page > 1 ? `?tab=${tab}&q=${encodeURIComponent(q)}&page=${page - 1}` : undefined}
-    nextHref={page < totalPages ? `?tab=${tab}&q=${encodeURIComponent(q)}&page=${page + 1}` : undefined}
-  />
+
 </AdminLayout>

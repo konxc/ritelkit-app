@@ -147,7 +147,7 @@
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
     <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <SectionHeader title={t("cms.manager_title")} muted={t("cms.manager_subtitle")} />
+      <SectionHeader title={t("cms.title_list")} muted={t("cms.empty_list")} />
 
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <AdminHeaderFilters tab="cms" q={filters.q} status={filters.status} bind:columns {lang} />
@@ -167,12 +167,12 @@
               d="M15 5V3"
             /><path d="M19 5V3" /><path d="M3 13h18" /></svg
           >
-          {t("cms.add_page")}
+          {t("cms.button_new")}
         </Button>
       </div>
     </div>
 
-    <Fab onclick={() => (isDrawerOpen = true)} label={t("cms.add_page")} />
+    <Fab onclick={() => (isDrawerOpen = true)} label={t("cms.button_new")} />
 
     {#snippet cmsIcon()}
       <svg
@@ -193,8 +193,8 @@
 
     <AdminDrawerForm
       bind:isOpen={isDrawerOpen}
-      title={t("cms.title_add_page")}
-      subtitle={t("cms.manager_subtitle")}
+      title={t("cms.title_create")}
+      subtitle={t("cms.empty_list")}
       icon={cmsIcon}
       isSubmitting={createMutation.isPending}
       onsubmit={handleCreate}
@@ -211,8 +211,8 @@
           placeholder="Markdown content..."
         />
         <SelectInput id="isActive" name="isActive" label={t("cms.label_status")}>
-          <option value="true">{t("cms.status_active")}</option>
-          <option value="false">{t("cms.status_inactive")}</option>
+          <option value="true">{t("common.active")}</option>
+          <option value="false">{t("common.inactive")}</option>
         </SelectInput>
       </div>
     </AdminDrawerForm>
@@ -248,10 +248,10 @@
                 class="rounded-lg border-stone-200 bg-stone-50 px-2 py-1 text-[10px] font-bold uppercase"
               >
                 <option value="true" selected={(tableState.editedValues[row.id]?.isActive ?? row.isActive) === 1}
-                  >{t("cms.status_active")}</option
+                  >{t("common.active")}</option
                 >
                 <option value="false" selected={(tableState.editedValues[row.id]?.isActive ?? row.isActive) === 0}
-                  >{t("cms.status_inactive")}</option
+                  >{t("common.inactive")}</option
                 >
               </select>
             </TableCell>

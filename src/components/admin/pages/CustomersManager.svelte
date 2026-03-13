@@ -221,7 +221,7 @@
             id="email"
             name="email"
             type="email"
-            label={t("customers.email")}
+            label={t("customers.email_optional")}
             placeholder={t("customers.email_placeholder")}
           />
         </div>

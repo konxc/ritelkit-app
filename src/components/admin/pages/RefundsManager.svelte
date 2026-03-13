@@ -120,7 +120,7 @@
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
     <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <SectionHeader title={t("refunds.title")} muted={t("refunds.subtitle")} />
+      <SectionHeader title={t("refunds.title")} muted={t("refunds.title_list")} />
 
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <AdminHeaderFilters tab="refunds" q={filters.q} status={filters.status} bind:columns {lang} />
@@ -139,13 +139,13 @@
               stroke-linejoin="round"
               ><path d="M3 2v6h6" /><path d="M3 13a9 9 0 1 0 3-7.7L3 8" /><path d="M12 7v5l4 2" /></svg
             >
-            {t("refunds.add_refund")}
+            {t("refunds.title_create")}
           </div>
         </Button>
       </div>
     </div>
 
-    <Fab onclick={() => (isDrawerOpen = true)} label={t("refunds.add_refund")} />
+    <Fab onclick={() => (isDrawerOpen = true)} label={t("refunds.title_create")} />
 
     {#snippet refundIcon()}
       <svg
@@ -163,8 +163,8 @@
 
     <AdminDrawerForm
       bind:isOpen={isDrawerOpen}
-      title={t("refunds.title_add")}
-      subtitle={t("refunds.subtitle")}
+      title={t("refunds.title_create")}
+      subtitle={t("refunds.title_list")}
       icon={refundIcon}
       isSubmitting={createMutation.isPending}
       onsubmit={handleCreate}
@@ -221,7 +221,7 @@
                 outline
                 class="h-8 border-stone-200 px-3 text-[10px] font-bold tracking-widest uppercase"
               >
-                {t("common.details")}
+                {t("common.detail")}
               </Button>
             </TableCell>
           </TableRow>

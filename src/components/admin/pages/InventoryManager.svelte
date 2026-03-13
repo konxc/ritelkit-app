@@ -169,7 +169,7 @@
             }}
             class="h-9 px-4 text-[0.7rem] font-bold tracking-wider uppercase"
           >
-            {t("catalog.inventory.tab_stock")}
+            {t("catalog.inventory.stock_tab")}
           </Button>
           <Button
             variant={filters.subtab === "log" ? "primary" : "secondary"}
@@ -180,7 +180,7 @@
             }}
             class="h-9 px-4 text-[0.7rem] font-bold tracking-wider uppercase"
           >
-            {t("catalog.inventory.tab_log")}
+            {t("catalog.inventory.log_tab")}
           </Button>
         </div>
       </div>
@@ -208,13 +208,13 @@
               stroke-linecap="round"
               stroke-linejoin="round"><path d="m16 11 2 2 4-4" /><path d="M5 12h14" /><path d="M12 5v14" /></svg
             >
-            {t("catalog.inventory.add_movement")}
+            {t("catalog.inventory.process_mutation")}
           </div>
         </Button>
       </div>
     </div>
 
-    <Fab onclick={() => (isDrawerOpen = true)} label={t("catalog.inventory.add_movement")} />
+    <Fab onclick={() => (isDrawerOpen = true)} label={t("catalog.inventory.process_mutation")} />
 
     {#snippet inventoryIcon()}
       <svg
@@ -235,7 +235,7 @@
 
     <AdminDrawerForm
       bind:isOpen={isDrawerOpen}
-      title={t("catalog.inventory.add_movement")}
+      title={t("catalog.inventory.process_mutation")}
       subtitle={t("catalog.inventory.movement_desc")}
       icon={inventoryIcon}
       isSubmitting={movementMutation.isPending}
@@ -254,7 +254,7 @@
           <SelectInput id="type" name="type" label={t("catalog.inventory.activity")} required>
             <option value="in">{t("catalog.inventory.type_in")}</option>
             <option value="out">{t("catalog.inventory.type_out")}</option>
-            <option value="adjustment">{t("catalog.inventory.type_adjustment")}</option>
+            <option value="adjustment">{t("catalog.inventory.type_adj")}</option>
           </SelectInput>
           <TextInput id="qty" name="qty" label={t("catalog.inventory.qty")} type="number" required placeholder="0" />
         </div>

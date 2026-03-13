@@ -158,7 +158,7 @@
 <div class="h-full w-full">
   <div in:fly={{ y: 20, duration: 400, delay: 100 }}>
     <div class="mt-2 mb-8 flex flex-col items-start gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <SectionHeader title={t("notifications.title_list")} muted={t("notifications.manager_subtitle")} />
+      <SectionHeader title={t("notifications.title_log")} muted={t("notifications.empty_log")} />
 
       <div class="hidden lg:flex lg:items-center lg:gap-3">
         <AdminHeaderFilters tab="notifications" q={filters.q} status={filters.status} bind:columns {lang} />
@@ -178,12 +178,12 @@
               d="m22 9-10 7L2 9"
             /></svg
           >
-          {t("notifications.add_notification")}
+          {t("notifications.title_create")}
         </Button>
       </div>
     </div>
 
-    <Fab onclick={() => (isDrawerOpen = true)} label={t("notifications.add_notification")} />
+    <Fab onclick={() => (isDrawerOpen = true)} label={t("notifications.title_create")} />
 
     {#snippet notificationIcon()}
       <svg
@@ -204,8 +204,8 @@
 
     <AdminDrawerForm
       bind:isOpen={isDrawerOpen}
-      title={t("notifications.title_add")}
-      subtitle={t("notifications.manager_subtitle")}
+      title={t("notifications.title_create")}
+      subtitle={t("notifications.empty_log")}
       icon={notificationIcon}
       isSubmitting={createMutation.isPending}
       onsubmit={handleCreate}
@@ -218,8 +218,8 @@
           <option value="push">Push Notification</option>
         </SelectInput>
         <TextInput id="recipient" name="recipient" label={t("notifications.label_recipient")} required />
-        <TextInput id="title" name="title" label={t("notifications.label_title")} required />
-        <Textarea id="body" name="body" label={t("notifications.label_body")} rows={4} required />
+        <TextInput id="title" name="title" label={t("notifications.label_template")} required />
+        <Textarea id="body" name="body" label={t("notifications.label_payload")} rows={4} required />
         <Textarea id="payloadJson" name="payloadJson" label="Payload (JSON)" />
       </div>
     </AdminDrawerForm>
@@ -285,7 +285,7 @@
                       ></path></svg
                     >
                   {/if}
-                  {t("notifications.button_send")}
+                  {t("common.send")}
                 </button>
               </RowActions>
             </TableCell>
