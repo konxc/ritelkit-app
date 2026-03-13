@@ -1,4 +1,19 @@
 <script lang="ts">
+  let {
+    rows: initialRows = [],
+    q = "",
+    status = "",
+    page = 1,
+    lang,
+  }: {
+    rows?: any[];
+    q?: string;
+    status?: string;
+    page?: number;
+    lang?: any;
+  } = $props();
+  initI18n(untrack(() => lang));
+
   import { trpc } from "../../../lib/trpc";
   import { createQuery } from "@tanstack/svelte-query";
   import { untrack, onMount } from "svelte";
@@ -21,22 +36,6 @@
   import { createAdminFilters } from "../../../lib/admin-filters.svelte";
   import { createAdminMutation } from "../../../lib/admin-mutations.svelte";
   import { createTableState } from "../../../lib/admin-table-state.svelte";
-
-  let {
-    rows: initialRows = [],
-    q = "",
-    status = "",
-    page = 1,
-    lang,
-  }: {
-    rows?: any[];
-    q?: string;
-    status?: string;
-    page?: number;
-    lang?: any;
-  } = $props();
-
-  initI18n(untrack(() => lang));
 
   const filters = createAdminFilters({ q, status, page });
 
@@ -272,7 +271,6 @@
             {/if}
             <TableCell align="center" class="py-4">
               <RowActions
-                showSave={tableState.hasChanges(row.id)}
                 isSaving={processingId === row.id && updateMutation.isPending}
                 onSave={() => handleSave(row.id)}
                 onDelete={() => handleDelete(row.id)}

@@ -1,12 +1,4 @@
 <script lang="ts">
-  import SearchInput from "./ui/forms/SearchInput.svelte";
-  import SelectInput from "./ui/forms/SelectInput.svelte";
-  import Button from "./ui/Button.svelte";
-  import AdminFilterDrawer from "./ui/forms/AdminFilterDrawer.svelte";
-  import ColumnVisibilityToggle from "./ui/ColumnVisibilityToggle.svelte";
-  import { onMount, untrack } from "svelte";
-  import { t, initI18n } from "../../lib/i18n/store.svelte";
-
   let {
     q = "",
     status = "",
@@ -24,9 +16,17 @@
     columns?: { id: string; label: string; isVisible: boolean }[];
     categoryOptions?: { id: string | number; name: string }[];
   } = $props();
+  initI18n(untrack(() => lang));
+
+  import SearchInput from "./ui/forms/SearchInput.svelte";
+  import SelectInput from "./ui/forms/SelectInput.svelte";
+  import Button from "./ui/Button.svelte";
+  import AdminFilterDrawer from "./ui/forms/AdminFilterDrawer.svelte";
+  import ColumnVisibilityToggle from "./ui/ColumnVisibilityToggle.svelte";
+  import { onMount, untrack } from "svelte";
+  import { t, initI18n } from "../../lib/i18n/store.svelte";
 
   // Root call for SSR and initial hydration (untracked for Svelte 5)
-  initI18n(untrack(() => lang));
 
   let showAdvanced = $state(false);
   let localQ = $state(q);

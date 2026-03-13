@@ -1,12 +1,4 @@
 <script lang="ts">
-  import { initI18n } from "../../../lib/i18n/store.svelte";
-  import { onMount, untrack } from "svelte";
-  import type { Category } from "../../../lib/types";
-  import CategoriesManager from "./CategoriesManager.svelte";
-  import InventoryManager from "./InventoryManager.svelte";
-  import ProductsManager from "./ProductsManager.svelte";
-  import QueryProvider from "../QueryProvider.svelte";
-
   let {
     tab,
     subtab = "stock",
@@ -35,9 +27,17 @@
     };
     lang?: any;
   } = $props();
+  initI18n(untrack(() => lang));
+
+  import { initI18n } from "../../../lib/i18n/store.svelte";
+  import { onMount, untrack } from "svelte";
+  import type { Category } from "../../../lib/types";
+  import CategoriesManager from "./CategoriesManager.svelte";
+  import InventoryManager from "./InventoryManager.svelte";
+  import ProductsManager from "./ProductsManager.svelte";
+  import QueryProvider from "../QueryProvider.svelte";
 
   // Root call for SSR and initial hydration (untracked for Svelte 5)
-  initI18n(untrack(() => lang));
 </script>
 
 <QueryProvider {initialData}>

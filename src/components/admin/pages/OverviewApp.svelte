@@ -1,14 +1,4 @@
 <script lang="ts">
-  import { fade, fly } from "svelte/transition";
-  import StatCard from "../ui/StatCard.svelte";
-  import Button from "../ui/Button.svelte";
-  import Table from "../ui/Table.svelte";
-  import TableRow from "../ui/TableRow.svelte";
-  import TableCell from "../ui/TableCell.svelte";
-  import Badge from "../ui/Badge.svelte";
-  import { t, initI18n } from "../../../lib/i18n/store.svelte";
-  import { onMount, untrack } from "svelte";
-
   let {
     stats,
     recentOrders = [],
@@ -25,9 +15,19 @@
     recentOrders?: any[];
     lang?: any;
   } = $props();
+  initI18n(untrack(() => lang));
+
+  import { fade, fly } from "svelte/transition";
+  import StatCard from "../ui/StatCard.svelte";
+  import Button from "../ui/Button.svelte";
+  import Table from "../ui/Table.svelte";
+  import TableRow from "../ui/TableRow.svelte";
+  import TableCell from "../ui/TableCell.svelte";
+  import Badge from "../ui/Badge.svelte";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
+  import { onMount, untrack } from "svelte";
 
   // Optimized SSR & Hydration: Initial call using untrack to avoid Svelte 5 warnings
-  initI18n(untrack(() => lang));
 
   const formatCurrency = (val: number) => `${t("common.currency_symbol")} ${val.toLocaleString(t("common.lang_code"))}`;
 

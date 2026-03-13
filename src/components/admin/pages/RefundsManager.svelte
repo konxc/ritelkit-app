@@ -1,4 +1,23 @@
 <script lang="ts">
+  let {
+    rows: initialRows = [],
+    total: initialTotal = 0,
+    q = "",
+    status = "",
+    page = 1,
+    limit = 20,
+    lang,
+  }: {
+    rows?: any[];
+    total?: number;
+    q?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+    lang?: any;
+  } = $props();
+  initI18n(untrack(() => lang));
+
   import { trpc } from "../../../lib/trpc";
   import { createQuery } from "@tanstack/svelte-query";
   import { t, initI18n } from "../../../lib/i18n/store.svelte";
@@ -20,26 +39,6 @@
   import AdminDrawerForm from "../ui/overlay/AdminDrawerForm.svelte";
   import Fab from "../ui/Fab.svelte";
   import PaginationNav from "../PaginationNav.svelte";
-
-  let {
-    rows: initialRows = [],
-    total: initialTotal = 0,
-    q = "",
-    status = "",
-    page = 1,
-    limit = 20,
-    lang,
-  }: {
-    rows?: any[];
-    total?: number;
-    q?: string;
-    status?: string;
-    page?: number;
-    limit?: number;
-    lang?: any;
-  } = $props();
-
-  initI18n(untrack(() => lang));
 
   const filters = createAdminFilters({ q, status, page });
   const localLimit = untrack(() => limit) || 20;

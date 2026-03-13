@@ -1,4 +1,23 @@
 <script lang="ts">
+  let {
+    rows: initialRows = [],
+    total: initialTotal = 0,
+    q = "",
+    status = "",
+    page = 1,
+    limit = 20,
+    lang,
+  }: {
+    rows: Coupon[];
+    total?: number;
+    q?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+    lang?: any;
+  } = $props();
+  initI18n(untrack(() => lang));
+
   import { trpc } from "../../../lib/trpc";
   import { createQuery } from "@tanstack/svelte-query";
   import { fly } from "svelte/transition";
@@ -24,26 +43,6 @@
   import InlineEditableField from "../ui/forms/InlineEditableField.svelte";
   import PaginationNav from "../PaginationNav.svelte";
   import { onMount } from "svelte";
-
-  let {
-    rows: initialRows = [],
-    total: initialTotal = 0,
-    q = "",
-    status = "",
-    page = 1,
-    limit = 20,
-    lang,
-  }: {
-    rows: Coupon[];
-    total?: number;
-    q?: string;
-    status?: string;
-    page?: number;
-    limit?: number;
-    lang?: any;
-  } = $props();
-
-  initI18n(untrack(() => lang));
 
   let columns = $state([
     { id: "code", label: t("coupons.code"), isVisible: true },
@@ -388,7 +387,6 @@
             <TableCell align="center" class="py-4">
               <RowActions
                 showEdit={false}
-                showSave={tableState.hasChanges(p.id)}
                 onSave={() => handleSave(p.id)}
                 onDelete={() => handleDelete(p.id)}
                 isSaving={processingId === p.id && updateMutation.isPending}

@@ -1,4 +1,23 @@
 <script lang="ts">
+  let {
+    rows: initialRows = [],
+    total = 0,
+    q = "",
+    status = "",
+    page = 1,
+    limit = 30,
+    lang,
+  }: {
+    rows?: Notification[];
+    total?: number;
+    q?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+    lang?: any;
+  } = $props();
+  initI18n(untrack(() => lang));
+
   import { trpc } from "../../../lib/trpc";
   import { createQuery } from "@tanstack/svelte-query";
   import type { Notification } from "../../../lib/types";
@@ -24,26 +43,6 @@
   import { createTableState } from "../../../lib/admin-table-state.svelte";
   import PaginationNav from "../PaginationNav.svelte";
   import { onMount } from "svelte";
-
-  let {
-    rows: initialRows = [],
-    total = 0,
-    q = "",
-    status = "",
-    page = 1,
-    limit = 30,
-    lang,
-  }: {
-    rows?: Notification[];
-    total?: number;
-    q?: string;
-    status?: string;
-    page?: number;
-    limit?: number;
-    lang?: any;
-  } = $props();
-
-  initI18n(untrack(() => lang));
 
   let columns = $state([
     { id: "kanal", label: t("notifications.label_channel"), isVisible: true },

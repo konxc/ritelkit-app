@@ -1,4 +1,7 @@
 <script lang="ts">
+  let { lang }: { lang?: any } = $props();
+  initI18n(untrack(() => lang));
+
   import { trpc } from "../../../lib/trpc";
   import { createQuery } from "@tanstack/svelte-query";
   import { fly } from "svelte/transition";
@@ -9,10 +12,6 @@
   import SelectInput from "../ui/forms/SelectInput.svelte";
   import Button from "../ui/Button.svelte";
   import { createAdminMutation } from "../../../lib/admin-mutations.svelte";
-
-  let { lang }: { lang?: any } = $props();
-
-  initI18n(untrack(() => lang));
 
   let toastRef = $state<ToastNotification>();
 

@@ -1,11 +1,4 @@
 <script lang="ts">
-  import AdsManager from "./AdsManager.svelte";
-  import CouponsManager from "./CouponsManager.svelte";
-  import CustomersManager from "./CustomersManager.svelte";
-  import QueryProvider from "../QueryProvider.svelte";
-  import { initI18n } from "../../../lib/i18n/store.svelte";
-  import { untrack } from "svelte";
-
   let {
     tab,
     q = "",
@@ -23,9 +16,16 @@
     initialData?: any;
     lang?: any;
   } = $props();
+  initI18n(untrack(() => lang));
+
+  import AdsManager from "./AdsManager.svelte";
+  import CouponsManager from "./CouponsManager.svelte";
+  import CustomersManager from "./CustomersManager.svelte";
+  import QueryProvider from "../QueryProvider.svelte";
+  import { initI18n } from "../../../lib/i18n/store.svelte";
+  import { untrack } from "svelte";
 
   // Root call for SSR and initial hydration (untracked for Svelte 5)
-  initI18n(untrack(() => lang));
 </script>
 
 <QueryProvider {initialData}>

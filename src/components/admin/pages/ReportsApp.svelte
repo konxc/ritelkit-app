@@ -1,13 +1,4 @@
 <script lang="ts">
-  import { fade, fly } from "svelte/transition";
-  import SectionHeader from "../SectionHeader.svelte";
-  import StatCard from "../StatCard.svelte";
-  import Table from "../ui/Table.svelte";
-  import TableRow from "../ui/TableRow.svelte";
-  import TableCell from "../ui/TableCell.svelte";
-  import { onMount, untrack } from "svelte";
-  import { t, initI18n } from "../../../lib/i18n/store.svelte";
-
   let {
     reportData,
     lang,
@@ -31,9 +22,18 @@
     };
     lang?: any;
   } = $props();
+  initI18n(untrack(() => lang));
+
+  import { fade, fly } from "svelte/transition";
+  import SectionHeader from "../SectionHeader.svelte";
+  import StatCard from "../StatCard.svelte";
+  import Table from "../ui/Table.svelte";
+  import TableRow from "../ui/TableRow.svelte";
+  import TableCell from "../ui/TableCell.svelte";
+  import { onMount, untrack } from "svelte";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
 
   // Root call for SSR and initial hydration (untracked for Svelte 5)
-  initI18n(untrack(() => lang));
 
   const formatCurrency = (val: number) => `${t("common.currency_symbol")} ${val.toLocaleString(t("common.lang_code"))}`;
 

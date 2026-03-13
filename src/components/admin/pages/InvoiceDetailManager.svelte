@@ -1,4 +1,7 @@
 <script lang="ts">
+  let { invoice: initialInvoice, lang }: { invoice: InvoiceDetail; lang?: any } = $props();
+  initI18n(untrack(() => lang));
+
   import { trpc } from "../../../lib/trpc";
   import { createAdminMutation } from "../../../lib/admin-mutations.svelte";
   import CrudInlineForm from "../CrudInlineForm.svelte";
@@ -36,10 +39,6 @@
       district?: string;
     };
   };
-
-  let { invoice: initialInvoice, lang }: { invoice: InvoiceDetail; lang?: any } = $props();
-
-  initI18n(untrack(() => lang));
 
   let invoice = $state<InvoiceDetail>({ ...initialInvoice });
   let toastRef = $state<ToastNotification>();

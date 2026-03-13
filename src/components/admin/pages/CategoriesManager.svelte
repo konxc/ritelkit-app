@@ -1,4 +1,23 @@
 <script lang="ts">
+  let {
+    rows: initialRows = [],
+    total: initialTotal = 0,
+    q = "",
+    status = "",
+    page = 1,
+    limit = 30,
+    lang,
+  }: {
+    rows?: Category[];
+    total?: number;
+    q?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+    lang?: any;
+  } = $props();
+  initI18n(untrack(() => lang));
+
   import { trpc } from "../../../lib/trpc";
   import { createQuery, useQueryClient } from "@tanstack/svelte-query";
   import { onMount, untrack } from "svelte";
@@ -44,25 +63,6 @@
     isActive: number;
     sortOrder?: number;
   };
-  let {
-    rows: initialRows = [],
-    total: initialTotal = 0,
-    q = "",
-    status = "",
-    page = 1,
-    limit = 30,
-    lang,
-  }: {
-    rows?: Category[];
-    total?: number;
-    q?: string;
-    status?: string;
-    page?: number;
-    limit?: number;
-    lang?: any;
-  } = $props();
-
-  initI18n(untrack(() => lang));
 
   const filters = createAdminFilters({ q, status, page });
   const localLimit = untrack(() => limit) || 20;
@@ -447,7 +447,6 @@
         <TableCell align="center" class="py-4">
           <div class="flex items-center justify-center">
             <RowActions
-              showSave={tableState.hasChanges(row.id)}
               isSaving={processingId === row.id && updateMutation.isPending}
               isDeleting={processingId === row.id && deleteMutation.isPending}
               onSave={() => handleSave(row.id)}

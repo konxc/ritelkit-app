@@ -1,4 +1,31 @@
 <script lang="ts">
+  let {
+    products: initialProducts = [],
+    productsTotal: initialProductsTotal = 0,
+    movements: initialMovements = [],
+    movementsTotal: initialMovementsTotal = 0,
+    categoryOptions = [],
+    subtab = "stock",
+    q = "",
+    status = "",
+    page = 1,
+    limit = 20,
+    lang,
+  }: {
+    products?: any[];
+    productsTotal?: number;
+    movements?: any[];
+    movementsTotal?: number;
+    categoryOptions?: any[];
+    subtab?: string;
+    q?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+    lang?: any;
+  } = $props();
+  initI18n(untrack(() => lang));
+
   import { trpc } from "../../../lib/trpc";
   import { createQuery, useQueryClient } from "@tanstack/svelte-query";
   import { t, initI18n } from "../../../lib/i18n/store.svelte";
@@ -25,34 +52,6 @@
   import { normalizeTab } from "../../../lib/admin";
   import PaginationNav from "../PaginationNav.svelte";
   import { onMount } from "svelte";
-
-  let {
-    products: initialProducts = [],
-    productsTotal: initialProductsTotal = 0,
-    movements: initialMovements = [],
-    movementsTotal: initialMovementsTotal = 0,
-    categoryOptions = [],
-    subtab = "stock",
-    q = "",
-    status = "",
-    page = 1,
-    limit = 20,
-    lang,
-  }: {
-    products?: any[];
-    productsTotal?: number;
-    movements?: any[];
-    movementsTotal?: number;
-    categoryOptions?: any[];
-    subtab?: string;
-    q?: string;
-    status?: string;
-    page?: number;
-    limit?: number;
-    lang?: any;
-  } = $props();
-
-  initI18n(untrack(() => lang));
 
   const filters = createAdminFilters({ q, status, page, subtab });
   const localLimit = untrack(() => limit) || 20;

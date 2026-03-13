@@ -1,12 +1,4 @@
 <script lang="ts">
-  import AdminUsersManager from "./AdminUsersManager.svelte";
-  import AuditLogManager from "./AuditLogManager.svelte";
-  import CmsManager from "./CmsManager.svelte";
-  import NotificationsManager from "./NotificationsManager.svelte";
-  import QueryProvider from "../QueryProvider.svelte";
-  import { initI18n } from "../../../lib/i18n/store.svelte";
-  import { untrack } from "svelte";
-
   let {
     tab,
     q = "",
@@ -26,9 +18,17 @@
     total?: number;
     lang?: any;
   } = $props();
+  initI18n(untrack(() => lang));
+
+  import AdminUsersManager from "./AdminUsersManager.svelte";
+  import AuditLogManager from "./AuditLogManager.svelte";
+  import CmsManager from "./CmsManager.svelte";
+  import NotificationsManager from "./NotificationsManager.svelte";
+  import QueryProvider from "../QueryProvider.svelte";
+  import { initI18n } from "../../../lib/i18n/store.svelte";
+  import { untrack } from "svelte";
 
   // Root call for SSR and initial hydration (untracked for Svelte 5)
-  initI18n(untrack(() => lang));
 </script>
 
 <QueryProvider initialData={rows}>

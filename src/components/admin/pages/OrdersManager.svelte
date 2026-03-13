@@ -1,4 +1,23 @@
 <script lang="ts">
+  let {
+    rows: initialRows = [],
+    total: initialTotal = 0,
+    q = "",
+    status = "",
+    page = 1,
+    limit = 20,
+    lang,
+  }: {
+    rows?: any[];
+    total?: number;
+    q?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+    lang?: any;
+  } = $props();
+  initI18n(untrack(() => lang));
+
   import { createQuery } from "@tanstack/svelte-query";
   import { fly } from "svelte/transition";
   import { trpc } from "../../../lib/trpc";
@@ -22,26 +41,6 @@
   import Fab from "../ui/Fab.svelte";
   import PaginationNav from "../PaginationNav.svelte";
   import { onMount } from "svelte";
-
-  let {
-    rows: initialRows = [],
-    total: initialTotal = 0,
-    q = "",
-    status = "",
-    page = 1,
-    limit = 20,
-    lang,
-  }: {
-    rows?: any[];
-    total?: number;
-    q?: string;
-    status?: string;
-    page?: number;
-    limit?: number;
-    lang?: any;
-  } = $props();
-
-  initI18n(untrack(() => lang));
 
   const filters = createAdminFilters({ q, status, page });
   const localLimit = untrack(() => limit) || 20;

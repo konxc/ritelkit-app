@@ -1,21 +1,4 @@
 <script lang="ts">
-  import { trpc } from "../../../lib/trpc";
-  import { createQuery } from "@tanstack/svelte-query";
-  import { fly } from "svelte/transition";
-  import { t, initI18n } from "../../../lib/i18n/store.svelte";
-  import { onMount, untrack } from "svelte";
-  import TableEmptyState from "../ui/TableEmptyState.svelte";
-  import SectionHeader from "../SectionHeader.svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import Table from "../ui/Table.svelte";
-  import TableRow from "../ui/TableRow.svelte";
-  import TableCell from "../ui/TableCell.svelte";
-  import Badge from "../ui/Badge.svelte";
-  import Button from "../ui/Button.svelte";
-  import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
-  import { createAdminFilters } from "../../../lib/admin-filters.svelte";
-  import PaginationNav from "../PaginationNav.svelte";
-
   let {
     rows: initialRows = [],
     total: initialTotal = 0,
@@ -33,8 +16,24 @@
     limit?: number;
     lang?: any;
   } = $props();
-
   initI18n(untrack(() => lang));
+
+  import { trpc } from "../../../lib/trpc";
+  import { createQuery } from "@tanstack/svelte-query";
+  import { fly } from "svelte/transition";
+  import { t, initI18n } from "../../../lib/i18n/store.svelte";
+  import { onMount, untrack } from "svelte";
+  import TableEmptyState from "../ui/TableEmptyState.svelte";
+  import SectionHeader from "../SectionHeader.svelte";
+  import ToastNotification from "../ToastNotification.svelte";
+  import Table from "../ui/Table.svelte";
+  import TableRow from "../ui/TableRow.svelte";
+  import TableCell from "../ui/TableCell.svelte";
+  import Badge from "../ui/Badge.svelte";
+  import Button from "../ui/Button.svelte";
+  import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
+  import { createAdminFilters } from "../../../lib/admin-filters.svelte";
+  import PaginationNav from "../PaginationNav.svelte";
 
   const filters = createAdminFilters({ q, status, page });
   const localLimit = untrack(() => limit) || 20;
