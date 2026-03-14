@@ -24,7 +24,8 @@ biome_report.txt
 
 # uploads
 public/uploads/
-local.db
+# databases
+*.db
 data/
 
 # macOS-specific files

@@ -24,7 +24,7 @@ if (isNode && !isCloudflare) {
 }
 
 export default defineConfig({
-  site: process.env.PUBLIC_SITE_URL || "https://roti-sholawat.pages.dev",
+  site: process.env.PUBLIC_SITE_URL || "https://ritelkit.konxc.space",
   output: "server",
   integrations: [svelte(), partytown(), sitemap()],
   adapter: selectedAdapter,

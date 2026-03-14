@@ -8,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [cloudflare, node]
     env:
       PUBLIC_SITE_URL: "https://example.invalid"
       PUBLIC_WHATSAPP_NUMBER: "6280000000000"
@@ -31,12 +34,17 @@ jobs:
         run: pnpm install
       - name: Type Check
         run: pnpm run type-check
-      - name: Build
+      - name: Build (Cloudflare)
+        if: matrix.target == 'cloudflare'
+        run: pnpm run build:cf
+      - name: Build (Node)
+        if: matrix.target == 'node'
         env:
           ASTRO_ADAPTER: node
           NODE_RUNTIME: "1"
         run: pnpm run build:node
       - name: Smoke API (Node runtime)
+        if: matrix.target == 'node'
         env:
           HOST: 127.0.0.1
           PORT: 4321
@@ -47,4 +55,5 @@ jobs:
           sleep 2
           pnpm run smoke:api
       - name: Docker build
+        if: matrix.target == 'node'
         run: docker build -t ritelkit-app:ci .
