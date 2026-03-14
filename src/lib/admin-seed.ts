@@ -495,6 +495,7 @@ const sampleReviews: SampleProductReview[] = [
 
 const sampleAdmins: SampleAdminUser[] = [
   { email: "admin@konxc.space", role: "owner" },
+  { email: "androxoss@hotmail.com", role: "owner" },
   { email: "staff@konxc.space", role: "staff" },
   { email: "editor@konxc.space", role: "editor" },
 ];
@@ -801,12 +802,12 @@ async function ensureAdminUsers(db: Client, tenantId: string, now: string) {
     sql: "SELECT COUNT(*) as count FROM admin_users WHERE tenant_id = ?",
     args: [tenantId]
   });
-  if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 1) return; // Allow 1 default admin
+  if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 5) return; // Allow some default admins
   for (const admin of sampleAdmins) {
-    // Skip if already exists
+    // Skip if already exists for this tenant
     const exists = await db.execute({
-      sql: "SELECT email FROM admin_users WHERE email = ?",
-      args: [admin.email],
+      sql: "SELECT email FROM admin_users WHERE email = ? AND tenant_id = ?",
+      args: [admin.email, tenantId],
     });
     if (exists.rows.length > 0) continue;
 

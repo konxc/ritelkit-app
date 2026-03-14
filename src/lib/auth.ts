@@ -99,9 +99,10 @@ export async function requireAdmin(ctx: APIContext) {
   const session = await getAdminSession(ctx);
   if (!session) return null;
   const db = getDb(ctx);
+  const tenantId = ctx.locals.tenant?.id;
   const result = await db.execute({
-    sql: "SELECT id, email, role FROM admin_users WHERE email = ?",
-    args: [session.email],
+    sql: "SELECT id, email, role FROM admin_users WHERE email = ? AND tenant_id = ?",
+    args: [session.email, tenantId || null],
   });
   const row = result.rows[0] as
     | {

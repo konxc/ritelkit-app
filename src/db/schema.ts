@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const tenants = sqliteTable("tenants", {
   id: text("id").primaryKey(),
@@ -16,7 +16,7 @@ export const tenants = sqliteTable("tenants", {
 export const adminUsers = sqliteTable("admin_users", {
   id: text("id").primaryKey(),
   tenantId: text("tenant_id"), // Null for platform/shared admins or specific to tenant
-  email: text("email").notNull().unique(),
+  email: text("email").notNull(),
   passwordHash: text("password_hash").notNull(),
   role: text("role").notNull().default("owner"),
   createdAt: text("created_at").notNull(),
@@ -233,11 +233,13 @@ export const shippingRules = sqliteTable("shipping_rules", {
 });
 
 export const settings = sqliteTable("settings", {
-  key: text("key").primaryKey(),
+  key: text("key").notNull(),
   tenantId: text("tenant_id").notNull(),
   valueJson: text("value_json").notNull(),
   updatedAt: text("updated_at").notNull(),
-});
+}, (t) => ({
+  pk: primaryKey({ columns: [t.key, t.tenantId] }),
+}));
 
 export const invoices = sqliteTable("invoices", {
   id: text("id").primaryKey(),
@@ -245,7 +247,7 @@ export const invoices = sqliteTable("invoices", {
   orderId: text("order_id")
     .notNull()
     .references(() => orders.id),
-  invoiceNo: text("invoice_no").notNull().unique(),
+  invoiceNo: text("invoice_no").notNull(),
   status: text("status").notNull(),
   issuedAt: text("issued_at").notNull(),
   dueAt: text("due_at"),

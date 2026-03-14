@@ -6,5 +6,23 @@ dotenv.config({ path: ".env.local" });
 
 await initDb();
 const db = getDb();
-await seedAdminData(db, { adminEmail: "seed@local" });
-console.log("Seed data applied.");
+
+// Seed Tenant 1: RitelKit App (Default)
+console.log("Seeding RitelKit App...");
+await seedAdminData(db, { 
+  adminEmail: "androxoss@hotmail.com",
+  tenantId: "ritelkit-app-id",
+  tenantSlug: "ritelkit-app",
+  tenantName: "RitelKit App"
+});
+
+// Seed Tenant 2: Kopi Toktok
+console.log("Seeding Kopi Toktok...");
+await seedAdminData(db, { 
+  adminEmail: "androxoss@hotmail.com",
+  tenantId: "kopi-toktok-id",
+  tenantSlug: "kopi-toktok",
+  tenantName: "Kopi Toktok"
+});
+
+console.log("Seed data applied successfully for all tenants.");

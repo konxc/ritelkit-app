@@ -1,0 +1,1 @@
+DROP INDEX `invoices_invoice_no_unique`;

@@ -15,6 +15,34 @@
       "when": 1773521769060,
       "tag": "0001_jazzy_princess_powerful",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1773522952780,
+      "tag": "0002_daffy_justice",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1773522969185,
+      "tag": "0003_silly_carnage",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1773523014133,
+      "tag": "0004_naive_tigra",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1773523044543,
+      "tag": "0005_premium_hammerhead",
+      "breakpoints": true
     }
   ]
 }
