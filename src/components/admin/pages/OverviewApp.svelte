@@ -79,7 +79,7 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3">
       <StatCard label={t("dashboard.stats.orders_today")} value={stats.ordersToday}>
         {#snippet icon()}
           <svg

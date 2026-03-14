@@ -16,11 +16,11 @@
       case "none":
         return "";
       case "sm":
-        return "p-4";
+        return "p-3 sm:p-4";
       case "lg":
-        return "p-8";
+        return "p-5 sm:p-8";
       default:
-        return "p-6";
+        return "p-4 sm:p-6";
     }
   });
 </script>

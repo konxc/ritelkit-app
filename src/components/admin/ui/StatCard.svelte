@@ -29,18 +29,18 @@
 <Card hover={true} class="flex flex-col {className}" {...rest}>
   {#if icon}
     <div
-      class="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-stone-200/60 bg-gradient-to-br from-stone-50 to-stone-100/50 text-[#c48a3a] shadow-sm"
+      class="mb-3 flex h-9 w-9 items-center justify-center rounded-xl border border-stone-200/60 bg-gradient-to-br from-stone-50 to-stone-100/50 text-[#c48a3a] shadow-sm sm:mb-4 sm:h-12 sm:w-12 sm:rounded-2xl"
     >
       {@render icon()}
     </div>
   {/if}
 
-  <p class="mb-1 text-sm font-semibold tracking-wide text-stone-500 uppercase">
+  <p class="mb-1 text-[0.6rem] font-semibold tracking-wide text-stone-500 uppercase sm:text-sm">
     {label}
   </p>
 
-  <div class="flex items-end gap-3">
-    <h3 class="font-['Syne',sans-serif] text-3xl font-extrabold text-stone-900">
+  <div class="flex items-end gap-2">
+    <h3 class="font-['Syne',sans-serif] text-xl font-extrabold text-stone-900 sm:text-3xl">
       {value}
     </h3>
 
