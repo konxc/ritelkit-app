@@ -45,7 +45,10 @@ const lang = getLang(Astro.cookies);
     />
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      body { min-height: 100dvh; }
+      body { min-height: 100dvh; background: none; font-family: 'Outfit', sans-serif; }
+      /* Reset global styles bleeding from global.css */
+      h1, h2, h3, h4 { font-family: 'Syne', sans-serif; color: inherit; font-size: inherit; line-height: inherit; }
+      a { text-decoration: none; color: inherit; }
       input:-webkit-autofill,
       input:-webkit-autofill:hover,
       input:-webkit-autofill:focus {
