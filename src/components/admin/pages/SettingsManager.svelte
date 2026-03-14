@@ -96,8 +96,8 @@
     <div
       class="flex flex-col gap-4 rounded-2xl border border-stone-200/60 bg-stone-50 p-6 sm:flex-row sm:items-center sm:justify-between"
     >
-      <div class="flex items-start gap-3 text-stone-600">
-        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm">
+      <div class="flex items-start gap-4 text-stone-600">
+        <div class="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm sm:flex">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"
@@ -118,11 +118,21 @@
           <p class="text-xs text-stone-500">{t("system_admin.settings.quick_setup_desc")}</p>
         </div>
       </div>
-      <div class="flex items-center gap-3">
-        <Button variant="secondary" outline onclick={handleSeed} class="border-stone-200 text-stone-600">
+      <div class="flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row">
+        <Button
+          variant="secondary"
+          outline
+          onclick={handleSeed}
+          class="w-full border-stone-200 text-stone-600 sm:w-auto"
+        >
           {t("system_admin.settings.btn_load_def")}
         </Button>
-        <Button variant="primary" onclick={(e: any) => handleSubmit(e)} disabled={mutation.isPending}>
+        <Button
+          variant="primary"
+          onclick={(e: any) => handleSubmit(e)}
+          disabled={mutation.isPending}
+          class="w-full sm:w-auto"
+        >
           {#if mutation.isPending}
             <svg class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
