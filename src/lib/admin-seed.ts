@@ -851,10 +851,20 @@ async function ensureCategories(db: Client, now: string) {
 async function ensureProducts(db: Client, now: string, categoryMap: Record<string, string>) {
   for (const product of sampleProducts) {
     const exists = await db.execute({
-      sql: "SELECT id FROM products WHERE slug = ?",
+      sql: "SELECT id, sku FROM products WHERE slug = ?",
       args: [product.slug],
     });
-    if (exists.rows.length > 0) continue;
+    if (exists.rows.length > 0) {
+      // Patch missing SKU if product exists but SKU is null/empty
+      const row = exists.rows[0] as { id?: string; sku?: string | null };
+      if (!row.sku && row.id) {
+        await db.execute({
+          sql: "UPDATE products SET sku = ?, updated_at = ? WHERE id = ?",
+          args: [product.sku, now, row.id],
+        });
+      }
+      continue;
+    }
     const categoryId = categoryMap[product.categorySlug] || null;
     await db.execute({
       sql: `INSERT INTO products (id, sku, name, slug, description, category_id, price, cost, stock, is_active, images_json, metadata_json, created_at, updated_at)
