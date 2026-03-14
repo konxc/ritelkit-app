@@ -29,9 +29,9 @@
   // Root call for SSR and initial hydration (untracked for Svelte 5)
 
   let showAdvanced = $state(false);
-  let localQ = $state(q);
-  let localStatus = $state(status);
-  let localCategoryId = $state(categoryId);
+  let localQ = $state(untrack(() => q));
+  let localStatus = $state(untrack(() => status));
+  let localCategoryId = $state(untrack(() => categoryId));
   let localSubtab = $state("");
 
   function syncFromUrl() {
