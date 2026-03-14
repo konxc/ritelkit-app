@@ -14,13 +14,13 @@
 #   docker compose up -d --build
 
 services:
-  roti-sholawat:
+  ritelkit-app:
     build:
       context: .
       dockerfile: Dockerfile
       target: runner
-    image: roti-sholawat:latest
-    container_name: roti-sholawat-app
+    image: ritelkit-app:latest
+    container_name: ritelkit-app
     restart: unless-stopped
 
     env_file:

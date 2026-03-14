@@ -753,8 +753,8 @@ type SeedOptions = {
 export async function seedAdminData(db: Client, options: SeedOptions) {
   const now = options.now ?? nowIso();
   const tenantId = options.tenantId ?? "seed-tenant-id";
-  const tenantSlug = options.tenantSlug ?? "roti-sholawat";
-  const tenantName = options.tenantName ?? "Roti Sholawat";
+  const tenantSlug = options.tenantSlug ?? "ritelkit-app";
+  const tenantName = options.tenantName ?? "RitelKit Admin";
 
   await ensureTenant(db, { id: tenantId, slug: tenantSlug, name: tenantName }, now);
   
