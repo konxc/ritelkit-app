@@ -5,19 +5,19 @@ compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 
 # KV Namespace for Session handling (Login/Auth)
 kv_namespaces = [
-  { binding = "SESSION", id = "SESSION" }
+  { binding = "SESSION", id = "5c1e1dac77e24ec9b3f7cb4a82492688" }
 ]
 
 [env.production]
 compatibility_date = "2026-03-12"
 compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 kv_namespaces = [
-  { binding = "SESSION", id = "SESSION" }
+  { binding = "SESSION", id = "5c1e1dac77e24ec9b3f7cb4a82492688" }
 ]
 
 [env.preview]
 compatibility_date = "2026-03-12"
 compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 kv_namespaces = [
-  { binding = "SESSION", id = "SESSION" }
+  { binding = "SESSION", id = "5c1e1dac77e24ec9b3f7cb4a82492688" }
 ]
