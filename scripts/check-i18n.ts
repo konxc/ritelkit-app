@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const TRANSLATIONS_PATH = path.join(process.cwd(), "src/lib/i18n/translations.ts");
 const SRC_DIR = path.join(process.cwd(), "src");
 
 // Utility to read all files in a directory recursively
