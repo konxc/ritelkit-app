@@ -47,7 +47,7 @@
     <div class="mb-4">
       <SectionHeader title={t("reports.title_30_days")} badge={t("reports.badge_finance")} />
     </div>
-    <div class="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div class="mb-8 grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       <StatCard label={t("reports.total_orders")} value={reportData.thirtyDays.totalOrders}>
         {#snippet icon()}
           <svg
@@ -201,7 +201,7 @@
     <div class="mb-4">
       <SectionHeader title={t("reports.basic_analytics")} badge={t("reports.badge_analytics")} />
     </div>
-    <div class="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div class="mb-8 grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       <StatCard label={t("reports.ltv")} value={formatCurrency(reportData.analytics.ltv)}>
         {#snippet icon()}
           <svg
