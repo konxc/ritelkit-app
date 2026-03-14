@@ -1,5 +1,5 @@
-import { adminProcedure, router } from "@/server/trpc";
-import { shipments, orders, orderStatusHistory } from "@/db/schema";
+import { adminProcedure, router } from "@server/trpc";
+import { shipments, orders, orderStatusHistory } from "@db/schema";
 import { eq, desc, sql, or, like, inArray } from "drizzle-orm";
 import { z } from "zod";
 

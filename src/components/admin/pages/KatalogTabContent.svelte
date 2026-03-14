@@ -29,13 +29,13 @@
   } = $props();
   initI18n(untrack(() => lang));
 
-  import { initI18n } from "@/lib/i18n/store.svelte";
+  import { initI18n } from "@lib/i18n/store.svelte";
   import { onMount, untrack } from "svelte";
-  import type { Category } from "@/lib/types";
-  import CategoriesManager from "@/components/admin/pages/CategoriesManager.svelte";
-  import InventoryManager from "@/components/admin/pages/InventoryManager.svelte";
-  import ProductsManager from "@/components/admin/pages/ProductsManager.svelte";
-  import QueryProvider from "@/components/admin/QueryProvider.svelte";
+  import type { Category } from "@lib/types";
+  import CategoriesManager from "@components/admin/pages/CategoriesManager.svelte";
+  import InventoryManager from "@components/admin/pages/InventoryManager.svelte";
+  import ProductsManager from "@components/admin/pages/ProductsManager.svelte";
+  import QueryProvider from "@components/admin/QueryProvider.svelte";
 
   // Root call for SSR and initial hydration (untracked for Svelte 5)
 </script>

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import CartDrawer from "@/components/storefront/CartDrawer.svelte";
-  import ProductCard from "@/components/storefront/ProductCard.svelte";
+  import CartDrawer from "@components/storefront/CartDrawer.svelte";
+  import ProductCard from "@components/storefront/ProductCard.svelte";
 
   interface Product {
     id: string;

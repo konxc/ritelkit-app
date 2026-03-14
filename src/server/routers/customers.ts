@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { router, adminProcedure } from "@/server/trpc";
-import { customers } from "@/db/schema";
-import { CustomerSchema } from "@/lib/types";
+import { router, adminProcedure } from "@server/trpc";
+import { customers } from "@db/schema";
+import { CustomerSchema } from "@lib/types";
 import { eq, desc, or, like, sql } from "drizzle-orm";
 
 export const customerRouter = router({

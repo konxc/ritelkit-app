@@ -1,15 +1,15 @@
 ---
-import Table from "@/components/admin/ui/Table.svelte";
-import TableRow from "@/components/admin/ui/TableRow.svelte";
-import TableCell from "@/components/admin/ui/TableCell.svelte";
-import Badge from "@/components/admin/ui/Badge.svelte";
-import PanelCard from "@/components/admin/PanelCard.svelte";
-import SectionHeader from "@/components/admin/SectionHeader.svelte";
-import AdminLayout from "@/layouts/AdminLayout.astro";
-import TableEmptyState from "@/components/admin/ui/TableEmptyState.svelte";
-import { requireAdmin } from "@/lib/auth";
-import { getDb, initDb } from "@/lib/db";
-import { getLang, tServer, fServer } from "@/lib/i18n/server";
+import Table from "@components/admin/ui/Table.svelte";
+import TableRow from "@components/admin/ui/TableRow.svelte";
+import TableCell from "@components/admin/ui/TableCell.svelte";
+import Badge from "@components/admin/ui/Badge.svelte";
+import PanelCard from "@components/admin/PanelCard.svelte";
+import SectionHeader from "@components/admin/SectionHeader.svelte";
+import AdminLayout from "@layouts/AdminLayout.astro";
+import TableEmptyState from "@components/admin/ui/TableEmptyState.svelte";
+import { requireAdmin } from "@lib/auth";
+import { getDb, initDb } from "@lib/db";
+import { getLang, tServer, fServer } from "@lib/i18n/server";
 
 await initDb(Astro);
 const admin = await requireAdmin(Astro);

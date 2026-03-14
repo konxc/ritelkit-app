@@ -1,9 +1,9 @@
 <script lang="ts">
   // Mimic actions from astro (optional because this is a simulation file)
   import { fade, slide } from "svelte/transition";
-  import Card from "@/components/admin/ui/Card.svelte";
-  import Button from "@/components/admin/ui/Button.svelte";
-  import { t, initI18n, i18n } from "@/lib/i18n/store.svelte";
+  import Card from "@components/admin/ui/Card.svelte";
+  import Button from "@components/admin/ui/Button.svelte";
+  import { t, initI18n, i18n } from "@lib/i18n/store.svelte";
   import { onMount, untrack } from "svelte";
 
   let { initialData = [], lang } = $props<{

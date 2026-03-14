@@ -1,7 +1,7 @@
 ---
-import Layout from "@/layouts/Layout.astro";
-import { getDb, initDb } from "@/lib/db";
-import { getLang, tServer, fServer } from "@/lib/i18n/server";
+import Layout from "@layouts/Layout.astro";
+import { getDb, initDb } from "@lib/db";
+import { getLang, tServer, fServer } from "@lib/i18n/server";
 
 await initDb(Astro);
 const db = getDb(Astro);

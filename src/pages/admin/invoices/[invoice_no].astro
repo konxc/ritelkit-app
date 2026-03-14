@@ -1,8 +1,8 @@
 ---
-import InvoiceDetailPageContent from "@/components/admin/pages/InvoiceDetailPageContent.svelte";
-import AdminLayout from "@/layouts/AdminLayout.astro";
-import { requireAdmin } from "@/lib/auth";
-import { getDb, initDb } from "@/lib/db";
+import InvoiceDetailPageContent from "@components/admin/pages/InvoiceDetailPageContent.svelte";
+import AdminLayout from "@layouts/AdminLayout.astro";
+import { requireAdmin } from "@lib/auth";
+import { getDb, initDb } from "@lib/db";
 
 await initDb(Astro);
 const admin = await requireAdmin(Astro);
@@ -39,7 +39,7 @@ const items = JSON.parse(String(invoice.items_json || "[]"));
 const address = JSON.parse(String(invoice.shipping_address_json || "{}"));
 invoice.parsedItems = items;
 invoice.shipping_address_json = address;
-import { getLang, type LanguageCode, tServer } from "@/lib/i18n/server";
+import { getLang, type LanguageCode, tServer } from "@lib/i18n/server";
 const lang: LanguageCode = getLang(Astro.cookies);
 ---
 

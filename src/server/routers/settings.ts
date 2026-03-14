@@ -1,8 +1,8 @@
-import { adminProcedure, router } from "@/server/trpc";
-import { settings } from "@/db/schema";
+import { adminProcedure, router } from "@server/trpc";
+import { settings } from "@db/schema";
 
 import { z } from "zod";
-import { logAudit } from "@/lib/admin";
+import { logAudit } from "@lib/admin";
 
 export const settingsRouter = router({
   get: adminProcedure.query(async ({ ctx }) => {

@@ -14,28 +14,28 @@
   } = $props();
   initI18n(untrack(() => lang));
 
-  import { trpc } from "@/lib/trpc";
+  import { trpc } from "@lib/trpc";
   import { createQuery } from "@tanstack/svelte-query";
   import { untrack, onMount } from "svelte";
   import { fly } from "svelte/transition";
-  import TableEmptyState from "@/components/admin/ui/TableEmptyState.svelte";
-  import RowActions from "@/components/admin/RowActions.svelte";
-  import SectionHeader from "@/components/admin/SectionHeader.svelte";
-  import ToastNotification from "@/components/admin/ToastNotification.svelte";
-  import Table from "@/components/admin/ui/Table.svelte";
-  import TableRow from "@/components/admin/ui/TableRow.svelte";
-  import TableCell from "@/components/admin/ui/TableCell.svelte";
-  import Badge from "@/components/admin/ui/Badge.svelte";
-  import Button from "@/components/admin/ui/Button.svelte";
-  import TextInput from "@/components/admin/ui/forms/TextInput.svelte";
-  import SelectInput from "@/components/admin/ui/forms/SelectInput.svelte";
-  import AdminHeaderFilters from "@/components/admin/AdminHeaderFilters.svelte";
-  import { t, initI18n } from "@/lib/i18n/store.svelte";
-  import AdminDrawerForm from "@/components/admin/ui/overlay/AdminDrawerForm.svelte";
-  import Fab from "@/components/admin/ui/Fab.svelte";
-  import { createAdminFilters } from "@/lib/admin-filters.svelte";
-  import { createAdminMutation } from "@/lib/admin-mutations.svelte";
-  import { createTableState } from "@/lib/admin-table-state.svelte";
+  import TableEmptyState from "@components/admin/ui/TableEmptyState.svelte";
+  import RowActions from "@components/admin/RowActions.svelte";
+  import SectionHeader from "@components/admin/SectionHeader.svelte";
+  import ToastNotification from "@components/admin/ToastNotification.svelte";
+  import Table from "@components/admin/ui/Table.svelte";
+  import TableRow from "@components/admin/ui/TableRow.svelte";
+  import TableCell from "@components/admin/ui/TableCell.svelte";
+  import Badge from "@components/admin/ui/Badge.svelte";
+  import Button from "@components/admin/ui/Button.svelte";
+  import TextInput from "@components/admin/ui/forms/TextInput.svelte";
+  import SelectInput from "@components/admin/ui/forms/SelectInput.svelte";
+  import AdminHeaderFilters from "@components/admin/AdminHeaderFilters.svelte";
+  import { t, initI18n } from "@lib/i18n/store.svelte";
+  import AdminDrawerForm from "@components/admin/ui/overlay/AdminDrawerForm.svelte";
+  import Fab from "@components/admin/ui/Fab.svelte";
+  import { createAdminFilters } from "@lib/admin-filters.svelte";
+  import { createAdminMutation } from "@lib/admin-mutations.svelte";
+  import { createTableState } from "@lib/admin-table-state.svelte";
 
   const filters = createAdminFilters({ q: untrack(() => q), status: untrack(() => status), page: untrack(() => page) });
 

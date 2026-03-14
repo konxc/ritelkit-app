@@ -1,8 +1,8 @@
 import type { APIContext } from "astro";
-import { requireAdmin, verifyCsrf } from "@/lib/auth";
-import { initDb } from "@/lib/db";
-import { readBody, json } from "@/lib/api";
-import { calculateShipping } from "@/lib/checkout";
+import { requireAdmin, verifyCsrf } from "@lib/auth";
+import { initDb } from "@lib/db";
+import { readBody, json } from "@lib/api";
+import { calculateShipping } from "@lib/checkout";
 
 export async function POST(ctx: APIContext) {
   await initDb(ctx);

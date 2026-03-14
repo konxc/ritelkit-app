@@ -1,10 +1,10 @@
 ---
 import { desc, eq } from "drizzle-orm";
-import OrderApp from "@/components/storefront/OrderApp.svelte";
-import { products as productsTable } from "@/db/schema";
-import AppLayout from "@/layouts/AppLayout.astro";
-import { getDrizzle } from "@/lib/db";
-import { getEnv } from "@/lib/env";
+import OrderApp from "@components/storefront/OrderApp.svelte";
+import { products as productsTable } from "@db/schema";
+import AppLayout from "@layouts/AppLayout.astro";
+import { getDrizzle } from "@lib/db";
+import { getEnv } from "@lib/env";
 
 const db = getDrizzle(Astro);
 const rows = await db

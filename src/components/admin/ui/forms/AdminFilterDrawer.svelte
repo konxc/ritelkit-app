@@ -1,8 +1,8 @@
 <script lang="ts">
-  import Drawer from "@/components/admin/ui/overlay/Drawer.svelte";
-  import Button from "@/components/admin/ui/Button.svelte";
+  import Drawer from "@components/admin/ui/overlay/Drawer.svelte";
+  import Button from "@components/admin/ui/Button.svelte";
   import type { Snippet } from "svelte";
-  import { t } from "@/lib/i18n/store.svelte";
+  import { t } from "@lib/i18n/store.svelte";
 
   let {
     isOpen = $bindable(false),

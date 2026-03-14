@@ -1,4 +1,4 @@
-import { router } from "@/server/trpc";
+import { router } from "@server/trpc";
 import { productRouter } from "./routers/products";
 import { categoryRouter } from "./routers/categories";
 import { orderRouter } from "./routers/orders";

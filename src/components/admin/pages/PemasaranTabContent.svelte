@@ -18,11 +18,11 @@
   } = $props();
   initI18n(untrack(() => lang));
 
-  import AdsManager from "@/components/admin/pages/AdsManager.svelte";
-  import CouponsManager from "@/components/admin/pages/CouponsManager.svelte";
-  import CustomersManager from "@/components/admin/pages/CustomersManager.svelte";
-  import QueryProvider from "@/components/admin/QueryProvider.svelte";
-  import { initI18n } from "@/lib/i18n/store.svelte";
+  import AdsManager from "@components/admin/pages/AdsManager.svelte";
+  import CouponsManager from "@components/admin/pages/CouponsManager.svelte";
+  import CustomersManager from "@components/admin/pages/CustomersManager.svelte";
+  import QueryProvider from "@components/admin/QueryProvider.svelte";
+  import { initI18n } from "@lib/i18n/store.svelte";
   import { untrack } from "svelte";
 
   // Root call for SSR and initial hydration (untracked for Svelte 5)

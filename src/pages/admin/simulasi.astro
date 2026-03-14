@@ -1,6 +1,6 @@
 ---
-import AdminLayout from "@/layouts/AdminLayout.astro";
-import SimulasiManager from "@/components/admin/pages/SimulasiManager.svelte";
+import AdminLayout from "@layouts/AdminLayout.astro";
+import SimulasiManager from "@components/admin/pages/SimulasiManager.svelte";
 
 // 1. SSR FETCHING (Ini menggantikan tRPC useQuery di client-side)
 // Di Astro, kita melakukan fetch data di "Server" sebelum HTML dikirim ke browser.
@@ -14,7 +14,7 @@ const initialDataFromServer = [
   { id: "3", name: "Astro merender ini di HTML langsung!" },
 ];
 
-import { getLang, type LanguageCode, tServer } from "@/lib/i18n/server";
+import { getLang, type LanguageCode, tServer } from "@lib/i18n/server";
 const lang: LanguageCode = getLang(Astro.cookies);
 ---
 

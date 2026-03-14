@@ -1,4 +1,4 @@
-import { translations, type LanguageCode } from "@/lib/i18n/translations";
+import { translations, type LanguageCode } from "@lib/i18n/translations";
 export type { LanguageCode };
 
 export function getLang(cookies: any): LanguageCode {

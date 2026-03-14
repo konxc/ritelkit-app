@@ -1,6 +1,6 @@
 import type { APIContext } from "astro";
-import { getDb } from "@/lib/db";
-import { asInt } from "@/lib/utils";
+import { getDb } from "@lib/db";
+import { asInt } from "@lib/utils";
 
 type ShippingRule = {
   id: string;

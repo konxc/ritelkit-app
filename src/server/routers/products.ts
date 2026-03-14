@@ -1,9 +1,9 @@
-import { adminProcedure, router } from "@/server/trpc";
-import { products, categories } from "@/db/schema";
-import { ProductSchema } from "@/lib/types";
+import { adminProcedure, router } from "@server/trpc";
+import { products, categories } from "@db/schema";
+import { ProductSchema } from "@lib/types";
 import { eq, desc, and, or, like, sql } from "drizzle-orm";
 import { z } from "zod";
-import { logAudit } from "@/lib/admin";
+import { logAudit } from "@lib/admin";
 
 export const productRouter = router({
   list: adminProcedure

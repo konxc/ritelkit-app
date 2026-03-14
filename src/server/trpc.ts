@@ -1,6 +1,6 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import type { APIContext } from "astro";
-import type { getDrizzle } from "@/lib/db";
+import type { getDrizzle } from "@lib/db";
 
 export interface Context {
   db: ReturnType<typeof getDrizzle>;

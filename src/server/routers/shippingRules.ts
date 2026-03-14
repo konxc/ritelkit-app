@@ -1,5 +1,5 @@
-import { adminProcedure, router } from "@/server/trpc";
-import { shippingRules } from "@/db/schema";
+import { adminProcedure, router } from "@server/trpc";
+import { shippingRules } from "@db/schema";
 import { eq, desc } from "drizzle-orm";
 import { z } from "zod";
 

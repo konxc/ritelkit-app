@@ -1,5 +1,5 @@
 import type { Client } from "@libsql/client";
-import { nowIso } from "@/lib/utils";
+import { nowIso } from "@lib/utils";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const isoDaysAgo = (days: number) => new Date(Date.now() - days * MS_PER_DAY).toISOString();

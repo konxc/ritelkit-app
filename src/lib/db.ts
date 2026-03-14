@@ -1,8 +1,8 @@
 import { type Client, createClient } from "@libsql/client";
 import type { APIContext } from "astro";
 import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
-import * as schema from "@/db/schema";
-import { getEnv } from "@/lib/env";
+import * as schema from "@db/schema";
+import { getEnv } from "@lib/env";
 
 let client: Client | null = null;
 let db: LibSQLDatabase<typeof schema> | null = null;

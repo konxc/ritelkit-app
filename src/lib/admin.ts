@@ -1,8 +1,8 @@
 import type { APIContext } from "astro";
-import { auditLogs } from "@/db/schema";
-import { getAdminSession } from "@/lib/auth";
-import { getDrizzle } from "@/lib/db";
-import { nowIso } from "@/lib/utils";
+import { auditLogs } from "@db/schema";
+import { getAdminSession } from "@lib/auth";
+import { getDrizzle } from "@lib/db";
+import { nowIso } from "@lib/utils";
 
 export async function logAudit(ctx: APIContext, action: string, entityType: string, entityId?: string, data?: unknown) {
   const db = getDrizzle(ctx);

@@ -1,9 +1,9 @@
 ---
-import ReportsApp from "@/components/admin/pages/ReportsApp.svelte";
-import AdminLayout from "@/layouts/AdminLayout.astro";
-import { requireAdmin } from "@/lib/auth";
-import { getDrizzle, initDb } from "@/lib/db";
-import { getReportData } from "@/lib/reports";
+import ReportsApp from "@components/admin/pages/ReportsApp.svelte";
+import AdminLayout from "@layouts/AdminLayout.astro";
+import { requireAdmin } from "@lib/auth";
+import { getDrizzle, initDb } from "@lib/db";
+import { getReportData } from "@lib/reports";
 
 await initDb(Astro);
 const admin = await requireAdmin(Astro);
@@ -12,7 +12,7 @@ if (!admin) {
 }
 const db = getDrizzle(Astro);
 const reportData = await getReportData(db);
-import { getLang, type LanguageCode, tServer } from "@/lib/i18n/server";
+import { getLang, type LanguageCode, tServer } from "@lib/i18n/server";
 const lang: LanguageCode = getLang(Astro.cookies);
 ---
 

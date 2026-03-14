@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import Card from "@/components/admin/ui/Card.svelte";
+  import Card from "@components/admin/ui/Card.svelte";
 
   interface Props {
     label: string;

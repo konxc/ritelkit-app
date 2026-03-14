@@ -1,7 +1,7 @@
 import type { APIContext } from "astro";
-import { seedAdminData } from "@/lib/admin-seed";
-import { requireAdmin, verifyCsrf } from "@/lib/auth";
-import { getDb, initDb } from "@/lib/db";
+import { seedAdminData } from "@lib/admin-seed";
+import { requireAdmin, verifyCsrf } from "@lib/auth";
+import { getDb, initDb } from "@lib/db";
 
 export const POST = async (context: APIContext) => {
   const admin = await requireAdmin(context);

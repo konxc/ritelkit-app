@@ -1,6 +1,6 @@
 import type { APIContext } from "astro";
-import { getDb, initDb } from "@/lib/db";
-import { getEnv } from "@/lib/env";
+import { getDb, initDb } from "@lib/db";
+import { getEnv } from "@lib/env";
 
 const SESSION_COOKIE = "rs_admin";
 const SESSION_TTL_SECONDS = 60 * 60 * 8;

@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { router, adminProcedure } from "@/server/trpc";
-import { coupons } from "@/db/schema";
-import { CouponSchema } from "@/lib/types";
+import { router, adminProcedure } from "@server/trpc";
+import { coupons } from "@db/schema";
+import { CouponSchema } from "@lib/types";
 import { eq, desc, like, and, sql } from "drizzle-orm";
-import { logAudit } from "@/lib/admin";
+import { logAudit } from "@lib/admin";
 
 export const couponRouter = router({
   list: adminProcedure

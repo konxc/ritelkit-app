@@ -1,8 +1,8 @@
 import type { APIContext } from "astro";
-import { json, readBody } from "@/lib/api";
-import { requireAdmin, sanitizeText, verifyCsrf } from "@/lib/auth";
-import { getDb, initDb } from "@/lib/db";
-import { nowIso } from "@/lib/utils";
+import { json, readBody } from "@lib/api";
+import { requireAdmin, sanitizeText, verifyCsrf } from "@lib/auth";
+import { getDb, initDb } from "@lib/db";
+import { nowIso } from "@lib/utils";
 
 type OrderLookupRow = { id?: string };
 

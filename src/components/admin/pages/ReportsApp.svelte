@@ -25,13 +25,13 @@
   initI18n(untrack(() => lang));
 
   import { fade, fly } from "svelte/transition";
-  import SectionHeader from "@/components/admin/SectionHeader.svelte";
-  import StatCard from "@/components/admin/ui/StatCard.svelte";
-  import Table from "@/components/admin/ui/Table.svelte";
-  import TableRow from "@/components/admin/ui/TableRow.svelte";
-  import TableCell from "@/components/admin/ui/TableCell.svelte";
+  import SectionHeader from "@components/admin/SectionHeader.svelte";
+  import StatCard from "@components/admin/ui/StatCard.svelte";
+  import Table from "@components/admin/ui/Table.svelte";
+  import TableRow from "@components/admin/ui/TableRow.svelte";
+  import TableCell from "@components/admin/ui/TableCell.svelte";
   import { onMount, untrack } from "svelte";
-  import { t, initI18n } from "@/lib/i18n/store.svelte";
+  import { t, initI18n } from "@lib/i18n/store.svelte";
 
   // Root call for SSR and initial hydration (untracked for Svelte 5)
 

@@ -1,4 +1,4 @@
-import { translations, type id, type LanguageCode } from "@/lib/i18n/translations";
+import { translations, type id, type LanguageCode } from "@lib/i18n/translations";
 
 // --- Type-Safe i18n Magic (Explicit Depth to avoid Svelte AST limits) ---
 type Dict = typeof id;

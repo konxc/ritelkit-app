@@ -1,6 +1,6 @@
 import type { APIContext } from "astro";
-import { requireAdmin } from "@/lib/auth";
-import { getDb, initDb } from "@/lib/db";
+import { requireAdmin } from "@lib/auth";
+import { getDb, initDb } from "@lib/db";
 
 function toCsv(rows: Record<string, unknown>[]) {
   if (rows.length === 0) return "";

@@ -1,8 +1,8 @@
 import type { APIContext } from "astro";
-import { logAudit } from "@/lib/admin";
-import { requireAdmin, sanitizeText, verifyCsrf } from "@/lib/auth";
-import { getDb, initDb } from "@/lib/db";
-import { nowIso } from "@/lib/utils";
+import { logAudit } from "@lib/admin";
+import { requireAdmin, sanitizeText, verifyCsrf } from "@lib/auth";
+import { getDb, initDb } from "@lib/db";
+import { nowIso } from "@lib/utils";
 
 export async function PUT(ctx: APIContext) {
   await initDb(ctx);

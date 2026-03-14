@@ -17,8 +17,8 @@ import {
   settings,
   shipments,
   shippingRules,
-} from "@/db/schema";
-import { logAudit } from "@/lib/admin";
+} from "@db/schema";
+import { logAudit } from "@lib/admin";
 import {
   createSession,
   destroySession,
@@ -29,10 +29,10 @@ import {
   sanitizeText,
   verifyCsrf,
   verifyPassword,
-} from "@/lib/auth";
-import { calculateShipping } from "@/lib/checkout";
-import { getDb, getDrizzle, initDb } from "@/lib/db";
-import { checkRateLimit } from "@/lib/rate-limit";
+} from "@lib/auth";
+import { calculateShipping } from "@lib/checkout";
+import { getDb, getDrizzle, initDb } from "@lib/db";
+import { checkRateLimit } from "@lib/rate-limit";
 import {
   CategorySchema,
   CustomerSchema,
@@ -44,7 +44,7 @@ import {
   RefundSchema,
   ShipmentSchema,
   ShippingRuleSchema,
-} from "@/lib/types";
+} from "@lib/types";
 
 function normalizePhone(value: string) {
   return value.replace(/[^\d]/g, "");
@@ -1271,7 +1271,7 @@ export const server = {
       const id = crypto.randomUUID();
       const now = new Date().toISOString();
 
-      const { hashPassword } = await import("@/lib/auth");
+      const { hashPassword } = await import("@lib/auth");
       const passwordHash = await hashPassword(input.password);
 
       await db.insert(adminUsers).values({
@@ -1323,7 +1323,7 @@ export const server = {
 
       if (data.role) updateData.role = data.role;
       if (data.password) {
-        const { hashPassword } = await import("@/lib/auth");
+        const { hashPassword } = await import("@lib/auth");
         updateData.passwordHash = await hashPassword(data.password);
       }
 

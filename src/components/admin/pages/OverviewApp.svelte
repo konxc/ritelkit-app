@@ -18,13 +18,13 @@
   initI18n(untrack(() => lang));
 
   import { fade, fly } from "svelte/transition";
-  import StatCard from "@/components/admin/ui/StatCard.svelte";
-  import Button from "@/components/admin/ui/Button.svelte";
-  import Table from "@/components/admin/ui/Table.svelte";
-  import TableRow from "@/components/admin/ui/TableRow.svelte";
-  import TableCell from "@/components/admin/ui/TableCell.svelte";
-  import Badge from "@/components/admin/ui/Badge.svelte";
-  import { t, initI18n } from "@/lib/i18n/store.svelte";
+  import StatCard from "@components/admin/ui/StatCard.svelte";
+  import Button from "@components/admin/ui/Button.svelte";
+  import Table from "@components/admin/ui/Table.svelte";
+  import TableRow from "@components/admin/ui/TableRow.svelte";
+  import TableCell from "@components/admin/ui/TableCell.svelte";
+  import Badge from "@components/admin/ui/Badge.svelte";
+  import { t, initI18n } from "@lib/i18n/store.svelte";
   import { onMount, untrack } from "svelte";
 
   // Optimized SSR & Hydration: Initial call using untrack to avoid Svelte 5 warnings

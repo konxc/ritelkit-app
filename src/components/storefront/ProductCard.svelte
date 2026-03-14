@@ -8,7 +8,7 @@
     stock: number;
   }
 
-  import { t, i18n } from "@/lib/i18n/store.svelte";
+  import { t, i18n } from "@lib/i18n/store.svelte";
 
   let { product, onAdd } = $props<{ product: Product; onAdd: () => void }>();
 

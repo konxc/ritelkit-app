@@ -1,6 +1,6 @@
 <script lang="ts">
   import { QueryClientProvider, hydrate } from "@tanstack/svelte-query";
-  import { createQueryClient } from "@/lib/queryClient";
+  import { createQueryClient } from "@lib/queryClient";
 
   let { children, initialData = null } = $props();
 

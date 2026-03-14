@@ -18,13 +18,13 @@
   } = $props();
   initI18n(untrack(() => lang));
 
-  import FulfillmentManager from "@/components/admin/pages/FulfillmentManager.svelte";
-  import InvoicesManager from "@/components/admin/pages/InvoicesManager.svelte";
-  import OrdersManager from "@/components/admin/pages/OrdersManager.svelte";
-  import RefundsManager from "@/components/admin/pages/RefundsManager.svelte";
-  import ShippingManager from "@/components/admin/pages/ShippingManager.svelte";
-  import QueryProvider from "@/components/admin/QueryProvider.svelte";
-  import { initI18n } from "@/lib/i18n/store.svelte";
+  import FulfillmentManager from "@components/admin/pages/FulfillmentManager.svelte";
+  import InvoicesManager from "@components/admin/pages/InvoicesManager.svelte";
+  import OrdersManager from "@components/admin/pages/OrdersManager.svelte";
+  import RefundsManager from "@components/admin/pages/RefundsManager.svelte";
+  import ShippingManager from "@components/admin/pages/ShippingManager.svelte";
+  import QueryProvider from "@components/admin/QueryProvider.svelte";
+  import { initI18n } from "@lib/i18n/store.svelte";
   import { untrack } from "svelte";
 
   // Root call for SSR and initial hydration (untracked for Svelte 5)
