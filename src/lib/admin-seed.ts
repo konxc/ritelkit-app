@@ -278,6 +278,20 @@ const sampleCustomers: SampleCustomer[] = [
     notes: "Sering pesan paket donasi.",
     createdOffset: 15,
   },
+  {
+    name: "Rizky Anisa",
+    email: "rizky@roti-sholawat.test",
+    phone: "085612345678",
+    notes: "Pelanggan VIP, sering pesan untuk acara.",
+    createdOffset: 50,
+  },
+  {
+    name: "Nisa Dewi",
+    email: "nisa@roti-sholawat.test",
+    phone: "082345678901",
+    notes: "Pelanggan aktif komunitas pengajian RT.",
+    createdOffset: 35,
+  },
 ];
 
 const sampleAds: SampleAd[] = [
@@ -300,6 +314,46 @@ const sampleAds: SampleAd[] = [
     startOffset: 60,
     endOffset: 10,
     notes: "Retention pelanggan regular",
+  },
+  {
+    name: "Google Shopping Roti Artisan",
+    channel: "Google Ads",
+    budget: 1000000,
+    spend: 720000,
+    status: "active",
+    startOffset: 15,
+    endOffset: -14,
+    notes: "Keyword: roti halal Yogyakarta, roti sholawat",
+  },
+  {
+    name: "TikTok Konten Dapur",
+    channel: "TikTok",
+    budget: 400000,
+    spend: 150000,
+    status: "active",
+    startOffset: 7,
+    endOffset: -21,
+    notes: "Video behind-the-scenes proses pembuatan roti",
+  },
+  {
+    name: "Facebook Remarketing",
+    channel: "Facebook",
+    budget: 350000,
+    spend: 350000,
+    status: "completed",
+    startOffset: 45,
+    endOffset: 15,
+    notes: "Target pengunjung website yang belum checkout",
+  },
+  {
+    name: "Email Newsletter Jumat Berkah",
+    channel: "Email",
+    budget: 50000,
+    spend: 35000,
+    status: "completed",
+    startOffset: 30,
+    endOffset: 23,
+    notes: "Blast ke 500+ subscriber newsletter",
   },
 ];
 
@@ -394,6 +448,13 @@ const sampleReviews: SampleProductReview[] = [
     daysAgo: 5,
   },
   {
+    productSlug: "roti-coklat-sholawat",
+    customerName: "Rizky Anisa",
+    rating: 5,
+    comment: "Selalu beli ini tiap minggu, keluarga suka banget!",
+    daysAgo: 3,
+  },
+  {
     productSlug: "roti-keju-sholawat",
     customerName: "Andi Wijaya",
     rating: 5,
@@ -401,11 +462,46 @@ const sampleReviews: SampleProductReview[] = [
     daysAgo: 10,
   },
   {
+    productSlug: "roti-keju-sholawat",
+    customerName: "Nisa Dewi",
+    rating: 4,
+    comment: "Rasanya enak, prefer yang lebih asin dikit. Overall oke!",
+    daysAgo: 8,
+  },
+  {
     productSlug: "roti-tawar-premium",
     customerName: "Dewi Lestari",
     rating: 5,
     comment: "Teksturnya empuk banget, anak saya suka buat bekal sekolah.",
     daysAgo: 1,
+  },
+  {
+    productSlug: "snack-box-syukur",
+    customerName: "Siti Aminah",
+    rating: 5,
+    comment: "Cocok banget untuk acara pengajian, tamu-tamu sangat puas!",
+    daysAgo: 7,
+  },
+  {
+    productSlug: "snack-box-syukur",
+    customerName: "Budi Santoso",
+    rating: 4,
+    comment: "Enak dan harga terjangkau. Porsi pas untuk snack.",
+    daysAgo: 12,
+  },
+  {
+    productSlug: "donasi-10-roti",
+    customerName: "Dewi Lestari",
+    rating: 5,
+    comment: "Senang bisa berbagi, pelaporan donasi juga cepat via WA. Semoga berkah!",
+    daysAgo: 4,
+  },
+  {
+    productSlug: "donasi-10-roti",
+    customerName: "Andi Wijaya",
+    rating: 5,
+    comment: "Program mulia, rutin donasi setiap bulan. Recommended!",
+    daysAgo: 14,
   },
 ];
 
@@ -426,16 +522,8 @@ const orderFixtures: OrderFixture[] = [
     couponCode: "HEMAT10",
     deliveryFee: 15000,
     notes: "Tolong kirim sebelum jam 10 pagi.",
-    shipping: {
-      province: "DI Yogyakarta",
-      city: "Sleman",
-      district: "Mlati",
-      street: "Jl. Magelang KM 5",
-    },
-    items: [
-      { slug: "roti-coklat-sholawat", qty: 5 },
-      { slug: "roti-keju-sholawat", qty: 5 },
-    ],
+    shipping: { province: "DI Yogyakarta", city: "Sleman", district: "Mlati", street: "Jl. Magelang KM 5" },
+    items: [{ slug: "roti-coklat-sholawat", qty: 5 }, { slug: "roti-keju-sholawat", qty: 5 }],
     createdOffset: 0,
     promo: { channel: "google-ads" },
     payment: { midtransToken: "tok_123", midtransOrderId: "MT-RS-001" },
@@ -450,27 +538,217 @@ const orderFixtures: OrderFixture[] = [
     couponCode: null,
     deliveryFee: 0,
     notes: "Paket Snack Box untuk masjid.",
-    shipping: {
-      province: "DI Yogyakarta",
-      city: "Yogyakarta",
-      district: "Gondokusuman",
-      street: "Jl. Solo No. 12",
-    },
+    shipping: { province: "DI Yogyakarta", city: "Yogyakarta", district: "Gondokusuman", street: "Jl. Solo No. 12" },
     items: [{ slug: "snack-box-syukur", qty: 50 }],
     createdOffset: 1,
     promo: { channel: "facebook" },
     payment: { midtransToken: "tok_456", midtransOrderId: "MT-RS-002" },
   },
+  // === Orders untuk Rizky Anisa (085612345678) ===
+  {
+    orderNo: "RS-20260212-003",
+    status: "shipped",
+    paymentStatus: "paid",
+    customerPhone: "085612345678",
+    customerName: "Rizky Anisa",
+    customerEmail: "rizky@roti-sholawat.test",
+    couponCode: "HEMAT10",
+    deliveryFee: 15000,
+    notes: "Hadiah ulang tahun suami, tolong dikemas cantik.",
+    shipping: { province: "DI Yogyakarta", city: "Sleman", district: "Depok", street: "Jl. Kaliurang KM 8" },
+    items: [{ slug: "roti-coklat-sholawat", qty: 4 }, { slug: "roti-keju-sholawat", qty: 4 }],
+    createdOffset: 2,
+    promo: { channel: "instagram" },
+    payment: { midtransToken: "tok_789", midtransOrderId: "MT-RS-003" },
+  },
+  {
+    orderNo: "RS-20260205-004",
+    status: "completed",
+    paymentStatus: "paid",
+    customerPhone: "085612345678",
+    customerName: "Rizky Anisa",
+    customerEmail: "rizky@roti-sholawat.test",
+    couponCode: null,
+    deliveryFee: 0,
+    notes: "Pesanan bulanan rutin.",
+    shipping: { province: "DI Yogyakarta", city: "Sleman", district: "Depok", street: "Jl. Kaliurang KM 8" },
+    items: [{ slug: "snack-box-syukur", qty: 20 }, { slug: "roti-tawar-premium", qty: 2 }],
+    createdOffset: 9,
+    promo: { channel: "organic" },
+    payment: { midtransToken: "tok_790", midtransOrderId: "MT-RS-004" },
+  },
+  {
+    orderNo: "RS-20260228-012",
+    status: "delivered",
+    paymentStatus: "paid",
+    customerPhone: "085612345678",
+    customerName: "Rizky Anisa",
+    customerEmail: "rizky@roti-sholawat.test",
+    couponCode: "BONUS5000",
+    deliveryFee: 15000,
+    notes: "Pesanan untuk arisan RT.",
+    shipping: { province: "DI Yogyakarta", city: "Sleman", district: "Mlati", street: "Jl. Anggrek No. 5" },
+    items: [{ slug: "roti-coklat-sholawat", qty: 6 }, { slug: "donasi-10-roti", qty: 1 }],
+    createdOffset: 0,
+    promo: { channel: "whatsapp" },
+    payment: { midtransToken: "tok_810", midtransOrderId: "MT-RS-012" },
+  },
+  // === Orders untuk Nisa Dewi (082345678901) ===
+  {
+    orderNo: "RS-20260208-005",
+    status: "completed",
+    paymentStatus: "paid",
+    customerPhone: "082345678901",
+    customerName: "Nisa Dewi",
+    customerEmail: "nisa@roti-sholawat.test",
+    couponCode: null,
+    deliveryFee: 0,
+    notes: "Pesanan untuk acara tahlilan.",
+    shipping: { province: "DI Yogyakarta", city: "Bantul", district: "Sewon", street: "Jl. Bantul KM 3" },
+    items: [{ slug: "roti-keju-sholawat", qty: 3 }, { slug: "roti-coklat-sholawat", qty: 3 }],
+    createdOffset: 6,
+    promo: { channel: "word-of-mouth" },
+    payment: { midtransToken: "tok_791", midtransOrderId: "MT-RS-005" },
+  },
+  {
+    orderNo: "RS-20260215-006",
+    status: "processing",
+    paymentStatus: "paid",
+    customerPhone: "082345678901",
+    customerName: "Nisa Dewi",
+    customerEmail: "nisa@roti-sholawat.test",
+    couponCode: "HEMAT10",
+    deliveryFee: 15000,
+    notes: "Pesanan rutin mingguan.",
+    shipping: { province: "DI Yogyakarta", city: "Bantul", district: "Sewon", street: "Jl. Bantul KM 3" },
+    items: [{ slug: "snack-box-syukur", qty: 10 }],
+    createdOffset: 0,
+    promo: { channel: "organic" },
+    payment: { midtransToken: "tok_792", midtransOrderId: "MT-RS-006" },
+  },
+  // === Orders target untuk Refund ===
+  {
+    orderNo: "RS-20260203-007",
+    status: "cancelled",
+    paymentStatus: "paid",
+    customerPhone: "081234567890",
+    customerName: "Budi Santoso",
+    customerEmail: "budi@konxc.space",
+    couponCode: null,
+    deliveryFee: 15000,
+    notes: "Pesanan dibatalkan karena double order.",
+    shipping: { province: "DI Yogyakarta", city: "Sleman", district: "Mlati", street: "Jl. Magelang KM 5" },
+    items: [{ slug: "roti-coklat-sholawat", qty: 5 }],
+    createdOffset: 11,
+    promo: { channel: "organic" },
+    payment: { midtransToken: "tok_793", midtransOrderId: "MT-RS-007" },
+  },
+  {
+    orderNo: "RS-20260201-008",
+    status: "delivered",
+    paymentStatus: "refunded",
+    customerPhone: "081987654321",
+    customerName: "Siti Aminah",
+    customerEmail: "siti@gmail.com",
+    couponCode: null,
+    deliveryFee: 0,
+    notes: "Produk tidak sesuai pesanan, refund disetujui.",
+    shipping: { province: "DI Yogyakarta", city: "Yogyakarta", district: "Gondokusuman", street: "Jl. Solo No. 12" },
+    items: [{ slug: "roti-tawar-premium", qty: 5 }],
+    createdOffset: 13,
+    promo: { channel: "organic" },
+    payment: { midtransToken: "tok_794", midtransOrderId: "MT-RS-008" },
+  },
+  {
+    orderNo: "RS-20260218-009",
+    status: "cancelled",
+    paymentStatus: "paid",
+    customerPhone: "085566778899",
+    customerName: "Andi Wijaya",
+    customerEmail: "andi.w@perusahaan.co.id",
+    couponCode: null,
+    deliveryFee: 35000,
+    notes: "Event korporat dibatalkan mendadak, mohon refund.",
+    shipping: { province: "Jawa Tengah", city: "Semarang", district: "Banyumanik", street: "Jl. Ngesrep No. 7" },
+    items: [{ slug: "snack-box-syukur", qty: 100 }],
+    createdOffset: 0,
+    promo: { channel: "sales-team" },
+    payment: { midtransToken: "tok_795", midtransOrderId: "MT-RS-009" },
+  },
+  {
+    orderNo: "RS-20260206-010",
+    status: "cancelled",
+    paymentStatus: "paid",
+    customerPhone: "087711223344",
+    customerName: "Dewi Lestari",
+    customerEmail: "dewi.lestari@test.com",
+    couponCode: null,
+    deliveryFee: 15000,
+    notes: "Salah pilih produk, minta cancel dan refund.",
+    shipping: { province: "DI Yogyakarta", city: "Yogyakarta", district: "Umbulharjo", street: "Jl. Veteran No. 22" },
+    items: [{ slug: "paket-jumat-berkah", qty: 1 }],
+    createdOffset: 8,
+    promo: { channel: "organic" },
+    payment: { midtransToken: "tok_796", midtransOrderId: "MT-RS-010" },
+  },
+  {
+    orderNo: "RS-20260211-011",
+    status: "delivered",
+    paymentStatus: "refunded",
+    customerPhone: "085612345678",
+    customerName: "Rizky Anisa",
+    customerEmail: "rizky@roti-sholawat.test",
+    couponCode: null,
+    deliveryFee: 15000,
+    notes: "Produk rusak saat pengiriman, partial refund ongkir.",
+    shipping: { province: "DI Yogyakarta", city: "Sleman", district: "Depok", street: "Jl. Kaliurang KM 8" },
+    items: [{ slug: "roti-coklat-sholawat", qty: 8 }],
+    createdOffset: 3,
+    promo: { channel: "instagram" },
+    payment: { midtransToken: "tok_797", midtransOrderId: "MT-RS-011" },
+  },
 ];
 
 const refundFixtures: RefundFixture[] = [
   {
-    orderNo: "RS-20260220-004",
-    amount: 110000,
-    reason: "Double order / Wrong input",
+    orderNo: "RS-20260203-007",
+    amount: 75000,
+    reason: "Double order / pesanan dibatalkan oleh pelanggan",
     status: "completed",
     providerStatus: "refunded",
-    createdOffset: 5,
+    createdOffset: 10,
+  },
+  {
+    orderNo: "RS-20260201-008",
+    amount: 110000,
+    reason: "Produk tidak sesuai pesanan, seluruh jumlah dikembalikan",
+    status: "completed",
+    providerStatus: "refunded",
+    createdOffset: 12,
+  },
+  {
+    orderNo: "RS-20260218-009",
+    amount: 1535000,
+    reason: "Event korporat dibatalkan mendadak oleh klien",
+    status: "processing",
+    providerStatus: "pending",
+    createdOffset: 0,
+  },
+  {
+    orderNo: "RS-20260206-010",
+    amount: 265000,
+    reason: "Pelanggan salah pilih produk sebelum diproses",
+    status: "completed",
+    providerStatus: "refunded",
+    createdOffset: 7,
+  },
+  {
+    orderNo: "RS-20260211-011",
+    amount: 15000,
+    reason: "Refund ongkir karena produk rusak saat pengiriman",
+    status: "completed",
+    providerStatus: "refunded",
+    createdOffset: 2,
   },
 ];
 
@@ -527,8 +805,8 @@ export async function seedAdminData(db: Client, options: SeedOptions) {
 
   const orderMap = await buildOrderMap(db);
   await ensureRefunds(db, orderMap); // Still handles specific refund fixture
-  await ensureCouponUsages(db, now, orderMap, couponMap);
-  await ensureNotifications(db, now, orderMap);
+  await ensureCouponUsages(db, couponMap);
+  await ensureNotifications(db);
   await ensureAuditLogs(db, now, options.adminEmail, orderMap, productMap);
 }
 
@@ -602,11 +880,15 @@ async function ensureProducts(db: Client, now: string, categoryMap: Record<strin
 }
 
 async function ensureProductReviews(db: Client, productMap: Record<string, { id: string }>) {
-  const count = await db.execute("SELECT COUNT(*) as count FROM product_reviews");
-  if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
   for (const review of sampleReviews) {
     const product = productMap[review.productSlug];
     if (!product) continue;
+    // Idempotent: skip if same product+customer combination already exists
+    const exists = await db.execute({
+      sql: "SELECT id FROM product_reviews WHERE product_id = ? AND customer_name = ?",
+      args: [product.id, review.customerName],
+    });
+    if (exists.rows.length > 0) continue;
     await db.execute({
       sql: `INSERT INTO product_reviews (id, product_id, customer_name, rating, comment, is_active, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -772,15 +1054,20 @@ async function ensureOrders(
   productMap: Record<string, { id: string; price: number; slug: string; name: string }>,
   customerMap: Record<string, string>,
 ) {
-  const countRes = await db.execute("SELECT COUNT(*) as count FROM orders");
-  if (Number((countRes.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
-
-  // 1. Insert fixed fixtures
+  // 1. Insert fixed fixtures — idempotent per order_no
   for (const fixture of orderFixtures) {
+    const exists = await db.execute({
+      sql: "SELECT id FROM orders WHERE order_no = ?",
+      args: [fixture.orderNo],
+    });
+    if (exists.rows.length > 0) continue;
     await insertOrderFullRelational(db, fixture, couponMap, productMap, customerMap);
   }
 
-  // 2. Generate random historical orders for dashboard charts (~40 more orders)
+  // 2. Only generate random historical orders if none exist yet
+  const randCount = await db.execute("SELECT COUNT(*) as count FROM orders WHERE order_no LIKE 'RS-RAND-%'");
+  if (Number((randCount.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
+
   const productSlugs = Object.keys(productMap);
   const statuses = ["pending", "processing", "shipped", "delivered", "completed", "cancelled"];
   const paymentStatuses = ["unpaid", "paid", "paid", "paid", "failed"];
@@ -975,11 +1262,15 @@ async function insertOrderFullRelational(
 }
 
 async function ensureRefunds(db: Client, orderMap: Record<string, { id: string; orderNo: string }>) {
-  const count = await db.execute("SELECT COUNT(*) as count FROM refunds");
-  if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
   for (const fixture of refundFixtures) {
     const order = orderMap[fixture.orderNo];
     if (!order) continue;
+    // Idempotent: skip if refund for this order already exists
+    const exists = await db.execute({
+      sql: "SELECT id FROM refunds WHERE order_no = ?",
+      args: [fixture.orderNo],
+    });
+    if (exists.rows.length > 0) continue;
     await db.execute({
       sql: `INSERT INTO refunds (id, order_id, order_no, amount, reason, status, provider_status, provider_response_json, created_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -999,53 +1290,112 @@ async function ensureRefunds(db: Client, orderMap: Record<string, { id: string; 
   }
 }
 
-async function ensureNotifications(
-  db: Client,
-  now: string,
-  orderMap: Record<string, { id: string; orderNo: string; customerEmail: string; customerPhone: string }>,
-) {
-  const count = await db.execute("SELECT COUNT(*) as count FROM notifications");
-  if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
-  for (const fixture of notificationFixtures) {
-    const order = orderMap[fixture.orderNo];
-    if (!order) continue;
-    const createdAt = isoDaysAgo(fixture.sentOffset ?? 0);
-    const sentAt = fixture.sentOffset !== null ? isoDaysAgo(fixture.sentOffset) : null;
-    const recipient = fixture.recipientField === "customer_email" ? order.customerEmail : order.customerPhone;
-    await db.execute({
-      sql: `INSERT INTO notifications (id, channel, recipient, template, payload_json, status, created_at, sent_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      args: [
-        crypto.randomUUID(),
-        fixture.channel,
-        recipient,
-        fixture.template,
-        JSON.stringify({ orderNo: fixture.orderNo }),
-        fixture.status,
-        createdAt,
-        sentAt,
-        sentAt || createdAt || now,
-      ],
+async function ensureNotifications(db: Client) {
+  // Bulk-generate 2-3 notifications per order, idempotent per orderNo
+  const allOrders = await db.execute(
+    "SELECT id, order_no, customer_phone, customer_email, status, payment_status FROM orders",
+  );
+
+  for (const row of allOrders.rows) {
+    const orderNo = String(row.order_no || "");
+    const customerPhone = String(row.customer_phone || "");
+    const customerEmail = String(row.customer_email || "");
+    const orderStatus = String(row.status || "");
+    const paymentStatus = String(row.payment_status || "");
+    if (!orderNo) continue;
+
+    // Skip if already has notifications for this order
+    const existingRes = await db.execute({
+      sql: "SELECT COUNT(*) as count FROM notifications WHERE payload_json LIKE ?",
+      args: [`%"orderNo":"${orderNo}"%`],
     });
+    if (Number((existingRes.rows[0] as { count?: number } | undefined)?.count || 0) > 0) continue;
+
+    const createdAt = isoDaysAgo(1);
+
+    // Always: WhatsApp order confirmation
+    if (customerPhone) {
+      await db.execute({
+        sql: `INSERT INTO notifications (id, channel, recipient, template, payload_json, status, created_at, sent_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        args: [
+          crypto.randomUUID(),
+          "whatsapp",
+          customerPhone,
+          "order-confirmation",
+          JSON.stringify({ orderNo }),
+          "sent",
+          createdAt,
+          createdAt,
+          createdAt,
+        ],
+      });
+    }
+
+    // Paid orders: email payment received
+    if (customerEmail && ["paid", "refunded"].includes(paymentStatus)) {
+      await db.execute({
+        sql: `INSERT INTO notifications (id, channel, recipient, template, payload_json, status, created_at, sent_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        args: [
+          crypto.randomUUID(),
+          "email",
+          customerEmail,
+          "payment-received",
+          JSON.stringify({ orderNo }),
+          "sent",
+          createdAt,
+          createdAt,
+          createdAt,
+        ],
+      });
+    }
+
+    // Shipped/delivered: WhatsApp tracking update
+    if (customerPhone && ["shipped", "delivered", "completed"].includes(orderStatus)) {
+      await db.execute({
+        sql: `INSERT INTO notifications (id, channel, recipient, template, payload_json, status, created_at, sent_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        args: [
+          crypto.randomUUID(),
+          "whatsapp",
+          customerPhone,
+          "order-shipped",
+          JSON.stringify({ orderNo }),
+          "sent",
+          createdAt,
+          createdAt,
+          createdAt,
+        ],
+      });
+    }
   }
 }
 
 async function ensureCouponUsages(
   db: Client,
-  now: string,
-  orderMap: Record<string, { id: string; customerPhone: string }>,
   couponMap: Record<string, { id: string }>,
 ) {
-  const count = await db.execute("SELECT COUNT(*) as count FROM coupon_usages");
-  if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
-  for (const fixture of couponUsageFixtures) {
-    const order = orderMap[fixture.orderNo];
-    const coupon = couponMap[fixture.couponCode];
-    if (!order || !coupon) continue;
+  // Scan ALL orders with a coupon_code and create usage record if missing
+  const ordersWithCoupons = await db.execute(
+    "SELECT id, order_no, coupon_code, customer_phone FROM orders WHERE coupon_code IS NOT NULL",
+  );
+
+  for (const row of ordersWithCoupons.rows) {
+    const orderId = String(row.id || "");
+    const couponCode = String(row.coupon_code || "");
+    const customerPhone = String(row.customer_phone || "");
+    if (!orderId || !couponCode) continue;
+
+    const existing = await db.execute({
+      sql: "SELECT COUNT(*) as count FROM coupon_usages WHERE order_id = ?",
+      args: [orderId],
+    });
+    if (Number((existing.rows[0] as { count?: number } | undefined)?.count || 0) > 0) continue;
+
+    const coupon = couponMap[couponCode];
+    if (!coupon) continue;
+
     await db.execute({
-      sql: `INSERT INTO coupon_usages (id, coupon_id, order_id, customer_phone, created_at)
-            VALUES (?, ?, ?, ?, ?)`,
-      args: [crypto.randomUUID(), coupon.id, order.id, order.customerPhone, now],
+      sql: `INSERT INTO coupon_usages (id, coupon_id, order_id, customer_phone, created_at) VALUES (?, ?, ?, ?, ?)`,
+      args: [crypto.randomUUID(), coupon.id, orderId, customerPhone, nowIso()],
     });
   }
 }
