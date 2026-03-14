@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, untrack } from "svelte";
   import { fade, slide, fly } from "svelte/transition";
-  import { t, initI18n } from "../../../../lib/i18n/store.svelte";
+  import { t, initI18n } from "@/lib/i18n/store.svelte";
 
   interface NavItem {
     name: string;

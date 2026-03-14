@@ -7,7 +7,7 @@
     [key: string]: any;
   }
 
-  import { t } from "../../../../lib/i18n/store.svelte";
+  import { t } from "@/lib/i18n/store.svelte";
 
   let { currentPage = $bindable(1), totalPages = 1, class: className = "", onPageChange, ...rest }: Props = $props();
 

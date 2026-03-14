@@ -1,5 +1,5 @@
 import type { APIContext } from "astro";
-import { getDb } from "./db";
+import { getDb } from "@/lib/db";
 
 export async function checkRateLimit(ctx: APIContext, key: string, limit: number, windowSeconds: number) {
   const db = getDb(ctx);

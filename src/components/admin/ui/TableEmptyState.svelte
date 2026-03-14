@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import TableRow from "./TableRow.svelte";
-  import TableCell from "./TableCell.svelte";
+  import TableRow from "@/components/admin/ui/TableRow.svelte";
+  import TableCell from "@/components/admin/ui/TableCell.svelte";
 
   interface Props {
     title: string;

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import AsidePane from "./AsidePane.svelte";
-  import TableOfContents from "../navigation/TableOfContents.svelte";
+  import AsidePane from "@/components/admin/ui/layout/AsidePane.svelte";
+  import TableOfContents from "@/components/admin/ui/navigation/TableOfContents.svelte";
 
   interface Props {
     items: { id: string; label: string }[];

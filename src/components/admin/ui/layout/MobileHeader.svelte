@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, untrack } from "svelte";
-  import LanguageSwitcher from "./LanguageSwitcher.svelte";
-  import { t, initI18n } from "../../../../lib/i18n/store.svelte";
+  import LanguageSwitcher from "@/components/admin/ui/layout/LanguageSwitcher.svelte";
+  import { t, initI18n } from "@/lib/i18n/store.svelte";
   interface Props {
     title: string;
     logoText?: string;

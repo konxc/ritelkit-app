@@ -1,8 +1,8 @@
-import { adminProcedure, router } from "../trpc";
-import { cmsPages } from "../../db/schema";
+import { adminProcedure, router } from "@/server/trpc";
+import { cmsPages } from "@/db/schema";
 import { eq, desc, and, or, like, sql } from "drizzle-orm";
 import { z } from "zod";
-import { logAudit } from "../../lib/admin";
+import { logAudit } from "@/lib/admin";
 
 export const cmsRouter = router({
   list: adminProcedure

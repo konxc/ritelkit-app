@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { router, adminProcedure } from "../trpc";
-import { inventoryMovements, products } from "../../db/schema";
+import { router, adminProcedure } from "@/server/trpc";
+import { inventoryMovements, products } from "@/db/schema";
 import { eq, desc, or, like, sql, and } from "drizzle-orm";
-import { logAudit } from "../../lib/admin";
+import { logAudit } from "@/lib/admin";
 
 export const inventoryRouter = router({
   listMovements: adminProcedure

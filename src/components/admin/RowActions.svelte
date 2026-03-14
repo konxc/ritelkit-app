@@ -1,6 +1,6 @@
 <script lang="ts">
-  import ActionGroup from "./ActionGroup.svelte";
-  import { t } from "../../lib/i18n/store.svelte";
+  import ActionGroup from "@/components/admin/ActionGroup.svelte";
+  import { t } from "@/lib/i18n/store.svelte";
   import type { Snippet } from "svelte";
 
   let {

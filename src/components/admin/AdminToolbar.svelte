@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import { onMount } from "svelte";
-  import { t } from "../../lib/i18n/store.svelte";
+  import { t } from "@/lib/i18n/store.svelte";
 
   let {
     title,

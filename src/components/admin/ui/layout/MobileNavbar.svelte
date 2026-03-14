@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { t, initI18n } from "../../../../lib/i18n/store.svelte";
+  import { t, initI18n } from "@/lib/i18n/store.svelte";
   import { onMount, untrack } from "svelte";
 
   interface Props {

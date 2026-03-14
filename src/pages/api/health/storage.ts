@@ -1,8 +1,8 @@
 import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import type { APIContext } from "astro";
-import { json } from "../../../lib/api";
-import { getEnv } from "../../../lib/env";
-import { isCloudflare, isNodeLike } from "../../../lib/runtime";
+import { json } from "@/lib/api";
+import { getEnv } from "@/lib/env";
+import { isCloudflare, isNodeLike } from "@/lib/runtime";
 
 export async function POST(ctx: APIContext) {
   const env = getEnv(ctx);

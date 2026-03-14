@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { fade, scale } from "svelte/transition";
-  import { i18n, initI18n, t } from "../../../../lib/i18n/store.svelte";
-  import type { LanguageCode } from "../../../../lib/i18n/translations";
+  import { i18n, initI18n, t } from "@/lib/i18n/store.svelte";
+  import type { LanguageCode } from "@/lib/i18n/translations";
 
   interface Language {
     code: LanguageCode;

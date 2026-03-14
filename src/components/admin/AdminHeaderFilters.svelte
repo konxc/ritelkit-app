@@ -24,7 +24,7 @@
   import AdminFilterDrawer from "./ui/forms/AdminFilterDrawer.svelte";
   import ColumnVisibilityToggle from "./ui/ColumnVisibilityToggle.svelte";
   import { onMount, untrack } from "svelte";
-  import { t, initI18n } from "../../lib/i18n/store.svelte";
+  import { t, initI18n } from "@/lib/i18n/store.svelte";
 
   // Root call for SSR and initial hydration (untracked for Svelte 5)
 

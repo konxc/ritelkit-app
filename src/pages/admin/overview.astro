@@ -1,11 +1,11 @@
 ---
 import { sql } from "drizzle-orm";
-import OverviewApp from "../../components/admin/pages/OverviewApp.svelte";
-import { adminUsers } from "../../db/schema";
-import AdminLayout from "../../layouts/AdminLayout.astro";
-import { requireAdmin } from "../../lib/auth";
-import { getDrizzle, initDb } from "../../lib/db";
-import { getDashboardStats, getRecentOrders } from "../../lib/reports";
+import OverviewApp from "@/components/admin/pages/OverviewApp.svelte";
+import { adminUsers } from "@/db/schema";
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { requireAdmin } from "@/lib/auth";
+import { getDrizzle, initDb } from "@/lib/db";
+import { getDashboardStats, getRecentOrders } from "@/lib/reports";
 
 await initDb(Astro);
 const admin = await requireAdmin(Astro);
@@ -26,7 +26,7 @@ if (redirectUrl) {
   return Astro.redirect(redirectUrl);
 }
 
-import { getLang, type LanguageCode, tServer } from "../../lib/i18n/server";
+import { getLang, type LanguageCode, tServer } from "@/lib/i18n/server";
 const stats = await getDashboardStats(db);
 const recentOrders = await getRecentOrders(db, 5);
 const lang: LanguageCode = getLang(Astro.cookies);

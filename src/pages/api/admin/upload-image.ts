@@ -1,10 +1,10 @@
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import type { APIContext } from "astro";
-import { json } from "../../../lib/api";
-import { requireAdmin, verifyCsrf } from "../../../lib/auth";
-import { initDb } from "../../../lib/db";
-import { getEnv } from "../../../lib/env";
-import { isCloudflare, isNodeLike } from "../../../lib/runtime";
+import { json } from "@/lib/api";
+import { requireAdmin, verifyCsrf } from "@/lib/auth";
+import { initDb } from "@/lib/db";
+import { getEnv } from "@/lib/env";
+import { isCloudflare, isNodeLike } from "@/lib/runtime";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE_BYTES = 5 * 1024 * 1024;

@@ -2,9 +2,9 @@
 import "../styles/admin.css";
 import { actions } from "astro:actions";
 import { ClientRouter } from "astro:transitions";
-import { ensureCsrfToken } from "../lib/auth";
-import { getLang, tServer } from "../lib/i18n/server";
-import { initI18n } from "../lib/i18n/store.svelte";
+import { ensureCsrfToken } from "@/lib/auth";
+import { getLang, tServer } from "@/lib/i18n/server";
+import { initI18n } from "@/lib/i18n/store.svelte";
 
 const lang = getLang(Astro.cookies);
 const { title = tServer(lang, "nav.admin_dashboard") } = Astro.props;
@@ -46,11 +46,11 @@ const navGroups = [
   },
 ];
 
-import MainSidebar from "../components/admin/ui/layout/MainSidebar.svelte";
-import ProfileDropdown from "../components/admin/ui/layout/ProfileDropdown.svelte";
-import MobileNavbar from "../components/admin/ui/layout/MobileNavbar.svelte";
-import MobileHeader from "../components/admin/ui/layout/MobileHeader.svelte";
-import LanguageSwitcher from "../components/admin/ui/layout/LanguageSwitcher.svelte";
+import MainSidebar from "@/components/admin/ui/layout/MainSidebar.svelte";
+import ProfileDropdown from "@/components/admin/ui/layout/ProfileDropdown.svelte";
+import MobileNavbar from "@/components/admin/ui/layout/MobileNavbar.svelte";
+import MobileHeader from "@/components/admin/ui/layout/MobileHeader.svelte";
+import LanguageSwitcher from "@/components/admin/ui/layout/LanguageSwitcher.svelte";
 ---
 
 <!doctype html>

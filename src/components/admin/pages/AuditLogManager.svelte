@@ -18,20 +18,20 @@
   } = $props();
   initI18n(untrack(() => lang));
 
-  import { trpc } from "../../../lib/trpc";
+  import { trpc } from "@/lib/trpc";
   import { createQuery } from "@tanstack/svelte-query";
   import { fly } from "svelte/transition";
-  import type { AuditLog } from "../../../lib/types";
-  import Table from "../ui/Table.svelte";
-  import TableRow from "../ui/TableRow.svelte";
-  import TableCell from "../ui/TableCell.svelte";
-  import { t, initI18n } from "../../../lib/i18n/store.svelte";
+  import type { AuditLog } from "@/lib/types";
+  import Table from "@/components/admin/ui/Table.svelte";
+  import TableRow from "@/components/admin/ui/TableRow.svelte";
+  import TableCell from "@/components/admin/ui/TableCell.svelte";
+  import { t, initI18n } from "@/lib/i18n/store.svelte";
   import { untrack } from "svelte";
-  import SectionHeader from "../SectionHeader.svelte";
-  import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
-  import TableEmptyState from "../ui/TableEmptyState.svelte";
-  import { createAdminFilters } from "../../../lib/admin-filters.svelte";
-  import PaginationNav from "../PaginationNav.svelte";
+  import SectionHeader from "@/components/admin/SectionHeader.svelte";
+  import AdminHeaderFilters from "@/components/admin/AdminHeaderFilters.svelte";
+  import TableEmptyState from "@/components/admin/ui/TableEmptyState.svelte";
+  import { createAdminFilters } from "@/lib/admin-filters.svelte";
+  import PaginationNav from "@/components/admin/PaginationNav.svelte";
   import { onMount } from "svelte";
 
   let columns = $state([

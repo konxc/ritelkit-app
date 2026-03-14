@@ -1,19 +1,19 @@
 <script lang="ts">
-  import { trpc } from "../../../lib/trpc";
+  import { trpc } from "@/lib/trpc";
   import { useQueryClient } from "@tanstack/svelte-query";
-  import type { Order } from "../../../lib/types";
-  import { createAdminMutation } from "../../../lib/admin-mutations.svelte";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
-  import PanelCard from "../PanelCard.svelte";
-  import Badge from "../ui/Badge.svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import Table from "../ui/Table.svelte";
-  import TableRow from "../ui/TableRow.svelte";
-  import TableCell from "../ui/TableCell.svelte";
-  import Button from "../ui/Button.svelte";
-  import SelectInput from "../ui/forms/SelectInput.svelte";
-  import TextInput from "../ui/forms/TextInput.svelte";
-  import { t, initI18n } from "../../../lib/i18n/store.svelte";
+  import type { Order } from "@/lib/types";
+  import { createAdminMutation } from "@/lib/admin-mutations.svelte";
+  import CrudInlineForm from "@/components/admin/CrudInlineForm.svelte";
+  import PanelCard from "@/components/admin/PanelCard.svelte";
+  import Badge from "@/components/admin/ui/Badge.svelte";
+  import ToastNotification from "@/components/admin/ToastNotification.svelte";
+  import Table from "@/components/admin/ui/Table.svelte";
+  import TableRow from "@/components/admin/ui/TableRow.svelte";
+  import TableCell from "@/components/admin/ui/TableCell.svelte";
+  import Button from "@/components/admin/ui/Button.svelte";
+  import SelectInput from "@/components/admin/ui/forms/SelectInput.svelte";
+  import TextInput from "@/components/admin/ui/forms/TextInput.svelte";
+  import { t, initI18n } from "@/lib/i18n/store.svelte";
   import { onMount, untrack } from "svelte";
   import { fade, fly } from "svelte/transition";
 

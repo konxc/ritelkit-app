@@ -1,19 +1,19 @@
 <script lang="ts">
   let { invoice: initialInvoice, lang }: { invoice: InvoiceDetail; lang?: any } = $props();
 
-  import { t, initI18n } from "../../../lib/i18n/store.svelte";
+  import { t, initI18n } from "@/lib/i18n/store.svelte";
   import { untrack } from "svelte";
   initI18n(untrack(() => lang));
 
-  import { trpc } from "../../../lib/trpc";
-  import { createAdminMutation } from "../../../lib/admin-mutations.svelte";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
-  import PanelCard from "../PanelCard.svelte";
-  import Badge from "../ui/Badge.svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import Button from "../ui/Button.svelte";
-  import SelectInput from "../ui/forms/SelectInput.svelte";
-  import TextInput from "../ui/forms/TextInput.svelte";
+  import { trpc } from "@/lib/trpc";
+  import { createAdminMutation } from "@/lib/admin-mutations.svelte";
+  import CrudInlineForm from "@/components/admin/CrudInlineForm.svelte";
+  import PanelCard from "@/components/admin/PanelCard.svelte";
+  import Badge from "@/components/admin/ui/Badge.svelte";
+  import ToastNotification from "@/components/admin/ToastNotification.svelte";
+  import Button from "@/components/admin/ui/Button.svelte";
+  import SelectInput from "@/components/admin/ui/forms/SelectInput.svelte";
+  import TextInput from "@/components/admin/ui/forms/TextInput.svelte";
 
   type InvoiceItem = {
     name: string;

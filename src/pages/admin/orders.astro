@@ -1,11 +1,11 @@
 ---
-import AdminTabs from "../../components/admin/AdminTabs.astro";
-import PesananTabContent from "../../components/admin/pages/PesananTabContent.svelte";
-import AdminLayout from "../../layouts/AdminLayout.astro";
-import { normalizeTab, parsePage } from "../../lib/admin";
-import { requireAdmin } from "../../lib/auth";
-import { getDrizzle, initDb } from "../../lib/db";
-import { appRouter } from "../../server/router";
+import AdminTabs from "@/components/admin/AdminTabs.astro";
+import PesananTabContent from "@/components/admin/pages/PesananTabContent.svelte";
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { normalizeTab, parsePage } from "@/lib/admin";
+import { requireAdmin } from "@/lib/auth";
+import { getDrizzle, initDb } from "@/lib/db";
+import { appRouter } from "@/server/router";
 
 await initDb(Astro);
 const admin = await requireAdmin(Astro);
@@ -118,9 +118,9 @@ const tabs = [
     icon: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17v-6h-6"/><path d="M18.5 4.5A10 10 0 0 0 4 11"/><path d="M5.5 19.5A10 10 0 0 0 20 13"/></svg>',
   },
 ];
-import { getLang, tServer } from "../../lib/i18n/server";
-import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
-import AdminHeaderFilters from "../../components/admin/AdminHeaderFilters.svelte";
+import { getLang, tServer } from "@/lib/i18n/server";
+import AdminToolbar from "@/components/admin/AdminToolbar.svelte";
+import AdminHeaderFilters from "@/components/admin/AdminHeaderFilters.svelte";
 const lang = getLang(Astro.cookies);
 ---
 

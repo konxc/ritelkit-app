@@ -1,10 +1,10 @@
 import type { APIContext } from "astro";
-import { json, readBody } from "../../../../lib/api";
-import { logAudit } from "../../../../lib/admin";
-import { requireAdmin, sanitizeText, verifyCsrf } from "../../../../lib/auth";
-import { getDb, initDb } from "../../../../lib/db";
-import { validateOrderUpdate } from "../../../../lib/order";
-import { nowIso } from "../../../../lib/utils";
+import { json, readBody } from "@/lib/api";
+import { logAudit } from "@/lib/admin";
+import { requireAdmin, sanitizeText, verifyCsrf } from "@/lib/auth";
+import { getDb, initDb } from "@/lib/db";
+import { validateOrderUpdate } from "@/lib/order";
+import { nowIso } from "@/lib/utils";
 
 export async function GET(ctx: APIContext) {
   await initDb(ctx);

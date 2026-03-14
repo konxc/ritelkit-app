@@ -2,16 +2,16 @@
   let { lang }: { lang?: any } = $props();
   initI18n(untrack(() => lang));
 
-  import { trpc } from "../../../lib/trpc";
+  import { trpc } from "@/lib/trpc";
   import { createQuery } from "@tanstack/svelte-query";
   import { fly } from "svelte/transition";
-  import { t, initI18n } from "../../../lib/i18n/store.svelte";
+  import { t, initI18n } from "@/lib/i18n/store.svelte";
   import { untrack } from "svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import TextInput from "../ui/forms/TextInput.svelte";
-  import SelectInput from "../ui/forms/SelectInput.svelte";
-  import Button from "../ui/Button.svelte";
-  import { createAdminMutation } from "../../../lib/admin-mutations.svelte";
+  import ToastNotification from "@/components/admin/ToastNotification.svelte";
+  import TextInput from "@/components/admin/ui/forms/TextInput.svelte";
+  import SelectInput from "@/components/admin/ui/forms/SelectInput.svelte";
+  import Button from "@/components/admin/ui/Button.svelte";
+  import { createAdminMutation } from "@/lib/admin-mutations.svelte";
 
   let toastRef = $state<ToastNotification>();
 

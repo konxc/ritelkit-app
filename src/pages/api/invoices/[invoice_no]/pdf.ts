@@ -1,7 +1,7 @@
 import type { APIContext } from "astro";
-import { requireAdmin } from "../../../../lib/auth";
-import { getDb, initDb } from "../../../../lib/db";
-import { isCloudflare, isNodeLike } from "../../../../lib/runtime";
+import { requireAdmin } from "@/lib/auth";
+import { getDb, initDb } from "@/lib/db";
+import { isCloudflare, isNodeLike } from "@/lib/runtime";
 
 export async function GET(ctx: APIContext) {
   await initDb(ctx);

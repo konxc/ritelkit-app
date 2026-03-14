@@ -1,6 +1,6 @@
 import type { APIContext } from "astro";
-import { json } from "../../../lib/api";
-import { getDb, initDb } from "../../../lib/db";
+import { json } from "@/lib/api";
+import { getDb, initDb } from "@/lib/db";
 
 export async function POST(ctx: APIContext) {
   await initDb(ctx);

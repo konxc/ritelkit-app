@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { router, adminProcedure } from "../trpc";
-import { adsCampaigns } from "../../db/schema";
-import { AdsCampaignSchema } from "../../lib/types";
+import { router, adminProcedure } from "@/server/trpc";
+import { adsCampaigns } from "@/db/schema";
+import { AdsCampaignSchema } from "@/lib/types";
 import { eq, desc, or, like, and, sql } from "drizzle-orm";
 
 export const adsRouter = router({

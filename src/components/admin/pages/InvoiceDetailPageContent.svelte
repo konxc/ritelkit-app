@@ -1,6 +1,6 @@
 <script lang="ts">
-  import InvoiceDetailManager from "./InvoiceDetailManager.svelte";
-  import QueryProvider from "../QueryProvider.svelte";
+  import InvoiceDetailManager from "@/components/admin/pages/InvoiceDetailManager.svelte";
+  import QueryProvider from "@/components/admin/QueryProvider.svelte";
 
   let { invoice, lang }: { invoice: Record<string, unknown>; lang?: any } = $props();
 </script>

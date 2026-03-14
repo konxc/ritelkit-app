@@ -1,11 +1,11 @@
 ---
 import { actions } from "astro:actions";
-import AdminTabs from "../../components/admin/AdminTabs.astro";
-import SistemTabContent from "../../components/admin/pages/SistemTabContent.svelte";
-import AdminLayout from "../../layouts/AdminLayout.astro";
-import { normalizeTab, parsePage } from "../../lib/admin";
-import { requireAdmin } from "../../lib/auth";
-import { initDb } from "../../lib/db";
+import AdminTabs from "@/components/admin/AdminTabs.astro";
+import SistemTabContent from "@/components/admin/pages/SistemTabContent.svelte";
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { normalizeTab, parsePage } from "@/lib/admin";
+import { requireAdmin } from "@/lib/auth";
+import { initDb } from "@/lib/db";
 
 await initDb(Astro);
 const admin = await requireAdmin(Astro);
@@ -89,9 +89,9 @@ const tabs = [
 ];
 
 const statusFilter = Astro.url.searchParams.get("status");
-import { getLang, type LanguageCode, tServer } from "../../lib/i18n/server";
-import AdminToolbar from "../../components/admin/AdminToolbar.svelte";
-import AdminHeaderFilters from "../../components/admin/AdminHeaderFilters.svelte";
+import { getLang, type LanguageCode, tServer } from "@/lib/i18n/server";
+import AdminToolbar from "@/components/admin/AdminToolbar.svelte";
+import AdminHeaderFilters from "@/components/admin/AdminHeaderFilters.svelte";
 const lang: LanguageCode = getLang(Astro.cookies);
 ---
 

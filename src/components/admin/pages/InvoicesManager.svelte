@@ -18,22 +18,22 @@
   } = $props();
   initI18n(untrack(() => lang));
 
-  import { trpc } from "../../../lib/trpc";
+  import { trpc } from "@/lib/trpc";
   import { createQuery } from "@tanstack/svelte-query";
   import { fly } from "svelte/transition";
-  import { t, initI18n } from "../../../lib/i18n/store.svelte";
+  import { t, initI18n } from "@/lib/i18n/store.svelte";
   import { onMount, untrack } from "svelte";
-  import TableEmptyState from "../ui/TableEmptyState.svelte";
-  import SectionHeader from "../SectionHeader.svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import Table from "../ui/Table.svelte";
-  import TableRow from "../ui/TableRow.svelte";
-  import TableCell from "../ui/TableCell.svelte";
-  import Badge from "../ui/Badge.svelte";
-  import Button from "../ui/Button.svelte";
-  import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
-  import { createAdminFilters } from "../../../lib/admin-filters.svelte";
-  import PaginationNav from "../PaginationNav.svelte";
+  import TableEmptyState from "@/components/admin/ui/TableEmptyState.svelte";
+  import SectionHeader from "@/components/admin/SectionHeader.svelte";
+  import ToastNotification from "@/components/admin/ToastNotification.svelte";
+  import Table from "@/components/admin/ui/Table.svelte";
+  import TableRow from "@/components/admin/ui/TableRow.svelte";
+  import TableCell from "@/components/admin/ui/TableCell.svelte";
+  import Badge from "@/components/admin/ui/Badge.svelte";
+  import Button from "@/components/admin/ui/Button.svelte";
+  import AdminHeaderFilters from "@/components/admin/AdminHeaderFilters.svelte";
+  import { createAdminFilters } from "@/lib/admin-filters.svelte";
+  import PaginationNav from "@/components/admin/PaginationNav.svelte";
 
   const filters = createAdminFilters({ q: untrack(() => q), status: untrack(() => status), page: untrack(() => page) });
   const localLimit = untrack(() => limit) || 20;

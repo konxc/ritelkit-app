@@ -1,7 +1,7 @@
 import { and, desc, eq, gte, or, sql } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
-import * as schema from "../db/schema";
-import { adsCampaigns, orders, products, refunds } from "../db/schema";
+import * as schema from "@/db/schema";
+import { adsCampaigns, orders, products, refunds } from "@/db/schema";
 
 type Db = LibSQLDatabase<typeof schema>;
 

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import CheckoutForm from "./CheckoutForm.svelte";
-  import { t, i18n } from "../../lib/i18n/store.svelte";
+  import CheckoutForm from "@/components/storefront/CheckoutForm.svelte";
+  import { t, i18n } from "@/lib/i18n/store.svelte";
 
   interface CartItem {
     id: string;

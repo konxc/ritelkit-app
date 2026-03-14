@@ -1,12 +1,12 @@
 import type { APIContext } from "astro";
-import { getRequestId, json, readBody } from "../../lib/api";
-import { getClientIp, sanitizeText } from "../../lib/auth";
-import { applyCoupon, calculateShipping } from "../../lib/checkout";
-import { getDb, initDb } from "../../lib/db";
-import { getEnv, isProduction } from "../../lib/env";
-import { checkRateLimit } from "../../lib/rate-limit";
-import { loadSettings } from "../../lib/settings";
-import { asInt, nowIso } from "../../lib/utils";
+import { getRequestId, json, readBody } from "@/lib/api";
+import { getClientIp, sanitizeText } from "@/lib/auth";
+import { applyCoupon, calculateShipping } from "@/lib/checkout";
+import { getDb, initDb } from "@/lib/db";
+import { getEnv, isProduction } from "@/lib/env";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { loadSettings } from "@/lib/settings";
+import { asInt, nowIso } from "@/lib/utils";
 
 type CartItem = {
   product_id: string;

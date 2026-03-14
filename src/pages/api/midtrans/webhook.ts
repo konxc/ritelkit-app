@@ -1,8 +1,8 @@
 import type { APIContext } from "astro";
-import { getRequestId } from "../../../lib/api";
-import { getDb, initDb } from "../../../lib/db";
-import { getEnv } from "../../../lib/env";
-import { nowIso } from "../../../lib/utils";
+import { getRequestId } from "@/lib/api";
+import { getDb, initDb } from "@/lib/db";
+import { getEnv } from "@/lib/env";
+import { nowIso } from "@/lib/utils";
 
 export async function POST(ctx: APIContext) {
   await initDb(ctx);

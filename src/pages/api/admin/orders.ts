@@ -1,7 +1,7 @@
 import type { APIContext } from "astro";
-import { json } from "../../../lib/api";
-import { requireAdmin } from "../../../lib/auth";
-import { getDb, initDb } from "../../../lib/db";
+import { json } from "@/lib/api";
+import { requireAdmin } from "@/lib/auth";
+import { getDb, initDb } from "@/lib/db";
 
 type CountRow = { count?: number | string | null };
 

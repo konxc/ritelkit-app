@@ -1,10 +1,10 @@
 import { HeadBucketCommand, S3Client } from "@aws-sdk/client-s3";
 import type { APIContext } from "astro";
-import { json } from "../../lib/api";
-import { getAdminSession } from "../../lib/auth";
-import { getDb, initDb } from "../../lib/db";
-import { getEnv } from "../../lib/env";
-import { runtimeName } from "../../lib/runtime";
+import { json } from "@/lib/api";
+import { getAdminSession } from "@/lib/auth";
+import { getDb, initDb } from "@/lib/db";
+import { getEnv } from "@/lib/env";
+import { runtimeName } from "@/lib/runtime";
 
 export async function GET(ctx: APIContext) {
   const env = getEnv(ctx);

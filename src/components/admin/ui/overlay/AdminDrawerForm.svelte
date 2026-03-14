@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import Drawer from "./Drawer.svelte";
-  import CrudInlineForm from "../../CrudInlineForm.svelte";
-  import Button from "../Button.svelte";
-  import { t } from "../../../../lib/i18n/store.svelte";
+  import Drawer from "@/components/admin/ui/overlay/Drawer.svelte";
+  import CrudInlineForm from "@/components/admin/CrudInlineForm.svelte";
+  import Button from "@/components/admin/ui/Button.svelte";
+  import { t } from "@/lib/i18n/store.svelte";
 
   interface Props {
     isOpen: boolean;

@@ -1,5 +1,5 @@
 import type { APIContext } from "astro";
-import { getDb } from "./db";
+import { getDb } from "@/lib/db";
 
 export type AppSettings = {
   order_settings?: {

@@ -1,8 +1,8 @@
-import { adminProcedure, router } from "../trpc";
-import { notifications } from "../../db/schema";
+import { adminProcedure, router } from "@/server/trpc";
+import { notifications } from "@/db/schema";
 import { eq, or, like, desc, sql, and } from "drizzle-orm";
 import { z } from "zod";
-import { logAudit } from "../../lib/admin";
+import { logAudit } from "@/lib/admin";
 
 export const notificationRouter = router({
   list: adminProcedure

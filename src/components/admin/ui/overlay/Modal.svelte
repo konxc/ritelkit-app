@@ -12,7 +12,7 @@
     [key: string]: any;
   }
 
-  import { t } from "../../../../lib/i18n/store.svelte";
+  import { t } from "@/lib/i18n/store.svelte";
 
   let {
     open = $bindable(false),

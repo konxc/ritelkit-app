@@ -18,32 +18,32 @@
   } = $props();
   initI18n(untrack(() => lang));
 
-  import { trpc } from "../../../lib/trpc";
+  import { trpc } from "@/lib/trpc";
   import { createQuery, useQueryClient } from "@tanstack/svelte-query";
   import { onMount, untrack } from "svelte";
   import { fly } from "svelte/transition";
-  import { t, initI18n } from "../../../lib/i18n/store.svelte";
-  import type { Category } from "../../../lib/types";
-  import CrudInlineForm from "../CrudInlineForm.svelte";
-  import RowActions from "../RowActions.svelte";
-  import SectionHeader from "../SectionHeader.svelte";
-  import ToastNotification from "../ToastNotification.svelte";
-  import Table from "../ui/Table.svelte";
-  import TableRow from "../ui/TableRow.svelte";
-  import TableCell from "../ui/TableCell.svelte";
-  import TableEmptyState from "../ui/TableEmptyState.svelte";
-  import InlineEditableField from "../ui/forms/InlineEditableField.svelte";
-  import Button from "../ui/Button.svelte";
-  import AdminHeaderFilters from "../AdminHeaderFilters.svelte";
-  import Fab from "../ui/Fab.svelte";
-  import TextInput from "../ui/forms/TextInput.svelte";
-  import SelectInput from "../ui/forms/SelectInput.svelte";
-  import Drawer from "../ui/overlay/Drawer.svelte";
-  import { createAdminFilters } from "../../../lib/admin-filters.svelte";
-  import AdminDrawerForm from "../ui/overlay/AdminDrawerForm.svelte";
-  import { createAdminMutation } from "../../../lib/admin-mutations.svelte";
-  import { createTableState } from "../../../lib/admin-table-state.svelte";
-  import PaginationNav from "../PaginationNav.svelte";
+  import { t, initI18n } from "@/lib/i18n/store.svelte";
+  import type { Category } from "@/lib/types";
+  import CrudInlineForm from "@/components/admin/CrudInlineForm.svelte";
+  import RowActions from "@/components/admin/RowActions.svelte";
+  import SectionHeader from "@/components/admin/SectionHeader.svelte";
+  import ToastNotification from "@/components/admin/ToastNotification.svelte";
+  import Table from "@/components/admin/ui/Table.svelte";
+  import TableRow from "@/components/admin/ui/TableRow.svelte";
+  import TableCell from "@/components/admin/ui/TableCell.svelte";
+  import TableEmptyState from "@/components/admin/ui/TableEmptyState.svelte";
+  import InlineEditableField from "@/components/admin/ui/forms/InlineEditableField.svelte";
+  import Button from "@/components/admin/ui/Button.svelte";
+  import AdminHeaderFilters from "@/components/admin/AdminHeaderFilters.svelte";
+  import Fab from "@/components/admin/ui/Fab.svelte";
+  import TextInput from "@/components/admin/ui/forms/TextInput.svelte";
+  import SelectInput from "@/components/admin/ui/forms/SelectInput.svelte";
+  import Drawer from "@/components/admin/ui/overlay/Drawer.svelte";
+  import { createAdminFilters } from "@/lib/admin-filters.svelte";
+  import AdminDrawerForm from "@/components/admin/ui/overlay/AdminDrawerForm.svelte";
+  import { createAdminMutation } from "@/lib/admin-mutations.svelte";
+  import { createTableState } from "@/lib/admin-table-state.svelte";
+  import PaginationNav from "@/components/admin/PaginationNav.svelte";
 
   let columns = $state([
     { id: "kategori", label: t("catalog.categories.name"), isVisible: true, class: "" },

@@ -1,9 +1,9 @@
-import { adminProcedure, router } from "../trpc";
-import { adminUsers } from "../../db/schema";
+import { adminProcedure, router } from "@/server/trpc";
+import { adminUsers } from "@/db/schema";
 import { eq, or, like } from "drizzle-orm";
 import { z } from "zod";
-import { logAudit } from "../../lib/admin";
-import { hashPassword } from "../../lib/auth";
+import { logAudit } from "@/lib/admin";
+import { hashPassword } from "@/lib/auth";
 
 export const adminUserRouter = router({
   list: adminProcedure

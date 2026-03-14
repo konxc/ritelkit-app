@@ -1,6 +1,6 @@
 <script lang="ts">
   import Button from "./ui/Button.svelte";
-  import { t } from "../../lib/i18n/store.svelte";
+  import { t } from "@/lib/i18n/store.svelte";
   let {
     page,
     totalPages,

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Avatar from "./Avatar.svelte";
+  import Avatar from "@/components/admin/ui/media/Avatar.svelte";
 
   interface AvatarUser {
     src?: string;
