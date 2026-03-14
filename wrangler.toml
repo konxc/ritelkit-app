@@ -1,4 +1,4 @@
-name = "roti-sholawat"
+name = "ritelkit-app"
 pages_build_output_dir = "dist"
 compatibility_date = "2026-03-12"
 compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]

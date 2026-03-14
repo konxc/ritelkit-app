@@ -1,6 +1,6 @@
-# Roti Sholawat - Official Website
+# Ritelkit App
 
-Modern, premium landing page for **Roti Sholawat**, a bakery located in Bantul, Yogyakarta. Built with Astro 5 and Svelte 5.
+Modern, premium tenant application for the **Ritelkit Platform**. Originally implemented for Roti Sholawat, now transitioned into a generic tenant template. Built with Astro 5 and Svelte 5.
 
 ## 🚀 Project Overview
 
