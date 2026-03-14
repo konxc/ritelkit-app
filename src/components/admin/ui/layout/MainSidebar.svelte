@@ -2,6 +2,7 @@
   import { onMount, untrack } from "svelte";
   import { fade, slide, fly } from "svelte/transition";
   import { t, initI18n } from "@lib/i18n/store.svelte";
+  import { mobileSidebarState } from "@lib/sidebar-state.svelte";
 
   interface NavItem {
     name: string;
@@ -98,14 +99,25 @@
   };
 </script>
 
+<!-- Mobile Backdrop -->
+{#if mobileSidebarState.isOpen}
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div
+    class="fixed inset-0 z-30 bg-stone-900/50 backdrop-blur-sm lg:hidden"
+    transition:fade={{ duration: 200 }}
+    onclick={() => mobileSidebarState.toggle()}
+  ></div>
+{/if}
+
 <aside
-  class="group relative z-40 hidden h-full w-[280px] shrink-0 flex-col border-r border-stone-200/60 bg-white px-5 pt-8 pb-4 shadow-[4px_0_24px_rgba(0,0,0,0.02)] {hasMounted
+  class="group relative z-40 h-full shrink-0 flex-col border-r border-stone-200/60 bg-white px-5 pt-8 pb-4 shadow-[4px_0_24px_rgba(0,0,0,0.02)] {hasMounted
     ? 'transition-all duration-300'
-    : ''} ease-[cubic-bezier(0.23,1,0.32,1)] lg:flex [.sidebar-collapsed_&]:w-[88px]"
+    : ''} ease-[cubic-bezier(0.23,1,0.32,1)] lg:flex [.sidebar-collapsed_&]:w-[88px] {mobileSidebarState.isOpen ? 'fixed left-0 top-0 flex w-[280px] translate-x-0' : 'hidden w-[280px] -translate-x-full lg:translate-x-0'}"
 >
   <button
     onclick={toggleSidebar}
-    class="absolute top-11 -right-3.5 z-50 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-stone-200 bg-white text-[10px] text-stone-500 shadow-sm transition-all hover:border-[#c48a3a] hover:text-[#c48a3a]"
+    class="absolute top-11 -right-3.5 z-50 hidden h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-stone-200 bg-white text-[10px] text-stone-500 shadow-sm transition-all hover:border-[#c48a3a] hover:text-[#c48a3a] lg:flex"
     title={isCollapsed ? t("nav.expand_sidebar") : t("nav.collapse_sidebar")}
   >
     <svg

@@ -11,18 +11,32 @@
 
   // Root call for SSR and initial hydration (untracked for Svelte 5)
   initI18n(untrack(() => lang));
+  import { mobileSidebarState } from "@lib/sidebar-state.svelte";
 </script>
 
 <header
   class="sticky top-0 z-30 flex h-[72px] shrink-0 items-center justify-between border-b border-stone-200/50 bg-white/85 px-4 shadow-[0_4px_20px_rgba(0,0,0,0.03)] backdrop-blur-xl lg:hidden"
 >
-  <div class="flex flex-col justify-center">
-    <h1
-      class="mb-1 bg-gradient-to-br from-stone-900 to-stone-600 bg-clip-text font-['Syne',sans-serif] text-[1.35rem] leading-none font-extrabold tracking-tight text-transparent"
+  <div class="flex items-center justify-center gap-3">
+    <button
+      onclick={() => mobileSidebarState.toggle()}
+      class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl bg-stone-100/80 text-stone-600 transition-colors hover:bg-[#c48a3a]/10 hover:text-[#c48a3a]"
+      aria-label="Toggle Navigation"
     >
-      {t(title)}
-    </h1>
-    <p class="text-[0.65rem] font-bold tracking-wider text-stone-400 uppercase">{t("nav.admin_dashboard")}</p>
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="4" x2="20" y1="12" y2="12" />
+        <line x1="4" x2="20" y1="6" y2="6" />
+        <line x1="4" x2="20" y1="18" y2="18" />
+      </svg>
+    </button>
+    <div class="flex flex-col justify-center">
+      <h1
+        class="mb-1 bg-gradient-to-br from-stone-900 to-stone-600 bg-clip-text font-['Syne',sans-serif] text-[1.35rem] leading-none font-extrabold tracking-tight text-transparent"
+      >
+        {t(title)}
+      </h1>
+      <p class="text-[0.65rem] font-bold tracking-wider text-stone-400 uppercase">{t("nav.admin_dashboard")}</p>
+    </div>
   </div>
 
   <div class="flex items-center gap-2">
