@@ -24,6 +24,11 @@ if (isNode && !isCloudflare) {
 }
 
 export default defineConfig({
+  server: {
+    port: 4321,
+    host: true,
+    allowedHosts: true,
+  },
   site: process.env.PUBLIC_SITE_URL || "https://ritelkit.konxc.space",
   output: "server",
   integrations: [svelte(), partytown(), sitemap()],

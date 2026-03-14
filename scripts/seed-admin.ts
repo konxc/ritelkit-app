@@ -7,22 +7,20 @@ dotenv.config({ path: ".env.local" });
 await initDb();
 const db = getDb();
 
-// Seed Tenant 1: RitelKit App (Default)
-console.log("Seeding RitelKit App...");
-await seedAdminData(db, { 
-  adminEmail: "androxoss@hotmail.com",
-  tenantId: "ritelkit-app-id",
-  tenantSlug: "ritelkit-app",
-  tenantName: "RitelKit App"
-});
+// Email admin diambil dari environment variable (TEST_ADMIN_EMAIL)
+// JANGAN hardcode email pribadi di sini untuk menghindari commit ke repo.
+// Usage: TEST_ADMIN_EMAIL=your@email.com npm run seed
+const adminEmail = process.env.TEST_ADMIN_EMAIL || "admin@example.local";
 
-// Seed Tenant 2: Kopi Toktok
-console.log("Seeding Kopi Toktok...");
+console.log(`--- Seeding Tenant Testing: Kopi Toktok ---`);
+
 await seedAdminData(db, { 
-  adminEmail: "androxoss@hotmail.com",
-  tenantId: "kopi-toktok-id",
+  adminEmail: adminEmail, 
+  tenantId: "kopi-toktok-id", // Mengikuti ID yang sudah ada di database lokal
   tenantSlug: "kopi-toktok",
   tenantName: "Kopi Toktok"
 });
 
-console.log("Seed data applied successfully for all tenants.");
+console.log(`\nSeed data applied successfully for tenant 'kopi-toktok'.`);
+console.log(`Email Admin: ${adminEmail}`);
+console.log(`Akses: http://kopi-toktok.ritelkit.local:4321`);

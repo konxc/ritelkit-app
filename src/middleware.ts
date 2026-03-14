@@ -2,8 +2,15 @@ import type { MiddlewareHandler } from "astro";
 import { resolveTenant } from "./lib/tenant-resolver";
 import { requireAdmin } from "@lib/auth";
 
+const STATIC_ASSETS = ["/_", ".js", ".css", ".png", ".jpg", ".jpeg", ".svg", ".ico", ".woff", ".woff2"];
+
 export const onRequest: MiddlewareHandler = async (context, next) => {
   const pathname = context.url.pathname;
+
+  // Skip middleware for static assets to improve performance
+  if (STATIC_ASSETS.some(ext => pathname.includes(ext))) {
+    return next();
+  }
   
   // 1. Resolve Tenant
   const tenant = await resolveTenant(context);
@@ -14,30 +21,5 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   context.locals.session = session;
   context.locals.user = session;
 
-  const response = await next();
-  const headers = new Headers(response.headers);
-
-  headers.set(
-    "Content-Security-Policy",
-    [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: https:",
-      "connect-src 'self' https:",
-      "frame-ancestors 'none'",
-      "base-uri 'self'",
-    ].join("; "),
-  );
-  headers.set("X-Frame-Options", "DENY");
-  headers.set("X-Content-Type-Options", "nosniff");
-  headers.set("Referrer-Policy", "same-origin");
-  headers.set("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
-
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers,
-  });
+  return next();
 };

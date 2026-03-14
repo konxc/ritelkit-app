@@ -495,7 +495,6 @@ const sampleReviews: SampleProductReview[] = [
 
 const sampleAdmins: SampleAdminUser[] = [
   { email: "admin@konxc.space", role: "owner" },
-  { email: "androxoss@hotmail.com", role: "owner" },
   { email: "staff@konxc.space", role: "staff" },
   { email: "editor@konxc.space", role: "editor" },
 ];
