@@ -79,19 +79,7 @@ type SampleAdminUser = {
   role: string;
 };
 
-type NotificationFixture = {
-  channel: string;
-  recipientField: "customer_email" | "customer_phone";
-  orderNo: string;
-  template: string;
-  status: string;
-  sentOffset: number | null;
-};
-
-type CouponUsageFixture = {
-  couponCode: string;
-  orderNo: string;
-};
+// Types for seed fixtures
 
 type OrderFixture = {
   orderNo: string;
@@ -752,31 +740,7 @@ const refundFixtures: RefundFixture[] = [
   },
 ];
 
-const notificationFixtures: NotificationFixture[] = [
-  {
-    channel: "whatsapp",
-    recipientField: "customer_phone",
-    orderNo: "RS-20260226-001",
-    template: "order-confirmation",
-    status: "sent",
-    sentOffset: 0,
-  },
-  {
-    channel: "email",
-    recipientField: "customer_email",
-    orderNo: "RS-20260225-002",
-    template: "order-shipped",
-    status: "sent",
-    sentOffset: 1,
-  },
-];
-
-const couponUsageFixtures: CouponUsageFixture[] = [
-  {
-    couponCode: "HEMAT10",
-    orderNo: "RS-20260226-001",
-  },
-];
+// Fixtures formerly used for manual seeding, now handled dynamically via ensureNotifications and ensureCouponUsages
 
 type SeedOptions = {
   adminEmail: string;
