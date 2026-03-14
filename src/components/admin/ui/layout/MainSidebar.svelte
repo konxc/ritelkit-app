@@ -104,7 +104,7 @@
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
-    class="fixed inset-0 z-30 lg:hidden"
+    class="fixed inset-0 z-40 lg:hidden"
     style="background-color: rgba(0, 0, 0, 0.5);"
     transition:fade={{ duration: 200 }}
     onclick={() => mobileSidebarState.toggle()}
@@ -112,7 +112,7 @@
 {/if}
 
 <aside
-  class="group z-40 h-full shrink-0 flex-col border-r border-stone-200/60 bg-white px-5 pt-8 pb-4 shadow-[4px_0_24px_rgba(0,0,0,0.02)] {hasMounted
+  class="group z-50 h-full shrink-0 flex-col border-r border-stone-200/60 bg-white px-5 pt-8 pb-4 shadow-[4px_0_24px_rgba(0,0,0,0.02)] {hasMounted
     ? 'transition-transform duration-300'
     : ''} ease-[cubic-bezier(0.23,1,0.32,1)] lg:relative lg:flex [.sidebar-collapsed_&]:w-[88px] {mobileSidebarState.isOpen ? 'fixed left-0 top-0 flex w-[280px] translate-x-0' : 'fixed left-0 top-0 w-[280px] -translate-x-full lg:translate-x-0'}"
 >
