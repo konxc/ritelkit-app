@@ -37,154 +37,45 @@ const lang = getLang(Astro.cookies);
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <title>{tServer(lang, "auth.login_title")}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      body { min-height: 100dvh; background: none; font-family: 'Outfit', sans-serif; }
-      /* Reset global styles bleeding from global.css */
-      h1, h2, h3, h4 { font-family: 'Syne', sans-serif; color: inherit; font-size: inherit; line-height: inherit; }
-      a { text-decoration: none; color: inherit; }
-      input:-webkit-autofill,
-      input:-webkit-autofill:hover,
-      input:-webkit-autofill:focus {
-        -webkit-box-shadow: 0 0 0 30px #faf9f6 inset !important;
-        -webkit-text-fill-color: #292524 !important;
-      }
-    </style>
   </head>
-  <body
-    class="flex min-h-[100dvh] items-center justify-center px-4"
-    style="background-color: #f5f3ef; font-family: 'Outfit', sans-serif; overflow: visible;"
-  >
-
-    <!-- Background decoration -->
-    <div class="pointer-events-none fixed inset-0 overflow-hidden" style="z-index:0;">
-      <div class="absolute -top-32 -right-32 h-[420px] w-[420px] rounded-full blur-3xl" style="background-color: rgba(196,138,58,0.07);"></div>
-      <div class="absolute -bottom-32 -left-32 h-[380px] w-[380px] rounded-full blur-3xl" style="background-color: rgba(196,138,58,0.05);"></div>
-    </div>
-
-    <div class="relative w-full max-w-[400px]" style="z-index:1;">
-
-      <!-- Logo / Brand -->
-      <div class="mb-8 flex flex-col items-center gap-3 text-center">
-        <a
-          href="/"
-          class="inline-flex items-center gap-2.5 no-underline before:block before:h-[16px] before:w-[16px] before:shrink-0 before:rotate-45 before:rounded-[4px] before:bg-[#c48a3a] before:content-['']"
-          style="font-family: 'Syne', sans-serif; font-size: 1.15rem; font-weight: 800; color: #1c1917; letter-spacing: -0.02em; text-decoration: none;"
+  <body class="m-0 bg-[#f6f4ef] font-['Outfit',sans-serif]">
+    <div class="mx-auto mt-[8vh] max-w-[420px] rounded-2xl bg-white p-8 shadow-[0_20px_40px_rgba(0,0,0,0.08)]">
+      <h1>{tServer(lang, "auth.login_title")}</h1>
+      {success === "1" && <p class="mt-4 text-[0.9rem] text-[#6b625a]">{tServer(lang, "auth.login_success")}</p>}
+      {info === "exists" && <p class="mt-4 text-[0.9rem] text-[#6b625a]">{tServer(lang, "auth.login_exists")}</p>}
+      {
+        error && (
+          <p class="mt-4 text-[0.9rem] font-medium text-red-600">
+            {error === "invalid"
+              ? tServer(lang, "auth.error_invalid")
+              : error === "rate"
+                ? tServer(lang, "auth.error_rate")
+                : error === "csrf"
+                  ? tServer(lang, "auth.error_csrf")
+                  : error}
+          </p>
+        )
+      }
+      <form method="post" action={actions.adminLogin}>
+        <input type="hidden" name="csrf_token" value={csrfToken} />
+        <label>{tServer(lang, "auth.email_label")}</label>
+        <input class="my-2 mb-4 w-full rounded-[10px] border border-[#e6dfd3] p-3" name="email" type="email" required />
+        <label>{tServer(lang, "auth.password_label")}</label>
+        <input
+          class="my-2 mb-4 w-full rounded-[10px] border border-[#e6dfd3] p-3"
+          name="password"
+          type="password"
+          required
+        />
+        <button
+          class="w-full cursor-pointer rounded-[10px] border-none bg-[#c48a3a] p-3 font-semibold text-white"
+          type="submit">{tServer(lang, "auth.login_button")}</button
         >
-          SHOLAWAT<span style="color: #c48a3a;">.ENT</span>
-        </a>
-        <p style="font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em; color: #a8a29e; text-transform: uppercase;">
-          Admin Portal
-        </p>
+      </form>
+      <div class="mt-4 text-[0.9rem] text-[#6b625a]">
+        {tServer(lang, "auth.token_label")}
+        {env.SETUP_TOKEN ? tServer(lang, "auth.token_available") : tServer(lang, "auth.token_not_set")}.
       </div>
-
-      <!-- Card -->
-      <div class="rounded-3xl p-8" style="background: rgba(255,255,255,0.92); border: 1px solid rgba(214,211,209,0.7); box-shadow: 0 20px 50px rgba(0,0,0,0.07);">
-
-        <div class="mb-7">
-          <h1 style="font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; color: #1c1917; line-height: 1.2; margin: 0 0 4px 0;">
-            {tServer(lang, "auth.login_title")}
-          </h1>
-          <p style="font-size: 0.82rem; color: #a8a29e; margin: 0;">
-            {tServer(lang, "auth.email_label")} &amp; {tServer(lang, "auth.password_label").toLowerCase()}
-          </p>
-        </div>
-
-        <!-- Alerts -->
-        {success === "1" && (
-          <div class="mb-5 flex items-center gap-2.5 rounded-xl px-4 py-3" style="background: #f0fdf4; border: 1px solid #bbf7d0; font-size: 0.85rem; color: #15803d;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-            <span>{tServer(lang, "auth.login_success")}</span>
-          </div>
-        )}
-        {info === "exists" && (
-          <div class="mb-5 flex items-center gap-2.5 rounded-xl px-4 py-3" style="background: #eff6ff; border: 1px solid #bfdbfe; font-size: 0.85rem; color: #1d4ed8;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <span>{tServer(lang, "auth.login_exists")}</span>
-          </div>
-        )}
-        {error && (
-          <div class="mb-5 flex items-center gap-2.5 rounded-xl px-4 py-3" style="background: #fef2f2; border: 1px solid #fecaca; font-size: 0.85rem; color: #dc2626;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <span>
-              {error === "invalid"
-                ? tServer(lang, "auth.error_invalid")
-                : error === "rate"
-                  ? tServer(lang, "auth.error_rate")
-                  : error === "csrf"
-                    ? tServer(lang, "auth.error_csrf")
-                    : error}
-            </span>
-          </div>
-        )}
-
-        <!-- Form -->
-        <form method="post" action={actions.adminLogin} class="flex flex-col gap-4">
-          <input type="hidden" name="csrf_token" value={csrfToken} />
-
-          <div class="flex flex-col gap-1.5">
-            <label class="text-[0.8rem] font-semibold tracking-wide text-stone-600" for="email">
-              {tServer(lang, "auth.email_label")}
-            </label>
-            <input
-              class="w-full rounded-xl px-4 py-3 transition-all"
-              style="border: 1px solid #e7e5e4; background: #fafaf9; color: #1c1917; font-size: 0.9rem; outline: none; font-family: 'Outfit', sans-serif;"
-              name="email"
-              id="email"
-              type="email"
-              required
-              placeholder="admin@sholawat.com"
-              onfocus="this.style.borderColor='rgba(196,138,58,0.6)'; this.style.boxShadow='0 0 0 3px rgba(196,138,58,0.12)';"
-              onblur="this.style.borderColor='#e7e5e4'; this.style.boxShadow='none';"
-            />
-          </div>
-
-          <div class="flex flex-col gap-1.5">
-            <label class="text-[0.8rem] font-semibold tracking-wide text-stone-600" for="password">
-              {tServer(lang, "auth.password_label")}
-            </label>
-            <input
-              class="w-full rounded-xl px-4 py-3 transition-all"
-              style="border: 1px solid #e7e5e4; background: #fafaf9; color: #1c1917; font-size: 0.9rem; outline: none; font-family: 'Outfit', sans-serif;"
-              name="password"
-              id="password"
-              type="password"
-              required
-              placeholder="••••••••••"
-              onfocus="this.style.borderColor='rgba(196,138,58,0.6)'; this.style.boxShadow='0 0 0 3px rgba(196,138,58,0.12)';"
-              onblur="this.style.borderColor='#e7e5e4'; this.style.boxShadow='none';"
-            />
-          </div>
-
-          <button
-            class="mt-2 w-full cursor-pointer rounded-xl py-3.5 transition-all"
-            style="border: none; background: linear-gradient(135deg, #c48a3a, #a6722d); color: white; font-size: 0.93rem; font-weight: 600; font-family: 'Outfit', sans-serif; box-shadow: 0 8px 20px rgba(196,138,58,0.3);"
-            type="submit"
-            onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 12px 24px rgba(196,138,58,0.35)';"
-            onmouseout="this.style.transform=''; this.style.boxShadow='0 8px 20px rgba(196,138,58,0.3)';"
-          >
-            {tServer(lang, "auth.login_button")}
-          </button>
-        </form>
-
-        <!-- Setup token info -->
-        {env.SETUP_TOKEN && (
-          <p class="mt-5 text-center" style="font-size: 0.75rem; color: #a8a29e;">
-            {tServer(lang, "auth.token_label")} {tServer(lang, "auth.token_available")}.
-          </p>
-        )}
-      </div>
-
-      <!-- Footer -->
-      <p class="mt-6 text-center" style="font-size: 0.73rem; color: #a8a29e;">
-        &copy; {new Date().getFullYear()} Sholawat.ENT — Admin Portal
-      </p>
     </div>
   </body>
 </html>

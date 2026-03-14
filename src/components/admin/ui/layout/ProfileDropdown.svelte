@@ -163,7 +163,7 @@
         </a>
       </div>
       <div class="px-3 pt-2 pb-3">
-        <form method="post" action={logoutAction} class="m-0 block">
+        <form method="post" action={logoutAction} class="m-0 block" data-astro-reload>
           <button
             type="submit"
             class="group flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-[0.9rem] font-semibold text-red-600 transition-all duration-300 hover:bg-red-50 hover:shadow-sm"

@@ -104,7 +104,7 @@ const lang: LanguageCode = getLang(Astro.cookies);
         </div>
       </a>
 
-      <form method="post" action={actions.adminLogout} class="m-0 mt-4 block">
+      <form method="post" action={actions.adminLogout} class="m-0 mt-4 block" data-astro-reload>
         <button
           type="submit"
           class="flex h-[56px] w-full cursor-pointer items-center justify-center gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 font-bold text-red-600 shadow-sm transition-all hover:bg-red-600 hover:text-white"
