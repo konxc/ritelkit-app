@@ -99,22 +99,11 @@
   };
 </script>
 
-<!-- Mobile Backdrop -->
-{#if mobileSidebarState.isOpen}
-  <!-- svelte-ignore a11y_click_events_have_key_events -->
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div
-    class="fixed inset-0 z-40 lg:hidden"
-    style="background-color: rgba(0, 0, 0, 0.5);"
-    transition:fade={{ duration: 200 }}
-    onclick={() => mobileSidebarState.toggle()}
-  ></div>
-{/if}
 
 <aside
   class="group z-50 h-full shrink-0 flex-col border-r border-stone-200/60 bg-white px-5 pt-8 pb-4 shadow-[4px_0_24px_rgba(0,0,0,0.02)] {hasMounted
     ? 'transition-transform duration-300'
-    : ''} ease-[cubic-bezier(0.23,1,0.32,1)] lg:relative lg:flex [.sidebar-collapsed_&]:w-[88px] {mobileSidebarState.isOpen ? 'fixed left-0 top-0 flex w-[280px] translate-x-0' : 'fixed left-0 top-0 w-[280px] -translate-x-full lg:translate-x-0'}"
+    : ''} ease-[cubic-bezier(0.23,1,0.32,1)] lg:relative lg:flex [.sidebar-collapsed_&]:w-[88px] {mobileSidebarState.isOpen ? 'fixed left-0 top-0 flex w-full lg:w-[280px] translate-x-0' : 'fixed left-0 top-0 w-full lg:w-[280px] -translate-x-full lg:translate-x-0'}"
 >
   <button
     onclick={toggleSidebar}
@@ -138,13 +127,16 @@
   </button>
 
   <div
-    class="mb-8 flex h-8 shrink-0 items-center px-4 {hasMounted
+    class="mb-8 flex h-8 shrink-0 items-center justify-between px-4 {hasMounted
       ? 'transition-all duration-300'
       : ''} [.sidebar-collapsed_&]:w-full [.sidebar-collapsed_&]:justify-center"
   >
     <a
       href="/admin/overview"
       class="flex flex-nowrap items-center gap-2 font-['Syne',sans-serif] text-[0.92rem] font-extrabold text-stone-900 no-underline before:block before:h-[14px] before:w-[14px] before:shrink-0 before:rotate-45 before:rounded-[4px] before:bg-[#c48a3a] before:content-[''] xl:text-[0.98rem]"
+      onclick={() => {
+        if (mobileSidebarState.isOpen) mobileSidebarState.toggle();
+      }}
     >
       {#if !isCollapsed}
         <span in:fade={{ duration: 200 }} class="block min-w-max whitespace-nowrap [.sidebar-collapsed_&]:hidden">
@@ -152,6 +144,18 @@
         </span>
       {/if}
     </a>
+
+    <!-- Mobile Close Button -->
+    <button
+      onclick={() => mobileSidebarState.toggle()}
+      class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl bg-stone-100/80 text-stone-500 transition-colors hover:bg-stone-200/80 hover:text-stone-800 lg:hidden"
+      aria-label="Close Navigation"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
   </div>
 
   <nav
@@ -176,6 +180,9 @@
             <a
               href={item.path}
               title={t(item.name)}
+              onclick={() => {
+                if (mobileSidebarState.isOpen) mobileSidebarState.toggle();
+              }}
               class="group/item relative flex items-center gap-3 rounded-2xl px-4 py-2.5 text-[0.92rem] font-semibold {hasMounted
                 ? 'transition-all duration-300'
                 : ''} [.sidebar-collapsed_&]:h-12 [.sidebar-collapsed_&]:w-12 [.sidebar-collapsed_&]:justify-center [.sidebar-collapsed_&]:px-0 {active
@@ -205,7 +212,7 @@
 
               {#if isCollapsed}
                 <div
-                  class="pointer-events-none absolute left-full z-50 ml-3 rounded bg-stone-900 px-2 py-1 text-[10px] whitespace-nowrap text-white opacity-0 transition-opacity group-hover/item:opacity-100"
+                  class="pointer-events-none absolute left-full z-50 ml-3 rounded bg-stone-900 px-2 py-1 text-[10px] whitespace-nowrap text-white opacity-0 transition-opacity group-hover/item:opacity-100 lg:block hidden"
                 >
                   {t(item.name)}
                 </div>
