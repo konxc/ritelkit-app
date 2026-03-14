@@ -2,6 +2,8 @@ import type { APIContext } from "astro";
 
 export type RuntimeEnv = {
   PUBLIC_SITE_URL: string;
+  PUBLIC_TENANT_ID: string; // ID tenant jika ingin di-hardcode (misal: Roti Sholawat)
+  LOCAL_DOMAIN: string;     // misal: ritelkit.local (untuk dev tenant detection)
   PUBLIC_WHATSAPP_NUMBER: string;
   PUBLIC_MIDTRANS_CLIENT_KEY: string;
   MIDTRANS_SERVER_KEY: string;
@@ -39,6 +41,8 @@ export function getEnv(ctx?: APIContext): RuntimeEnv {
 
   return {
     PUBLIC_SITE_URL: ensureEnv(source.PUBLIC_SITE_URL, "PUBLIC_SITE_URL", isProd),
+    PUBLIC_TENANT_ID: source.PUBLIC_TENANT_ID || "",
+    LOCAL_DOMAIN: source.LOCAL_DOMAIN || "ritelkit.local",
     PUBLIC_WHATSAPP_NUMBER: ensureEnv(source.PUBLIC_WHATSAPP_NUMBER, "PUBLIC_WHATSAPP_NUMBER", isProd),
     PUBLIC_MIDTRANS_CLIENT_KEY: ensureEnv(source.PUBLIC_MIDTRANS_CLIENT_KEY, "PUBLIC_MIDTRANS_CLIENT_KEY", isProd),
     MIDTRANS_SERVER_KEY: ensureEnv(source.MIDTRANS_SERVER_KEY, "MIDTRANS_SERVER_KEY", isProd),

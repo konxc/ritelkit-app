@@ -1,8 +1,21 @@
 import { relations } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
+export const tenants = sqliteTable("tenants", {
+  id: text("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  industry: text("industry").notNull(),
+  logoUrl: text("logo_url"),
+  onboardingCompleted: integer("onboarding_completed", { mode: "boolean" }).notNull().default(false),
+  settingsJson: text("settings_json").default("{}"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
 export const adminUsers = sqliteTable("admin_users", {
   id: text("id").primaryKey(),
+  tenantId: text("tenant_id"), // Null for platform/shared admins or specific to tenant
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   role: text("role").notNull().default("owner"),
@@ -11,8 +24,9 @@ export const adminUsers = sqliteTable("admin_users", {
 
 export const categories = sqliteTable("categories", {
   id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
   name: text("name").notNull(),
-  slug: text("slug").notNull().unique(),
+  slug: text("slug").notNull(),
   sortOrder: integer("sort_order").notNull().default(0),
   isActive: integer("is_active").notNull().default(1),
   createdAt: text("created_at").notNull(),
@@ -21,9 +35,10 @@ export const categories = sqliteTable("categories", {
 
 export const products = sqliteTable("products", {
   id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
   sku: text("sku"),
   name: text("name").notNull(),
-  slug: text("slug").notNull().unique(),
+  slug: text("slug").notNull(),
   description: text("description"),
   categoryId: text("category_id").references(() => categories.id),
   price: integer("price").notNull(),
@@ -38,7 +53,8 @@ export const products = sqliteTable("products", {
 
 export const coupons = sqliteTable("coupons", {
   id: text("id").primaryKey(),
-  code: text("code").notNull().unique(),
+  tenantId: text("tenant_id").notNull(),
+  code: text("code").notNull(),
   type: text("type").notNull(),
   value: integer("value").notNull(),
   minOrder: integer("min_order"),
@@ -54,6 +70,7 @@ export const coupons = sqliteTable("coupons", {
 
 export const customers = sqliteTable("customers", {
   id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
   name: text("name").notNull(),
   email: text("email"),
   phone: text("phone").notNull(),
@@ -64,7 +81,8 @@ export const customers = sqliteTable("customers", {
 
 export const orders = sqliteTable("orders", {
   id: text("id").primaryKey(),
-  orderNo: text("order_no").notNull().unique(),
+  tenantId: text("tenant_id").notNull(),
+  orderNo: text("order_no").notNull(),
   status: text("status").notNull(),
   paymentStatus: text("payment_status").notNull(),
   customerId: text("customer_id").references(() => customers.id),
@@ -88,6 +106,7 @@ export const orders = sqliteTable("orders", {
 
 export const inventoryMovements = sqliteTable("inventory_movements", {
   id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
   productId: text("product_id")
     .notNull()
     .references(() => products.id),
@@ -101,6 +120,7 @@ export const inventoryMovements = sqliteTable("inventory_movements", {
 
 export const shipments = sqliteTable("shipments", {
   id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
   orderId: text("order_id")
     .notNull()
     .references(() => orders.id),
@@ -117,6 +137,7 @@ export const shipments = sqliteTable("shipments", {
 
 export const refunds = sqliteTable("refunds", {
   id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
   orderId: text("order_id")
     .notNull()
     .references(() => orders.id),
@@ -132,6 +153,7 @@ export const refunds = sqliteTable("refunds", {
 
 export const adsCampaigns = sqliteTable("ads_campaigns", {
   id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
   name: text("name").notNull(),
   channel: text("channel").notNull(),
   budget: integer("budget").notNull(),
@@ -146,7 +168,8 @@ export const adsCampaigns = sqliteTable("ads_campaigns", {
 
 export const cmsPages = sqliteTable("cms_pages", {
   id: text("id").primaryKey(),
-  slug: text("slug").notNull().unique(),
+  tenantId: text("tenant_id").notNull(),
+  slug: text("slug").notNull(),
   title: text("title").notNull(),
   contentMd: text("content_md").notNull(),
   isActive: integer("is_active").notNull().default(1),
@@ -156,6 +179,7 @@ export const cmsPages = sqliteTable("cms_pages", {
 
 export const auditLogs = sqliteTable("audit_logs", {
   id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
   actorEmail: text("actor_email"),
   action: text("action").notNull(),
   entityType: text("entity_type").notNull(),
@@ -166,6 +190,7 @@ export const auditLogs = sqliteTable("audit_logs", {
 
 export const notifications = sqliteTable("notifications", {
   id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
   channel: text("channel").notNull(),
   recipient: text("recipient").notNull(),
   template: text("template"),
@@ -184,6 +209,7 @@ export const rateLimits = sqliteTable("rate_limits", {
 
 export const couponUsages = sqliteTable("coupon_usages", {
   id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
   couponId: text("coupon_id")
     .notNull()
     .references(() => coupons.id),
@@ -196,6 +222,7 @@ export const couponUsages = sqliteTable("coupon_usages", {
 
 export const shippingRules = sqliteTable("shipping_rules", {
   id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
   name: text("name").notNull(),
   type: text("type").notNull(),
   priority: integer("priority").notNull().default(100),
@@ -207,12 +234,14 @@ export const shippingRules = sqliteTable("shipping_rules", {
 
 export const settings = sqliteTable("settings", {
   key: text("key").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
   valueJson: text("value_json").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
 
 export const invoices = sqliteTable("invoices", {
   id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
   orderId: text("order_id")
     .notNull()
     .references(() => orders.id),
@@ -226,6 +255,7 @@ export const invoices = sqliteTable("invoices", {
 
 export const orderStatusHistory = sqliteTable("order_status_history", {
   id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
   orderId: text("order_id")
     .notNull()
     .references(() => orders.id),
@@ -236,6 +266,7 @@ export const orderStatusHistory = sqliteTable("order_status_history", {
 
 export const productReviews = sqliteTable("product_reviews", {
   id: text("id").primaryKey(),
+  tenantId: text("tenant_id").notNull(),
   productId: text("product_id")
     .notNull()
     .references(() => products.id),

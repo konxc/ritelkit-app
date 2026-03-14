@@ -1,6 +1,19 @@
 import type { MiddlewareHandler } from "astro";
+import { resolveTenant } from "./lib/tenant-resolver";
+import { requireAdmin } from "@lib/auth";
 
-export const onRequest: MiddlewareHandler = async (_ctx, next) => {
+export const onRequest: MiddlewareHandler = async (context, next) => {
+  const pathname = context.url.pathname;
+  
+  // 1. Resolve Tenant
+  const tenant = await resolveTenant(context);
+  context.locals.tenant = tenant;
+
+  // 2. Auth Injection (Gunakan requireAdmin untuk fetch full info jika ada session)
+  const session = await requireAdmin(context);
+  context.locals.session = session;
+  context.locals.user = session;
+
   const response = await next();
   const headers = new Headers(response.headers);
 

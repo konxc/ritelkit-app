@@ -26,5 +26,9 @@ interface ImportMeta {
 }
 
 declare namespace App {
-  interface Locals extends Runtime {}
+  interface Locals extends Runtime {
+    session: import("./lib/auth").AdminUserSession | null;
+    user: import("./lib/auth").AdminUserSession | null; // Pada app ini user = session info
+    tenant: import("./lib/tenant-resolver").TenantInfo | null;
+  }
 }

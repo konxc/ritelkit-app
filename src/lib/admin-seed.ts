@@ -744,38 +744,63 @@ const refundFixtures: RefundFixture[] = [
 
 type SeedOptions = {
   adminEmail: string;
+  tenantId?: string; // Tenant target untuk data ini
+  tenantSlug?: string;
+  tenantName?: string;
   now?: string;
 };
 
 export async function seedAdminData(db: Client, options: SeedOptions) {
   const now = options.now ?? nowIso();
-  await ensureAdminUsers(db, now);
-  await ensureCategories(db, now);
-  const categoryMap = await buildCategoryMap(db);
-  await ensureProducts(db, now, categoryMap);
-  const productMap = await buildProductMap(db);
-  await ensureProductReviews(db, productMap);
-  await ensureCoupons(db, now);
-  const couponMap = await buildCouponMap(db);
-  await ensureCustomers(db);
-  const customerMap = await buildCustomerMap(db);
-  await ensureSettings(db, now);
-  await ensureAds(db, now);
-  await ensureCmsPages(db, now);
-  await ensureShippingRules(db, now);
+  const tenantId = options.tenantId ?? "seed-tenant-id";
+  const tenantSlug = options.tenantSlug ?? "roti-sholawat";
+  const tenantName = options.tenantName ?? "Roti Sholawat";
+
+  await ensureTenant(db, { id: tenantId, slug: tenantSlug, name: tenantName }, now);
+  
+  await ensureAdminUsers(db, tenantId, now);
+  await ensureCategories(db, tenantId, now);
+  const categoryMap = await buildCategoryMap(db, tenantId);
+  await ensureProducts(db, tenantId, now, categoryMap);
+  const productMap = await buildProductMap(db, tenantId);
+  await ensureProductReviews(db, tenantId, productMap);
+  await ensureCoupons(db, tenantId, now);
+  const couponMap = await buildCouponMap(db, tenantId);
+  await ensureCustomers(db, tenantId);
+  const customerMap = await buildCustomerMap(db, tenantId);
+  await ensureSettings(db, tenantId, now);
+  await ensureAds(db, tenantId, now);
+  await ensureCmsPages(db, tenantId, now);
+  await ensureShippingRules(db, tenantId, now);
 
   // Orders now handle their own RELATIONAL history, movements, invoices, and shipments
-  await ensureOrders(db, couponMap, productMap, customerMap);
+  await ensureOrders(db, tenantId, couponMap, productMap, customerMap);
 
-  const orderMap = await buildOrderMap(db);
-  await ensureRefunds(db, orderMap); // Still handles specific refund fixture
-  await ensureCouponUsages(db, couponMap);
-  await ensureNotifications(db);
-  await ensureAuditLogs(db, now, options.adminEmail, orderMap, productMap);
+  const orderMap = await buildOrderMap(db, tenantId);
+  await ensureRefunds(db, tenantId, orderMap); // Still handles specific refund fixture
+  await ensureCouponUsages(db, tenantId, couponMap);
+  await ensureNotifications(db, tenantId);
+  await ensureAuditLogs(db, tenantId, now, options.adminEmail, orderMap, productMap);
 }
 
-async function ensureAdminUsers(db: Client, now: string) {
-  const count = await db.execute("SELECT COUNT(*) as count FROM admin_users");
+async function ensureTenant(db: Client, tenant: { id: string, slug: string, name: string }, now: string) {
+  const exists = await db.execute({
+    sql: "SELECT id FROM tenants WHERE id = ?",
+    args: [tenant.id]
+  });
+  if (exists.rows.length > 0) return;
+
+  await db.execute({
+    sql: "INSERT INTO tenants (id, slug, name, industry, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+    args: [tenant.id, tenant.slug, tenant.name, "bakery", now, now]
+  });
+}
+
+async function ensureAdminUsers(db: Client, tenantId: string, now: string) {
+  const count = await db.execute({
+    sql: "SELECT COUNT(*) as count FROM admin_users WHERE tenant_id = ?",
+    args: [tenantId]
+  });
   if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 1) return; // Allow 1 default admin
   for (const admin of sampleAdmins) {
     // Skip if already exists
@@ -786,9 +811,10 @@ async function ensureAdminUsers(db: Client, now: string) {
     if (exists.rows.length > 0) continue;
 
     await db.execute({
-      sql: "INSERT INTO admin_users (id, email, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?)",
+      sql: "INSERT INTO admin_users (id, tenant_id, email, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?, ?)",
       args: [
         crypto.randomUUID(),
+        tenantId,
         admin.email,
         "120000:salt:hash", // placeholder, real login needs hashPassword
         admin.role,
@@ -798,25 +824,39 @@ async function ensureAdminUsers(db: Client, now: string) {
   }
 }
 
-async function ensureCategories(db: Client, now: string) {
-  for (const category of sampleCategories) {
+async function ensureCategories(db: Client, tenantId: string, now: string) {
+  for (const cat of sampleCategories) {
     const exists = await db.execute({
-      sql: "SELECT id FROM categories WHERE slug = ?",
-      args: [category.slug],
+      sql: "SELECT id FROM categories WHERE slug = ? AND tenant_id = ?",
+      args: [cat.slug, tenantId],
     });
     if (exists.rows.length > 0) continue;
+
     await db.execute({
-      sql: "INSERT INTO categories (id, name, slug, sort_order, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      args: [crypto.randomUUID(), category.name, category.slug, 0, 1, now, now],
+      sql: "INSERT INTO categories (id, tenant_id, name, slug, sort_order, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      args: [crypto.randomUUID(), tenantId, cat.name, cat.slug, 0, 1, now, now],
     });
   }
 }
 
-async function ensureProducts(db: Client, now: string, categoryMap: Record<string, string>) {
+async function buildCategoryMap(db: Client, tenantId: string) {
+  const result = await db.execute({
+    sql: "SELECT id, slug FROM categories WHERE tenant_id = ?",
+    args: [tenantId]
+  });
+  const map: Record<string, string> = {};
+  for (const row of result.rows) {
+    const r = row as unknown as { id: string; slug: string };
+    map[r.slug] = r.id;
+  }
+  return map;
+}
+
+async function ensureProducts(db: Client, tenantId: string, now: string, categoryMap: Record<string, string>) {
   for (const product of sampleProducts) {
     const exists = await db.execute({
-      sql: "SELECT id, sku FROM products WHERE slug = ?",
-      args: [product.slug],
+      sql: "SELECT id, sku FROM products WHERE slug = ? AND tenant_id = ?",
+      args: [product.slug, tenantId],
     });
     if (exists.rows.length > 0) {
       // Patch missing SKU if product exists but SKU is null/empty
@@ -831,10 +871,11 @@ async function ensureProducts(db: Client, now: string, categoryMap: Record<strin
     }
     const categoryId = categoryMap[product.categorySlug] || null;
     await db.execute({
-      sql: `INSERT INTO products (id, sku, name, slug, description, category_id, price, cost, stock, is_active, images_json, metadata_json, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO products (id, tenant_id, sku, name, slug, description, category_id, price, cost, stock, is_active, images_json, metadata_json, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         crypto.randomUUID(),
+        tenantId,
         product.sku,
         product.name,
         product.slug,
@@ -853,21 +894,22 @@ async function ensureProducts(db: Client, now: string, categoryMap: Record<strin
   }
 }
 
-async function ensureProductReviews(db: Client, productMap: Record<string, { id: string }>) {
+async function ensureProductReviews(db: Client, tenantId: string, productMap: Record<string, { id: string }>) {
   for (const review of sampleReviews) {
     const product = productMap[review.productSlug];
     if (!product) continue;
-    // Idempotent: skip if same product+customer combination already exists
+    // Idempotent: skip if same product+customer combination already exists for this tenant
     const exists = await db.execute({
-      sql: "SELECT id FROM product_reviews WHERE product_id = ? AND customer_name = ?",
-      args: [product.id, review.customerName],
+      sql: "SELECT id FROM product_reviews WHERE product_id = ? AND customer_name = ? AND tenant_id = ?",
+      args: [product.id, review.customerName, tenantId],
     });
     if (exists.rows.length > 0) continue;
     await db.execute({
-      sql: `INSERT INTO product_reviews (id, product_id, customer_name, rating, comment, is_active, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO product_reviews (id, tenant_id, product_id, customer_name, rating, comment, is_active, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         crypto.randomUUID(),
+        tenantId,
         product.id,
         review.customerName,
         review.rating,
@@ -879,18 +921,19 @@ async function ensureProductReviews(db: Client, productMap: Record<string, { id:
   }
 }
 
-async function ensureCoupons(db: Client, now: string) {
+async function ensureCoupons(db: Client, tenantId: string, now: string) {
   for (const coupon of sampleCoupons) {
     const exists = await db.execute({
-      sql: "SELECT id FROM coupons WHERE code = ?",
-      args: [coupon.code],
+      sql: "SELECT id FROM coupons WHERE code = ? AND tenant_id = ?",
+      args: [coupon.code, tenantId],
     });
     if (exists.rows.length > 0) continue;
     await db.execute({
-      sql: `INSERT INTO coupons (id, code, type, value, min_order, max_discount, start_at, end_at, usage_limit, per_user_limit, is_active, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO coupons (id, tenant_id, code, type, value, min_order, max_discount, start_at, end_at, usage_limit, per_user_limit, is_active, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         crypto.randomUUID(),
+        tenantId,
         coupon.code,
         coupon.type,
         coupon.value,
@@ -908,18 +951,19 @@ async function ensureCoupons(db: Client, now: string) {
   }
 }
 
-async function ensureCustomers(db: Client) {
+async function ensureCustomers(db: Client, tenantId: string) {
   for (const customer of sampleCustomers) {
     const exists = await db.execute({
-      sql: "SELECT id FROM customers WHERE phone = ?",
-      args: [customer.phone],
+      sql: "SELECT id FROM customers WHERE phone = ? AND tenant_id = ?",
+      args: [customer.phone, tenantId],
     });
     if (exists.rows.length > 0) continue;
     await db.execute({
-      sql: `INSERT INTO customers (id, name, email, phone, notes, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO customers (id, tenant_id, name, email, phone, notes, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         crypto.randomUUID(),
+        tenantId,
         customer.name,
         customer.email,
         customer.phone,
@@ -931,13 +975,17 @@ async function ensureCustomers(db: Client) {
   }
 }
 
-async function ensureSettings(db: Client, now: string) {
-  const count = await db.execute("SELECT COUNT(*) as count FROM settings");
+async function ensureSettings(db: Client, tenantId: string, now: string) {
+  const count = await db.execute({
+    sql: "SELECT COUNT(*) as count FROM settings WHERE tenant_id = ?",
+    args: [tenantId]
+  });
   if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
   await db.execute({
-    sql: "INSERT INTO settings (key, value_json, updated_at) VALUES (?, ?, ?)",
+    sql: "INSERT INTO settings (key, tenant_id, value_json, updated_at) VALUES (?, ?, ?, ?)",
     args: [
       "order_settings",
+      tenantId,
       JSON.stringify({
         preorder_only: false,
         same_day_enabled: true,
@@ -947,9 +995,10 @@ async function ensureSettings(db: Client, now: string) {
     ],
   });
   await db.execute({
-    sql: "INSERT INTO settings (key, value_json, updated_at) VALUES (?, ?, ?)",
+    sql: "INSERT INTO settings (key, tenant_id, value_json, updated_at) VALUES (?, ?, ?, ?)",
     args: [
       "delivery_settings",
+      tenantId,
       JSON.stringify({
         delivery_province: "DI Yogyakarta",
         free_delivery_threshold: 150000,
@@ -957,20 +1006,32 @@ async function ensureSettings(db: Client, now: string) {
       now,
     ],
   });
+
+  // Tambahkan juga metadata tenant di settings (opsional, tapi berguna untuk tenant-resolver)
+  await db.execute({
+    sql: "INSERT INTO settings (key, tenant_id, value_json, updated_at) VALUES (?, ?, ?, ?)",
+    args: [
+      "tenant_metadata",
+      tenantId,
+      JSON.stringify({ name: "Demo Store", slug: "demo" }), // ini biasanya dihandle real di tenants table
+      now,
+    ],
+  });
 }
 
-async function ensureAds(db: Client, now: string) {
+async function ensureAds(db: Client, tenantId: string, now: string) {
   for (const ad of sampleAds) {
     const exists = await db.execute({
-      sql: "SELECT id FROM ads_campaigns WHERE name = ?",
-      args: [ad.name],
+      sql: "SELECT id FROM ads_campaigns WHERE name = ? AND tenant_id = ?",
+      args: [ad.name, tenantId],
     });
     if (exists.rows.length > 0) continue;
     await db.execute({
-      sql: `INSERT INTO ads_campaigns (id, name, channel, budget, spend, status, start_at, end_at, notes, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO ads_campaigns (id, tenant_id, name, channel, budget, spend, status, start_at, end_at, notes, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         crypto.randomUUID(),
+        tenantId,
         ad.name,
         ad.channel,
         ad.budget,
@@ -986,30 +1047,34 @@ async function ensureAds(db: Client, now: string) {
   }
 }
 
-async function ensureCmsPages(db: Client, now: string) {
+async function ensureCmsPages(db: Client, tenantId: string, now: string) {
   for (const page of sampleCmsPages) {
     const exists = await db.execute({
-      sql: "SELECT id FROM cms_pages WHERE slug = ?",
-      args: [page.slug],
+      sql: "SELECT id FROM cms_pages WHERE slug = ? AND tenant_id = ?",
+      args: [page.slug, tenantId],
     });
     if (exists.rows.length > 0) continue;
     await db.execute({
-      sql: `INSERT INTO cms_pages (id, slug, title, content_md, is_active, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      args: [crypto.randomUUID(), page.slug, page.title, page.content, 1, now, now],
+      sql: `INSERT INTO cms_pages (id, tenant_id, slug, title, content_md, is_active, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [crypto.randomUUID(), tenantId, page.slug, page.title, page.content, 1, now, now],
     });
   }
 }
 
-async function ensureShippingRules(db: Client, now: string) {
-  const count = await db.execute("SELECT COUNT(*) as count FROM shipping_rules");
+async function ensureShippingRules(db: Client, tenantId: string, now: string) {
+  const count = await db.execute({
+    sql: "SELECT COUNT(*) as count FROM shipping_rules WHERE tenant_id = ?",
+    args: [tenantId]
+  });
   if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
   for (const rule of sampleShippingRules) {
     await db.execute({
-      sql: `INSERT INTO shipping_rules (id, name, type, priority, is_active, config_json, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO shipping_rules (id, tenant_id, name, type, priority, is_active, config_json, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         crypto.randomUUID(),
+        tenantId,
         rule.name,
         rule.type,
         rule.priority,
@@ -1024,6 +1089,7 @@ async function ensureShippingRules(db: Client, now: string) {
 
 async function ensureOrders(
   db: Client,
+  tenantId: string,
   couponMap: Record<string, { id: string; type: string; value: number; max_discount: number | null }>,
   productMap: Record<string, { id: string; price: number; slug: string; name: string }>,
   customerMap: Record<string, string>,
@@ -1031,15 +1097,18 @@ async function ensureOrders(
   // 1. Insert fixed fixtures — idempotent per order_no
   for (const fixture of orderFixtures) {
     const exists = await db.execute({
-      sql: "SELECT id FROM orders WHERE order_no = ?",
-      args: [fixture.orderNo],
+      sql: "SELECT id FROM orders WHERE order_no = ? AND tenant_id = ?",
+      args: [fixture.orderNo, tenantId],
     });
     if (exists.rows.length > 0) continue;
-    await insertOrderFullRelational(db, fixture, couponMap, productMap, customerMap);
+    await insertOrderFullRelational(db, tenantId, fixture, couponMap, productMap, customerMap);
   }
 
   // 2. Only generate random historical orders if none exist yet
-  const randCount = await db.execute("SELECT COUNT(*) as count FROM orders WHERE order_no LIKE 'RS-RAND-%'");
+  const randCount = await db.execute({
+    sql: "SELECT COUNT(*) as count FROM orders WHERE order_no LIKE 'RS-RAND-%' AND tenant_id = ?",
+    args: [tenantId]
+  });
   if (Number((randCount.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
 
   const productSlugs = Object.keys(productMap);
@@ -1086,12 +1155,13 @@ async function ensureOrders(
       payment: {},
     };
 
-    await insertOrderFullRelational(db, fixture, couponMap, productMap, customerMap);
+    await insertOrderFullRelational(db, tenantId, fixture, couponMap, productMap, customerMap);
   }
 }
 
 async function insertOrderFullRelational(
   db: Client,
+  tenantId: string,
   fixture: OrderFixture,
   couponMap: Record<string, { id: string; type: string; value: number; max_discount: number | null }>,
   productMap: Record<string, { id: string; price: number; slug: string; name: string }>,
@@ -1128,10 +1198,11 @@ async function insertOrderFullRelational(
 
   // 1. Insert Order
   await db.execute({
-    sql: `INSERT INTO orders (id, order_no, status, payment_status, customer_id, customer_name, customer_email, customer_phone, shipping_address_json, items_json, subtotal, discount_total, delivery_fee, total, coupon_code, promo_json, notes, midtrans_token, midtrans_order_id, created_at, updated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO orders (id, tenant_id, order_no, status, payment_status, customer_id, customer_name, customer_email, customer_phone, shipping_address_json, items_json, subtotal, discount_total, delivery_fee, total, coupon_code, promo_json, notes, midtrans_token, midtrans_order_id, created_at, updated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       orderId,
+      tenantId,
       fixture.orderNo,
       fixture.status,
       fixture.paymentStatus,
@@ -1164,9 +1235,10 @@ async function insertOrderFullRelational(
   for (let i = 0; i < historyLimit; i++) {
     const status = fixture.status === "cancelled" && i === 1 ? "cancelled" : sequence[i] || fixture.status;
     await db.execute({
-      sql: `INSERT INTO order_status_history (id, order_id, status, notes, created_at) VALUES (?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO order_status_history (id, tenant_id, order_id, status, notes, created_at) VALUES (?, ?, ?, ?, ?, ?)`,
       args: [
         crypto.randomUUID(),
+        tenantId,
         orderId,
         status,
         `Seeded status: ${status}`,
@@ -1179,10 +1251,11 @@ async function insertOrderFullRelational(
   // 3. Insert Inventory Movements (Out)
   for (const item of items) {
     await db.execute({
-      sql: `INSERT INTO inventory_movements (id, product_id, type, qty, notes, order_id, ref_order_no, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO inventory_movements (id, tenant_id, product_id, type, qty, notes, order_id, ref_order_no, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         crypto.randomUUID(),
+        tenantId,
         item.product_id,
         "out",
         item.qty,
@@ -1198,10 +1271,11 @@ async function insertOrderFullRelational(
   if (["shipped", "delivered", "completed"].includes(fixture.status)) {
     const isDelivered = ["delivered", "completed"].includes(fixture.status);
     await db.execute({
-      sql: `INSERT INTO shipments (id, order_id, order_no, status, carrier, tracking_no, shipped_at, delivered_at, notes, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO shipments (id, tenant_id, order_id, order_no, status, carrier, tracking_no, shipped_at, delivered_at, notes, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         crypto.randomUUID(),
+        tenantId,
         orderId,
         fixture.orderNo,
         isDelivered ? "delivered" : "shipped",
@@ -1219,10 +1293,11 @@ async function insertOrderFullRelational(
   // 5. Insert Invoice if paid
   if (fixture.paymentStatus === "paid" || fixture.status === "completed") {
     await db.execute({
-      sql: `INSERT INTO invoices (id, order_id, invoice_no, status, issued_at, due_at, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO invoices (id, tenant_id, order_id, invoice_no, status, issued_at, due_at, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         crypto.randomUUID(),
+        tenantId,
         orderId,
         `INV-${fixture.orderNo}`,
         "paid",
@@ -1235,21 +1310,22 @@ async function insertOrderFullRelational(
   }
 }
 
-async function ensureRefunds(db: Client, orderMap: Record<string, { id: string; orderNo: string }>) {
+async function ensureRefunds(db: Client, tenantId: string, orderMap: Record<string, { id: string; orderNo: string }>) {
   for (const fixture of refundFixtures) {
     const order = orderMap[fixture.orderNo];
     if (!order) continue;
     // Idempotent: skip if refund for this order already exists
     const exists = await db.execute({
-      sql: "SELECT id FROM refunds WHERE order_no = ?",
-      args: [fixture.orderNo],
+      sql: "SELECT id FROM refunds WHERE order_no = ? AND tenant_id = ?",
+      args: [fixture.orderNo, tenantId],
     });
     if (exists.rows.length > 0) continue;
     await db.execute({
-      sql: `INSERT INTO refunds (id, order_id, order_no, amount, reason, status, provider_status, provider_response_json, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO refunds (id, tenant_id, order_id, order_no, amount, reason, status, provider_status, provider_response_json, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         crypto.randomUUID(),
+        tenantId,
         order.id,
         fixture.orderNo,
         fixture.amount,
@@ -1264,24 +1340,26 @@ async function ensureRefunds(db: Client, orderMap: Record<string, { id: string; 
   }
 }
 
-async function ensureNotifications(db: Client) {
+async function ensureNotifications(db: Client, tenantId: string) {
   // Bulk-generate 2-3 notifications per order, idempotent per orderNo
-  const allOrders = await db.execute(
-    "SELECT id, order_no, customer_phone, customer_email, status, payment_status FROM orders",
-  );
+  const allOrders = await db.execute({
+    sql: "SELECT id, order_no, customer_phone, customer_email, status, payment_status FROM orders WHERE tenant_id = ?",
+    args: [tenantId]
+  });
 
   for (const row of allOrders.rows) {
-    const orderNo = String(row.order_no || "");
-    const customerPhone = String(row.customer_phone || "");
-    const customerEmail = String(row.customer_email || "");
-    const orderStatus = String(row.status || "");
-    const paymentStatus = String(row.payment_status || "");
+    const r = row as unknown as { id: string; order_no: string; customer_phone: string; customer_email: string; status: string; payment_status: string };
+    const orderNo = r.order_no;
+    const customerPhone = r.customer_phone;
+    const customerEmail = r.customer_email;
+    const orderStatus = r.status;
+    const paymentStatus = r.payment_status;
     if (!orderNo) continue;
 
     // Skip if already has notifications for this order
     const existingRes = await db.execute({
-      sql: "SELECT COUNT(*) as count FROM notifications WHERE payload_json LIKE ?",
-      args: [`%"orderNo":"${orderNo}"%`],
+      sql: "SELECT COUNT(*) as count FROM notifications WHERE payload_json LIKE ? AND tenant_id = ?",
+      args: [`%"orderNo":"${orderNo}"%`, tenantId],
     });
     if (Number((existingRes.rows[0] as { count?: number } | undefined)?.count || 0) > 0) continue;
 
@@ -1290,9 +1368,10 @@ async function ensureNotifications(db: Client) {
     // Always: WhatsApp order confirmation
     if (customerPhone) {
       await db.execute({
-        sql: `INSERT INTO notifications (id, channel, recipient, template, payload_json, status, created_at, sent_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        sql: `INSERT INTO notifications (id, tenant_id, channel, recipient, template, payload_json, status, created_at, sent_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
           crypto.randomUUID(),
+          tenantId,
           "whatsapp",
           customerPhone,
           "order-confirmation",
@@ -1308,9 +1387,10 @@ async function ensureNotifications(db: Client) {
     // Paid orders: email payment received
     if (customerEmail && ["paid", "refunded"].includes(paymentStatus)) {
       await db.execute({
-        sql: `INSERT INTO notifications (id, channel, recipient, template, payload_json, status, created_at, sent_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        sql: `INSERT INTO notifications (id, tenant_id, channel, recipient, template, payload_json, status, created_at, sent_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
           crypto.randomUUID(),
+          tenantId,
           "email",
           customerEmail,
           "payment-received",
@@ -1326,9 +1406,10 @@ async function ensureNotifications(db: Client) {
     // Shipped/delivered: WhatsApp tracking update
     if (customerPhone && ["shipped", "delivered", "completed"].includes(orderStatus)) {
       await db.execute({
-        sql: `INSERT INTO notifications (id, channel, recipient, template, payload_json, status, created_at, sent_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        sql: `INSERT INTO notifications (id, tenant_id, channel, recipient, template, payload_json, status, created_at, sent_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
           crypto.randomUUID(),
+          tenantId,
           "whatsapp",
           customerPhone,
           "order-shipped",
@@ -1345,22 +1426,25 @@ async function ensureNotifications(db: Client) {
 
 async function ensureCouponUsages(
   db: Client,
+  tenantId: string,
   couponMap: Record<string, { id: string }>,
 ) {
   // Scan ALL orders with a coupon_code and create usage record if missing
-  const ordersWithCoupons = await db.execute(
-    "SELECT id, order_no, coupon_code, customer_phone FROM orders WHERE coupon_code IS NOT NULL",
-  );
+  const ordersWithCoupons = await db.execute({
+    sql: "SELECT id, order_no, coupon_code, customer_phone FROM orders WHERE coupon_code IS NOT NULL AND tenant_id = ?",
+    args: [tenantId]
+  });
 
   for (const row of ordersWithCoupons.rows) {
-    const orderId = String(row.id || "");
-    const couponCode = String(row.coupon_code || "");
-    const customerPhone = String(row.customer_phone || "");
+    const r = row as unknown as { id: string; order_no: string; coupon_code: string; customer_phone: string };
+    const orderId = r.id;
+    const couponCode = r.coupon_code;
+    const customerPhone = r.customer_phone;
     if (!orderId || !couponCode) continue;
 
     const existing = await db.execute({
-      sql: "SELECT COUNT(*) as count FROM coupon_usages WHERE order_id = ?",
-      args: [orderId],
+      sql: "SELECT COUNT(*) as count FROM coupon_usages WHERE order_id = ? AND tenant_id = ?",
+      args: [orderId, tenantId],
     });
     if (Number((existing.rows[0] as { count?: number } | undefined)?.count || 0) > 0) continue;
 
@@ -1368,20 +1452,24 @@ async function ensureCouponUsages(
     if (!coupon) continue;
 
     await db.execute({
-      sql: `INSERT INTO coupon_usages (id, coupon_id, order_id, customer_phone, created_at) VALUES (?, ?, ?, ?, ?)`,
-      args: [crypto.randomUUID(), coupon.id, orderId, customerPhone, nowIso()],
+      sql: `INSERT INTO coupon_usages (id, tenant_id, coupon_id, order_id, customer_phone, created_at) VALUES (?, ?, ?, ?, ?, ?)`,
+      args: [crypto.randomUUID(), tenantId, coupon.id, orderId, customerPhone, nowIso()],
     });
   }
 }
 
 async function ensureAuditLogs(
   db: Client,
+  tenantId: string,
   now: string,
   adminEmail: string,
   orderMap: Record<string, { id: string }>,
   productMap: Record<string, { id: string }>,
 ) {
-  const count = await db.execute("SELECT COUNT(*) as count FROM audit_logs");
+  const count = await db.execute({
+    sql: "SELECT COUNT(*) as count FROM audit_logs WHERE tenant_id = ?",
+    args: [tenantId]
+  });
   if (Number((count.rows[0] as { count?: number } | undefined)?.count || 0) > 0) return;
   const references = [
     {
@@ -1398,89 +1486,77 @@ async function ensureAuditLogs(
   for (const ref of references) {
     if (!ref.id) continue;
     await db.execute({
-      sql: `INSERT INTO audit_logs (id, actor_email, action, entity_type, entity_id, data_json, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      args: [crypto.randomUUID(), adminEmail, "seed", ref.entity, ref.id, JSON.stringify({ note: ref.note }), now],
+      sql: `INSERT INTO audit_logs (id, tenant_id, actor_email, action, entity_type, entity_id, data_json, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [crypto.randomUUID(), tenantId, adminEmail, "seed", ref.entity, ref.id, JSON.stringify({ note: ref.note }), now],
     });
   }
 }
 
-async function buildCategoryMap(db: Client) {
-  const rows = await db.execute("SELECT id, slug FROM categories");
-  const map: Record<string, string> = {};
-  (rows.rows as Array<Record<string, unknown>>).forEach((row) => {
-    if (row.slug) {
-      map[String(row.slug)] = String(row.id);
-    }
+async function buildProductMap(db: Client, tenantId: string) {
+  const result = await db.execute({
+    sql: "SELECT id, slug, price, name FROM products WHERE tenant_id = ?",
+    args: [tenantId]
   });
-  return map;
-}
-
-async function buildProductMap(db: Client) {
-  const rows = await db.execute("SELECT id, slug, price, name FROM products");
   const map: Record<string, { id: string; price: number; slug: string; name: string }> = {};
-  (rows.rows as Array<Record<string, unknown>>).forEach((row) => {
-    if (row.slug) {
-      map[String(row.slug)] = {
-        id: String(row.id),
-        price: Number(row.price || 0),
-        slug: String(row.slug),
-        name: String(row.name || ""),
-      };
-    }
-  });
+  for (const row of result.rows) {
+    const r = row as unknown as { id: string; slug: string; price: number; name: string };
+    map[r.slug] = {
+      id: r.id,
+      price: r.price,
+      slug: r.slug,
+      name: r.name,
+    };
+  }
   return map;
 }
 
-async function buildCouponMap(db: Client) {
-  const rows = await db.execute("SELECT id, code, type, value, max_discount FROM coupons");
+async function buildCouponMap(db: Client, tenantId: string) {
+  const result = await db.execute({
+    sql: "SELECT id, code, type, value, max_discount FROM coupons WHERE tenant_id = ?",
+    args: [tenantId]
+  });
   const map: Record<string, { id: string; type: string; value: number; max_discount: number | null }> = {};
-  (rows.rows as Array<Record<string, unknown>>).forEach((row) => {
-    if (row.code) {
-      map[String(row.code)] = {
-        id: String(row.id),
-        type: String(row.type || "percent"),
-        value: Number(row.value || 0),
-        max_discount: row.max_discount !== null ? Number(row.max_discount) : null,
-      };
-    }
-  });
+  for (const row of result.rows) {
+    const r = row as unknown as { id: string; code: string; type: string; value: number; max_discount: number | null };
+    map[r.code] = {
+      id: r.id,
+      type: r.type,
+      value: r.value,
+      max_discount: r.max_discount,
+    };
+  }
   return map;
 }
 
-async function buildOrderMap(db: Client) {
-  const rows = await db.execute("SELECT id, order_no, created_at, customer_email, customer_phone FROM orders");
-  const map: Record<
-    string,
-    {
-      id: string;
-      orderNo: string;
-      createdAt: string;
-      customerEmail: string;
-      customerPhone: string;
-    }
-  > = {};
-  (rows.rows as Array<Record<string, unknown>>).forEach((row) => {
-    if (row.order_no) {
-      map[String(row.order_no)] = {
-        id: String(row.id),
-        orderNo: String(row.order_no),
-        createdAt: String(row.created_at || new Date().toISOString()),
-        customerEmail: String(row.customer_email || ""),
-        customerPhone: String(row.customer_phone || ""),
-      };
-    }
+async function buildOrderMap(db: Client, tenantId: string) {
+  const result = await db.execute({
+    sql: "SELECT id, order_no, created_at, customer_email, customer_phone FROM orders WHERE tenant_id = ?",
+    args: [tenantId]
   });
+  const map: Record<string, { id: string; orderNo: string; createdAt: string; customerEmail: string; customerPhone: string }> = {};
+  for (const row of result.rows) {
+    const r = row as unknown as { id: string; order_no: string; created_at: string; customer_email: string; customer_phone: string };
+    map[r.order_no] = {
+      id: r.id,
+      orderNo: r.order_no,
+      createdAt: r.created_at,
+      customerEmail: r.customer_email || "",
+      customerPhone: r.customer_phone || "",
+    };
+  }
   return map;
 }
 
-async function buildCustomerMap(db: Client) {
-  const rows = await db.execute("SELECT id, phone FROM customers");
+async function buildCustomerMap(db: Client, tenantId: string) {
+  const result = await db.execute({
+    sql: "SELECT id, phone FROM customers WHERE tenant_id = ?",
+    args: [tenantId]
+  });
   const map: Record<string, string> = {};
-  (rows.rows as Array<Record<string, unknown>>).forEach((row) => {
-    if (row.phone) {
-      map[String(row.phone)] = String(row.id);
-    }
-  });
+  for (const row of result.rows) {
+    const r = row as unknown as { id: string; phone: string };
+    map[r.phone] = r.id;
+  }
   return map;
 }
