@@ -25,7 +25,7 @@ if (isNode && !isCloudflare) {
 
 export default defineConfig({
   server: {
-    port: 4321,
+    port: process.env.PORT ? parseInt(process.env.PORT) : 4321,
     host: true,
     allowedHosts: true,
   },
