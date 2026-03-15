@@ -40,18 +40,18 @@ export function getEnv(ctx?: APIContext): RuntimeEnv {
   const isProd = source.NODE_ENV === "production" || source.MIDTRANS_IS_PRODUCTION === "true";
 
   return {
-    PUBLIC_SITE_URL: ensureEnv(source.PUBLIC_SITE_URL, "PUBLIC_SITE_URL", isProd),
+    PUBLIC_SITE_URL: ensureEnv(source.PUBLIC_SITE_URL, "PUBLIC_SITE_URL", isProd) || "http://ritelkit.localhost:1355",
     PUBLIC_TENANT_ID: source.PUBLIC_TENANT_ID || "",
     LOCAL_DOMAIN: source.LOCAL_DOMAIN || "ritelkit.localhost",
-    PUBLIC_WHATSAPP_NUMBER: ensureEnv(source.PUBLIC_WHATSAPP_NUMBER, "PUBLIC_WHATSAPP_NUMBER", isProd),
+    PUBLIC_WHATSAPP_NUMBER: ensureEnv(source.PUBLIC_WHATSAPP_NUMBER, "PUBLIC_WHATSAPP_NUMBER", isProd) || "6281234567890",
     PUBLIC_MIDTRANS_CLIENT_KEY: ensureEnv(source.PUBLIC_MIDTRANS_CLIENT_KEY, "PUBLIC_MIDTRANS_CLIENT_KEY", isProd),
     MIDTRANS_SERVER_KEY: ensureEnv(source.MIDTRANS_SERVER_KEY, "MIDTRANS_SERVER_KEY", isProd),
     PUBLIC_MIDTRANS_MERCHANT_ID: ensureEnv(source.PUBLIC_MIDTRANS_MERCHANT_ID, "PUBLIC_MIDTRANS_MERCHANT_ID", isProd),
     MIDTRANS_IS_PRODUCTION: source.MIDTRANS_IS_PRODUCTION || "false",
-    DATABASE_URL: ensureEnv(source.DATABASE_URL, "DATABASE_URL", isProd),
+    DATABASE_URL: ensureEnv(source.DATABASE_URL, "DATABASE_URL", isProd) || "file:./local.db",
     DATABASE_AUTH_TOKEN: source.DATABASE_AUTH_TOKEN,
-    ADMIN_SESSION_SECRET: ensureEnv(source.ADMIN_SESSION_SECRET, "ADMIN_SESSION_SECRET", isProd),
-    SETUP_TOKEN: ensureEnv(source.SETUP_TOKEN, "SETUP_TOKEN", isProd),
+    ADMIN_SESSION_SECRET: ensureEnv(source.ADMIN_SESSION_SECRET, "ADMIN_SESSION_SECRET", isProd) || "dev-secret-placeholder",
+    SETUP_TOKEN: ensureEnv(source.SETUP_TOKEN, "SETUP_TOKEN", isProd) || "dev-setup-token",
     UPLOAD_DRIVER: source.UPLOAD_DRIVER,
     R2_ACCOUNT_ID: source.R2_ACCOUNT_ID,
     R2_ACCESS_KEY_ID: source.R2_ACCESS_KEY_ID,
