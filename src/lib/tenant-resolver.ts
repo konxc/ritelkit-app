@@ -37,7 +37,7 @@ export async function resolveTenant(ctx: APIContext): Promise<TenantInfo | null>
   
   if (hostname.endsWith(`.${baseDomain}`)) {
     const slug = hostname.replace(`.${baseDomain}`, "");
-    if (slug && slug !== "www") {
+    if (slug && slug !== "www" && slug !== "app") {
       const result = await db.select({
         id: tenants.id,
         slug: tenants.slug,
